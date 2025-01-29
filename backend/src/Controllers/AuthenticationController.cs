@@ -16,11 +16,13 @@ using Microsoft.EntityFrameworkCore;
 using OpenIddict.Abstractions;
 using OpenIddict.Client.AspNetCore;
 using static OpenIddict.Abstractions.OpenIddictConstants;
+using Microsoft.AspNetCore.Routing;
 
 namespace Database.Controllers;
 
 // Inspired by https://github.com/openiddict/openiddict-samples/blob/dev/samples/Velusia/Velusia.Client/Controllers/AuthenticationController.cs
 // https://github.com/openiddict/openiddict-samples/blob/855c31f91d6bf5cde735ef3f96fcc3c015b51d79/samples/Velusia/Velusia.Client/Controllers/AuthenticationController.cs
+[EndpointGroupName("Authentication")]
 public sealed class AuthenticationController(
     AppSettings appSettings,
     IOptions<IdentityOptions> identityOptions,

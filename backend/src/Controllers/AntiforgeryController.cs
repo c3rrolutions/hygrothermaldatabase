@@ -4,11 +4,13 @@ using Database.Configuration;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Routing;
 
 namespace Database.Controllers;
 
 // For gotchas regarding antiforgery tokens read
 // [Clarity around IAntiforgery and ValidateAntiForgeryToken](https://github.com/dotnet/aspnetcore/issues/2783)
+[EndpointGroupName("Antiforgery")]
 public sealed class AntiforgeryController(IAntiforgery antiforgeryService) : Controller
 {
     private const string XsrfCookieKey = "XSRF-TOKEN";

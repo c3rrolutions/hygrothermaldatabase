@@ -10,7 +10,6 @@ namespace Database.Controllers;
 
 // For gotchas regarding antiforgery tokens read
 // [Clarity around IAntiforgery and ValidateAntiForgeryToken](https://github.com/dotnet/aspnetcore/issues/2783)
-[EndpointGroupName("Antiforgery")]
 public sealed class AntiforgeryController(IAntiforgery antiforgeryService) : Controller
 {
     private const string XsrfCookieKey = "XSRF-TOKEN";
@@ -24,6 +23,8 @@ public sealed class AntiforgeryController(IAntiforgery antiforgeryService) : Con
             SameSite = SameSiteMode.Strict
         };
 
+    [EndpointName("AntiforgeryToken")]
+    [EndpointDescription("Get an antiforgery token.")]
     [HttpGet("~/antiforgery/token")]
     public async Task<IActionResult> Token()
     {

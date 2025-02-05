@@ -1,8 +1,8 @@
-using System;
+﻿using System;
 using Database.GraphQl.Publications;
 using Database.GraphQl.Standards;
 
-namespace Database.GraphQl;
+namespace Database.GraphQl.Approvals;
 
 public sealed record DataApprovalInput(
     DateTime Timestamp,

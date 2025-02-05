@@ -63,7 +63,7 @@ public abstract class DataX
     public AppliedMethod AppliedMethod { get; private set; } = default!;
 
     public ICollection<DataApproval> Approvals { get; } = new List<DataApproval>();
-    // public ResponseApproval Approval { get; private set; }
+    public ResponseApproval Approval { get; set; }
 
     // TODO Exactly one resource must not have a parent and each other resource must have one from this list and the graph must be connected. In other words, the resources must form a tree.
     public virtual ICollection<GetHttpsResource> Resources { get; } = new List<GetHttpsResource>();

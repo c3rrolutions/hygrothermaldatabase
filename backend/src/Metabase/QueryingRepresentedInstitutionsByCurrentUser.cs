@@ -22,12 +22,20 @@ public sealed class QueryingRepresentedInstitutionsByCurrentUser
         OWNER,
         ASSISTANT
     }
-    private sealed record UserRepresentedInstitutionEdge(Institution Node, InstitutionRepresentativeRole Role);
+
+    internal enum DataSigningPermission
+    {
+        NEVER,
+        GRANTED,
+        REMOVED
+    }
+
+    private sealed record UserRepresentedInstitutionEdge(Institution Node, InstitutionRepresentativeRole Role, DataSigningPermission DataSigningPermission);
     private sealed record UserRepresentedInstitutionConnection(IReadOnlyList<UserRepresentedInstitutionEdge> Edges);
     private sealed record User(UserRepresentedInstitutionConnection RepresentedInstitutions);
     private sealed record RepresentedInstitutionsByCurrentUser(User CurrentUser);
 
-    internal static async Task<IReadOnlyCollection<(Guid Id, InstitutionRepresentativeRole Role)>> Query(
+    internal static async Task<IReadOnlyCollection<(Guid Id, InstitutionRepresentativeRole Role, DataSigningPermission Permission)>> Query(
         AppSettings appSettings,
         IHttpClientFactory httpClientFactory,
         IHttpContextAccessor httpContextAccessor,
@@ -51,8 +59,8 @@ public sealed class QueryingRepresentedInstitutionsByCurrentUser
                ?.CurrentUser
                ?.RepresentedInstitutions
                ?.Edges
-               ?.Select(edge => (edge.Node.Uuid, edge.Role))
+               ?.Select(edge => (edge.Node.Uuid, edge.Role, edge.DataSigningPermission))
                .ToList().AsReadOnly()
-               ?? Array.Empty<(Guid Id, InstitutionRepresentativeRole Role)>().AsReadOnly();
+               ?? Array.Empty<(Guid Id, InstitutionRepresentativeRole Role, DataSigningPermission Permission)>().AsReadOnly();
     }
 }

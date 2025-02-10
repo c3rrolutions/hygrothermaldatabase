@@ -1,14 +1,13 @@
-﻿using Database.Authorization;
+﻿using System;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
+using Database.Authorization;
 using Database.Data;
 using Database.Services;
-using System.Net.Http;
-using System.Threading.Tasks;
-using System.Threading;
-using System;
+using HotChocolate.Authorization;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
-using HotChocolate.Authorization;
-using Microsoft.EntityFrameworkCore;
 
 namespace Database.GraphQl.Approvals;
 
@@ -29,7 +28,7 @@ public sealed class ApprovalMutation
     {
         var currentUser = await userService.GetCurrentUser(
             httpContextAccessor,
-            cancellationToken);
+            cancellationToken).ConfigureAwait(false);
         if (currentUser == null)
         {
             return new AddApprovalPayload(
@@ -58,7 +57,7 @@ public sealed class ApprovalMutation
                 )
             );
 
-        var data = await dataService.GetDataAsync(input.DataId, cancellationToken);
+        var data = await dataService.GetDataAsync(input.DataId, cancellationToken).ConfigureAwait(false);
         if (data == null)
         {
             return new AddApprovalPayload(

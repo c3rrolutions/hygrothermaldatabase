@@ -1,16 +1,16 @@
-using System;
+﻿using System;
 using System.IO;
+using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
-using System.Net.Http;
-using HotChocolate.AspNetCore;
 using Database.Configuration;
 using Database.Data;
 using Database.Data.Extensions;
 using Database.Enumerations;
-using Database.Services;
 using Database.Metabase;
+using Database.Services;
+using HotChocolate.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
@@ -24,9 +24,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Npgsql;
-using Serilog;
 using Microsoft.OpenApi;
+using Serilog;
 
 namespace Database;
 

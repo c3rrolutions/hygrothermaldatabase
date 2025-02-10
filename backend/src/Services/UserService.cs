@@ -16,16 +16,16 @@ public class UserService(
 {
     public async Task<CurrentUser?> GetCurrentUser(IHttpContextAccessor httpContextAccessor, CancellationToken cancellationToken)
     {
-        var token = await httpContextAccessor.ExtractBearerToken();
+        var token = await httpContextAccessor.ExtractBearerToken().ConfigureAwait(false);
 
         if (token == null)
         {
-            return await GetCurrentUserFromMetabase(httpContextAccessor, cancellationToken);
+            return await GetCurrentUserFromMetabase(httpContextAccessor, cancellationToken).ConfigureAwait(false);
         }
 
         if (!cache.TryGetValue(token, out CurrentUser? cacheUser))
         {
-            cacheUser = await GetCurrentUserFromMetabase(httpContextAccessor, cancellationToken);
+            cacheUser = await GetCurrentUserFromMetabase(httpContextAccessor, cancellationToken).ConfigureAwait(false);
             var cacheEntryOptions = new MemoryCacheEntryOptions()
                 .SetSlidingExpiration(TimeSpan.FromHours(1));
 

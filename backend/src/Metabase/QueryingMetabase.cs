@@ -8,6 +8,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using Database.Extensions;
 using GraphQL;
 using GraphQL.Client.Serializer.SystemTextJson;
 using Microsoft.AspNetCore.Authentication;
@@ -48,17 +49,6 @@ public sealed class QueryingMetabase
             IgnoreReadOnlyFields = true,
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
         }; //.SetupImmutableConverter();
-
-    private static async Task<string?> ExtractBearerToken(
-        IHttpContextAccessor httpContextAccessor
-    )
-    {
-        if (httpContextAccessor.HttpContext is null) return null;
-        return await httpContextAccessor.HttpContext.GetTokenAsync(
-            CookieAuthenticationDefaults.AuthenticationScheme,
-            OpenIddictClientAspNetCoreConstants.Tokens.BackchannelAccessToken
-        ).ConfigureAwait(false);
-    }
 
     public static async Task<string> ConstructGraphQlQuery(
         string[] fileNames
@@ -143,7 +133,7 @@ public sealed class QueryingMetabase
         where TResponse : class
     {
         using var httpClient = httpClientFactory.CreateClient(MetabaseHttpClient);
-        var bearerToken = await ExtractBearerToken(httpContextAccessor).ConfigureAwait(false);
+        var bearerToken = await httpContextAccessor.ExtractBearerToken().ConfigureAwait(false);
         using var httpRequestMessage = new HttpRequestMessage(
             httpMethod,
             uri

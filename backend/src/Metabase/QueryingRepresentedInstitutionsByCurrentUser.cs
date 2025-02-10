@@ -17,19 +17,6 @@ public sealed class QueryingRepresentedInstitutionsByCurrentUser
     };
 
     private sealed record Institution(Guid Uuid);
-    internal enum InstitutionRepresentativeRole
-    {
-        OWNER,
-        ASSISTANT
-    }
-
-    internal enum DataSigningPermission
-    {
-        NEVER,
-        GRANTED,
-        REMOVED
-    }
-
     private sealed record UserRepresentedInstitutionEdge(Institution Node, InstitutionRepresentativeRole Role, DataSigningPermission DataSigningPermission);
     private sealed record UserRepresentedInstitutionConnection(IReadOnlyList<UserRepresentedInstitutionEdge> Edges);
     private sealed record User(UserRepresentedInstitutionConnection RepresentedInstitutions);

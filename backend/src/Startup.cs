@@ -63,6 +63,8 @@ public sealed class Startup(
         services.AddSingleton(_appSettings);
         services.AddSingleton(_environment);
         // services.AddDatabaseDeveloperPageExceptionFilter();
+        services.AddSingleton<IUserService, UserService>();
+        services.AddScoped<IDataService, DataService>();
     }
 
     private static void ConfigureRequestResponseServices(IServiceCollection services)

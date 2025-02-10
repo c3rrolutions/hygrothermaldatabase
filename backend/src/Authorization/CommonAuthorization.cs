@@ -28,13 +28,14 @@ public static class CommonAuthorization
             t =>
             t.Id == institutionId
             && (
-                t.Role == QueryingRepresentedInstitutionsByCurrentUser.InstitutionRepresentativeRole.ASSISTANT
-                || t.Role == QueryingRepresentedInstitutionsByCurrentUser.InstitutionRepresentativeRole.OWNER
+                t.Role == InstitutionRepresentativeRole.ASSISTANT
+                || t.Role == InstitutionRepresentativeRole.OWNER
                )
             );
     }
 
-    public static async Task<bool> IsAuthorizedToAddApprovalForInstitution(
+    public static bool IsAuthorizedToAddApprovalForInstitution(
+        CurrentUser currentUser,
         Guid institutionId,
         AppSettings appSettings,
         IHttpClientFactory httpClientFactory,
@@ -42,15 +43,6 @@ public static class CommonAuthorization
         CancellationToken cancellationToken
         )
     {
-        return (await QueryingRepresentedInstitutionsByCurrentUser.Query(
-            appSettings,
-            httpClientFactory,
-            httpContextAccessor,
-            cancellationToken
-        ).ConfigureAwait(false))
-        .Any(t =>
-            t.Id == institutionId
-            && t.Permission == QueryingRepresentedInstitutionsByCurrentUser.DataSigningPermission.GRANTED
-            );
+        return currentUser.RepresentedInstitutions.Edges.Any(t => t.Node.Uuid == institutionId && t.DataSigningPermission == DataSigningPermission.GRANTED);
     }
 }

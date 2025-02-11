@@ -177,6 +177,7 @@ type DataApproval {
 type DataConnection {
   edges: [DataEdge!]!
   pageInfo: PageInfo!
+  totalCount: NonNegativeInt
 }
 
 type DataEdge {
@@ -1352,6 +1353,9 @@ scalar DateTime @specifiedBy(url: "https:\/\/www.graphql-scalars.com\/date-time"
 
 "BCP 47 compliant Language Tag string"
 scalar Locale
+
+"The NonNegativeInt scalar type represents a unsigned 32-bit numeric non-fractional value equal to or greater than 0."
+scalar NonNegativeInt
 
 scalar Url
 

@@ -129,8 +129,8 @@ public static class GraphQlConfiguration
             // Query Types
             .AddQueryType(d => d.Name(nameof(Query)))
             .AddType<CalorimetricDataQueries>()
+            .AddType<DataConnection>()
             .AddType<DatabaseQueries>()
-            .AddType<DataQueries>()
             .AddType<GetHttpsResourceQueries>()
             .AddType<HygrothermalDataQueries>()
             .AddType<OpticalDataQueries>()

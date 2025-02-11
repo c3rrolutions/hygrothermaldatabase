@@ -9,6 +9,7 @@ interface Data {
   componentId: Uuid!
   createdAt: DateTime!
   creatorId: Uuid!
+  databaseId: Uuid!
   description: String
   locale: Locale!
   name: String
@@ -46,6 +47,7 @@ type CalorimetricData implements Node & Data {
   componentId: Uuid!
   createdAt: DateTime!
   creatorId: Uuid!
+  databaseId: Uuid!
   description: String
   gValues: [Float!]!
   id: ID!
@@ -172,21 +174,13 @@ type DataApproval {
   timestamp: DateTime!
 }
 
-"A connection to a list of items."
 type DataConnection {
-  "A list of edges."
-  edges: [DataEdge!]
-  "Information to aid in pagination."
+  edges: [DataEdge!]!
   pageInfo: PageInfo!
-  "Identifies the total count of items in the connection."
-  totalCount: Int! @cost(weight: "10")
 }
 
-"An edge in a connection."
 type DataEdge {
-  "A cursor for use in pagination."
   cursor: String!
-  "The item at the end of the edge."
   node: Data!
 }
 
@@ -212,6 +206,7 @@ type GeometricData implements Node & Data {
   componentId: Uuid!
   createdAt: DateTime!
   creatorId: Uuid!
+  databaseId: Uuid!
   description: String
   id: ID!
   locale: Locale!
@@ -297,6 +292,7 @@ type HygrothermalData implements Node & Data {
   componentId: Uuid!
   createdAt: DateTime!
   creatorId: Uuid!
+  databaseId: Uuid!
   description: String
   id: ID!
   locale: Locale!
@@ -365,6 +361,7 @@ type OpticalData implements Node & Data {
   componentId: Uuid!
   createdAt: DateTime!
   creatorId: Uuid!
+  databaseId: Uuid!
   description: String
   id: ID!
   infraredEmittances: [Float!]!
@@ -417,6 +414,7 @@ type PhotovoltaicData implements Node & Data {
   componentId: Uuid!
   createdAt: DateTime!
   creatorId: Uuid!
+  databaseId: Uuid!
   description: String
   id: ID!
   locale: Locale!
@@ -464,7 +462,6 @@ type Publication implements Reference {
 
 type Query {
   allCalorimetricData("Returns the elements in the list that come after the specified cursor." after: String "Returns the elements in the list that come before the specified cursor." before: String "Returns the first _n_ elements from the list." first: Int "Returns the last _n_ elements from the list." last: Int locale: Locale order: [CalorimetricDataSortInput!] @cost(weight: "10") where: CalorimetricDataPropositionInput @cost(weight: "10")): CalorimetricDataConnection @listSize(assumedSize: 2147483646, slicingArguments: [ "first", "last" ], slicingArgumentDefaultValue: 2147483646, sizedFields: [ "edges", "nodes" ], requireOneSlicingArgument: false) @cost(weight: "10")
-  allData("Returns the elements in the list that come after the specified cursor." after: String "Returns the elements in the list that come before the specified cursor." before: String "Returns the first _n_ elements from the list." first: Int "Returns the last _n_ elements from the list." last: Int locale: Locale order: [IDataSortInput!] @cost(weight: "10")): DataConnection @listSize(assumedSize: 2147483646, slicingArguments: [ "first", "last" ], slicingArgumentDefaultValue: 2147483646, sizedFields: [ "edges", "nodes" ], requireOneSlicingArgument: false) @cost(weight: "10")
   allGeometricData("Returns the elements in the list that come after the specified cursor." after: String "Returns the elements in the list that come before the specified cursor." before: String "Returns the first _n_ elements from the list." first: Int "Returns the last _n_ elements from the list." last: Int locale: Locale order: [GeometricDataSortInput!] @cost(weight: "10") where: GeometricDataPropositionInput @cost(weight: "10")): GeometricDataConnection @listSize(assumedSize: 2147483646, slicingArguments: [ "first", "last" ], slicingArgumentDefaultValue: 2147483646, sizedFields: [ "edges", "nodes" ], requireOneSlicingArgument: false) @cost(weight: "10")
   allHygrothermalData("Returns the elements in the list that come after the specified cursor." after: String "Returns the elements in the list that come before the specified cursor." before: String "Returns the first _n_ elements from the list." first: Int "Returns the last _n_ elements from the list." last: Int locale: Locale order: [HygrothermalDataSortInput!] @cost(weight: "10") where: HygrothermalDataPropositionInput @cost(weight: "10")): HygrothermalDataConnection @listSize(assumedSize: 2147483646, slicingArguments: [ "first", "last" ], slicingArgumentDefaultValue: 2147483646, sizedFields: [ "edges", "nodes" ], requireOneSlicingArgument: false) @cost(weight: "10")
   allOpticalData("Returns the elements in the list that come after the specified cursor." after: String "Returns the elements in the list that come before the specified cursor." before: String "Returns the first _n_ elements from the list." first: Int "Returns the last _n_ elements from the list." last: Int locale: Locale order: [OpticalDataSortInput!] @cost(weight: "10") where: OpticalDataPropositionInput @cost(weight: "10")): OpticalDataConnection @listSize(assumedSize: 2147483646, slicingArguments: [ "first", "last" ], slicingArgumentDefaultValue: 2147483646, sizedFields: [ "edges", "nodes" ], requireOneSlicingArgument: false) @cost(weight: "10")
@@ -472,7 +469,6 @@ type Query {
   calorimetricData(id: Uuid! locale: Locale): CalorimetricData @cost(weight: "10")
   currentUser: User @cost(weight: "10")
   currentUserInfo: UserInfo @cost(weight: "10")
-  data(id: Uuid! locale: Locale): Data @cost(weight: "10")
   database: Database! @cost(weight: "10")
   geometricData(id: Uuid! locale: Locale): GeometricData @cost(weight: "10")
   getHttpsResource(id: Uuid!): GetHttpsResource @cost(weight: "10")

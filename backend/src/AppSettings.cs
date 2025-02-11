@@ -1,5 +1,7 @@
 // Inspired by https://weblog.west-wind.com/posts/2017/dec/12/easy-configuration-binding-in-aspnet-core-revisited
 
+using System;
+
 namespace Database;
 
 public sealed class AppSettings
@@ -9,6 +11,8 @@ public sealed class AppSettings
 
     public string MetabaseHost { get; set; }
         = "";
+
+    public Guid DatabaseId { get; set; }
 
     public string VerificationCode { get; set; }
         = "";

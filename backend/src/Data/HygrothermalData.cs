@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
+using Database.Enumerations;
 
 namespace Database.Data;
 
@@ -15,6 +16,9 @@ public sealed class HygrothermalData
         string[] warnings,
         Guid creatorId,
         DateTime createdAt,
+        DataType? type,
+        DataSubtype? subtype,
+        CoatedSide? coatedSide,
         AppliedMethod appliedMethod,
         ICollection<DataApproval> approvals
         // ResponseApproval approval
@@ -26,6 +30,9 @@ public sealed class HygrothermalData
         warnings,
         creatorId,
         createdAt,
+        type,
+        subtype,
+        coatedSide,
         appliedMethod,
         approvals
     )
@@ -40,7 +47,10 @@ public sealed class HygrothermalData
         string? description,
         string[] warnings,
         Guid creatorId,
-        DateTime createdAt
+        DateTime createdAt,
+        DataType? type,
+        DataSubtype? subtype,
+        CoatedSide? coatedSide
         // ResponseApproval approval
     ) : base(
         locale,
@@ -49,7 +59,10 @@ public sealed class HygrothermalData
         description,
         warnings,
         creatorId,
-        createdAt
+        createdAt,
+        type,
+        subtype,
+        coatedSide
     )
     {
     }

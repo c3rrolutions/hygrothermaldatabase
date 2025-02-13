@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using HotChocolate;
 using HotChocolate.Types;
+using Database.Enumerations;
 
 namespace Database.GraphQl.CalorimetricDataX;
 
@@ -14,6 +15,9 @@ public sealed record CreateCalorimetricDataInput(
     string[] Warnings,
     DateTime CreatedAt,
     Guid CreatorId,
+    DataType? Type,
+    DataSubtype? Subtype,
+    CoatedSide? CoatedSide,
     AppliedMethodInput AppliedMethod,
     IReadOnlyList<DataApprovalInput> Approvals,
     // ResponseApproval Approval

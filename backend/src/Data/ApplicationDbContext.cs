@@ -15,7 +15,10 @@ public sealed class ApplicationDbContext
     private const string DefaultSchemaName = "database";
     private readonly string _schemaName;
 
+    internal const string CoatedSideTypeName = "coated_side";
     internal const string DataKindTypeName = "data_kind";
+    internal const string DataSubtypeTypeName = "data_subtype";
+    internal const string DataTypeTypeName = "data_type";
     internal const string StandardizerTypeName = "standardizer";
 
     public ApplicationDbContext(

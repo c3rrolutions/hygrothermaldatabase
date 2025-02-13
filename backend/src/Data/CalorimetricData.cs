@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
+using Database.Enumerations;
 
 namespace Database.Data;
 
@@ -15,6 +16,9 @@ public sealed class CalorimetricData
         string[] warnings,
         Guid creatorId,
         DateTime createdAt,
+        DataType? type,
+        DataSubtype? subtype,
+        CoatedSide? coatedSide,
         AppliedMethod appliedMethod,
         ICollection<DataApproval> approvals,
         // ResponseApproval approval
@@ -28,6 +32,9 @@ public sealed class CalorimetricData
         warnings,
         creatorId,
         createdAt,
+        type,
+        subtype,
+        coatedSide,
         appliedMethod,
         approvals
     )
@@ -45,6 +52,9 @@ public sealed class CalorimetricData
         string[] warnings,
         Guid creatorId,
         DateTime createdAt,
+        DataType? type,
+        DataSubtype? subtype,
+        CoatedSide? coatedSide,
         // ResponseApproval approval
         double[] gValues,
         double[] uValues
@@ -55,7 +65,10 @@ public sealed class CalorimetricData
         description,
         warnings,
         creatorId,
-        createdAt
+        createdAt,
+        type,
+        subtype,
+        coatedSide
     )
     {
         GValues = gValues;

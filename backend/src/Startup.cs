@@ -164,7 +164,10 @@ public sealed class Startup(
                 appSettings.Database.ConnectionString,
                 _ => _
                     .SetPostgresVersion(13, 13)
+                    .MapEnum<CoatedSide>(ApplicationDbContext.CoatedSideTypeName, appSettings.Database.SchemaName)
                     .MapEnum<DataKind>(ApplicationDbContext.DataKindTypeName, appSettings.Database.SchemaName)
+                    .MapEnum<DataSubtype>(ApplicationDbContext.DataSubtypeTypeName, appSettings.Database.SchemaName)
+                    .MapEnum<DataType>(ApplicationDbContext.DataTypeTypeName, appSettings.Database.SchemaName)
                     .MapEnum<Standardizer>(ApplicationDbContext.StandardizerTypeName, appSettings.Database.SchemaName)
                     // .UseNodaTime();
             )

@@ -67,6 +67,21 @@ export default function CalorimetricData({ calorimetricDataId }: CalorimetricDat
             {calorimetricData.creatorId}
           </Link>
         </Descriptions.Item>
+        <Descriptions.Item label="Description">{calorimetricData.description}</Descriptions.Item>
+        <Descriptions.Item label="Created At">{calorimetricData.createdAt}</Descriptions.Item>
+        <Descriptions.Item label="Applied Method">
+          <Typography.Link
+            href={paths.metabase.method(calorimetricData.appliedMethod.methodId)}
+          >
+            {calorimetricData.appliedMethod.methodId}
+          </Typography.Link>
+        </Descriptions.Item>
+        <Descriptions.Item key="gValues" label="g Values">
+          {calorimetricData.gValues.map((x) => x.toLocaleString("en")).join(", ")}
+        </Descriptions.Item>
+        <Descriptions.Item key="uValues" label="u Values">
+          {calorimetricData.uValues.map((x) => x.toLocaleString("en")).join(", ")}
+        </Descriptions.Item>
       </Descriptions>
     </PageHeader>
   );

@@ -65,6 +65,33 @@ export default function OpticalData({ opticalDataId }: OpticalDataProps) {
             {opticalData.creatorId}
           </Link>
         </Descriptions.Item>
+        <Descriptions.Item label="Description">{opticalData.description}</Descriptions.Item>
+        <Descriptions.Item label="Created At">{opticalData.createdAt}</Descriptions.Item>
+        <Descriptions.Item label="Applied Method">
+          <Typography.Link
+            href={paths.metabase.method(opticalData.appliedMethod.methodId)}
+          >
+            {opticalData.appliedMethod.methodId}
+          </Typography.Link>
+        </Descriptions.Item>
+        <Descriptions.Item key="nearnormalHemisphericalVisibleTransmittances" label="Near Normal Hemispherical Visible Transmittances">
+          {opticalData.nearnormalHemisphericalVisibleTransmittances.map((x) => x.toLocaleString("en")).join(", ")}
+        </Descriptions.Item>
+        <Descriptions.Item key="nearnormalHemisphericalVisibleReflectances" label="Near Normal Hemispherical Visible Reflectances">
+          {opticalData.nearnormalHemisphericalVisibleReflectances.map((x) => x.toLocaleString("en")).join(", ")}
+        </Descriptions.Item>
+        <Descriptions.Item key="nearnormalHemisphericalSolarTransmittances" label="Near Normal Hemispherical Solar Transmittances">
+          {opticalData.nearnormalHemisphericalSolarTransmittances.map((x) => x.toLocaleString("en")).join(", ")}
+        </Descriptions.Item>
+        <Descriptions.Item key="nearnormalHemisphericalSolarReflectances" label="Near Normal Hemispherical Solar Reflectances">
+          {opticalData.nearnormalHemisphericalSolarReflectances.map((x) => x.toLocaleString("en")).join(", ")}
+        </Descriptions.Item>
+        <Descriptions.Item key="infraredEmittances" label="Infrared Emittances">
+          {opticalData.infraredEmittances.map((x) => x.toLocaleString("en")).join(", ")}
+        </Descriptions.Item>
+        <Descriptions.Item key="colorRenderingIndices" label="Color Rendering Indices">
+          {opticalData.colorRenderingIndices.map((x) => x.toLocaleString("en")).join(", ")}
+        </Descriptions.Item>
       </Descriptions>
     </PageHeader>
   );

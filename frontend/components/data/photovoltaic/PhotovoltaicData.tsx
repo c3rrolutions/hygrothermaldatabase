@@ -67,6 +67,8 @@ export default function PhotovoltaicData({ photovoltaicDataId }: PhotovoltaicDat
             {photovoltaicData.creatorId}
           </Link>
         </Descriptions.Item>
+        <Descriptions.Item label="Description">{photovoltaicData.description}</Descriptions.Item>
+        <Descriptions.Item label="Created At">{photovoltaicData.createdAt}</Descriptions.Item>
       </Descriptions>
     </PageHeader>
   );

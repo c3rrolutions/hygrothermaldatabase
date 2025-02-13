@@ -44,6 +44,7 @@ type AppliedMethod {
 type CalorimetricData implements Node & Data {
   appliedMethod: AppliedMethod!
   approvals: [DataApproval!]!
+  coatedSide: CoatedSide
   componentId: Uuid!
   createdAt: DateTime!
   creatorId: Uuid!
@@ -55,7 +56,9 @@ type CalorimetricData implements Node & Data {
   name: String
   resources: [GetHttpsResource!]! @cost(weight: "10")
   resourceTree: GetHttpsResourceTree!
+  subtype: DataSubtype
   timestamp: DateTime!
+  type: DataType
   uuid: Uuid! @cost(weight: "10")
   uValues: [Float!]!
   warnings: [String!]!
@@ -204,6 +207,7 @@ type FileMetaInformation {
 type GeometricData implements Node & Data {
   appliedMethod: AppliedMethod!
   approvals: [DataApproval!]!
+  coatedSide: CoatedSide
   componentId: Uuid!
   createdAt: DateTime!
   creatorId: Uuid!
@@ -214,8 +218,10 @@ type GeometricData implements Node & Data {
   name: String
   resources: [GetHttpsResource!]! @cost(weight: "10")
   resourceTree: GetHttpsResourceTree!
+  subtype: DataSubtype
   thicknesses: [Float!]!
   timestamp: DateTime!
+  type: DataType
   uuid: Uuid! @cost(weight: "10")
   warnings: [String!]!
 }
@@ -290,6 +296,7 @@ type GetHttpsResourceTreeRoot {
 type HygrothermalData implements Node & Data {
   appliedMethod: AppliedMethod!
   approvals: [DataApproval!]!
+  coatedSide: CoatedSide
   componentId: Uuid!
   createdAt: DateTime!
   creatorId: Uuid!
@@ -300,7 +307,9 @@ type HygrothermalData implements Node & Data {
   name: String
   resources: [GetHttpsResource!]! @cost(weight: "10")
   resourceTree: GetHttpsResourceTree!
+  subtype: DataSubtype
   timestamp: DateTime!
+  type: DataType
   uuid: Uuid! @cost(weight: "10")
   warnings: [String!]!
 }
@@ -358,6 +367,7 @@ type OpticalData implements Node & Data {
   appliedMethod: AppliedMethod!
   approvals: [DataApproval!]!
   cielabColors: [CielabColor!]!
+  coatedSide: CoatedSide
   colorRenderingIndices: [Float!]!
   componentId: Uuid!
   createdAt: DateTime!
@@ -374,7 +384,9 @@ type OpticalData implements Node & Data {
   nearnormalHemisphericalVisibleTransmittances: [Float!]!
   resources: [GetHttpsResource!]! @cost(weight: "10")
   resourceTree: GetHttpsResourceTree!
+  subtype: DataSubtype
   timestamp: DateTime!
+  type: DataType
   uuid: Uuid! @cost(weight: "10")
   warnings: [String!]!
 }
@@ -412,6 +424,7 @@ type PageInfo {
 type PhotovoltaicData implements Node & Data {
   appliedMethod: AppliedMethod!
   approvals: [DataApproval!]!
+  coatedSide: CoatedSide
   componentId: Uuid!
   createdAt: DateTime!
   creatorId: Uuid!
@@ -422,7 +435,9 @@ type PhotovoltaicData implements Node & Data {
   name: String
   resources: [GetHttpsResource!]! @cost(weight: "10")
   resourceTree: GetHttpsResourceTree!
+  subtype: DataSubtype
   timestamp: DateTime!
+  type: DataType
   uuid: Uuid! @cost(weight: "10")
   warnings: [String!]!
 }
@@ -603,6 +618,7 @@ input CielabColorPropositionInput {
 input CreateCalorimetricDataInput {
   appliedMethod: AppliedMethodInput!
   approvals: [DataApprovalInput!]!
+  coatedSide: CoatedSide
   componentId: Uuid!
   createdAt: DateTime!
   creatorId: Uuid!
@@ -611,6 +627,8 @@ input CreateCalorimetricDataInput {
   locale: String!
   name: String
   rootResource: RootGetHttpsResourceInput!
+  subtype: DataSubtype
+  type: DataType
   uValues: [Float!]!
   warnings: [String!]!
 }
@@ -618,6 +636,7 @@ input CreateCalorimetricDataInput {
 input CreateGeometricDataInput {
   appliedMethod: AppliedMethodInput!
   approvals: [DataApprovalInput!]!
+  coatedSide: CoatedSide
   componentId: Uuid!
   createdAt: DateTime!
   creatorId: Uuid!
@@ -625,7 +644,9 @@ input CreateGeometricDataInput {
   locale: String!
   name: String
   rootResource: RootGetHttpsResourceInput!
+  subtype: DataSubtype
   thicknesses: [Float!]!
+  type: DataType
   warnings: [String!]!
 }
 
@@ -643,6 +664,7 @@ input CreateGetHttpsResourceInput {
 input CreateHygrothermalDataInput {
   appliedMethod: AppliedMethodInput!
   approvals: [DataApprovalInput!]!
+  coatedSide: CoatedSide
   componentId: Uuid!
   createdAt: DateTime!
   creatorId: Uuid!
@@ -650,6 +672,8 @@ input CreateHygrothermalDataInput {
   locale: String!
   name: String
   rootResource: RootGetHttpsResourceInput!
+  subtype: DataSubtype
+  type: DataType
   warnings: [String!]!
 }
 
@@ -663,6 +687,7 @@ input CreateOpticalDataInput {
   appliedMethod: AppliedMethodInput!
   approvals: [DataApprovalInput!]!
   cielabColors: [CielabColorInput!]!
+  coatedSide: CoatedSide
   colorRenderingIndices: [Float!]!
   componentId: Uuid!
   createdAt: DateTime!
@@ -676,12 +701,15 @@ input CreateOpticalDataInput {
   nearnormalHemisphericalVisibleReflectances: [Float!]!
   nearnormalHemisphericalVisibleTransmittances: [Float!]!
   rootResource: RootGetHttpsResourceInput!
+  subtype: DataSubtype
+  type: DataType
   warnings: [String!]!
 }
 
 input CreatePhotovoltaicDataInput {
   appliedMethod: AppliedMethodInput!
   approvals: [DataApprovalInput!]!
+  coatedSide: CoatedSide
   componentId: Uuid!
   createdAt: DateTime!
   creatorId: Uuid!
@@ -689,6 +717,8 @@ input CreatePhotovoltaicDataInput {
   locale: String!
   name: String
   rootResource: RootGetHttpsResourceInput!
+  subtype: DataSubtype
+  type: DataType
   warnings: [String!]!
 }
 
@@ -1247,6 +1277,13 @@ enum ApplyPolicy {
   VALIDATION
 }
 
+enum CoatedSide {
+  FRONT
+  BACK
+  BOTH
+  NEITHER
+}
+
 enum CreateCalorimetricDataErrorCode {
   UNKNOWN
   UNAUTHORIZED
@@ -1284,6 +1321,36 @@ enum DataKind {
   HYGROTHERMAL_DATA
   OPTICAL_DATA
   PHOTOVOLTAIC_DATA
+}
+
+enum DataSubtype {
+  MONOLITHIC
+  LAMINATE
+  INTERLAYER
+  EMBEDDED_COATING
+  COATED
+  COATING
+  APPLIED_FILM
+  FILM
+  VENETIAN_BLIND
+  DIFFUSING_SHADE
+  ROLLER_SHADE
+  WOVEN_SHADE
+  VERTICAL_LOUVER
+  PERFORATED_SCREEN
+  CELLULAR_SHADE
+  PLEATED_SHADE
+  ROMAN_SHADE
+  SHADE_MATERIAL
+  FRITTED_GLASS
+  ACID_ETCHED_GLASS
+  SANDBLASTED_GLASS
+  CHROMOGENIC
+}
+
+enum DataType {
+  GLAZING
+  SHADING
 }
 
 enum DatabaseVerificationState {

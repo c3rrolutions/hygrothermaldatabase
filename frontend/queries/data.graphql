@@ -131,6 +131,7 @@ fragment OpticalDataPartial on OpticalData {
   nearnormalHemisphericalSolarTransmittances
   nearnormalHemisphericalVisibleReflectances
   nearnormalHemisphericalVisibleTransmittances
+  colorRenderingIndices
 }
 
 query OpticalData($uuid: Uuid!) {

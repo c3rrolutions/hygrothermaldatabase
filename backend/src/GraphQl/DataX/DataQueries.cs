@@ -1,14 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Database.Data;
-using Database.GraphQl.Extensions;
-using Database.Services;
 using HotChocolate;
 using HotChocolate.Data;
 using HotChocolate.Data.Sorting;
 using HotChocolate.Types;
+using Microsoft.EntityFrameworkCore;
+using Database.Data;
+using Database.GraphQl.CalorimetricDataX;
+using Database.GraphQl.HygrothermalDataX;
+using Database.GraphQl.OpticalDataX;
+using Database.GraphQl.PhotovoltaicDataX;
+using Database.GraphQl.GeometricDataX;
+using Database.GraphQl.Extensions;
 
 namespace Database.GraphQl.DataX;
 
@@ -21,23 +27,55 @@ public sealed class DataQueries
     [UseSorting]
     public IAsyncEnumerable<IData> GetAllData(
         [GraphQLType<LocaleType>] string? locale,
-        IDataService dataService,
+        ApplicationDbContext context,
         ISortingContext sorting
     )
     {
         sorting.StabilizeOrder<IData>();
-        // TODO Use `locale`. return context.CalorimetricData.AsNoTracking<Data.IData>();
-        return dataService.GetAllData();
+        // TODO Use `locale`. return context.CalorimetricData.AsNoTracking<Data.IData>(); The union
+        // below does sadly not work because the different kinds of data have different include
+        // operations. return context.CalorimetricData.AsNoTracking<Data.IData>()
+        // .Union(context.HygrothermalData.AsNoTracking<Data.IData>())
+        // .Union(context.OpticalData.AsNoTracking<Data.IData>()) .Union(context.PhotovoltaicData.AsNoTracking<Data.IData>());
+        return context.CalorimetricData.AsNoTracking<IData>().AsAsyncEnumerable()
+            .Concat(context.GeometricData.AsNoTracking<IData>().AsAsyncEnumerable())
+            .Concat(context.HygrothermalData.AsNoTracking<IData>().AsAsyncEnumerable())
+            .Concat(context.OpticalData.AsNoTracking<IData>().AsAsyncEnumerable())
+            .Concat(context.PhotovoltaicData.AsNoTracking<IData>().AsAsyncEnumerable());
     }
 
     public async Task<IData?> GetDataAsync(
         Guid id,
         [GraphQLType<LocaleType>] string? locale,
-        IDataService dataService,
+        CalorimetricDataByIdDataLoader calorimetricDataById,
+        HygrothermalDataByIdDataLoader hygrothermalDataById,
+        OpticalDataByIdDataLoader opticalDataById,
+        PhotovoltaicDataByIdDataLoader photovoltaicDataById,
+        GeometricDataByIdDataLoader geometricDataById,
         CancellationToken cancellationToken
     )
     {
         // TODO Use `locale`.
-        return await dataService.GetDataAsync(id, cancellationToken);
+        return
+            await calorimetricDataById.LoadAsync(
+                id,
+                cancellationToken
+            ).ConfigureAwait(false) ??
+            await hygrothermalDataById.LoadAsync(
+                id,
+                cancellationToken
+            ).ConfigureAwait(false) ??
+            await opticalDataById.LoadAsync(
+                id,
+                cancellationToken
+            ).ConfigureAwait(false) ??
+            await geometricDataById.LoadAsync(
+                id,
+                cancellationToken
+            ).ConfigureAwait(false) ??
+            await photovoltaicDataById.LoadAsync(
+                id,
+                cancellationToken
+            ).ConfigureAwait(false) as IData;
     }
 }

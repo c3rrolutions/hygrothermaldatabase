@@ -57,7 +57,7 @@ public sealed class ApprovalMutation
                 )
             );
 
-        var data = await dataService.GetDataAsync(input.DataId, cancellationToken).ConfigureAwait(false);
+        var data = await dataService.GetDataAsync(input.DataId, context, cancellationToken).ConfigureAwait(false);
         if (data == null)
         {
             return new AddApprovalPayload(
@@ -76,13 +76,29 @@ public sealed class ApprovalMutation
                 input.Approval.Query,
                 input.Approval.Response,
                 currentUser.Id);
+        if (input.Approval.Publication != null)
+        {
+            approval.Publication = new Publication(
+                input.Approval.Publication.Title,
+                input.Approval.Publication.Abstract,
+                input.Approval.Publication.Section,
+                input.Approval.Publication.Authors,
+                input.Approval.Publication.Doi,
+                input.Approval.Publication.ArXiv,
+                input.Approval.Publication.Urn,
+                input.Approval.Publication.WebAddress);
+        }
+        if (input.Approval.Standard != null)
+        {
+            approval.Standard = new Standard(
+                input.Approval.Standard.Title,
+                input.Approval.Standard.Abstract,
+                input.Approval.Standard.Section,
+                input.Approval.Standard.Year,
+                input.Approval.Standard.Standardizers,
+                input.Approval.Standard.Locator);
+        }
         data.Approvals.Add(approval);
-        //data.Approval = new ResponseApproval(
-        //    DateTime.Now,
-        //    input.ResponseApproval.Signature,
-        //    input.ResponseApproval.KeyFingerprint,
-        //    input.ResponseApproval.Query,
-        //    input.ResponseApproval.Response);
         await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         return new AddApprovalPayload(approval);
     }

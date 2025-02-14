@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -16,8 +16,6 @@ public sealed class OpticalData
         Guid creatorId,
         DateTime createdAt,
         AppliedMethod appliedMethod,
-        ICollection<DataApproval> approvals,
-        // ResponseApproval approval
         double[] nearnormalHemisphericalVisibleTransmittances,
         double[] nearnormalHemisphericalVisibleReflectances,
         double[] nearnormalHemisphericalSolarTransmittances,
@@ -33,8 +31,7 @@ public sealed class OpticalData
         warnings,
         creatorId,
         createdAt,
-        appliedMethod,
-        approvals
+        appliedMethod
     )
     {
         NearnormalHemisphericalVisibleTransmittances = nearnormalHemisphericalVisibleTransmittances;
@@ -55,7 +52,6 @@ public sealed class OpticalData
         string[] warnings,
         Guid creatorId,
         DateTime createdAt,
-        // ResponseApproval approval
         double[] nearnormalHemisphericalVisibleTransmittances,
         double[] nearnormalHemisphericalVisibleReflectances,
         double[] nearnormalHemisphericalSolarTransmittances,

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -16,8 +16,6 @@ public sealed class CalorimetricData
         Guid creatorId,
         DateTime createdAt,
         AppliedMethod appliedMethod,
-        ICollection<DataApproval> approvals,
-        // ResponseApproval approval
         double[] gValues,
         double[] uValues
     ) : base(
@@ -28,8 +26,7 @@ public sealed class CalorimetricData
         warnings,
         creatorId,
         createdAt,
-        appliedMethod,
-        approvals
+        appliedMethod
     )
     {
         GValues = gValues;
@@ -45,7 +42,6 @@ public sealed class CalorimetricData
         string[] warnings,
         Guid creatorId,
         DateTime createdAt,
-        // ResponseApproval approval
         double[] gValues,
         double[] uValues
     ) : base(

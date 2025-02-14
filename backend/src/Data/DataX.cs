@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace Database.Data;
@@ -14,9 +14,7 @@ public abstract class DataX
         string[] warnings,
         Guid creatorId,
         DateTime createdAt,
-        AppliedMethod appliedMethod,
-        ICollection<DataApproval> approvals
-        // ResponseApproval approval
+        AppliedMethod appliedMethod
     )
         : this(
             locale,
@@ -29,8 +27,6 @@ public abstract class DataX
         )
     {
         AppliedMethod = appliedMethod;
-        Approvals = approvals;
-        // Approval = approval;
     }
 
     // `DbContext` needs this constructor without owned entities.
@@ -63,8 +59,9 @@ public abstract class DataX
     public AppliedMethod AppliedMethod { get; private set; } = default!;
 
     public ICollection<DataApproval> Approvals { get; } = new List<DataApproval>();
-    public ResponseApproval Approval { get; set; }
+    public ResponseApproval? Approval { get; set; }
 
-    // TODO Exactly one resource must not have a parent and each other resource must have one from this list and the graph must be connected. In other words, the resources must form a tree.
+    // TODO Exactly one resource must not have a parent and each other resource must have one from
+    // this list and the graph must be connected. In other words, the resources must form a tree.
     public virtual ICollection<GetHttpsResource> Resources { get; } = new List<GetHttpsResource>();
 }

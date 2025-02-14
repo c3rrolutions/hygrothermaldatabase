@@ -78,42 +78,7 @@ public sealed class PhotovoltaicDataMutations
                         )
                     ))
                     .ToList()
-            ),
-            input.Approvals.Select(a =>
-                new DataApproval(
-                    a.Timestamp,
-                    a.Signature,
-                    a.KeyFingerprint,
-                    a.Query,
-                    a.Response,
-                    a.ApproverId
-                )
-                {
-                    Publication = a.Publication is null
-                        ? null
-                        : new Publication(
-                            a.Publication.Title,
-                            a.Publication.Abstract,
-                            a.Publication.Section,
-                            a.Publication.Authors,
-                            a.Publication.Doi,
-                            a.Publication.ArXiv,
-                            a.Publication.Urn,
-                            a.Publication.WebAddress
-                        ),
-                    Standard = a.Standard is null
-                        ? null
-                        : new Standard(
-                            a.Standard.Title,
-                            a.Standard.Abstract,
-                            a.Standard.Section,
-                            a.Standard.Year,
-                            a.Standard.Standardizers,
-                            a.Standard.Locator
-                        )
-                }
-            ).ToList()
-            // approval: input.Approval
+            )
         );
         var resource = new GetHttpsResource(
             input.RootResource.Description,

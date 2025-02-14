@@ -68,17 +68,6 @@ public sealed class GeometricDataMutations
                     ))
                     .ToList()
             ),
-            input.Approvals.Select(a =>
-                new DataApproval(
-                    a.Timestamp,
-                    a.Signature,
-                    a.KeyFingerprint,
-                    a.Query,
-                    a.Response,
-                    a.ApproverId
-                )
-            ).ToList(),
-            // approval: input.Approval,
             input.Thicknesses
         );
         var resource = new GetHttpsResource(

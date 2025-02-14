@@ -1,6 +1,5 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
-using Database.Data;
 
 namespace Database.Data;
 
@@ -14,9 +13,7 @@ public interface IData : IEntity
     DateTime CreatedAt { get; }
     AppliedMethod AppliedMethod { get; }
     ICollection<DataApproval> Approvals { get; }
-
     ICollection<GetHttpsResource> Resources { get; }
-
-    // ResponseApproval Approval { get; }
+    ResponseApproval? Approval { get; }
     string Locale { get; }
 }

@@ -1,6 +1,5 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
-using Database.GraphQl.Approvals;
 using HotChocolate;
 using HotChocolate.Types;
 
@@ -16,8 +15,6 @@ public sealed record CreateOpticalDataInput(
     DateTime CreatedAt,
     Guid CreatorId,
     AppliedMethodInput AppliedMethod,
-    IReadOnlyList<DataApprovalInput> Approvals,
-    // ResponseApproval Approval
     RootGetHttpsResourceInput RootResource,
     double[] NearnormalHemisphericalVisibleTransmittances,
     double[] NearnormalHemisphericalVisibleReflectances,

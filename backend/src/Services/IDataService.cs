@@ -1,14 +1,11 @@
-﻿using Database.Data;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using System;
 using System.Threading;
-using System;
+using System.Threading.Tasks;
+using Database.Data;
 
 namespace Database.Services;
 
 public interface IDataService
 {
-    public IAsyncEnumerable<IData> GetAllData();
-
-    public Task<IData?> GetDataAsync(Guid id, CancellationToken cancellationToken);
+    public Task<IData?> GetDataAsync(Guid id, ApplicationDbContext context, CancellationToken cancellationToken);
 }

@@ -5,7 +5,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Database.Authorization;
 using Database.Data;
-using HotChocolate.Authorization;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 
@@ -15,7 +14,7 @@ namespace Database.GraphQl.GeometricDataX;
 public sealed class GeometricDataMutations
 {
     // [UseUserManager]
-    [Authorize(Policy = Configuration.AuthConfiguration.WriteApiScope)]
+    //[Authorize(Policy = Configuration.AuthConfiguration.WriteApiScope)]
     public async Task<CreateGeometricDataPayload> CreateGeometricDataAsync(
         CreateGeometricDataInput input,
         ApplicationDbContext context,

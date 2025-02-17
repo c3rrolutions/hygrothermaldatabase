@@ -1,11 +1,9 @@
 query CurrentUser {
   currentUser {
-    id
     uuid
     representedInstitutions {
       edges {
         node {
-          id
           uuid
           name
         }

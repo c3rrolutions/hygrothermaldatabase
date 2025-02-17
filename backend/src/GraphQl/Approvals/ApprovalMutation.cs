@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Database.Authorization;
 using Database.Data;
 using Database.Services;
-using HotChocolate.Authorization;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 
@@ -14,7 +13,7 @@ namespace Database.GraphQl.Approvals;
 [ExtendObjectType(nameof(Mutation))]
 public sealed class ApprovalMutation
 {
-    [Authorize(Policy = Configuration.AuthConfiguration.WriteApiScope)]
+    //[Authorize(Policy = Configuration.AuthConfiguration.WriteApiScope)]
     public async Task<AddApprovalPayload> AddApprovalToDataAsync(
         ApprovalInput input,
         ApplicationDbContext context,

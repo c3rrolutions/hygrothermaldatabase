@@ -18,9 +18,7 @@ public abstract class DataX
         DataType? type,
         DataSubtype? subtype,
         CoatedSide? coatedSide,
-        AppliedMethod appliedMethod,
-        ICollection<DataApproval> approvals
-        // ResponseApproval approval
+        AppliedMethod appliedMethod
     )
         : this(
             locale,

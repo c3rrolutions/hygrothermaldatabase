@@ -32,9 +32,7 @@ public sealed class GeometricData
         type,
         subtype,
         coatedSide,
-        appliedMethod,
-        approvals
-        // approval
+        appliedMethod
     )
     {
         Thicknesses = thicknesses;
@@ -51,7 +49,6 @@ public sealed class GeometricData
         DataType? type,
         DataSubtype? subtype,
         CoatedSide? coatedSide,
-        // ResponseApproval approval,
         double[] thicknesses
     ) : base(
         locale,

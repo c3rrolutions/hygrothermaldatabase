@@ -19,9 +19,7 @@ public sealed class HygrothermalData
         DataType? type,
         DataSubtype? subtype,
         CoatedSide? coatedSide,
-        AppliedMethod appliedMethod,
-        ICollection<DataApproval> approvals
-        // ResponseApproval approval
+        AppliedMethod appliedMethod
     ) : base(
         locale,
         componentId,
@@ -33,8 +31,7 @@ public sealed class HygrothermalData
         type,
         subtype,
         coatedSide,
-        appliedMethod,
-        approvals
+        appliedMethod
     )
     {
     }
@@ -51,7 +48,6 @@ public sealed class HygrothermalData
         DataType? type,
         DataSubtype? subtype,
         CoatedSide? coatedSide
-        // ResponseApproval approval
     ) : base(
         locale,
         componentId,

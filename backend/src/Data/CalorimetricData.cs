@@ -33,8 +33,7 @@ public sealed class CalorimetricData
         type,
         subtype,
         coatedSide,
-        appliedMethod,
-        approvals
+        appliedMethod
     )
     {
         GValues = gValues;
@@ -53,7 +52,6 @@ public sealed class CalorimetricData
         DataType? type,
         DataSubtype? subtype,
         CoatedSide? coatedSide,
-        // ResponseApproval approval
         double[] gValues,
         double[] uValues
     ) : base(

@@ -38,8 +38,7 @@ public sealed class OpticalData
         type,
         subtype,
         coatedSide,
-        appliedMethod,
-        approvals
+        appliedMethod
     )
     {
         NearnormalHemisphericalVisibleTransmittances = nearnormalHemisphericalVisibleTransmittances;
@@ -63,7 +62,6 @@ public sealed class OpticalData
         DataType? type,
         DataSubtype? subtype,
         CoatedSide? coatedSide,
-        // ResponseApproval approval
         double[] nearnormalHemisphericalVisibleTransmittances,
         double[] nearnormalHemisphericalVisibleReflectances,
         double[] nearnormalHemisphericalSolarTransmittances,

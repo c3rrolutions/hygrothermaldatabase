@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
-using Database.Enumerations;
 
 namespace Database.Data;
 
@@ -16,9 +15,6 @@ public sealed class GeometricData
         string[] warnings,
         Guid creatorId,
         DateTime createdAt,
-        DataType? type,
-        DataSubtype? subtype,
-        CoatedSide? coatedSide,
         AppliedMethod appliedMethod,
         ICollection<DataApproval> approvals,
         // ResponseApproval approval,
@@ -31,9 +27,6 @@ public sealed class GeometricData
         warnings,
         creatorId,
         createdAt,
-        type,
-        subtype,
-        coatedSide,
         appliedMethod,
         approvals
         // approval
@@ -50,9 +43,6 @@ public sealed class GeometricData
         string[] warnings,
         Guid creatorId,
         DateTime createdAt,
-        DataType? type,
-        DataSubtype? subtype,
-        CoatedSide? coatedSide,
         // ResponseApproval approval,
         double[] thicknesses
     ) : base(
@@ -62,10 +52,7 @@ public sealed class GeometricData
         description,
         warnings,
         creatorId,
-        createdAt,
-        type,
-        subtype,
-        coatedSide
+        createdAt
     )
     {
         Thicknesses = thicknesses;

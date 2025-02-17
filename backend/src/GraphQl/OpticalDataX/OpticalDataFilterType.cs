@@ -13,6 +13,9 @@ public sealed class OpticalDataFilterType
     {
         base.Configure(descriptor);
         descriptor.Field(x => x.Id);
+        descriptor.Field(x => x.Type);
+        descriptor.Field(x => x.Subtype);
+        descriptor.Field(x => x.CoatedSide);
         descriptor.Field(x => x.NearnormalHemisphericalSolarReflectances);
         descriptor.Field(x => x.NearnormalHemisphericalSolarTransmittances);
         descriptor.Field(x => x.NearnormalHemisphericalVisibleReflectances);

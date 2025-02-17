@@ -16,9 +16,6 @@ public sealed class PhotovoltaicData
         string[] warnings,
         Guid creatorId,
         DateTime createdAt,
-        DataType? type,
-        DataSubtype? subtype,
-        CoatedSide? coatedSide,
         AppliedMethod appliedMethod,
         ICollection<DataApproval> approvals
         // ResponseApproval approval
@@ -30,9 +27,6 @@ public sealed class PhotovoltaicData
         warnings,
         creatorId,
         createdAt,
-        type,
-        subtype,
-        coatedSide,
         appliedMethod,
         approvals
     )
@@ -47,10 +41,7 @@ public sealed class PhotovoltaicData
         string? description,
         string[] warnings,
         Guid creatorId,
-        DateTime createdAt,
-        DataType? type,
-        DataSubtype? subtype,
-        CoatedSide? coatedSide
+        DateTime createdAt
         // ResponseApproval approval
     ) : base(
         locale,
@@ -59,10 +50,7 @@ public sealed class PhotovoltaicData
         description,
         warnings,
         creatorId,
-        createdAt,
-        type,
-        subtype,
-        coatedSide
+        createdAt
     )
     {
     }

@@ -25,8 +25,8 @@ namespace Database.Migrations
 
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "database", "coated_side", new[] { "back", "both", "front", "neither" });
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "database", "data_kind", new[] { "calorimetric_data", "geometric_data", "hygrothermal_data", "optical_data", "photovoltaic_data" });
-            NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "database", "data_subtype", new[] { "acid_etched_glass", "applied_film", "cellular_shade", "chromogenic", "coated", "coating", "diffusing_shade", "embedded_coating", "film", "fritted_glass", "interlayer", "laminate", "monolithic", "perforated_screen", "pleated_shade", "roller_shade", "roman_shade", "sandblasted_glass", "shade_material", "venetian_blind", "vertical_louver", "woven_shade" });
-            NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "database", "data_type", new[] { "glazing", "shading" });
+            NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "database", "optical_component_subtype", new[] { "acid_etched_glass", "applied_film", "cellular_shade", "chromogenic", "coated", "coating", "diffusing_shade", "embedded_coating", "film", "fritted_glass", "interlayer", "laminate", "monolithic", "perforated_screen", "pleated_shade", "roller_shade", "roman_shade", "sandblasted_glass", "shade_material", "venetian_blind", "vertical_louver", "woven_shade" });
+            NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "database", "optical_component_type", new[] { "glazing", "shading" });
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "database", "standardizer", new[] { "aerc", "agi", "ashrae", "breeam", "bs", "bsi", "cen", "cie", "dgnb", "din", "dvwg", "iec", "ies", "ift", "iso", "jis", "leed", "nfrc", "riba", "ul", "unece", "vdi", "vff", "well" });
             NpgsqlModelBuilderExtensions.HasPostgresExtension(modelBuilder, "pgcrypto");
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -37,9 +37,6 @@ namespace Database.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasDefaultValueSql("gen_random_uuid()");
-
-                    b.Property<CoatedSide?>("CoatedSide")
-                        .HasColumnType("database.coated_side");
 
                     b.Property<Guid>("ComponentId")
                         .HasColumnType("uuid");
@@ -63,12 +60,6 @@ namespace Database.Migrations
 
                     b.Property<string>("Name")
                         .HasColumnType("text");
-
-                    b.Property<DataSubtype?>("Subtype")
-                        .HasColumnType("database.data_subtype");
-
-                    b.Property<DataType?>("Type")
-                        .HasColumnType("database.data_type");
 
                     b.PrimitiveCollection<double[]>("UValues")
                         .IsRequired()
@@ -96,9 +87,6 @@ namespace Database.Migrations
                         .HasColumnType("uuid")
                         .HasDefaultValueSql("gen_random_uuid()");
 
-                    b.Property<CoatedSide?>("CoatedSide")
-                        .HasColumnType("database.coated_side");
-
                     b.Property<Guid>("ComponentId")
                         .HasColumnType("uuid");
 
@@ -118,15 +106,9 @@ namespace Database.Migrations
                     b.Property<string>("Name")
                         .HasColumnType("text");
 
-                    b.Property<DataSubtype?>("Subtype")
-                        .HasColumnType("database.data_subtype");
-
                     b.PrimitiveCollection<double[]>("Thicknesses")
                         .IsRequired()
                         .HasColumnType("double precision[]");
-
-                    b.Property<DataType?>("Type")
-                        .HasColumnType("database.data_type");
 
                     b.Property<uint>("Version")
                         .IsConcurrencyToken()
@@ -209,9 +191,6 @@ namespace Database.Migrations
                         .HasColumnType("uuid")
                         .HasDefaultValueSql("gen_random_uuid()");
 
-                    b.Property<CoatedSide?>("CoatedSide")
-                        .HasColumnType("database.coated_side");
-
                     b.Property<Guid>("ComponentId")
                         .HasColumnType("uuid");
 
@@ -230,12 +209,6 @@ namespace Database.Migrations
 
                     b.Property<string>("Name")
                         .HasColumnType("text");
-
-                    b.Property<DataSubtype?>("Subtype")
-                        .HasColumnType("database.data_subtype");
-
-                    b.Property<DataType?>("Type")
-                        .HasColumnType("database.data_type");
 
                     b.Property<uint>("Version")
                         .IsConcurrencyToken()
@@ -305,11 +278,11 @@ namespace Database.Migrations
                         .IsRequired()
                         .HasColumnType("double precision[]");
 
-                    b.Property<DataSubtype?>("Subtype")
-                        .HasColumnType("database.data_subtype");
+                    b.Property<OpticalComponentSubtype?>("Subtype")
+                        .HasColumnType("database.optical_component_subtype");
 
-                    b.Property<DataType?>("Type")
-                        .HasColumnType("database.data_type");
+                    b.Property<OpticalComponentType?>("Type")
+                        .HasColumnType("database.optical_component_type");
 
                     b.Property<uint>("Version")
                         .IsConcurrencyToken()
@@ -333,9 +306,6 @@ namespace Database.Migrations
                         .HasColumnType("uuid")
                         .HasDefaultValueSql("gen_random_uuid()");
 
-                    b.Property<CoatedSide?>("CoatedSide")
-                        .HasColumnType("database.coated_side");
-
                     b.Property<Guid>("ComponentId")
                         .HasColumnType("uuid");
 
@@ -354,12 +324,6 @@ namespace Database.Migrations
 
                     b.Property<string>("Name")
                         .HasColumnType("text");
-
-                    b.Property<DataSubtype?>("Subtype")
-                        .HasColumnType("database.data_subtype");
-
-                    b.Property<DataType?>("Type")
-                        .HasColumnType("database.data_type");
 
                     b.Property<uint>("Version")
                         .IsConcurrencyToken()

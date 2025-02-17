@@ -15,9 +15,6 @@ public sealed record CreatePhotovoltaicDataInput(
     string[] Warnings,
     DateTime CreatedAt,
     Guid CreatorId,
-    DataType? Type,
-    DataSubtype? Subtype,
-    CoatedSide? CoatedSide,
     AppliedMethodInput AppliedMethod,
     IReadOnlyList<DataApprovalInput> Approvals,
     // ResponseApproval Approval

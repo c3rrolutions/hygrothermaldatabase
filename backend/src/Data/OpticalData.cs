@@ -16,8 +16,8 @@ public sealed class OpticalData
         string[] warnings,
         Guid creatorId,
         DateTime createdAt,
-        DataType? type,
-        DataSubtype? subtype,
+        OpticalComponentType? type,
+        OpticalComponentSubtype? subtype,
         CoatedSide? coatedSide,
         AppliedMethod appliedMethod,
         ICollection<DataApproval> approvals,
@@ -37,13 +37,13 @@ public sealed class OpticalData
         warnings,
         creatorId,
         createdAt,
-        type,
-        subtype,
-        coatedSide,
         appliedMethod,
         approvals
     )
     {
+        Type = type;
+        Subtype = subtype;
+        CoatedSide = coatedSide;
         NearnormalHemisphericalVisibleTransmittances = nearnormalHemisphericalVisibleTransmittances;
         NearnormalHemisphericalVisibleReflectances = nearnormalHemisphericalVisibleReflectances;
         NearnormalHemisphericalSolarTransmittances = nearnormalHemisphericalSolarTransmittances;
@@ -62,8 +62,8 @@ public sealed class OpticalData
         string[] warnings,
         Guid creatorId,
         DateTime createdAt,
-        DataType? type,
-        DataSubtype? subtype,
+        OpticalComponentType? type,
+        OpticalComponentSubtype? subtype,
         CoatedSide? coatedSide,
         // ResponseApproval approval
         double[] nearnormalHemisphericalVisibleTransmittances,
@@ -79,12 +79,12 @@ public sealed class OpticalData
         description,
         warnings,
         creatorId,
-        createdAt,
-        type,
-        subtype,
-        coatedSide
+        createdAt
     )
     {
+        Type = type;
+        Subtype = subtype;
+        CoatedSide = coatedSide;
         NearnormalHemisphericalVisibleTransmittances = nearnormalHemisphericalVisibleTransmittances;
         NearnormalHemisphericalVisibleReflectances = nearnormalHemisphericalVisibleReflectances;
         NearnormalHemisphericalSolarTransmittances = nearnormalHemisphericalSolarTransmittances;
@@ -96,6 +96,9 @@ public sealed class OpticalData
     [InverseProperty(nameof(GetHttpsResource.OpticalData))]
     public override ICollection<GetHttpsResource> Resources { get; } = new List<GetHttpsResource>();
 
+    public OpticalComponentType? Type { get; private set; }
+    public OpticalComponentSubtype? Subtype { get; private set; }
+    public CoatedSide? CoatedSide { get; private set; }
     public double[] NearnormalHemisphericalVisibleTransmittances { get; private set; }
     public double[] NearnormalHemisphericalVisibleReflectances { get; private set; }
     public double[] NearnormalHemisphericalSolarTransmittances { get; private set; }

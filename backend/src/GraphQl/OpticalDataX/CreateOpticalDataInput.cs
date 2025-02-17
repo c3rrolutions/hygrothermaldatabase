@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using HotChocolate;
 using HotChocolate.Types;
+using Database.Enumerations;
 
 namespace Database.GraphQl.OpticalDataX;
 
@@ -14,6 +15,9 @@ public sealed record CreateOpticalDataInput(
     string[] Warnings,
     DateTime CreatedAt,
     Guid CreatorId,
+    DataType? Type,
+    DataSubtype? Subtype,
+    CoatedSide? CoatedSide,
     AppliedMethodInput AppliedMethod,
     RootGetHttpsResourceInput RootResource,
     double[] NearnormalHemisphericalVisibleTransmittances,

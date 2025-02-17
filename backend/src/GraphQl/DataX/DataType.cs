@@ -6,6 +6,13 @@ namespace Database.GraphQl.DataX;
 public sealed class DataType
     : InterfaceType<IData>
 {
+    private readonly AppSettings _appSettings;
+
+    public DataType(AppSettings appSettings)
+    {
+        _appSettings = appSettings;
+    }
+
     protected override void Configure(
         IInterfaceTypeDescriptor<IData> descriptor
     )
@@ -15,6 +22,10 @@ public sealed class DataType
         descriptor
             .Field("uuid")
             .Type<NonNullType<UuidType>>();
+        descriptor
+            .Field("databaseId")
+            .Type<NonNullType<UuidType>>()
+            .Resolve(_ => _appSettings.DatabaseId);
         descriptor
             .Field("timestamp")
             .Type<NonNullType<DateTimeType>>();

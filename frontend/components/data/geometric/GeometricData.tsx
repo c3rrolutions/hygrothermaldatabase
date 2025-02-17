@@ -64,6 +64,18 @@ export default function GeometricData({ geometricDataId }: GeometricDataProps) {
                         {geometricData.creatorId}
                     </Link>
                 </Descriptions.Item>
+                <Descriptions.Item label="Description">{geometricData.description}</Descriptions.Item>
+                <Descriptions.Item label="Created At">{geometricData.createdAt}</Descriptions.Item>
+                <Descriptions.Item label="Applied Method">
+                    <Typography.Link
+                        href={paths.metabase.method(geometricData.appliedMethod.methodId)}
+                    >
+                        {geometricData.appliedMethod.methodId}
+                    </Typography.Link>
+                </Descriptions.Item>
+                <Descriptions.Item key="thicknesses" label="Thicknesses">
+                    {geometricData.thicknesses.map((x) => x.toLocaleString("en")).join(", ")}
+                </Descriptions.Item>
             </Descriptions>
         </PageHeader>
     );

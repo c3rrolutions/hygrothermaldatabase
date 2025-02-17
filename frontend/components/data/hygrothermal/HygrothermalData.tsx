@@ -67,6 +67,8 @@ export default function HygrothermalData({ hygrothermalDataId }: HygrothermalDat
             {hygrothermalData.creatorId}
           </Link>
         </Descriptions.Item>
+        <Descriptions.Item label="Description">{hygrothermalData.description}</Descriptions.Item>
+        <Descriptions.Item label="Created At">{hygrothermalData.createdAt}</Descriptions.Item>
       </Descriptions>
     </PageHeader>
   );

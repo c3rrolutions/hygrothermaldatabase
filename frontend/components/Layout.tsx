@@ -12,10 +12,6 @@ const navItems = [
     label: "Home",
   },
   {
-    path: paths.data,
-    label: "All Data",
-  },
-  {
     path: paths.calorimetricData,
     label: "Calorimetric Data",
   },

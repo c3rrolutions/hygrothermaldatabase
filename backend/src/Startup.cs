@@ -116,7 +116,7 @@ public sealed class Startup(
                 // TODO I consider the flattened structure a bug. How can we solve this?
             }
         );
-        services.AddOpenApi(_ => {
+        services.AddOpenApi("v1", _ => {
             _.OpenApiVersion = OpenApiSpecVersion.OpenApi3_0;
         });
     }
@@ -165,7 +165,10 @@ public sealed class Startup(
                 appSettings.Database.ConnectionString,
                 _ => _
                     .SetPostgresVersion(13, 13)
+                    .MapEnum<CoatedSide>(ApplicationDbContext.CoatedSideTypeName, appSettings.Database.SchemaName)
                     .MapEnum<DataKind>(ApplicationDbContext.DataKindTypeName, appSettings.Database.SchemaName)
+                    .MapEnum<DataSubtype>(ApplicationDbContext.DataSubtypeTypeName, appSettings.Database.SchemaName)
+                    .MapEnum<DataType>(ApplicationDbContext.DataTypeTypeName, appSettings.Database.SchemaName)
                     .MapEnum<Standardizer>(ApplicationDbContext.StandardizerTypeName, appSettings.Database.SchemaName)
                     // .UseNodaTime();
             )

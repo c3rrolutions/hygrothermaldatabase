@@ -1,6 +1,7 @@
 ﻿using System;
 using HotChocolate;
 using HotChocolate.Types;
+using Database.Enumerations;
 
 namespace Database.GraphQl.PhotovoltaicDataX;
 
@@ -13,6 +14,9 @@ public sealed record CreatePhotovoltaicDataInput(
     string[] Warnings,
     DateTime CreatedAt,
     Guid CreatorId,
+    DataType? Type,
+    DataSubtype? Subtype,
+    CoatedSide? CoatedSide,
     AppliedMethodInput AppliedMethod,
     RootGetHttpsResourceInput RootResource
 );

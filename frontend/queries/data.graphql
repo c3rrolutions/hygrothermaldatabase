@@ -74,26 +74,6 @@ fragment DataPartial on Data {
   warnings
 }
 
-query Data($uuid: Uuid!) {
-  data(id: $uuid) {
-    ...DataPartial
-  }
-}
-
-query AllData {
-  allData {
-    edges {
-      node {
-        ...DataPartial
-      }
-    }
-  }
-}
-
-# query HasData($where: DataPropositionInput) {
-#   hasData(where: $where)
-# }
-
 fragment CalorimetricDataPartial on CalorimetricData {
   ...DataPartial
   gValues
@@ -151,6 +131,7 @@ fragment OpticalDataPartial on OpticalData {
   nearnormalHemisphericalSolarTransmittances
   nearnormalHemisphericalVisibleReflectances
   nearnormalHemisphericalVisibleTransmittances
+  colorRenderingIndices
 }
 
 query OpticalData($uuid: Uuid!) {

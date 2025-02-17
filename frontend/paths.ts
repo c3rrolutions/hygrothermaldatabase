@@ -5,7 +5,6 @@ export default {
   antiforgeryToken: "/antiforgery/token",
   userInfo: "/user-info",
   database: "/database",
-  data: "/data",
   calorimetricData: "/data/calorimetric",
   calorimetricDatum(uuid: string) {
     return `/data/calorimetric/${encodeURIComponent(uuid)}`;

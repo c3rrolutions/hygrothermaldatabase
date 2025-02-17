@@ -9,6 +9,7 @@ interface Data {
   componentId: Uuid!
   createdAt: DateTime!
   creatorId: Uuid!
+  databaseId: Uuid!
   description: String
   locale: Locale!
   name: String
@@ -43,9 +44,11 @@ type AppliedMethod {
 type CalorimetricData implements Node & Data {
   appliedMethod: AppliedMethod!
   approvals: [DataApproval!]!
+  coatedSide: CoatedSide
   componentId: Uuid!
   createdAt: DateTime!
   creatorId: Uuid!
+  databaseId: Uuid!
   description: String
   gValues: [Float!]!
   id: ID!
@@ -53,7 +56,9 @@ type CalorimetricData implements Node & Data {
   name: String
   resources: [GetHttpsResource!]! @cost(weight: "10")
   resourceTree: GetHttpsResourceTree!
+  subtype: DataSubtype
   timestamp: DateTime!
+  type: DataType
   uuid: Uuid! @cost(weight: "10")
   uValues: [Float!]!
   warnings: [String!]!
@@ -172,21 +177,14 @@ type DataApproval {
   timestamp: DateTime!
 }
 
-"A connection to a list of items."
 type DataConnection {
-  "A list of edges."
-  edges: [DataEdge!]
-  "Information to aid in pagination."
+  edges: [DataEdge!]!
   pageInfo: PageInfo!
-  "Identifies the total count of items in the connection."
-  totalCount: Int! @cost(weight: "10")
+  totalCount: NonNegativeInt
 }
 
-"An edge in a connection."
 type DataEdge {
-  "A cursor for use in pagination."
   cursor: String!
-  "The item at the end of the edge."
   node: Data!
 }
 
@@ -209,17 +207,21 @@ type FileMetaInformation {
 type GeometricData implements Node & Data {
   appliedMethod: AppliedMethod!
   approvals: [DataApproval!]!
+  coatedSide: CoatedSide
   componentId: Uuid!
   createdAt: DateTime!
   creatorId: Uuid!
+  databaseId: Uuid!
   description: String
   id: ID!
   locale: Locale!
   name: String
   resources: [GetHttpsResource!]! @cost(weight: "10")
   resourceTree: GetHttpsResourceTree!
+  subtype: DataSubtype
   thicknesses: [Float!]!
   timestamp: DateTime!
+  type: DataType
   uuid: Uuid! @cost(weight: "10")
   warnings: [String!]!
 }
@@ -294,16 +296,20 @@ type GetHttpsResourceTreeRoot {
 type HygrothermalData implements Node & Data {
   appliedMethod: AppliedMethod!
   approvals: [DataApproval!]!
+  coatedSide: CoatedSide
   componentId: Uuid!
   createdAt: DateTime!
   creatorId: Uuid!
+  databaseId: Uuid!
   description: String
   id: ID!
   locale: Locale!
   name: String
   resources: [GetHttpsResource!]! @cost(weight: "10")
   resourceTree: GetHttpsResourceTree!
+  subtype: DataSubtype
   timestamp: DateTime!
+  type: DataType
   uuid: Uuid! @cost(weight: "10")
   warnings: [String!]!
 }
@@ -361,10 +367,12 @@ type OpticalData implements Node & Data {
   appliedMethod: AppliedMethod!
   approvals: [DataApproval!]!
   cielabColors: [CielabColor!]!
+  coatedSide: CoatedSide
   colorRenderingIndices: [Float!]!
   componentId: Uuid!
   createdAt: DateTime!
   creatorId: Uuid!
+  databaseId: Uuid!
   description: String
   id: ID!
   infraredEmittances: [Float!]!
@@ -376,7 +384,9 @@ type OpticalData implements Node & Data {
   nearnormalHemisphericalVisibleTransmittances: [Float!]!
   resources: [GetHttpsResource!]! @cost(weight: "10")
   resourceTree: GetHttpsResourceTree!
+  subtype: DataSubtype
   timestamp: DateTime!
+  type: DataType
   uuid: Uuid! @cost(weight: "10")
   warnings: [String!]!
 }
@@ -414,16 +424,20 @@ type PageInfo {
 type PhotovoltaicData implements Node & Data {
   appliedMethod: AppliedMethod!
   approvals: [DataApproval!]!
+  coatedSide: CoatedSide
   componentId: Uuid!
   createdAt: DateTime!
   creatorId: Uuid!
+  databaseId: Uuid!
   description: String
   id: ID!
   locale: Locale!
   name: String
   resources: [GetHttpsResource!]! @cost(weight: "10")
   resourceTree: GetHttpsResourceTree!
+  subtype: DataSubtype
   timestamp: DateTime!
+  type: DataType
   uuid: Uuid! @cost(weight: "10")
   warnings: [String!]!
 }
@@ -464,7 +478,6 @@ type Publication implements Reference {
 
 type Query {
   allCalorimetricData("Returns the elements in the list that come after the specified cursor." after: String "Returns the elements in the list that come before the specified cursor." before: String "Returns the first _n_ elements from the list." first: Int "Returns the last _n_ elements from the list." last: Int locale: Locale order: [CalorimetricDataSortInput!] @cost(weight: "10") where: CalorimetricDataPropositionInput @cost(weight: "10")): CalorimetricDataConnection @listSize(assumedSize: 2147483646, slicingArguments: [ "first", "last" ], slicingArgumentDefaultValue: 2147483646, sizedFields: [ "edges", "nodes" ], requireOneSlicingArgument: false) @cost(weight: "10")
-  allData("Returns the elements in the list that come after the specified cursor." after: String "Returns the elements in the list that come before the specified cursor." before: String "Returns the first _n_ elements from the list." first: Int "Returns the last _n_ elements from the list." last: Int locale: Locale order: [IDataSortInput!] @cost(weight: "10")): DataConnection @listSize(assumedSize: 2147483646, slicingArguments: [ "first", "last" ], slicingArgumentDefaultValue: 2147483646, sizedFields: [ "edges", "nodes" ], requireOneSlicingArgument: false) @cost(weight: "10")
   allGeometricData("Returns the elements in the list that come after the specified cursor." after: String "Returns the elements in the list that come before the specified cursor." before: String "Returns the first _n_ elements from the list." first: Int "Returns the last _n_ elements from the list." last: Int locale: Locale order: [GeometricDataSortInput!] @cost(weight: "10") where: GeometricDataPropositionInput @cost(weight: "10")): GeometricDataConnection @listSize(assumedSize: 2147483646, slicingArguments: [ "first", "last" ], slicingArgumentDefaultValue: 2147483646, sizedFields: [ "edges", "nodes" ], requireOneSlicingArgument: false) @cost(weight: "10")
   allHygrothermalData("Returns the elements in the list that come after the specified cursor." after: String "Returns the elements in the list that come before the specified cursor." before: String "Returns the first _n_ elements from the list." first: Int "Returns the last _n_ elements from the list." last: Int locale: Locale order: [HygrothermalDataSortInput!] @cost(weight: "10") where: HygrothermalDataPropositionInput @cost(weight: "10")): HygrothermalDataConnection @listSize(assumedSize: 2147483646, slicingArguments: [ "first", "last" ], slicingArgumentDefaultValue: 2147483646, sizedFields: [ "edges", "nodes" ], requireOneSlicingArgument: false) @cost(weight: "10")
   allOpticalData("Returns the elements in the list that come after the specified cursor." after: String "Returns the elements in the list that come before the specified cursor." before: String "Returns the first _n_ elements from the list." first: Int "Returns the last _n_ elements from the list." last: Int locale: Locale order: [OpticalDataSortInput!] @cost(weight: "10") where: OpticalDataPropositionInput @cost(weight: "10")): OpticalDataConnection @listSize(assumedSize: 2147483646, slicingArguments: [ "first", "last" ], slicingArgumentDefaultValue: 2147483646, sizedFields: [ "edges", "nodes" ], requireOneSlicingArgument: false) @cost(weight: "10")
@@ -472,7 +485,6 @@ type Query {
   calorimetricData(id: Uuid! locale: Locale): CalorimetricData @cost(weight: "10")
   currentUser: User @cost(weight: "10")
   currentUserInfo: UserInfo @cost(weight: "10")
-  data(id: Uuid! locale: Locale): Data @cost(weight: "10")
   database: Database! @cost(weight: "10")
   geometricData(id: Uuid! locale: Locale): GeometricData @cost(weight: "10")
   getHttpsResource(id: Uuid!): GetHttpsResource @cost(weight: "10")
@@ -606,6 +618,7 @@ input CielabColorPropositionInput {
 input CreateCalorimetricDataInput {
   appliedMethod: AppliedMethodInput!
   approvals: [DataApprovalInput!]!
+  coatedSide: CoatedSide
   componentId: Uuid!
   createdAt: DateTime!
   creatorId: Uuid!
@@ -614,6 +627,8 @@ input CreateCalorimetricDataInput {
   locale: String!
   name: String
   rootResource: RootGetHttpsResourceInput!
+  subtype: DataSubtype
+  type: DataType
   uValues: [Float!]!
   warnings: [String!]!
 }
@@ -621,6 +636,7 @@ input CreateCalorimetricDataInput {
 input CreateGeometricDataInput {
   appliedMethod: AppliedMethodInput!
   approvals: [DataApprovalInput!]!
+  coatedSide: CoatedSide
   componentId: Uuid!
   createdAt: DateTime!
   creatorId: Uuid!
@@ -628,7 +644,9 @@ input CreateGeometricDataInput {
   locale: String!
   name: String
   rootResource: RootGetHttpsResourceInput!
+  subtype: DataSubtype
   thicknesses: [Float!]!
+  type: DataType
   warnings: [String!]!
 }
 
@@ -646,6 +664,7 @@ input CreateGetHttpsResourceInput {
 input CreateHygrothermalDataInput {
   appliedMethod: AppliedMethodInput!
   approvals: [DataApprovalInput!]!
+  coatedSide: CoatedSide
   componentId: Uuid!
   createdAt: DateTime!
   creatorId: Uuid!
@@ -653,6 +672,8 @@ input CreateHygrothermalDataInput {
   locale: String!
   name: String
   rootResource: RootGetHttpsResourceInput!
+  subtype: DataSubtype
+  type: DataType
   warnings: [String!]!
 }
 
@@ -666,6 +687,7 @@ input CreateOpticalDataInput {
   appliedMethod: AppliedMethodInput!
   approvals: [DataApprovalInput!]!
   cielabColors: [CielabColorInput!]!
+  coatedSide: CoatedSide
   colorRenderingIndices: [Float!]!
   componentId: Uuid!
   createdAt: DateTime!
@@ -679,12 +701,15 @@ input CreateOpticalDataInput {
   nearnormalHemisphericalVisibleReflectances: [Float!]!
   nearnormalHemisphericalVisibleTransmittances: [Float!]!
   rootResource: RootGetHttpsResourceInput!
+  subtype: DataSubtype
+  type: DataType
   warnings: [String!]!
 }
 
 input CreatePhotovoltaicDataInput {
   appliedMethod: AppliedMethodInput!
   approvals: [DataApprovalInput!]!
+  coatedSide: CoatedSide
   componentId: Uuid!
   createdAt: DateTime!
   creatorId: Uuid!
@@ -692,6 +717,8 @@ input CreatePhotovoltaicDataInput {
   locale: String!
   name: String
   rootResource: RootGetHttpsResourceInput!
+  subtype: DataSubtype
+  type: DataType
   warnings: [String!]!
 }
 
@@ -1250,6 +1277,13 @@ enum ApplyPolicy {
   VALIDATION
 }
 
+enum CoatedSide {
+  FRONT
+  BACK
+  BOTH
+  NEITHER
+}
+
 enum CreateCalorimetricDataErrorCode {
   UNKNOWN
   UNAUTHORIZED
@@ -1287,6 +1321,36 @@ enum DataKind {
   HYGROTHERMAL_DATA
   OPTICAL_DATA
   PHOTOVOLTAIC_DATA
+}
+
+enum DataSubtype {
+  MONOLITHIC
+  LAMINATE
+  INTERLAYER
+  EMBEDDED_COATING
+  COATED
+  COATING
+  APPLIED_FILM
+  FILM
+  VENETIAN_BLIND
+  DIFFUSING_SHADE
+  ROLLER_SHADE
+  WOVEN_SHADE
+  VERTICAL_LOUVER
+  PERFORATED_SCREEN
+  CELLULAR_SHADE
+  PLEATED_SHADE
+  ROMAN_SHADE
+  SHADE_MATERIAL
+  FRITTED_GLASS
+  ACID_ETCHED_GLASS
+  SANDBLASTED_GLASS
+  CHROMOGENIC
+}
+
+enum DataType {
+  GLAZING
+  SHADING
 }
 
 enum DatabaseVerificationState {
@@ -1356,6 +1420,9 @@ scalar DateTime @specifiedBy(url: "https:\/\/www.graphql-scalars.com\/date-time"
 
 "BCP 47 compliant Language Tag string"
 scalar Locale
+
+"The NonNegativeInt scalar type represents a unsigned 32-bit numeric non-fractional value equal to or greater than 0."
+scalar NonNegativeInt
 
 scalar Url
 

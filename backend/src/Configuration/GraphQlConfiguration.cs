@@ -130,8 +130,8 @@ public static class GraphQlConfiguration
             // Query Types
             .AddQueryType(d => d.Name(nameof(Query)))
             .AddType<CalorimetricDataQueries>()
+            .AddType<DataConnection>()
             .AddType<DatabaseQueries>()
-            .AddType<DataQueries>()
             .AddType<GetHttpsResourceQueries>()
             .AddType<HygrothermalDataQueries>()
             .AddType<OpticalDataQueries>()
@@ -172,8 +172,8 @@ public static class GraphQlConfiguration
             .AddDbContextCursorPagingProvider()
             .ModifyPagingOptions(_ =>
                 {
-                    _.MaxPageSize = int.MaxValue - 1;
-                    _.DefaultPageSize = int.MaxValue - 1;
+                    _.MaxPageSize = 100;
+                    _.DefaultPageSize = 100;
                     _.IncludeTotalCount = true;
                     _.IncludeNodesField = false;
                     // TODO I actually want to infer connection names from fields (which is the default in HotChocolate). However, the current `database.graphql` schema that I hand-wrote still infers connection names from types.

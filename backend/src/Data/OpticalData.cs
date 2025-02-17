@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
+using Database.Enumerations;
 
 namespace Database.Data;
 
@@ -15,6 +16,9 @@ public sealed class OpticalData
         string[] warnings,
         Guid creatorId,
         DateTime createdAt,
+        DataType? type,
+        DataSubtype? subtype,
+        CoatedSide? coatedSide,
         AppliedMethod appliedMethod,
         double[] nearnormalHemisphericalVisibleTransmittances,
         double[] nearnormalHemisphericalVisibleReflectances,
@@ -31,7 +35,11 @@ public sealed class OpticalData
         warnings,
         creatorId,
         createdAt,
-        appliedMethod
+        type,
+        subtype,
+        coatedSide,
+        appliedMethod,
+        approvals
     )
     {
         NearnormalHemisphericalVisibleTransmittances = nearnormalHemisphericalVisibleTransmittances;
@@ -52,6 +60,10 @@ public sealed class OpticalData
         string[] warnings,
         Guid creatorId,
         DateTime createdAt,
+        DataType? type,
+        DataSubtype? subtype,
+        CoatedSide? coatedSide,
+        // ResponseApproval approval
         double[] nearnormalHemisphericalVisibleTransmittances,
         double[] nearnormalHemisphericalVisibleReflectances,
         double[] nearnormalHemisphericalSolarTransmittances,
@@ -65,7 +77,10 @@ public sealed class OpticalData
         description,
         warnings,
         creatorId,
-        createdAt
+        createdAt,
+        type,
+        subtype,
+        coatedSide
     )
     {
         NearnormalHemisphericalVisibleTransmittances = nearnormalHemisphericalVisibleTransmittances;

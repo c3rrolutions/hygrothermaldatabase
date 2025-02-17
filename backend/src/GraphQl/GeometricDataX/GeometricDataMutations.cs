@@ -47,6 +47,9 @@ public sealed class GeometricDataMutations
             input.Warnings,
             input.CreatorId,
             input.CreatedAt,
+            input.Type,
+            input.Subtype,
+            input.CoatedSide,
             new AppliedMethod(
                 input.AppliedMethod.MethodId,
                 input.AppliedMethod.Arguments

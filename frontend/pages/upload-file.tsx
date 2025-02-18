@@ -1,7 +1,7 @@
 import { Form, Input, Button, Row, Col, Card, Typography, Upload } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import Layout from "../components/Layout";
-import { RcFile, UploadFile } from "antd/lib/upload/interface";
+import { RcFile } from "antd/lib/upload/interface";
 
 const layout = {
   labelCol: { span: 8 },

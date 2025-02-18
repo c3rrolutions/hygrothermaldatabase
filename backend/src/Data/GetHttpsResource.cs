@@ -10,7 +10,7 @@ public sealed class GetHttpsResource
     : Entity
 {
     public GetHttpsResource(
-        string description,
+        string? description,
         string hashValue,
         Guid dataFormatId,
         Guid? calorimetricDataId,
@@ -39,7 +39,7 @@ public sealed class GetHttpsResource
     }
 
     public GetHttpsResource(
-        string description,
+        string? description,
         string hashValue,
         Guid dataFormatId,
         Guid? parentId,
@@ -59,7 +59,7 @@ public sealed class GetHttpsResource
 
     // `DbContext` needs this constructor without owned entities.
     public GetHttpsResource(
-        string description,
+        string? description,
         string hashValue,
         Guid dataFormatId,
         Guid? calorimetricDataId,
@@ -84,7 +84,7 @@ public sealed class GetHttpsResource
     }
 
     public GetHttpsResource(
-        string description,
+        string? description,
         string hashValue,
         Guid dataFormatId,
         Guid? parentId
@@ -96,7 +96,7 @@ public sealed class GetHttpsResource
         ParentId = parentId;
     }
 
-    public string Description { get; private set; }
+    public string? Description { get; private set; }
     public string HashValue { get; private set; }
     public Guid DataFormatId { get; private set; }
 

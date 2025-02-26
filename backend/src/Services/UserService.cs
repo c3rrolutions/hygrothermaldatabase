@@ -35,12 +35,12 @@ public class UserService(
         return cacheUser;
     }
 
-    private async Task<CurrentUser?> GetCurrentUserFromMetabase(IHttpContextAccessor httpContextAccessor, CancellationToken cancellationToken)
+    private Task<CurrentUser?> GetCurrentUserFromMetabase(IHttpContextAccessor httpContextAccessor, CancellationToken cancellationToken)
     {
-        return await QueryingCurrentUser.Query(
+        return QueryingCurrentUser.Query(
             appSettings,
             httpClientFactory,
             httpContextAccessor,
-            cancellationToken).ConfigureAwait(false);
+            cancellationToken);
     }
 }

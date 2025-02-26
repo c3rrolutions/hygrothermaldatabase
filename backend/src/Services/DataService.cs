@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Database.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace Database.Services;
 
@@ -10,10 +11,10 @@ public class DataService() : IDataService
 {
     public async Task<IData?> GetDataAsync(Guid id, ApplicationDbContext context, CancellationToken cancellationToken)
     {
-        return context.CalorimetricData.FirstOrDefault(x => x.Id == id) ??
-            context.HygrothermalData.FirstOrDefault(x => x.Id == id) ??
-            context.OpticalData.FirstOrDefault(x => x.Id == id) ??
-            context.GeometricData.FirstOrDefault(x => x.Id == id) ??
-            context.PhotovoltaicData.FirstOrDefault(x => x.Id == id) as IData;
+        return await context.CalorimetricData.FirstOrDefaultAsync(x => x.Id == id, cancellationToken).ConfigureAwait(false) ??
+            await context.HygrothermalData.FirstOrDefaultAsync(x => x.Id == id, cancellationToken).ConfigureAwait(false) ??
+            await context.OpticalData.FirstOrDefaultAsync(x => x.Id == id, cancellationToken).ConfigureAwait(false) ??
+            await context.GeometricData.FirstOrDefaultAsync(x => x.Id == id, cancellationToken).ConfigureAwait(false) ??
+            await context.PhotovoltaicData.FirstOrDefaultAsync(x => x.Id == id, cancellationToken).ConfigureAwait(false) as IData;
     }
 }

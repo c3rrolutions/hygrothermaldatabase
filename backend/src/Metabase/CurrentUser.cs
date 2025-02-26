@@ -16,24 +16,24 @@ public enum DataSigningPermission
     REMOVED
 }
 
-public record CurrentUser(
+public sealed record CurrentUser(
     Guid Id,
     Guid Uuid,
     RepresentedInstitutions RepresentedInstitutions
 );
 
-public record Edge(
+public sealed record Edge(
     Node Node,
     InstitutionRepresentativeRole Role,
     DataSigningPermission DataSigningPermission
 );
 
-public record Node(
+public sealed record Node(
     Guid Id,
     Guid Uuid,
     string Name
 );
 
-public record RepresentedInstitutions(
+public sealed record RepresentedInstitutions(
     IReadOnlyList<Edge> Edges
 );

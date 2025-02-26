@@ -13,7 +13,7 @@ public class QueryingCurrentUser
         "CurrentUser.graphql"
     };
 
-    private sealed record CurrentUserResponse(CurrentUser CurrentUser);
+    private sealed record CurrentUserData(CurrentUser CurrentUser);
 
     public static async Task<CurrentUser?> Query(
         AppSettings appSettings,
@@ -21,7 +21,7 @@ public class QueryingCurrentUser
         IHttpContextAccessor httpContextAccessor,
         CancellationToken cancellationToken)
     {
-        return (await QueryingMetabase.QueryGraphQl<CurrentUserResponse>(
+        return (await QueryingMetabase.QueryGraphQl<CurrentUserData>(
                    appSettings,
                    new GraphQLRequest(
                        await QueryingMetabase.ConstructGraphQlQuery(

@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Http;
 namespace Database.GraphQl.Approvals;
 
 [ExtendObjectType(nameof(Mutation))]
-public sealed class ApprovalMutation
+public sealed class ApprovalMutations
 {
     //[Authorize(Policy = Configuration.AuthConfiguration.WriteApiScope)]
     public async Task<AddApprovalPayload> AddApprovalToDataAsync(
@@ -32,8 +32,8 @@ public sealed class ApprovalMutation
         {
             return new AddApprovalPayload(
                 new AddApprovalError(
-                    AddApprovalErrorCode.UNKNOWN,
-                    $"The current user is not known.",
+                    AddApprovalErrorCode.UNAUTHENTICATED,
+                    $"The user is not authenticated.",
                     []
                 )
             );
@@ -61,7 +61,7 @@ public sealed class ApprovalMutation
         {
             return new AddApprovalPayload(
                 new AddApprovalError(
-                    AddApprovalErrorCode.UNKNOWN,
+                    AddApprovalErrorCode.UNKNOWN_DATA,
                     $"Unknown data.",
                     []
                 )

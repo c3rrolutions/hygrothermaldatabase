@@ -3,5 +3,7 @@
 public enum AddApprovalErrorCode
 {
     UNKNOWN,
-    UNAUTHORIZED
+    UNAUTHENTICATED,
+    UNAUTHORIZED,
+    UNKNOWN_DATA
 }

@@ -13,6 +13,7 @@ ARG GROUP_ID
 ARG USER_ID
 ARG CERTIFICATE_AUTHORITY_BASE_FILE_NAME
 ARG CERTIFICATE_AUTHORITY_PASSWORD
+ARG GNUPG_PRIVATEKEY_FILE_NAME
 
 # Create non-root user to run commands in (see https://medium.com/@mccode/processes-in-containers-should-not-run-as-root-2feae3f0df3b)
 RUN \
@@ -96,6 +97,15 @@ RUN \
     ${HOME}/app && \
   ln --symbolic ${HOME}/app /app
 
+  # Install GnuPG
+  RUN \
+  apt-get update && \
+  apt-get -y install gnupg
+
+  # Invoking GPG agent (https://www.gnupg.org/documentation/manuals/gnupg/Invoking-GPG_002dAGENT.html)
+  RUN \
+  export GPG_TTY=$(tty)
+
 ###########
 # As `me` #
 ###########
@@ -138,7 +148,21 @@ COPY \
 COPY \
   --chown=me:us \
   ./test/Database.Tests.csproj \
-  ./test/
+  ./test/  
+
+# GnuPG
+# Copy keys to image
+RUN \
+mkdir --parents \
+./gpg-keys
+COPY \
+--chown=me:us \
+./gpg-keys/${GNUPG_PRIVATEKEY_FILE_NAME} \
+./gpg-keys/
+
+# Invoking GPG agent (https://www.gnupg.org/documentation/manuals/gnupg/Invoking-GPG_002dAGENT.html)
+RUN \
+export GPG_TTY=$(tty)
 
 # https://github.com/dotnet/dotnet-docker/blob/master/samples/aspnetapp/Dockerfile.alpine-x64
 # https://github.com/dotnet/dotnet-docker/blob/master/samples/run-aspnetcore-https-development.md

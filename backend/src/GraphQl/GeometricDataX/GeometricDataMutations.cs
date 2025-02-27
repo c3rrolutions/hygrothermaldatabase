@@ -20,6 +20,7 @@ public sealed class GeometricDataMutations
         ApplicationDbContext context,
         AppSettings appSettings,
         IUserService userService,
+        ISigningService signingService,
         IHttpClientFactory httpClientFactory,
         IHttpContextAccessor httpContextAccessor,
         CancellationToken cancellationToken
@@ -114,6 +115,7 @@ public sealed class GeometricDataMutations
                 )
         );
         geometricData.Resources.Add(resource);
+        var signature = signingService.SignData(geometricData.ToString());
         context.GeometricData.Add(geometricData);
         await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         return new CreateGeometricDataPayload(geometricData);

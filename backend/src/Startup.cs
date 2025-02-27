@@ -64,6 +64,7 @@ public sealed class Startup(
         // services.AddDatabaseDeveloperPageExceptionFilter();
         services.AddSingleton<IUserService, UserService>();
         services.AddScoped<IDataService, DataService>();
+        services.AddSingleton<ISigningService, SigningService>();
     }
 
     private static void ConfigureRequestResponseServices(IServiceCollection services)

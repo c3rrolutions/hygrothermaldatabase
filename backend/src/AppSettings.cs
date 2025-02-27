@@ -17,6 +17,8 @@ public sealed class AppSettings
     public string VerificationCode { get; set; }
         = "";
 
+    public string GnupgPrivateKeyFilename { get; set; } = "";
+
     public LoggingSettings Logging { get; set; } = new();
 
     public JsonWebTokenSettings JsonWebToken { get; set; } = new();

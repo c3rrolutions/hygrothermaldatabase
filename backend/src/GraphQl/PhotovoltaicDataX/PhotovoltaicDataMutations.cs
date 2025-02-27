@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 using Database.Authorization;
 using Database.Data;
 using Database.Extensions;
+using Database.GraphQl.Approvals;
+using Database.Services;
 using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
@@ -23,18 +25,33 @@ public sealed class PhotovoltaicDataMutations
         CreatePhotovoltaicDataInput input,
         ApplicationDbContext context,
         AppSettings appSettings,
+        IUserService userService,
         IHttpClientFactory httpClientFactory,
         IHttpContextAccessor httpContextAccessor,
         CancellationToken cancellationToken
     )
     {
-        if (!await PhotovoltaicDataAuthorization.IsAuthorizedToCreatePhotovoltaicDataForInstitution(
-             input.CreatorId,
-             appSettings,
-             httpClientFactory,
-             httpContextAccessor,
-             cancellationToken
-             ).ConfigureAwait(false)
+        var currentUser = await userService.GetCurrentUser(
+            httpContextAccessor,
+            cancellationToken).ConfigureAwait(false);
+        if (currentUser == null)
+        {
+            return new CreatePhotovoltaicDataPayload(
+                new CreatePhotovoltaicDataError(
+                    CreatePhotovoltaicDataErrorCode.UNAUTHENTICATED,
+                    $"The user is not authenticated.",
+                    []
+                )
+            );
+        }
+        if (!PhotovoltaicDataAuthorization.IsAuthorizedToCreatePhotovoltaicDataForInstitution(
+            currentUser,
+            input.CreatorId,
+            appSettings,
+            httpClientFactory,
+            httpContextAccessor,
+            cancellationToken
+            )
         )
             return new CreatePhotovoltaicDataPayload(
                 new CreatePhotovoltaicDataError(

@@ -148,7 +148,7 @@ public static class GraphQlConfiguration
             .AddType<OpticalDataMutations>()
             .AddType<PhotovoltaicDataMutations>()
             .AddType<GeometricDataMutations>()
-            .AddType<ApprovalMutation>()
+            .AddType<ApprovalMutations>()
             /* .AddSubscriptionType(d => d.Name(nameof(GraphQl.Subscription))) */
             /*     .AddType<ComponentSubscriptions>() */
             // Object Types

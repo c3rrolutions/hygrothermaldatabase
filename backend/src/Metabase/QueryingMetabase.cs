@@ -11,10 +11,7 @@ using System.Threading.Tasks;
 using Database.Extensions;
 using GraphQL;
 using GraphQL.Client.Serializer.SystemTextJson;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http;
-using OpenIddict.Client.AspNetCore;
 
 namespace Database.Metabase;
 

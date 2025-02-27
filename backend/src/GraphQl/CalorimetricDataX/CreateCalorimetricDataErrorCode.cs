@@ -3,5 +3,6 @@ namespace Database.GraphQl.CalorimetricDataX;
 public enum CreateCalorimetricDataErrorCode
 {
     UNKNOWN,
-    UNAUTHORIZED
+    UNAUTHORIZED,
+    UNAUTHENTICATED
 }

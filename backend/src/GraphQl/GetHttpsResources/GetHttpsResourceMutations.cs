@@ -12,6 +12,8 @@ using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Database.GraphQl.Approvals;
+using Database.Services;
 
 namespace Database.GraphQl.GetHttpsResources;
 
@@ -24,6 +26,7 @@ public sealed class GetHttpsResourceMutations
         CreateGetHttpsResourceInput input,
         ApplicationDbContext context,
         AppSettings appSettings,
+        IUserService userService,
         IHttpClientFactory httpClientFactory,
         IHttpContextAccessor httpContextAccessor,
         CancellationToken cancellationToken
@@ -48,13 +51,28 @@ public sealed class GetHttpsResourceMutations
                 )
             );
         }
-        if (!await GetHttpsResourceAuthorization.IsAuthorizedToCreateGetHttpsResourceForInstitution(
-             data.CreatorId,
-             appSettings,
-             httpClientFactory,
-             httpContextAccessor,
-             cancellationToken
-             ).ConfigureAwait(false)
+
+        var currentUser = await userService.GetCurrentUser(
+            httpContextAccessor,
+            cancellationToken).ConfigureAwait(false);
+        if (currentUser == null)
+        {
+            return new CreateGetHttpsResourcePayload(
+                new CreateGetHttpsResourceError(
+                    CreateGetHttpsResourceErrorCode.UNAUTHENTICATED,
+                    $"The user is not authenticated.",
+                    []
+                )
+            );
+        }
+        if (!GetHttpsResourceAuthorization.IsAuthorizedToCreateGetHttpsResourceForInstitution(
+            currentUser,
+            data.CreatorId,
+            appSettings,
+            httpClientFactory,
+            httpContextAccessor,
+            cancellationToken
+            )
         )
             return new CreateGetHttpsResourcePayload(
                 new CreateGetHttpsResourceError(

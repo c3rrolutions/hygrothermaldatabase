@@ -1,14 +1,15 @@
-using System;
+﻿using System;
 using System.Net.Http;
 using System.Threading;
-using System.Threading.Tasks;
+using Database.Metabase;
 using Microsoft.AspNetCore.Http;
 
 namespace Database.Authorization;
 
 public static class CalorimetricDataAuthorization
 {
-    public static Task<bool> IsAuthorizedToCreateCalorimetricDataForInstitution(
+    public static bool IsAuthorizedToCreateCalorimetricDataForInstitution(
+        CurrentUser currentUser,
         Guid institutionId,
         AppSettings appSettings,
         IHttpClientFactory httpClientFactory,
@@ -16,6 +17,6 @@ public static class CalorimetricDataAuthorization
         CancellationToken cancellationToken
     )
     {
-        return CommonAuthorization.IsCurrentUserAtLeastAssistantOfVerifiedInstitution(institutionId, appSettings, httpClientFactory, httpContextAccessor, cancellationToken);
+        return CommonAuthorization.IsCurrentUserAtLeastAssistantOfVerifiedInstitution(currentUser, institutionId, appSettings, httpClientFactory, httpContextAccessor, cancellationToken);
     }
 }

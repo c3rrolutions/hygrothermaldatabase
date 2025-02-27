@@ -3,8 +3,8 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Database.Authorization;
 using Database.Data;
+using Database.Services;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 
@@ -19,26 +19,43 @@ public sealed class GeometricDataMutations
         CreateGeometricDataInput input,
         ApplicationDbContext context,
         AppSettings appSettings,
+        IUserService userService,
         IHttpClientFactory httpClientFactory,
         IHttpContextAccessor httpContextAccessor,
         CancellationToken cancellationToken
     )
     {
-        if (!await GeometricDataAuthorization.IsAuthorizedToCreateGeometricDataForInstitution(
-             input.CreatorId,
-             appSettings,
-             httpClientFactory,
-             httpContextAccessor,
-             cancellationToken
-             ).ConfigureAwait(false)
-        )
-            return new CreateGeometricDataPayload(
-                new CreateGeometricDataError(
-                    CreateGeometricDataErrorCode.UNAUTHORIZED,
-                    $"The current user is not authorized to create geometric data for the institution.",
-                    []
-                )
-            );
+        //var currentUser = await userService.GetCurrentUser(
+        //    httpContextAccessor,
+        //    cancellationToken).ConfigureAwait(false);
+        //if (currentUser == null)
+        //{
+        //    return new CreateGeometricDataPayload(
+        //        new CreateGeometricDataError(
+        //            CreateGeometricDataErrorCode.UNAUTHENTICATED,
+        //            $"The user is not authenticated.",
+        //            []
+        //        )
+        //    );
+        //}
+
+        //if (!GeometricDataAuthorization.IsAuthorizedToCreateGeometricDataForInstitution(
+        //     currentUser,
+        //     input.CreatorId,
+        //     appSettings,
+        //     httpClientFactory,
+        //     httpContextAccessor,
+        //     cancellationToken
+        //     )
+        //)
+        //    return new CreateGeometricDataPayload(
+        //        new CreateGeometricDataError(
+        //            CreateGeometricDataErrorCode.UNAUTHORIZED,
+        //            $"The current user is not authorized to create geometric data for the institution.",
+        //            []
+        //        )
+        //    );
+
         var geometricData = new GeometricData(
             input.Locale,
             input.ComponentId,

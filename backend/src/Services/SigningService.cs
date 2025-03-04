@@ -40,8 +40,8 @@ public class SigningService(
         // gpg --detach-sig --armor --local-user <SIGNING_KEY_FINGERPRINT> response.json
         //var (success, outout) = await ExecuteGnuCommand($"gpg --output {Path.GetFileName(filepath)}.asc --detach-sig --armor {Path.GetFileName(filepath)}");
         //var (success, outout) = await ExecuteGnuCommand($"gpg --batch --passphrase Freiburg2005 --detach-sig --armor --local-user {_fingerprint} {Path.GetFileName(filepath)}");
-        await ExecuteGnuCommand($"echo \"test\" | gpg --batch --clearsign");
-        var (success, outout) = await ExecuteGnuCommand($"gpg --batch --passphrase Freiburg2005 --clearsign {Path.GetFileName(filepath)}");
+        await ExecuteGnuCommand($"echo \"test\" | gpg --pinentry-mode loopback --batch --passphrase Freiburg2005 --clearsign");
+        var (success, outout) = await ExecuteGnuCommand($"gpg --pinentry-mode loopback --batch --passphrase Freiburg2005 --clearsign {Path.GetFileName(filepath)}");
 
         var signature = ReadSignatureFromFile(filepath);
         logger.LogDebug("GNUPG Signature: {Signature}", signature);

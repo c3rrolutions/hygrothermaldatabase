@@ -80,4 +80,7 @@ public abstract class DataX
     // TODO Exactly one resource must not have a parent and each other resource must have one from
     // this list and the graph must be connected. In other words, the resources must form a tree.
     public virtual ICollection<GetHttpsResource> Resources { get; } = new List<GetHttpsResource>();
+
+    public DataAccessMode DataAccess { get; set; } = DataAccessMode.UNRESTRICTED;
+    public DataAccessRights DataAccessRights { get; } = new DataAccessRights();
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Database.Enumerations;
 
 namespace Database.Data;
 
@@ -16,4 +17,6 @@ public interface IData : IEntity
     ICollection<GetHttpsResource> Resources { get; }
     ResponseApproval? Approval { get; }
     string Locale { get; }
+    DataAccessMode DataAccess { get; set; }
+    DataAccessRights DataAccessRights { get; }
 }

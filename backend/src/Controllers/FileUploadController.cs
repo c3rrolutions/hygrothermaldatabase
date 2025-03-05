@@ -17,6 +17,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 using Microsoft.AspNetCore.Http;
+using Database.Services;
 
 namespace Database.Controllers;
 
@@ -94,9 +95,20 @@ public class FileUploadController : Controller
     [RequestSizeLimit(10737418240)] // 10 GiB
     public async Task<IActionResult> UploadFile(
         [FromQuery] Guid getHttpsResourceUuid,
+        IUserService userService,
         CancellationToken cancellationToken
     )
     {
+        var currentUser = await userService.GetCurrentUser(
+            _httpContextAccessor,
+            cancellationToken).ConfigureAwait(false);
+        if (currentUser == null)
+        {
+            ModelState.AddModelError("CuurentUser",
+                $"User is not authenticated.");
+            return BadRequest(ModelState);
+        }
+
         if (!MultipartRequestHelper.IsMultipartContentType(Request.ContentType))
         {
             ModelState.AddModelError("File",
@@ -125,13 +137,14 @@ public class FileUploadController : Controller
                 $"There is no data set associated with the GET HTTPS resource with UUID {getHttpsResourceUuid:D}.");
             return BadRequest(ModelState);
         }
-        if (!await FileUploadDataAuthorization.IsAuthorizedToUploadFilesForInstitution(
-             getHttpsResource.Data.CreatorId,
-             _appSettings,
-             _httpClientFactory,
-             _httpContextAccessor,
-             cancellationToken
-             ).ConfigureAwait(false)
+        if (!FileUploadDataAuthorization.IsAuthorizedToUploadFilesForInstitution(
+            currentUser,
+            getHttpsResource.Data.CreatorId,
+            _appSettings,
+            _httpClientFactory,
+            _httpContextAccessor,
+            cancellationToken
+            )
         )
         {
             return Unauthorized();

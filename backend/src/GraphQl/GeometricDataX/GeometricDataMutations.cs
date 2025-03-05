@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
@@ -115,7 +116,11 @@ public sealed class GeometricDataMutations
                 )
         );
         geometricData.Resources.Add(resource);
-        var signature = signingService.SignData(geometricData.ToString());
+        var (success, signature) = await signingService.SignData(JsonSerializer.Serialize(geometricData));
+        if (success)
+        {
+            geometricData.Approval = new ResponseApproval(DateTime.Now, signature, signingService.GetFingerprint(), "", "");
+        }
         context.GeometricData.Add(geometricData);
         await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         return new CreateGeometricDataPayload(geometricData);

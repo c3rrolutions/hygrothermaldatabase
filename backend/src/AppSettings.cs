@@ -18,6 +18,7 @@ public sealed class AppSettings
         = "";
 
     public string GnupgPrivateKeyFilename { get; set; } = "";
+    public string GnupgPrivateKeyPassphrase { get; set; } = "";
 
     public LoggingSettings Logging { get; set; } = new();
 

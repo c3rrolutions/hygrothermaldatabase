@@ -6,5 +6,7 @@ public interface ISigningService
 {
     public Task<bool> ImportPrivateKey();
 
-    public Task<bool> SignData(string data);
+    public string GetFingerprint();
+
+    public Task<(bool, string)> SignData(string data);
 }

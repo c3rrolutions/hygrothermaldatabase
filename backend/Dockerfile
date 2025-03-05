@@ -52,6 +52,7 @@ RUN \
     dumb-init \
     editorconfig \
     gawk \
+    gnupg \
     lldb \
     make \
     # npm \
@@ -97,15 +98,6 @@ RUN \
     ${HOME}/app && \
   ln --symbolic ${HOME}/app /app
 
-  # Install GnuPG
-  RUN \
-  apt-get update && \
-  apt-get -y install gnupg
-
-  # Invoking GPG agent (https://www.gnupg.org/documentation/manuals/gnupg/Invoking-GPG_002dAGENT.html)
-  RUN \
-  export GPG_TTY=$(tty)
-
 ###########
 # As `me` #
 ###########
@@ -148,7 +140,7 @@ COPY \
 COPY \
   --chown=me:us \
   ./test/Database.Tests.csproj \
-  ./test/  
+  ./test/
 
 # GnuPG
 # Copy keys to image
@@ -338,7 +330,13 @@ RUN \
     ${HOME}/.vscode-server-insiders && \
   mkdir --parents \
     ${HOME}/.nuget \
-    ${HOME}/.dotnet
+    ${HOME}/.dotnet && \
+  mkdir --parents \
+    ${HOME}/.gnupg && \
+  chmod u=rwx,g=,o= \
+    ${HOME}/.gnupg && \
+  echo "allow-loopback-pinentry" \
+    > ${HOME}/.gnupg/gpg-agent.conf
 
 ENV SHELL=/bin/bash
 

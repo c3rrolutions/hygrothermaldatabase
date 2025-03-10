@@ -9,6 +9,7 @@ using HotChocolate.Data.Sorting;
 using HotChocolate.Types;
 using Database.Data;
 using Database.GraphQl.Extensions;
+using HotChocolate.Resolvers;
 
 namespace Database.GraphQl.GeometricDataX;
 
@@ -16,17 +17,19 @@ namespace Database.GraphQl.GeometricDataX;
 public sealed class GeometricDataQueries
 {
     [UsePaging]
-    [UseFiltering]
+    [UseFiltering(typeof(GeometricDataFilterType))]
     [UseSorting]
     public IQueryable<GeometricData> GetAllGeometricData(
         [GraphQLType<LocaleType>] string? locale,
         ApplicationDbContext context,
-        ISortingContext sorting
+        ISortingContext sorting,
+        IResolverContext resolverContext
     )
     {
         sorting.StabilizeOrder<GeometricData>();
+        IQueryable<GeometricData> filteredData = context.GeometricData.Filter(resolverContext);
         // TODO Use `locale`.
-        return context.GeometricData.AsNoTracking();
+        return filteredData;
     }
 
     public Task<GeometricData?> GetGeometricDataAsync(

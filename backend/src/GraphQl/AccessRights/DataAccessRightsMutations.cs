@@ -5,6 +5,7 @@ using Database.Data;
 using Database.Services;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 
 namespace Database.GraphQl.AccessRights;
 
@@ -104,7 +105,7 @@ public class DataAccessRightsMutations
             );
         }
 
-        //if (!CommonAuthorization.IsAuthorizedToAddApprovalForInstitution(
+        //if (!CommonAuthorization.(
         //    currentUser,
         //    input.CreatorId,
         //    appSettings,
@@ -121,7 +122,25 @@ public class DataAccessRightsMutations
         //        )
         //    );
 
+        var accessRights = await context.AccessRights.FirstOrDefaultAsync(x => x.InstitutionId == input.InstitutionId, cancellationToken).ConfigureAwait(false);
+
+        if (accessRights is not null)
+        {
+            accessRights.AllowedUserCount = input.AllowedUserCount;
+            accessRights.AllowedDatasetsPerTime = input.AllowedDatasetsPerTimeSpan;
+            accessRights.Period = input.Period;
+        }
+        else
+        {
+            accessRights = new Data.AccessRights(
+                input.InstitutionId,
+                input.AllowedUserCount,
+                input.AllowedDatasetsPerTimeSpan,
+                input.Period);
+            context.AccessRights.Add(accessRights);
+        }
+
         await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
-        return new AddAccessRightsPayload(data.DataAccessRights);
+        return new AddAccessRightsPayload(accessRights);
     }
 }

@@ -58,7 +58,7 @@ public sealed class Program
             {
                 // Inspired by https://docs.microsoft.com/en-us/aspnet/core/data/ef-mvc/intro#initialize-db-with-test-data
                 await CreateAndSeedDb(scope.ServiceProvider).ConfigureAwait(false);
-                await ImportGnuPGKey(scope.ServiceProvider).ConfigureAwait(false);
+                await InitializeSigningService(scope.ServiceProvider).ConfigureAwait(false);
             }
 
             await application.RunAsync().ConfigureAwait(false);
@@ -127,12 +127,12 @@ public sealed class Program
         }
     }
 
-    private static async Task ImportGnuPGKey(
+    private static async Task InitializeSigningService(
         IServiceProvider services
     )
     {
         var signing = services.GetRequiredService<ISigningService>();
-        await signing.ImportPrivateKey();
+        await signing.Initialize();
     }
 
     // https://docs.microsoft.com/en-us/aspnet/core/fundamentals/host/generic-host

@@ -117,7 +117,7 @@ services:
       - XBASE_Email__SmtpHost=${SMTP_HOST}
       - XBASE_Email__SmtpPort=${SMTP_PORT}
       - XBASE_VerificationCode=${VERIFICATION_CODE}
-      - XBASE_GnupgPrivateKeyFilename=${GNUPG_PRIVATEKEY_FILENAME}
+      - XBASE_GnupgPrivateKeyFilename=${GNUPG_PRIVATEKEY_FILE_NAME}
       - XBASE_GnupgPrivateKeyPassphrase=${GNUPG_PRIVATEKEY_PASSPHRASE}
       # https://learn.microsoft.com/en-us/dotnet/core/tools/dotnet-watch#environment-variables
       - DOTNET_USE_POLLING_FILE_WATCHER=true

@@ -2,62 +2,84 @@
 using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
+using Database.Logging;
 using Microsoft.Extensions.Logging;
 
 namespace Database.Services;
 
+/// <summary>
+/// Implementation of <see cref="ISigningService"/>
+/// </summary>
+/// <param name="appSettings"> <see cref="AppSettings"/> </param>
+/// <param name="logger">      Instance of <see cref="ILogger"/> </param>
 public class SigningService(
     AppSettings appSettings,
     ILogger<ISigningService> logger) : ISigningService
 {
     private string _fingerprint = "";
+    private const string FILENAME = "dataToSign";
 
-    public async Task<bool> ImportPrivateKey()
+    /// <inheritdoc/>
+    public async Task<bool> Initialize()
     {
-        var (success, outout) = await ExecuteGnuCommand($"gpg --batch --passphrase Freiburg2005 --import ../gpg-keys/{appSettings.GnupgPrivateKeyFilename}");
+        // Execute command to import private key
+        var (success, outout) = await ExecuteGnuCommand($"gpg --batch --passphrase {appSettings.GnupgPrivateKeyPassphrase} --import ../gpg-keys/{appSettings.GnupgPrivateKeyFilename}");
         if (success)
         {
-            _fingerprint = await GetFingerprint();
+            // Extract fingerprint
+            _fingerprint = await GetFingerprintFromKeyList();
             if (!String.IsNullOrEmpty(_fingerprint))
             {
-                logger.LogDebug("GNUPG Fingerprint: {Fingerprint}", _fingerprint);
+                logger.Fingerprint(_fingerprint);
             }
             else
             {
-                logger.LogError("GNUPG Error: Failed to get fingerprint.");
+                logger.FingerprintError();
                 success = false;
             }
         }
         return success;
     }
 
+    /// <inheritdoc/>
     public string GetFingerprint()
     {
         return _fingerprint;
     }
 
+    /// <inheritdoc/>
     public async Task<(bool, string)> SignData(string data)
     {
-        var filepath = WriteDataToFile(data);
-        var (success, outout) = await ExecuteGnuCommand($"gpg --pinentry-mode loopback --batch --passphrase {appSettings.GnupgPrivateKeyPassphrase} --detach-sig --armor --local-user {_fingerprint} {Path.GetFileName(filepath)}");
         string signature = "";
+
+        // Write data string to file
+        if (!WriteDataToFile(data))
+        {
+            return (false, "");
+        }
+
+        // Execute command to generate detached signature file Creates file with .asc ending
+        var (success, outout) = await ExecuteGnuCommand($"gpg --pinentry-mode loopback --batch --passphrase {appSettings.GnupgPrivateKeyPassphrase} --detach-sig --armor --local-user {_fingerprint} {FILENAME}");
 
         if (success)
         {
-            success = ReadSignatureFromFile(filepath, out signature);
-            logger.LogDebug("GNUPG Signature: {Signature}", signature);
+            // Read signature from file
+            success = ReadSignatureFromFile(out signature);
+            logger.Signature(signature);
         }
         else
         {
-            logger.LogError("GNUPG Error: {Outout}", outout);
+            logger.SignatureError(outout);
         }
-        RemoveFiles(filepath);
+
+        // Remove created files
+        RemoveFiles();
         return (success, signature);
     }
 
     private async Task<(bool, string)> ExecuteGnuCommand(string command)
     {
-        logger.LogDebug("GNUPG: Execute command. ({Command})", command);
+        logger.ExecuteCommand(command);
 
         var escapedArgs = command.Replace("\"", "\\\"");
         ProcessStartInfo startInfo = new()
@@ -80,16 +102,18 @@ public class SigningService(
         }
         else if (!string.IsNullOrEmpty(error))
         {
-            logger.LogDebug("GNUPG Error: {Error}", error);
+            logger.ExecuteCommandError(error);
         }
-        logger.LogDebug("GNUPG Output: {Output}", output);
-        logger.LogDebug("GNUPG ExitCode: {ExitCode}", proc.ExitCode);
+        logger.ExecuteCommandOutput(output);
+        logger.ExecuteCommandResult(proc.ExitCode);
         return (proc.ExitCode == 0, output);
     }
 
-    private async Task<string> GetFingerprint()
+    private async Task<string> GetFingerprintFromKeyList()
     {
         string fingerprint = "";
+
+        // Execute command to list keys with fingerprint, use 'with-colon' to split later
         var (success, outout) = await ExecuteGnuCommand($"gpg --list-keys --with-subkey-fingerprint --with-colon");
         if (success)
         {
@@ -99,38 +123,45 @@ public class SigningService(
         return fingerprint;
     }
 
-    private static string WriteDataToFile(string data)
-    {
-        string docPath = Path.Combine(Environment.CurrentDirectory, "dataToSign.json");
-
-        using (StreamWriter outputFile = new StreamWriter(docPath))
-        {
-            outputFile.WriteLine(data);
-        }
-
-        return docPath;
-    }
-
-    private static bool ReadSignatureFromFile(string filepath, out string signature)
+    private bool WriteDataToFile(string data)
     {
         try
         {
-            using (StreamReader file = new StreamReader(filepath + ".asc"))
+            using (StreamWriter outputFile = new StreamWriter(FILENAME))
+            {
+                outputFile.WriteLine(data);
+            }
+
+            return true;
+        }
+        catch (Exception ex)
+        {
+            logger.WriteFileException(ex.ToString());
+            return false;
+        }
+    }
+
+    private bool ReadSignatureFromFile(out string signature)
+    {
+        try
+        {
+            using (StreamReader file = new StreamReader(FILENAME + ".asc"))
             {
                 signature = file.ReadToEnd();
             }
             return true;
         }
-        catch
+        catch (Exception ex)
         {
+            logger.ReadFileException(ex.ToString());
             signature = "";
             return false;
         }
     }
 
-    private static void RemoveFiles(string filepath)
+    private static void RemoveFiles()
     {
-        File.Delete(filepath);
-        File.Delete(filepath + ".asc");
+        File.Delete(FILENAME);
+        File.Delete(FILENAME + ".asc");
     }
 }

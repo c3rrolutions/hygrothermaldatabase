@@ -45,7 +45,10 @@ public sealed class DatabaseQueries
                                 locator = new
                                 {
                                     // TODO This is error-prone.
-                                    eq = new Uri(new Uri(appSettings.Host), "/graphql/")
+                                    absoluteUri = new
+                                    {
+                                        equalTo = new Uri(new Uri(appSettings.Host), "/graphql/")
+                                    }
                                 }
                             }
                         },

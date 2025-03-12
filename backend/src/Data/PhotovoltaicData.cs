@@ -55,10 +55,7 @@ public sealed class PhotovoltaicData
         description,
         warnings,
         creatorId,
-        createdAt,
-        type,
-        subtype,
-        coatedSide
+        createdAt
     )
     {
     }

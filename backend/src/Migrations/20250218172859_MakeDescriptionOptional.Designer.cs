@@ -14,8 +14,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Database.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250213155333_AddTypeSubtypeAndCoatedSideToData")]
-    partial class AddTypeSubtypeAndCoatedSideToData
+    [Migration("20250218172859_MakeDescriptionOptional")]
+    partial class MakeDescriptionOptional
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -142,7 +142,6 @@ namespace Database.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<string>("Description")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<Guid?>("GeometricDataId")

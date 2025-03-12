@@ -17,8 +17,8 @@ public sealed class ApplicationDbContext
 
     internal const string CoatedSideTypeName = "coated_side";
     internal const string DataKindTypeName = "data_kind";
-    internal const string DataSubtypeTypeName = "data_subtype";
-    internal const string DataTypeTypeName = "data_type";
+    internal const string OpticalComponentSubtypeTypeName = "optical_component_subtype";
+    internal const string OpticalComponentTypeTypeName = "optical_component_type";
     internal const string StandardizerTypeName = "standardizer";
 
     public ApplicationDbContext(

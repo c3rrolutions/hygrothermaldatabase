@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
-using Database.Enumerations;
 
 namespace Database.Data;
 
@@ -16,9 +15,6 @@ public sealed class GeometricData
         string[] warnings,
         Guid creatorId,
         DateTime createdAt,
-        DataType? type,
-        DataSubtype? subtype,
-        CoatedSide? coatedSide,
         AppliedMethod appliedMethod,
         double[] thicknesses
     ) : base(
@@ -57,10 +53,7 @@ public sealed class GeometricData
         description,
         warnings,
         creatorId,
-        createdAt,
-        type,
-        subtype,
-        coatedSide
+        createdAt
     )
     {
         Thicknesses = thicknesses;

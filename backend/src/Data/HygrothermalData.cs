@@ -55,10 +55,7 @@ public sealed class HygrothermalData
         description,
         warnings,
         creatorId,
-        createdAt,
-        type,
-        subtype,
-        coatedSide
+        createdAt
     )
     {
     }

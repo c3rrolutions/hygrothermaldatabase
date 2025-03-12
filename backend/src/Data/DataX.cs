@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Database.Enumerations;
 
 namespace Database.Data;
 
@@ -27,10 +26,7 @@ public abstract class DataX
             description,
             warnings,
             creatorId,
-            createdAt,
-            type,
-            subtype,
-            coatedSide
+            createdAt
         )
     {
         AppliedMethod = appliedMethod;
@@ -44,10 +40,7 @@ public abstract class DataX
         string? description,
         string[] warnings,
         Guid creatorId,
-        DateTime createdAt,
-        DataType? type,
-        DataSubtype? subtype,
-        CoatedSide? coatedSide
+        DateTime createdAt
     )
     {
         Locale = locale;
@@ -57,9 +50,6 @@ public abstract class DataX
         Warnings = warnings;
         CreatorId = creatorId;
         CreatedAt = createdAt;
-        Type = type;
-        Subtype = subtype;
-        CoatedSide = coatedSide;
     }
 
     public string Locale { get; private set; }
@@ -69,9 +59,6 @@ public abstract class DataX
     public string[] Warnings { get; private set; }
     public Guid CreatorId { get; private set; }
     public DateTime CreatedAt { get; private set; }
-    public DataType? Type { get; private set; }
-    public DataSubtype? Subtype { get; private set; }
-    public CoatedSide? CoatedSide { get; private set; }
     public AppliedMethod AppliedMethod { get; private set; } = default!;
 
     public ICollection<DataApproval> Approvals { get; } = new List<DataApproval>();

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Database.Metabase;
+namespace Database.ApiRequest.Dto;
 
 public enum InstitutionRepresentativeRole
 {
@@ -16,7 +16,7 @@ public enum DataSigningPermission
     REMOVED
 }
 
-public sealed record CurrentUser(
+public sealed record CurrentUserDto(
     Guid Id,
     Guid Uuid,
     RepresentedInstitutions RepresentedInstitutions

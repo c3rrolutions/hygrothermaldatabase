@@ -4,11 +4,11 @@ using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Database.ApiRequest;
 using Database.Configuration;
 using Database.Data;
 using Database.Data.Extensions;
 using Database.Enumerations;
-using Database.Metabase;
 using Database.Services;
 using HotChocolate.AspNetCore;
 using Microsoft.AspNetCore.Builder;
@@ -213,7 +213,7 @@ public sealed class Startup(
     private static void ConfigureHttpClientServices(IServiceCollection services, IWebHostEnvironment environment)
     {
         services.AddHttpClient();
-        var metabasesHttpClientBuilder = services.AddHttpClient(QueryingMetabase.MetabaseHttpClient);
+        var metabasesHttpClientBuilder = services.AddHttpClient(ApiRequestService.MetabaseHttpClient);
         if (environment.IsDevelopment())
         {
             metabasesHttpClientBuilder.ConfigurePrimaryHttpMessageHandler(_ =>

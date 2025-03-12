@@ -2,9 +2,10 @@
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Database.ApiRequest;
+using Database.ApiRequest.Dto;
 using Database.Extensions;
 using Database.Logging;
-using Database.Metabase;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
@@ -24,7 +25,7 @@ public class UserService(
     ILogger<IUserService> logger) : IUserService
 {
     /// <inheritdoc/>
-    public async Task<CurrentUser?> GetCurrentUser(IHttpContextAccessor httpContextAccessor, CancellationToken cancellationToken)
+    public async Task<CurrentUserDto?> GetCurrentUser(IHttpContextAccessor httpContextAccessor, CancellationToken cancellationToken)
     {
         // Extract token
         var token = await httpContextAccessor.ExtractBearerToken().ConfigureAwait(false);
@@ -36,7 +37,7 @@ public class UserService(
         }
 
         // Check if there is already a user for token
-        if (!cache.TryGetValue(token, out CurrentUser? cacheUser))
+        if (!cache.TryGetValue(token, out CurrentUserDto? cacheUser))
         {
             // Get user from Metabase
             cacheUser = await GetCurrentUserFromMetabase(httpContextAccessor, cancellationToken).ConfigureAwait(false);
@@ -49,9 +50,9 @@ public class UserService(
         return cacheUser;
     }
 
-    private Task<CurrentUser?> GetCurrentUserFromMetabase(IHttpContextAccessor httpContextAccessor, CancellationToken cancellationToken)
+    private Task<CurrentUserDto?> GetCurrentUserFromMetabase(IHttpContextAccessor httpContextAccessor, CancellationToken cancellationToken)
     {
-        return QueryingCurrentUser.Query(
+        return UserApi.RequestCurrentUser(
             appSettings,
             httpClientFactory,
             httpContextAccessor,

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Net.Http;
 using System.Threading;
-using Database.Metabase;
+using Database.ApiRequest.Dto;
 using Microsoft.AspNetCore.Http;
 
 namespace Database.Authorization;
@@ -9,7 +9,7 @@ namespace Database.Authorization;
 public static class HygrothermalDataAuthorization
 {
     public static bool IsAuthorizedToCreateHygrothermalDataForInstitution(
-        CurrentUser currentUser,
+        CurrentUserDto currentUser,
         Guid institutionId,
         AppSettings appSettings,
         IHttpClientFactory httpClientFactory,

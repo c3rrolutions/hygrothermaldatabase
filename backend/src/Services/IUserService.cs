@@ -1,6 +1,6 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
-using Database.Metabase;
+using Database.ApiRequest.Dto;
 using Microsoft.AspNetCore.Http;
 
 namespace Database.Services;
@@ -16,5 +16,5 @@ public interface IUserService
     /// <param name="httpContextAccessor"> <see cref="HttpContextAccessor"/> </param>
     /// <param name="cancellationToken">   <see cref="CancellationToken"/> </param>
     /// <returns> </returns>
-    public Task<CurrentUser?> GetCurrentUser(IHttpContextAccessor httpContextAccessor, CancellationToken cancellationToken);
+    public Task<CurrentUserDto?> GetCurrentUser(IHttpContextAccessor httpContextAccessor, CancellationToken cancellationToken);
 }

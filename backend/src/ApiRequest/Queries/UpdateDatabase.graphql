@@ -1,5 +1,5 @@
 mutation UpdateDatabase(
-    $input: UpdateDatabaseInput!
+    $input: DatabaseRequestDto!
 ) {
     updateDatabase(input: $input) {
         database {

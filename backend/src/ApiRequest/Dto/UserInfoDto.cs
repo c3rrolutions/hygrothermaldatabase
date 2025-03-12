@@ -1,12 +1,12 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
-namespace Database.GraphQl.Users;
+namespace Database.ApiRequest.Dto;
 
 public sealed record Address(
     string Formatted
 );
 
-public sealed record UserInfo(
+public sealed record UserInfoDto(
     Address? Address,
     string Email,
     bool EmailVerified,

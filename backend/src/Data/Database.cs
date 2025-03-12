@@ -1,6 +1,7 @@
-using System;
+﻿using System;
+using Database.GraphQl.Databases;
 
-namespace Database.GraphQl.Databases;
+namespace Database.Data;
 
 public sealed class Database
 {
@@ -35,5 +36,19 @@ public sealed class Database
 
     // public Institution? Operator { get; set; }
     public bool CanCurrentUserUpdateNode { get; }
+
     public bool CanCurrentUserVerifyNode { get; }
+
+    public static Database FromDto(DatabaseDto databaseDto)
+    {
+        return new Database(
+            databaseDto.Uuid,
+            databaseDto.Name,
+            databaseDto.Description,
+            databaseDto.Locator,
+            databaseDto.VerificationState,
+            databaseDto.VerificationCode,
+            databaseDto.CanCurrentUserUpdateNode,
+            databaseDto.CanCurrentUserVerifyNode);
+    }
 }

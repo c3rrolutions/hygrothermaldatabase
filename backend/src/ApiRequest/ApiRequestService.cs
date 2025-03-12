@@ -1,51 +1,35 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Database.Extensions;
 using GraphQL;
-using GraphQL.Client.Serializer.SystemTextJson;
 using Microsoft.AspNetCore.Http;
 
-namespace Database.Metabase;
+namespace Database.ApiRequest;
 
-public sealed class QueryingMetabase
+public sealed class ApiRequestService
 {
     public const string MetabaseHttpClient = "Metabase";
+    public const string DatabaseHttpClient = "Database";
+    private static bool _useMetabase = true;
 
-    private static readonly JsonSerializerOptions GraphQlSerializerOptions =
-        new()
-        {
-            Converters = { new JsonStringEnumConverter(new ConstantCaseJsonNamingPolicy(), false) },
-            NumberHandling = JsonNumberHandling.Strict,
-            PropertyNameCaseInsensitive = false,
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            ReadCommentHandling = JsonCommentHandling.Disallow,
-            IncludeFields = false,
-            IgnoreReadOnlyProperties = false,
-            IgnoreReadOnlyFields = true,
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-        }; //.SetupImmutableConverter();
+    public ApiRequestService Metabase()
+    {
+        _useMetabase = true;
+        return this;
+    }
 
-    private static readonly JsonSerializerOptions RestSerializerOptions =
-        new()
-        {
-            Converters = { new JsonStringEnumConverter(new ConstantCaseJsonNamingPolicy(), false) },
-            NumberHandling = JsonNumberHandling.Strict,
-            PropertyNameCaseInsensitive = false,
-            PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
-            ReadCommentHandling = JsonCommentHandling.Disallow,
-            IncludeFields = false,
-            IgnoreReadOnlyProperties = false,
-            IgnoreReadOnlyFields = true,
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-        }; //.SetupImmutableConverter();
+    public ApiRequestService Database()
+    {
+        _useMetabase = false;
+        return this;
+    }
 
     public static async Task<string> ConstructGraphQlQuery(
         string[] fileNames
@@ -55,7 +39,7 @@ public sealed class QueryingMetabase
             Environment.NewLine,
             await Task.WhenAll(
                 fileNames.Select(fileName =>
-                    File.ReadAllTextAsync($"Metabase/Queries/{fileName}")
+                    File.ReadAllTextAsync($"ApiRequest/Queries/{fileName}")
                 )
             ).ConfigureAwait(false)
         );
@@ -72,10 +56,11 @@ public sealed class QueryingMetabase
     {
         return Query<GraphQLResponse<TGraphQlResponse>>(
             HttpMethod.Post,
-            // TODO Consider using [Flurl](https://flurl.dev) to construct URIs. For the pitfalls of using `Uri` as below see the comments to https://stackoverflow.com/questions/372865/path-combine-for-urls/1527643#1527643
-            new Uri(new Uri(appSettings.MetabaseHost), "/graphql/"),
+            // TODO Consider using [Flurl](https://flurl.dev) to construct URIs. For the pitfalls of
+            // using `Uri` as below see the comments to https://stackoverflow.com/questions/372865/path-combine-for-urls/1527643#1527643
+            new Uri(new Uri(_useMetabase ? appSettings.MetabaseHost : appSettings.Host), "/graphql/"),
             MakeJsonHttpContent(request),
-            GraphQlSerializerOptions,
+            JsonSerializerSettings.GraphQL,
             httpClientFactory,
             httpContextAccessor,
             cancellationToken
@@ -86,12 +71,13 @@ public sealed class QueryingMetabase
         TContent content
     )
     {
-        // For some reason using `JsonContent.Create<TContent>(content, null, SerializerOptions)` results in status code `BadRequest`.
+        // For some reason using `JsonContent.Create<TContent>(content, null, SerializerOptions)`
+        // results in status code `BadRequest`.
         var result =
             new ByteArrayContent(
                 JsonSerializer.SerializeToUtf8Bytes(
                     content,
-                    GraphQlSerializerOptions
+                    JsonSerializerSettings.GraphQL
                 )
             );
         result.Headers.ContentType =
@@ -111,7 +97,7 @@ public sealed class QueryingMetabase
             HttpMethod.Get,
             uri,
             null,
-            RestSerializerOptions,
+            JsonSerializerSettings.REST,
             httpClientFactory,
             httpContextAccessor,
             cancellationToken
@@ -129,7 +115,7 @@ public sealed class QueryingMetabase
     )
         where TResponse : class
     {
-        using var httpClient = httpClientFactory.CreateClient(MetabaseHttpClient);
+        using var httpClient = _useMetabase ? httpClientFactory.CreateClient(MetabaseHttpClient) : httpClientFactory.CreateClient(DatabaseHttpClient);
         var bearerToken = await httpContextAccessor.ExtractBearerToken().ConfigureAwait(false);
         using var httpRequestMessage = new HttpRequestMessage(
             httpMethod,
@@ -143,7 +129,9 @@ public sealed class QueryingMetabase
             throw new HttpRequestException(
                 $"The status code is not {HttpStatusCode.OK} but {httpResponseMessage.StatusCode}.", null,
                 httpResponseMessage.StatusCode);
-        // We could use `httpResponseMessage.Content.ReadFromJsonAsync<GraphQL.GraphQLResponse<TResponse>>` which would make debugging more difficult though, https://docs.microsoft.com/en-us/dotnet/api/system.net.http.json.httpcontentjsonextensions.readfromjsonasync?view=net-5.0#System_Net_Http_Json_HttpContentJsonExtensions_ReadFromJsonAsync__1_System_Net_Http_HttpContent_System_Text_Json_JsonSerializerOptions_System_Threading_CancellationToken_
+        // We could use
+        // `httpResponseMessage.Content.ReadFromJsonAsync<GraphQL.GraphQLResponse<TResponse>>` which
+        // would make debugging more difficult though, https://docs.microsoft.com/en-us/dotnet/api/system.net.http.json.httpcontentjsonextensions.readfromjsonasync?view=net-5.0#System_Net_Http_Json_HttpContentJsonExtensions_ReadFromJsonAsync__1_System_Net_Http_HttpContent_System_Text_Json_JsonSerializerOptions_System_Threading_CancellationToken_
         using var responseStream =
             await httpResponseMessage.Content
                 .ReadAsStreamAsync(cancellationToken)

@@ -1,9 +1,8 @@
-using System;
+﻿using System;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Database.Metabase;
-using GraphQL;
+using Database.ApiRequest;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 
@@ -12,11 +11,6 @@ namespace Database.GraphQl.Databases;
 [ExtendObjectType(nameof(Mutation))]
 public sealed class DatabaseMutations
 {
-    private static readonly string[] _updateDatabaseFileNames =
-    {
-        "UpdateDatabase.graphql"
-    };
-
     public async Task<UpdateDatabasePayload> UpdateDatabaseAsync(
         UpdateDatabaseInput input,
         AppSettings appSettings,
@@ -25,23 +19,19 @@ public sealed class DatabaseMutations
         CancellationToken cancellationToken
     )
     {
-        return (await QueryingMetabase.QueryGraphQl<UpdateDatabasePayload>(
-                   appSettings,
-                   new GraphQLRequest(
-                       await QueryingMetabase.ConstructGraphQlQuery(
-                           _updateDatabaseFileNames
-                       ).ConfigureAwait(false),
-                       new
-                       {
-                           input
-                       },
-                       "UpdateDatabase"
-                   ),
-                   httpClientFactory,
-                   httpContextAccessor,
-                   cancellationToken
-               ).ConfigureAwait(false))?.Data
-               ?? new UpdateDatabasePayload(
+        var database = await DatabaseApi.UpdateDatabase(
+            new ApiRequest.Dto.DatabaseRequestDto(
+                input.DatabaseId,
+                input.Description,
+                input.Name,
+                input.Locator),
+            appSettings,
+            httpClientFactory,
+            httpContextAccessor,
+            cancellationToken).ConfigureAwait(false);
+        return database is not null ? new UpdateDatabasePayload(
+            Data.Database.FromDto(database),
+            null) : new UpdateDatabasePayload(
                    null,
                    new[]
                    {

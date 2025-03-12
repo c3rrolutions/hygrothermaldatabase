@@ -79,7 +79,7 @@ On the very first usage:
    [Remote Development](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.vscode-remote-extensionpack).
 1. Navigate to the
    [Remote Explorer](https://code.visualstudio.com/docs/devcontainers/containers#_managing-containers)
-   pane. Hover over the running `metabase-backend-*` container (if it is not
+   pane. Hover over the running `database-backend-*` container (if it is not
    running, then run `make up` in a shell inside the project directory) and
    click on the "Attach in Current Window" icon. In the Explorer pane, open the
    directory `/app`, which is mounted to the host's `./backend` directory.
@@ -91,7 +91,7 @@ On the very first usage:
    [GitLens — Git supercharged](https://marketplace.visualstudio.com/items?itemName=eamodio.gitlens).
 1. Navigate to the
    [Remote Explorer](https://code.visualstudio.com/docs/devcontainers/containers#_managing-containers)
-   pane. Hover over the running `metabase-frontend-*` container and click on
+   pane. Hover over the running `database-frontend-*` container and click on
    the "Attach in New Window" icon. In the Explorer pane, open the directory
    `/app`, which is mounted to the host's `./frontend` directory. Navigate to
    the Extensions pane. Add the extensions
@@ -119,10 +119,10 @@ debugging
 
 To debug the
 [ASP.NET Core web application](https://learn.microsoft.com/en-us/aspnet/core/introduction-to-aspnet-core),
-attach Visual Studio Code to the `metabase-backend-*` container,
+attach Visual Studio Code to the `database-backend-*` container,
 [press `Ctrl+Shift+P`, select "Debug: Attach to a .NET 5+ or .NET Core process"](https://code.visualstudio.com/docs/csharp/debugging#_attaching-to-a-process),
-and choose the process `/app/src/bin/Debug/net9.0/Metabase run` titled
-`Metabase` or alternatively navigate to the "Run and Debug" pane
+and choose the process `/app/src/bin/Debug/net9.0/Database run` titled
+`Database` or alternatively navigate to the "Run and Debug" pane
 (`Ctrl+Shift+D`), select the launch profile ".NET Core Attach", press the
 "Start Debugging" icon (`F5`), and select the same process as above. Then, for
 example, open some source files to set breakpoints, navigate through the
@@ -145,7 +145,47 @@ and
 that attempt to solve that. Those extensions don't work in our case though, as
 they try to restart `dotnet watch` themselves, instead of waiting for the
 polling file watcher of `dotnet watch` to restart
-`/app/src/bin/Debug/net9.0/Metabase run` and attach to that process.
+`/app/src/bin/Debug/net9.0/Database run` and attach to that process.
+
+### Troubleshooting
+
+After migrating the PostgreSQL database or changing the `database` schema
+manually or upgrading Npgsql, the service `backend` may throw exceptions
+regarding the object-relational mapping (Npgsql or EF Core). In that case it
+may be necessary to restart the service `backend`, for example, by running
+`make down up` and it may even be necessary recreate the database from scratch
+by running `make down remove-data up`. Note that the latter will remove all
+data from PostgreSQL, recreate the database and its schema, and seed it
+freshly.
+
+After changing the domain model in `./backend/src/data`, you probably need to
+migrate the database by dropping into `make shellb`, adding a migration `make
+NAME=${MIGRATION_NAME} add-migration`, generating a migration script `make
+FROM=${PREVIOUS_MIGRATION} TO=${NEW_MIGRATION} generate-migration-script`, and
+executing it `make SQL=${SCRIPT_PATH} sql`.
+
+When your hard-disk starts to grow full, it may be the case that Docker does
+not clean-up anonymous volumes properly. You can do so manually by running
+`docker system prune` potentially with the argument `--all`. Note that this may
+result in loss of data.
+
+When the `frontend` Docker image does not build in production because of an
+unused import in an automatically generated file, for example, one in the
+directory `./frontend/__generated__`, then **temporarily** ignore TypeScript
+build errors by adding the following lines to `./frontend/next.config.js`, for
+example with `vi` or `nano` in a shell on the deployment machine:
+
+```
+typescript: {
+  ignoreBuildErrors: true,
+},
+```
+
+The same can happen in development when running `make build` (or `yarn run
+build`) in the shell entered by `make shellf`. In that case, remove the
+offending import manually in the file and try again. Do not disable build
+errors in development because when you do so, build errors in non-generated
+files may leak into the code base.
 
 ## Deployment
 
@@ -169,9 +209,37 @@ and the pages following it.
    `${environment}` below:
    1. Change into the clone `${environment}` by running `cd /app/${environment}`.
    1. Prepare the environment by running `cp ./.env.${environment}.sample ./.env`,
-      `cp ./frontend/.env.local.sample ./frontend/.env.local`, and by replacing
-      dummy passwords in the copies by newly generated ones, where random
-      passwords may be generated running `openssl rand -base64 32`.
+      `cp ./frontend/.env.local.sample ./frontend/.env.local`, and by adjusting
+      variable values in the copies to your needs, in particular, by setting
+      passwords to newly generated ones, where random passwords may be
+      generated by running `openssl rand -base64 32`. Here is some information
+      on what the variables mean
+      - `NAME` is the name Docker project name, in particular, it is the prefix
+          of the Docker container names listed by `docker ps --all`;
+      - `HOST` is the domain name with sub-domain of the deployment, in
+          particular, it is used to make resource locators absolute;
+      - `HTTP_PORT` is the HTTP port on which the reverse proxy NGINX listens
+          for requests;
+      - `METABASE_HOST` is the domain name with sub-domain of the metabase, in
+          particular, to use it as OpenId Connect provider and to ask it for
+          information about logged-in users needed for authorization;
+      - `DATABASE_ID` is the UUID that was assigned to this product-data
+          database upon registering it at the metabase;
+      - `VERIFICATION_CODE` is the verification code that was generated for
+          this product-data database upon registering it at the metabase;
+      - `OPEN_ID_CONNECT_CLIENT_SECRET` is the OpenId Connect client secret of
+          this product-data database as a client of the metabase acting as
+          identity provider (the client secret is given when registering an
+          OpenId Connect client at the metabase);
+      - `JSON_WEB_TOKEN_ENCRYPTION_CERTIFICATE_PASSWORD` and
+          `JSON_WEB_TOKEN_SIGNING_CERTIFICATE_PASSWORD` are passwords used to
+          encrypt and sign JSON web tokens (JWT) used by OpenId Connect;
+      - `SMTP_HOST` and `SMTP_PORT` are host and port of the message transfer
+          agent to be used to send emails through the Simple Mail Transfer
+          Protocol (SMTP);
+      - `RELAY_SMTP_HOST`, `RELAY_SMTP_PORT`, and `RELAY_ALLOWED_EMAILS` are
+          host and port of the message transfer agent and a list of allowed
+          email addresses to send emails to even in the staging environment.
    1. Prepare PostgreSQL by generating new password files by running
       `make --file=Makefile.production postgres_passwords`
       and creating the database by running
@@ -275,11 +343,11 @@ If the database container restarts indefinitely and its logs say
 PANIC:  could not locate a valid checkpoint record
 ```
 
-for example preceded by `LOG:  invalid resource manager ID in primary
-checkpoint record` or `LOG:  invalid primary checkpoint record`, then the
-database is corrupt. For example, the write-ahead log (WAL) may be corrupt
-because the database was not shut down cleanly. One solution is to restore the
-database from a backup by running
+for example preceded by `LOG: invalid resource manager ID in primary checkpoint
+record` or `LOG: invalid primary checkpoint record`, then the database is
+corrupt. For example, the write-ahead log (WAL) may be corrupt because the
+database was not shut down cleanly. One solution is to restore the database
+from a backup by running
 
 ```
 make --file=Makefile.production BACKUP_DIRECTORY=/app/data/backups/20XX-XX-XX_XX_XX_XX/ restore
@@ -289,7 +357,7 @@ where the `X`s need to be replaced by proper values. Another solution is to
 reset the transaction log by entering the database container with
 
 ```
-docker compose --file=docker-compose.production.yml --project-name metabase_production run database bash
+docker compose --file=docker-compose.production.yml --project-name database_production run database bash
 ```
 
 and dry-running
@@ -305,6 +373,29 @@ gosu postgres pg_resetwal /var/lib/postgresql/data
 ```
 
 Note that both solutions may cause data to be lost.
+
+#### Update a SQL field manually
+
+If one field in the SQL database needs to be updated and there is no GraphQL
+mutation available, then you may update it in PostgreSQL directly as
+illustrated in the following example. Test it in the `staging` environment
+under /app/staging before doing it in `production` under /app/production.
+
+1. Drop into a shell on the server as user `cloud` by running
+   `ssh -CvX -A cloud@IpAdressOfCloudServer`.
+1. Navigate to the production environment by running `cd /app/production`.
+1. Make a database backup by running `DATE=$(date +"%Y-%m-%d_%H_%M_%S")` and
+   `make --file=Makefile.production BACKUP_DIRECTORY=/app/data/backups/${DATE} backup`
+1. Navigate to the staging environment by running `cd /app/staging`.
+1. Load the backup into the staging database by running
+   `make --file=Makefile.production BACKUP_DIRECTORY=/app/data/backups/${DATE} restore`.
+1. Drop into `psql` by running `make --file=Makefile.production psql`.
+1. List all tables in the schema `database` by running `\dt database.*`.
+1. List all optical data records by running `select * from
+   database.optical_data;` and remember for example one identifier of a record
+   that you want to update.
+1. Update a single field by running `update database.optical_data set "Description" = '...' where "Id" = 'f07499ab-f119-471f-8aad-d3c016676bce';`.
+1. Delete a faulty record by running `delete from database.optical_data where "Id" = 'f07499ab-f119-471f-8aad-d3c016676bce';`.
 
 ## Original Idea
 

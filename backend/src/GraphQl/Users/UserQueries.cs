@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Database.ApiRequest;
 using Database.Data;
+using Database.Services;
 using HotChocolate;
 using HotChocolate.Resolvers;
 using HotChocolate.Types;
@@ -36,6 +37,7 @@ public sealed class UserQueries
 
     public async Task<UserInfo?> GetCurrentUserInfoAsync(
         AppSettings appSettings,
+        IApiRequestService apiRequestService,
         IHttpClientFactory httpClientFactory,
         IHttpContextAccessor httpContextAccessor,
         IResolverContext resolverContext,
@@ -46,6 +48,7 @@ public sealed class UserQueries
         {
             return UserInfo.FromDto(await UserApi.RequestUserInfo(
                 appSettings,
+                apiRequestService,
                 httpClientFactory,
                 httpContextAccessor,
                 cancellationToken

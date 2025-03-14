@@ -1,8 +1,7 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -50,8 +49,6 @@ public class FileUploadController : Controller
     private static readonly FormOptions _defaultFormOptions = new();
     private readonly ILogger<FileUploadController> _logger;
     private readonly ApplicationDbContext _context;
-    private readonly AppSettings _appSettings;
-    private readonly IHttpClientFactory _httpClientFactory;
     private readonly IHttpContextAccessor _httpContextAccessor;
 
     private readonly string[] _permittedExtensions =
@@ -60,15 +57,11 @@ public class FileUploadController : Controller
     public FileUploadController(
         ILogger<FileUploadController> logger,
         ApplicationDbContext context,
-        AppSettings appSettings,
-        IHttpClientFactory httpClientFactory,
         IHttpContextAccessor httpContextAccessor
     )
     {
         _logger = logger;
         _context = context;
-        _appSettings = appSettings;
-        _httpClientFactory = httpClientFactory;
         _httpContextAccessor = httpContextAccessor;
         // To save physical files to the temporary files folder, use:
         //_targetDirectoryPath = Path.GetTempPath();
@@ -139,13 +132,8 @@ public class FileUploadController : Controller
         }
         if (!FileUploadDataAuthorization.IsAuthorizedToUploadFilesForInstitution(
             currentUser,
-             getHttpsResource.Data.CreatorId,
-             _appSettings,
-             _httpClientFactory,
-             _httpContextAccessor,
-             cancellationToken
-             )
-        )
+            getHttpsResource.Data.CreatorId,
+            cancellationToken))
         {
             return Unauthorized();
         }

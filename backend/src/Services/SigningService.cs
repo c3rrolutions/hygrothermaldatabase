@@ -48,7 +48,7 @@ public class SigningService(
     }
 
     /// <inheritdoc/>
-    public async Task<(bool, string)> SignData(string data)
+    public async Task<(bool Success, string Signature)> SignData(string data)
     {
         string signature = "";
 

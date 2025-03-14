@@ -1,11 +1,11 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Database.Metabase;
-using GraphQL;
+using Database.ApiRequest;
+using Database.Services;
 using HotChocolate;
 using HotChocolate.Resolvers;
 using HotChocolate.Types;
@@ -16,13 +16,9 @@ namespace Database.GraphQl.Databases;
 [ExtendObjectType(nameof(Query))]
 public sealed class DatabaseQueries
 {
-    private static readonly string[] _databaseFileNames =
-    {
-        "Databases.graphql"
-    };
-
-    public async Task<Database> GetDatabaseAsync(
+    public async Task<Data.Database> GetDatabaseAsync(
         AppSettings appSettings,
+        IApiRequestService apiRequestService,
         IHttpClientFactory httpClientFactory,
         IHttpContextAccessor httpContextAccessor,
         IResolverContext resolverContext,
@@ -31,66 +27,14 @@ public sealed class DatabaseQueries
     {
         try
         {
-            var response =
-                await QueryingMetabase.QueryGraphQl<DatabasesData>(
-                    appSettings,
-                    new GraphQLRequest(
-                        await QueryingMetabase.ConstructGraphQlQuery(
-                            _databaseFileNames
-                        ).ConfigureAwait(false),
-                        new
-                        {
-                            where = new
-                            {
-                                locator = new
-                                {
-                                    // TODO This is error-prone.
-                                    absoluteUri = new
-                                    {
-                                        equalTo = new Uri(new Uri(appSettings.Host), "/graphql/")
-                                    }
-                                }
-                            }
-                        },
-                        "Databases"
-                    ),
-                    httpClientFactory,
-                    httpContextAccessor,
-                    cancellationToken
-                ).ConfigureAwait(false);
-            if (response is null)
-                throw new GraphQLException(
-                    ErrorBuilder.New()
-                        .SetCode("NULL_RESPONSE")
-                        .SetPath(resolverContext.Path)
-                        .SetMessage("Response is null.")
-                        .Build()
-                );
-            if (response.Data.Databases.Edges is null)
-                throw new GraphQLException(
-                    ErrorBuilder.New()
-                        .SetCode("NULL_EDGES")
-                        .SetPath(resolverContext.Path)
-                        .SetMessage("The supposed list of databases is null.")
-                        .Build()
-                );
-            if (response.Data.Databases.Edges.Count == 0)
-                throw new GraphQLException(
-                    ErrorBuilder.New()
-                        .SetCode("NO_DATABASE")
-                        .SetPath(resolverContext.Path)
-                        .SetMessage("The list of databases is empty.")
-                        .Build()
-                );
-            if (response.Data.Databases.Edges.Count >= 2)
-                throw new GraphQLException(
-                    ErrorBuilder.New()
-                        .SetCode("AMBIGUOUS_DATABASE")
-                        .SetPath(resolverContext.Path)
-                        .SetMessage("The list of databases has more than one entry.")
-                        .Build()
-                );
-            return response.Data.Databases.Edges[0].Node;
+            var database = await DatabaseApi.RequestDatabase(
+                appSettings,
+                apiRequestService,
+                httpClientFactory,
+                httpContextAccessor,
+                resolverContext,
+                cancellationToken);
+            return Data.Database.FromDto(database);
         }
         catch (HttpRequestException e)
         {
@@ -117,6 +61,4 @@ public sealed class DatabaseQueries
             );
         }
     }
-
-    private sealed record DatabasesData(DatabasesConnection Databases);
 }

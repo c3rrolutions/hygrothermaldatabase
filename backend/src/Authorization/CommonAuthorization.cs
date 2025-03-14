@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Linq;
-using System.Net.Http;
 using System.Threading;
 using Database.ApiRequest.Dto;
-using Microsoft.AspNetCore.Http;
 
 namespace Database.Authorization;
 
@@ -12,9 +10,6 @@ public static class CommonAuthorization
     public static bool IsCurrentUserAtLeastAssistantOfVerifiedInstitution(
         CurrentUserDto currentUser,
         Guid institutionId,
-        AppSettings appSettings,
-        IHttpClientFactory httpClientFactory,
-        IHttpContextAccessor httpContextAccessor,
         CancellationToken cancellationToken
     )
     {
@@ -24,9 +19,6 @@ public static class CommonAuthorization
     public static bool IsAuthorizedToAddApprovalForInstitution(
         CurrentUserDto currentUser,
         Guid institutionId,
-        AppSettings appSettings,
-        IHttpClientFactory httpClientFactory,
-        IHttpContextAccessor httpContextAccessor,
         CancellationToken cancellationToken
         )
     {

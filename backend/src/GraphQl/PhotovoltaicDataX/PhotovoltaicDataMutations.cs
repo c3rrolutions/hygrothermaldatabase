@@ -1,4 +1,4 @@
-using System.Linq;
+﻿using System.Linq;
 using System.Net.Http;
 using System.Security.Claims;
 using System.Text.Json;
@@ -6,27 +6,20 @@ using System.Threading;
 using System.Threading.Tasks;
 using Database.Authorization;
 using Database.Data;
-using Database.Extensions;
-using Database.GraphQl.Approvals;
 using Database.Services;
-using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 
 namespace Database.GraphQl.PhotovoltaicDataX;
 
 [ExtendObjectType(nameof(Mutation))]
 public sealed class PhotovoltaicDataMutations
 {
-    // [UseUserManager]
-    // [Authorize(Policy = Configuration.AuthConfiguration.WritePolicy)]
+    // [UseUserManager] [Authorize(Policy = Configuration.AuthConfiguration.WritePolicy)]
     public async Task<CreatePhotovoltaicDataPayload> CreatePhotovoltaicDataAsync(
         CreatePhotovoltaicDataInput input,
         ApplicationDbContext context,
-        AppSettings appSettings,
         IUserService userService,
-        IHttpClientFactory httpClientFactory,
         IHttpContextAccessor httpContextAccessor,
         CancellationToken cancellationToken
     )
@@ -47,9 +40,6 @@ public sealed class PhotovoltaicDataMutations
         if (!PhotovoltaicDataAuthorization.IsAuthorizedToCreatePhotovoltaicDataForInstitution(
             currentUser,
             input.CreatorId,
-            appSettings,
-            httpClientFactory,
-            httpContextAccessor,
             cancellationToken
             )
         )

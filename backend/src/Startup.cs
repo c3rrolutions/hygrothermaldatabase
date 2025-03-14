@@ -4,7 +4,6 @@ using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Database.ApiRequest;
 using Database.Configuration;
 using Database.Data;
 using Database.Data.Extensions;
@@ -65,6 +64,8 @@ public sealed class Startup(
         services.AddSingleton<IUserService, UserService>();
         services.AddScoped<IDataService, DataService>();
         services.AddSingleton<ISigningService, SigningService>();
+        services.AddScoped<IApiRequestService, ApiRequestService>();
+        services.AddScoped<IResponseApprovalService, ResponseApprovalService>();
     }
 
     private static void ConfigureRequestResponseServices(IServiceCollection services)
@@ -217,6 +218,16 @@ public sealed class Startup(
         if (environment.IsDevelopment())
         {
             metabasesHttpClientBuilder.ConfigurePrimaryHttpMessageHandler(_ =>
+                new HttpClientHandler
+                {
+                    ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+                }
+            );
+        }
+        var databaseHttpClientBuilder = services.AddHttpClient(ApiRequestService.DatabaseHttpClient);
+        if (environment.IsDevelopment())
+        {
+            databaseHttpClientBuilder.ConfigurePrimaryHttpMessageHandler(_ =>
                 new HttpClientHandler
                 {
                     ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator

@@ -1,8 +1,9 @@
-namespace Database.GraphQl.GeometricDataX;
+﻿namespace Database.GraphQl.GeometricDataX;
 
 public enum CreateGeometricDataErrorCode
 {
     UNKNOWN,
     UNAUTHORIZED,
-    UNAUTHENTICATED
+    UNAUTHENTICATED,
+    SIGNINGFAILED
 }

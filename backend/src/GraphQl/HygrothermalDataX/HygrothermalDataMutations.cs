@@ -1,32 +1,23 @@
-using System.Linq;
-using System.Net.Http;
-using System.Security.Claims;
+﻿using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Database.Authorization;
 using Database.Data;
-using Database.Extensions;
-using Database.GraphQl.Approvals;
 using Database.Services;
-using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 
 namespace Database.GraphQl.HygrothermalDataX;
 
 [ExtendObjectType(nameof(Mutation))]
 public sealed class HygrothermalDataMutations
 {
-    // [UseUserManager]
-    // [Authorize(Policy = Configuration.AuthConfiguration.WritePolicy)]
+    // [UseUserManager] [Authorize(Policy = Configuration.AuthConfiguration.WritePolicy)]
     public async Task<CreateHygrothermalDataPayload> CreateHygrothermalDataAsync(
         CreateHygrothermalDataInput input,
         ApplicationDbContext context,
-        AppSettings appSettings,
         IUserService userService,
-        IHttpClientFactory httpClientFactory,
         IHttpContextAccessor httpContextAccessor,
         CancellationToken cancellationToken
     )
@@ -47,9 +38,6 @@ public sealed class HygrothermalDataMutations
         if (!HygrothermalDataAuthorization.IsAuthorizedToCreateHygrothermalDataForInstitution(
             currentUser,
             input.CreatorId,
-            appSettings,
-            httpClientFactory,
-            httpContextAccessor,
             cancellationToken
             )
         )

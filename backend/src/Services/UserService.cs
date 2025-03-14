@@ -18,8 +18,10 @@ namespace Database.Services;
 /// <param name="appSettings">       <see cref="AppSettings"/> </param>
 /// <param name="httpClientFactory"> <see cref="IHttpClientFactory"/> </param>
 /// <param name="cache">             <see cref="IMemoryCache"/> to store already known users. </param>
+/// <param name="logger">            Instance of <see cref="ILogger"/> </param>
 public class UserService(
     AppSettings appSettings,
+    IApiRequestService apiRequestService,
     IHttpClientFactory httpClientFactory,
     IMemoryCache cache,
     ILogger<IUserService> logger) : IUserService
@@ -54,6 +56,7 @@ public class UserService(
     {
         return UserApi.RequestCurrentUser(
             appSettings,
+            apiRequestService,
             httpClientFactory,
             httpContextAccessor,
             cancellationToken);

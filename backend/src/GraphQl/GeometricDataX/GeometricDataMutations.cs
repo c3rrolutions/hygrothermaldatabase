@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Linq;
-using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Database.Authorization;
 using Database.Data;
 using Database.Services;
 using HotChocolate.Types;
@@ -19,44 +19,39 @@ public sealed class GeometricDataMutations
     public async Task<CreateGeometricDataPayload> CreateGeometricDataAsync(
         CreateGeometricDataInput input,
         ApplicationDbContext context,
-        AppSettings appSettings,
         IUserService userService,
-        ISigningService signingService,
-        IHttpClientFactory httpClientFactory,
+        IResponseApprovalService responseApprovalService,
         IHttpContextAccessor httpContextAccessor,
         CancellationToken cancellationToken
     )
     {
-        //var currentUser = await userService.GetCurrentUser(
-        //    httpContextAccessor,
-        //    cancellationToken).ConfigureAwait(false);
-        //if (currentUser == null)
-        //{
-        //    return new CreateGeometricDataPayload(
-        //        new CreateGeometricDataError(
-        //            CreateGeometricDataErrorCode.UNAUTHENTICATED,
-        //            $"The user is not authenticated.",
-        //            []
-        //        )
-        //    );
-        //}
+        var currentUser = await userService.GetCurrentUser(
+            httpContextAccessor,
+            cancellationToken).ConfigureAwait(false);
+        if (currentUser == null)
+        {
+            return new CreateGeometricDataPayload(
+                new CreateGeometricDataError(
+                    CreateGeometricDataErrorCode.UNAUTHENTICATED,
+                    $"The user is not authenticated.",
+                    []
+                )
+            );
+        }
 
-        //if (!GeometricDataAuthorization.IsAuthorizedToCreateGeometricDataForInstitution(
-        //     currentUser,
-        //     input.CreatorId,
-        //     appSettings,
-        //     httpClientFactory,
-        //     httpContextAccessor,
-        //     cancellationToken
-        //     )
-        //)
-        //    return new CreateGeometricDataPayload(
-        //        new CreateGeometricDataError(
-        //            CreateGeometricDataErrorCode.UNAUTHORIZED,
-        //            $"The current user is not authorized to create geometric data for the institution.",
-        //            []
-        //        )
-        //    );
+        if (!GeometricDataAuthorization.IsAuthorizedToCreateGeometricDataForInstitution(
+             currentUser,
+             input.CreatorId,
+             cancellationToken
+             )
+        )
+            return new CreateGeometricDataPayload(
+                new CreateGeometricDataError(
+                    CreateGeometricDataErrorCode.UNAUTHORIZED,
+                    $"The current user is not authorized to create geometric data for the institution.",
+                    []
+                )
+            );
 
         var geometricData = new GeometricData(
             input.Locale,
@@ -114,14 +109,25 @@ public sealed class GeometricDataMutations
         );
         geometricData.Resources.Add(resource);
 
-        var (success, signature) = await signingService.SignData(JsonSerializer.Serialize(geometricData));
-        if (success)
-        {
-            geometricData.Approval = new ResponseApproval(DateTime.Now, signature, signingService.GetFingerprint(), "", "");
-        }
-
-        //context.GeometricData.Add(geometricData);
+        context.GeometricData.Add(geometricData);
         await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+
+        try
+        {
+            geometricData.Approval = await responseApprovalService.CreateResponseApproval(geometricData, httpContextAccessor, cancellationToken).ConfigureAwait(false);
+            await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            return new CreateGeometricDataPayload(
+                geometricData,
+                new CreateGeometricDataError(
+                    CreateGeometricDataErrorCode.SIGNINGFAILED,
+                    $"Signing failed with message: {ex.Message}",
+                    []
+                )
+            );
+        }
         return new CreateGeometricDataPayload(geometricData);
     }
 }

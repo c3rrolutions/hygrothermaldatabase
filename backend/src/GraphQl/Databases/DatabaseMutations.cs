@@ -3,6 +3,8 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Database.ApiRequest;
+using Database.ApiRequest.Dto;
+using Database.Services;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 
@@ -14,17 +16,19 @@ public sealed class DatabaseMutations
     public async Task<UpdateDatabasePayload> UpdateDatabaseAsync(
         UpdateDatabaseInput input,
         AppSettings appSettings,
+        IApiRequestService apiRequestService,
         IHttpClientFactory httpClientFactory,
         IHttpContextAccessor httpContextAccessor,
         CancellationToken cancellationToken
     )
     {
         var database = await DatabaseApi.UpdateDatabase(
-            new ApiRequest.Dto.DatabaseRequestDto(
+            new DatabaseRequestDto(
                 input.DatabaseId,
                 input.Description,
                 input.Name,
                 input.Locator),
+            apiRequestService,
             appSettings,
             httpClientFactory,
             httpContextAccessor,

@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Database.ApiRequest.Dto;
 using Database.GraphQl.Databases;
+using Database.Services;
 using GraphQL;
 using HotChocolate;
 using HotChocolate.Resolvers;
@@ -27,17 +28,15 @@ public class DatabaseApi
 
     public static async Task<DatabaseDto> RequestDatabase(
         AppSettings appSettings,
+        IApiRequestService apiRequestService,
         IHttpClientFactory httpClientFactory,
         IHttpContextAccessor httpContextAccessor,
         IResolverContext resolverContext,
         CancellationToken cancellationToken)
     {
-        var response = await ApiRequestService.QueryGraphQl<DatabasesData>(
+        var response = await apiRequestService.Metabase().QueryGraphQl<DatabasesData>(
                     appSettings,
-                    new GraphQLRequest(
-                        await ApiRequestService.ConstructGraphQlQuery(
-                            _databaseFileNames
-                        ).ConfigureAwait(false),
+                    new GraphQLRequest(await apiRequestService.ConstructGraphQlQuery(_databaseFileNames).ConfigureAwait(false),
                         new
                         {
                             where = new
@@ -97,16 +96,17 @@ public class DatabaseApi
 
     public static async Task<DatabaseDto?> UpdateDatabase(
         DatabaseRequestDto databaseRequest,
+        IApiRequestService apiRequestService,
         AppSettings appSettings,
         IHttpClientFactory httpClientFactory,
         IHttpContextAccessor httpContextAccessor,
         CancellationToken cancellationToken
         )
     {
-        return (await ApiRequestService.QueryGraphQl<DatabaseDto>(
+        return (await apiRequestService.Metabase().QueryGraphQl<DatabaseDto>(
             appSettings,
             new GraphQLRequest(
-                await ApiRequestService.ConstructGraphQlQuery(
+                await apiRequestService.ConstructGraphQlQuery(
                     _updateDatabaseFileNames
                     ).ConfigureAwait(false),
                 new

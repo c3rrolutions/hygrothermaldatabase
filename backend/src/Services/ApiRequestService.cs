@@ -7,13 +7,14 @@ using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Database.ApiRequest;
 using Database.Extensions;
 using GraphQL;
 using Microsoft.AspNetCore.Http;
 
-namespace Database.ApiRequest;
+namespace Database.Services;
 
-public sealed class ApiRequestService
+public class ApiRequestService() : IApiRequestService
 {
     public const string MetabaseHttpClient = "Metabase";
     public const string DatabaseHttpClient = "Database";
@@ -31,7 +32,7 @@ public sealed class ApiRequestService
         return this;
     }
 
-    public static async Task<string> ConstructGraphQlQuery(
+    public async Task<string> ConstructGraphQlQuery(
         string[] fileNames
     )
     {
@@ -45,7 +46,7 @@ public sealed class ApiRequestService
         );
     }
 
-    public static Task<GraphQLResponse<TGraphQlResponse>> QueryGraphQl<TGraphQlResponse>(
+    public Task<GraphQLResponse<TGraphQlResponse>> QueryGraphQl<TGraphQlResponse>(
         AppSettings appSettings,
         GraphQLRequest request,
         IHttpClientFactory httpClientFactory,
@@ -67,25 +68,7 @@ public sealed class ApiRequestService
         );
     }
 
-    private static ByteArrayContent MakeJsonHttpContent<TContent>(
-        TContent content
-    )
-    {
-        // For some reason using `JsonContent.Create<TContent>(content, null, SerializerOptions)`
-        // results in status code `BadRequest`.
-        var result =
-            new ByteArrayContent(
-                JsonSerializer.SerializeToUtf8Bytes(
-                    content,
-                    JsonSerializerSettings.GraphQL
-                )
-            );
-        result.Headers.ContentType =
-            new MediaTypeHeaderValue("application/json");
-        return result;
-    }
-
-    public static Task<TResponse> QueryRest<TResponse>(
+    public Task<TResponse> QueryRest<TResponse>(
         Uri uri,
         IHttpClientFactory httpClientFactory,
         IHttpContextAccessor httpContextAccessor,
@@ -129,22 +112,42 @@ public sealed class ApiRequestService
             throw new HttpRequestException(
                 $"The status code is not {HttpStatusCode.OK} but {httpResponseMessage.StatusCode}.", null,
                 httpResponseMessage.StatusCode);
+
         // We could use
         // `httpResponseMessage.Content.ReadFromJsonAsync<GraphQL.GraphQLResponse<TResponse>>` which
         // would make debugging more difficult though, https://docs.microsoft.com/en-us/dotnet/api/system.net.http.json.httpcontentjsonextensions.readfromjsonasync?view=net-5.0#System_Net_Http_Json_HttpContentJsonExtensions_ReadFromJsonAsync__1_System_Net_Http_HttpContent_System_Text_Json_JsonSerializerOptions_System_Threading_CancellationToken_
-        using var responseStream =
-            await httpResponseMessage.Content
-                .ReadAsStreamAsync(cancellationToken)
-                .ConfigureAwait(false);
+        using var responseStream = await httpResponseMessage.Content
+            .ReadAsStreamAsync(cancellationToken)
+            .ConfigureAwait(false);
+
         // For debugging, the following lines of code write the response to standard output.
         // Console.WriteLine(new StreamReader(responseStream).ReadToEnd());
-        var deserializedResponse =
-            await JsonSerializer.DeserializeAsync<TResponse>(
-                responseStream,
-                serializerOptions,
-                cancellationToken
+        var deserializedResponse = await JsonSerializer.DeserializeAsync<TResponse>(
+            responseStream,
+            serializerOptions,
+            cancellationToken
             ).ConfigureAwait(false);
+
         if (deserializedResponse is null) throw new JsonException("Failed to deserialize the GraphQL response.");
+
         return deserializedResponse;
+    }
+
+    private static ByteArrayContent MakeJsonHttpContent<TContent>(
+        TContent content
+    )
+    {
+        // For some reason using `JsonContent.Create<TContent>(content, null, SerializerOptions)`
+        // results in status code `BadRequest`.
+        var result =
+            new ByteArrayContent(
+                JsonSerializer.SerializeToUtf8Bytes(
+                    content,
+                    JsonSerializerSettings.GraphQL
+                )
+            );
+        result.Headers.ContentType =
+            new MediaTypeHeaderValue("application/json");
+        return result;
     }
 }

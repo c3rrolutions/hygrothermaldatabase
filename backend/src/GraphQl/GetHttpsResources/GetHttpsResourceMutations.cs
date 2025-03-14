@@ -1,6 +1,5 @@
-using System;
+﻿using System;
 using System.Linq;
-using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -8,11 +7,9 @@ using Database.Data;
 using Database.Authorization;
 using Database.Enumerations;
 using Database.Extensions;
-using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using Database.GraphQl.Approvals;
 using Database.Services;
 
 namespace Database.GraphQl.GetHttpsResources;
@@ -20,14 +17,11 @@ namespace Database.GraphQl.GetHttpsResources;
 [ExtendObjectType(nameof(Mutation))]
 public sealed class GetHttpsResourceMutations
 {
-    // [UseUserManager]
-    // [Authorize(Policy = Configuration.AuthConfiguration.WritePolicy)]
+    // [UseUserManager] [Authorize(Policy = Configuration.AuthConfiguration.WritePolicy)]
     public async Task<CreateGetHttpsResourcePayload> CreateGetHttpsResourceAsync(
         CreateGetHttpsResourceInput input,
         ApplicationDbContext context,
-        AppSettings appSettings,
         IUserService userService,
-        IHttpClientFactory httpClientFactory,
         IHttpContextAccessor httpContextAccessor,
         CancellationToken cancellationToken
     )
@@ -68,9 +62,6 @@ public sealed class GetHttpsResourceMutations
         if (!GetHttpsResourceAuthorization.IsAuthorizedToCreateGetHttpsResourceForInstitution(
             currentUser,
             data.CreatorId,
-            appSettings,
-            httpClientFactory,
-            httpContextAccessor,
             cancellationToken
             )
         )

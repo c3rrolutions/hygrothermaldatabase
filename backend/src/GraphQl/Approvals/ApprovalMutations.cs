@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Database.Authorization;
@@ -17,8 +16,6 @@ public sealed class ApprovalMutations
     public async Task<AddApprovalPayload> AddApprovalToDataAsync(
         ApprovalInput input,
         ApplicationDbContext context,
-        AppSettings appSettings,
-        IHttpClientFactory httpClientFactory,
         IHttpContextAccessor httpContextAccessor,
         IUserService userService,
         IDataService dataService,
@@ -42,9 +39,6 @@ public sealed class ApprovalMutations
         if (!CommonAuthorization.IsAuthorizedToAddApprovalForInstitution(
             currentUser,
             input.CreatorId,
-            appSettings,
-            httpClientFactory,
-            httpContextAccessor,
             cancellationToken
             )
         )

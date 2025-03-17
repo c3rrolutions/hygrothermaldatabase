@@ -1,53 +1,52 @@
 ﻿using System.Collections.Generic;
-using Database.Data;
 
 namespace Database.GraphQl.AccessRights;
 
-public class AccessRightsPayload<TDataAccessRightsError>
+public class AccessRightsPayload<TAccessRightsError>
     : Payload
-    where TDataAccessRightsError : IUserError
+    where TAccessRightsError : IUserError
 {
     protected AccessRightsPayload(
-        DataAccessRights dataAccessRights
+        Data.AccessRights accessRights
     )
     {
-        DataAccessRights = dataAccessRights;
+        AccessRights = accessRights;
     }
 
     protected AccessRightsPayload(
-        IReadOnlyCollection<TDataAccessRightsError> errors
+        IReadOnlyCollection<TAccessRightsError> errors
     )
     {
         Errors = errors;
     }
 
     protected AccessRightsPayload(
-        TDataAccessRightsError error
+        TAccessRightsError error
     )
         : this(new[] { error })
     {
     }
 
     protected AccessRightsPayload(
-        DataAccessRights dataAccessRights,
-        IReadOnlyCollection<TDataAccessRightsError> errors
+        Data.AccessRights accessRights,
+        IReadOnlyCollection<TAccessRightsError> errors
     )
     {
-        DataAccessRights = dataAccessRights;
+        AccessRights = accessRights;
         Errors = errors;
     }
 
     protected AccessRightsPayload(
-        DataAccessRights dataAccessRights,
-        TDataAccessRightsError error
+        Data.AccessRights accessRights,
+        TAccessRightsError error
     )
         : this(
-            dataAccessRights,
+            accessRights,
             new[] { error }
         )
     {
     }
 
-    public DataAccessRights? DataAccessRights { get; }
-    public IReadOnlyCollection<TDataAccessRightsError>? Errors { get; }
+    public Data.AccessRights? AccessRights { get; }
+    public IReadOnlyCollection<TAccessRightsError>? Errors { get; }
 }

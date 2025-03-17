@@ -3,7 +3,7 @@
 namespace Database.GraphQl.AccessRights;
 
 public class AddDataAccessRightsPayload
-    : AccessRightsPayload<AddDataAccessRightsError>
+    : DataAccessRightsPayload<AddDataAccessRightsError>
 {
     public AddDataAccessRightsPayload(
         DataAccessRights dataAccessRights

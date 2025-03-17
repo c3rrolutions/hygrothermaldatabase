@@ -1,5 +1,8 @@
-﻿namespace Database.GraphQl.AccessRights;
+﻿using System.Diagnostics.CodeAnalysis;
 
+namespace Database.GraphQl.AccessRights;
+
+[SuppressMessage("Naming", "CA1707")]
 public enum AddDataAccessRightsErrorCode
 {
     UNKNOWN,

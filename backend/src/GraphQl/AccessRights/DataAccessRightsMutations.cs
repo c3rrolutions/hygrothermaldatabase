@@ -126,9 +126,13 @@ public class DataAccessRightsMutations
 
         if (accessRights is not null)
         {
-            accessRights.AllowedUserCount = input.AllowedUserCount;
-            accessRights.AllowedDatasetsPerTime = input.AllowedDatasetsPerTimeSpan;
-            accessRights.Period = input.Period;
+            return new AddAccessRightsPayload(
+                new AddAccessRightsError(
+                    AddAccessRightsErrorCode.ALREADY_EXISTS,
+                    $"The access rights for this institution already exist.",
+                    []
+                )
+            );
         }
         else
         {
@@ -138,6 +142,71 @@ public class DataAccessRightsMutations
                 input.AllowedDatasetsPerTimeSpan,
                 input.Period);
             context.AccessRights.Add(accessRights);
+        }
+
+        await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        return new AddAccessRightsPayload(accessRights);
+    }
+
+    public async Task<AddAccessRightsPayload> UpdateAccessRightsAsync(
+        AccessRightsInput input,
+        ApplicationDbContext context,
+        AppSettings appSettings,
+        IHttpClientFactory httpClientFactory,
+        IHttpContextAccessor httpContextAccessor,
+        IUserService userService,
+        IDataService dataService,
+        CancellationToken cancellationToken
+    )
+    {
+        var currentUser = await userService.GetCurrentUser(
+            httpContextAccessor,
+            cancellationToken).ConfigureAwait(false);
+        if (currentUser == null)
+        {
+            return new AddAccessRightsPayload(
+                new AddAccessRightsError(
+                    AddAccessRightsErrorCode.UNAUTHENTICATED,
+                    $"The user is not authenticated.",
+                    []
+                )
+            );
+        }
+
+        //if (!CommonAuthorization.(
+        //    currentUser,
+        //    input.CreatorId,
+        //    appSettings,
+        //    httpClientFactory,
+        //    httpContextAccessor,
+        //    cancellationToken
+        //    )
+        //)
+        //    return new AddDataAccessRightsPayload(
+        //        new AddDataAccessRightsError(
+        //            AddDataAccessRightsErrorCode.UNAUTHORIZED,
+        //            $"The current user is not authorized to approval for the institution.",
+        //            []
+        //        )
+        //    );
+
+        var accessRights = await context.AccessRights.FirstOrDefaultAsync(x => x.InstitutionId == input.InstitutionId, cancellationToken).ConfigureAwait(false);
+
+        if (accessRights is not null)
+        {
+            accessRights.AllowedUserCount = input.AllowedUserCount;
+            accessRights.AllowedDatasetsPerTime = input.AllowedDatasetsPerTimeSpan;
+            accessRights.Period = input.Period;
+        }
+        else
+        {
+            return new AddAccessRightsPayload(
+                new AddAccessRightsError(
+                    AddAccessRightsErrorCode.UNKNOWN_ACCESSRIGHTS,
+                    $"There are no access rights for this institution.",
+                    []
+                )
+            );
         }
 
         await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -27,7 +27,8 @@ public sealed class GeometricDataQueries
     )
     {
         sorting.StabilizeOrder<GeometricData>();
-        IQueryable<GeometricData> filteredData = context.GeometricData.Filter(resolverContext);
+        IQueryable<GeometricData> filteredData = context.GeometricData.Sort(resolverContext).Filter(resolverContext);
+
         // TODO Use `locale`.
         return filteredData;
     }

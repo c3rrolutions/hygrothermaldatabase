@@ -19,4 +19,10 @@ public interface IData : IEntity
     string Locale { get; }
     DataAccessMode DataAccess { get; set; }
     DataAccessRights DataAccessRights { get; }
+
+    bool IsRestrictedByApplication(string applicationId);
+
+    bool IsRestrictedByInstitutions(List<Guid> institutions);
+
+    bool IsRestrictedByUser(Guid uuid, int alreadyAccesedCount);
 }

@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using System;
 
 namespace Database.Services;
 
@@ -8,16 +9,17 @@ namespace Database.Services;
 public interface ISigningService
 {
     /// <summary>
-    /// Initialize service by importing private key from file passed into container.
-    /// </summary>
-    /// <returns> True, if privat key was successfully imported and fingerprint set. </returns>
-    public Task<bool> Initialize();
-
-    /// <summary>
     /// Get fingerprint
     /// </summary>
     /// <returns> Fingerprint as string </returns>
-    public string GetFingerprint();
+    public string Fingerprint { get; }
+
+    /// <summary>
+    /// Initialize service by importing private key from file passed into container.
+    /// </summary>
+    /// <returns> True, if privat key was successfully imported and fingerprint set. </returns>
+    /// <exception cref="InvalidOperationException"> If initialization failed. </exception>
+    public Task Initialize();
 
     /// <summary>
     /// Sign passed data string and return signature.

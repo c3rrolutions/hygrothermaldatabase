@@ -28,8 +28,8 @@ public sealed class DatabaseMutations
                 input.Description,
                 input.Name,
                 input.Locator),
-            apiRequestService,
             appSettings,
+            apiRequestService,
             httpClientFactory,
             httpContextAccessor,
             cancellationToken).ConfigureAwait(false);

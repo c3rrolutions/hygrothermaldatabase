@@ -61,11 +61,13 @@ public sealed class Startup(
         services.AddSingleton(_appSettings);
         services.AddSingleton(_environment);
         // services.AddDatabaseDeveloperPageExceptionFilter();
-        services.AddSingleton<IUserService, UserService>();
-        services.AddScoped<IDataService, DataService>();
         services.AddSingleton<ISigningService, SigningService>();
+        services.AddSingleton<ICacheService, CacheService>();
+        services.AddScoped<IUserService, UserService>();
+        services.AddScoped<IDataService, DataService>();
         services.AddScoped<IApiRequestService, ApiRequestService>();
         services.AddScoped<IResponseApprovalService, ResponseApprovalService>();
+        services.AddScoped<IAccessRightsService, AccessRightsService>();
     }
 
     private static void ConfigureRequestResponseServices(IServiceCollection services)

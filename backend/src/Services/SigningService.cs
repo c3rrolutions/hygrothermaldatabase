@@ -16,35 +16,31 @@ public class SigningService(
     AppSettings appSettings,
     ILogger<ISigningService> logger) : ISigningService
 {
-    private string _fingerprint = "";
     private const string FILENAME = "dataToSign";
+    private const string FILE_EXTENSION = ".asc";
 
     /// <inheritdoc/>
-    public async Task<bool> Initialize()
+    public string Fingerprint { get; private set; } = "";
+
+    /// <inheritdoc/>
+    public async Task Initialize()
     {
         // Execute command to import private key
         var (success, outout) = await ExecuteGnuCommand($"gpg --batch --passphrase {appSettings.GnupgPrivateKeyPassphrase} --import ../gpg-keys/{appSettings.GnupgPrivateKeyFilename}");
         if (success)
         {
             // Extract fingerprint
-            _fingerprint = await GetFingerprintFromKeyList();
-            if (!String.IsNullOrEmpty(_fingerprint))
+            Fingerprint = await GetFingerprintFromKeyList();
+            if (!String.IsNullOrEmpty(Fingerprint))
             {
-                logger.Fingerprint(_fingerprint);
+                logger.Fingerprint(Fingerprint);
             }
             else
             {
                 logger.FingerprintError();
-                success = false;
+                throw new InvalidOperationException("Failed to initialize GNUPG signing service.");
             }
         }
-        return success;
-    }
-
-    /// <inheritdoc/>
-    public string GetFingerprint()
-    {
-        return _fingerprint;
     }
 
     /// <inheritdoc/>
@@ -59,7 +55,7 @@ public class SigningService(
         }
 
         // Execute command to generate detached signature file Creates file with .asc ending
-        var (success, outout) = await ExecuteGnuCommand($"gpg --pinentry-mode loopback --batch --passphrase {appSettings.GnupgPrivateKeyPassphrase} --detach-sig --armor --local-user {_fingerprint} {FILENAME}");
+        var (success, outout) = await ExecuteGnuCommand($"gpg --pinentry-mode loopback --batch --passphrase {appSettings.GnupgPrivateKeyPassphrase} --detach-sig --armor --local-user {Fingerprint} {FILENAME}");
 
         if (success)
         {
@@ -145,7 +141,7 @@ public class SigningService(
     {
         try
         {
-            using (StreamReader file = new StreamReader(FILENAME + ".asc"))
+            using (StreamReader file = new StreamReader(FILENAME + FILE_EXTENSION))
             {
                 signature = file.ReadToEnd();
             }
@@ -162,6 +158,6 @@ public class SigningService(
     private static void RemoveFiles()
     {
         File.Delete(FILENAME);
-        File.Delete(FILENAME + ".asc");
+        File.Delete(FILENAME + FILE_EXTENSION);
     }
 }

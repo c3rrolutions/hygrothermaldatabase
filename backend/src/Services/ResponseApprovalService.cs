@@ -10,58 +10,69 @@ using Microsoft.Extensions.Logging;
 
 namespace Database.Services;
 
+/// <summary>
+/// Implementation of <see cref="IResponseApprovalService"/>
+/// </summary>
+/// <param name="appSettings">         <see cref="AppSettings"/> </param>
+/// <param name="signingService">      <see cref="ISigningService"/> </param>
+/// <param name="apiRequestService">   <see cref="IApiRequestService"/> </param>
+/// <param name="httpClientFactory">   <see cref="IHttpClientFactory"/> </param>
+/// <param name="httpContextAccessor"> <see cref="IHttpContextAccessor"/> </param>
+/// <param name="logger">              <see cref="ILogger"/> </param>
 public class ResponseApprovalService(
     AppSettings appSettings,
     ISigningService signingService,
     IApiRequestService apiRequestService,
     IHttpClientFactory httpClientFactory,
+    IHttpContextAccessor httpContextAccessor,
     ILogger<IResponseApprovalService> logger) : IResponseApprovalService
 {
-    public async Task<ResponseApproval> CreateResponseApproval(object dataObject, IHttpContextAccessor httpContextAccessor, CancellationToken cancellationToken)
+    /// <inheritdoc/>
+    public async Task<ResponseApproval> CreateResponseApproval(IData dataObject, CancellationToken cancellationToken)
     {
         // Get dataset
         logger.GetQueryAndResponse(dataObject.GetType().Name);
-        var queryAdnResponce = await GetQueryAndResponse(dataObject, httpContextAccessor, cancellationToken).ConfigureAwait(false);
+        var queryAdnResponse = await GetQueryAndResponse(dataObject, cancellationToken).ConfigureAwait(false);
 
-        if (string.IsNullOrEmpty(queryAdnResponce.Query))
+        if (string.IsNullOrEmpty(queryAdnResponse.Query))
         {
-            throw new ArgumentNullException(queryAdnResponce.Query);
+            throw new ArgumentNullException(queryAdnResponse.Query);
         }
-        if (string.IsNullOrEmpty(queryAdnResponce.Response))
+        if (string.IsNullOrEmpty(queryAdnResponse.Response))
         {
-            throw new ArgumentNullException(queryAdnResponce.Response);
+            throw new ArgumentNullException(queryAdnResponse.Response);
         }
 
-        logger.QueryAndResponce(queryAdnResponce.Query, queryAdnResponce.Response);
+        logger.QueryAndResponce(queryAdnResponse.Query, queryAdnResponse.Response);
 
-        var signatureResult = await signingService.SignData(queryAdnResponce.Response).ConfigureAwait(false);
+        var signatureResult = await signingService.SignData(queryAdnResponse.Response).ConfigureAwait(false);
 
         if (!signatureResult.Success)
         {
             throw new ArgumentException("Signing failed");
         }
 
-        return new ResponseApproval(DateTime.Now, signatureResult.Signature, signingService.GetFingerprint(), queryAdnResponce.Query, queryAdnResponce.Response);
+        return new ResponseApproval(DateTime.UtcNow, signatureResult.Signature, signingService.Fingerprint, queryAdnResponse.Query, queryAdnResponse.Response);
     }
 
-    private async Task<(string? Query, string? Response)> GetQueryAndResponse(object dataObject, IHttpContextAccessor httpContextAccessor, CancellationToken cancellationToken)
+    private async Task<(string? Query, string? Response)> GetQueryAndResponse(IData dataObject, CancellationToken cancellationToken)
     {
         switch (dataObject)
         {
             case GeometricData data:
-                return await DataApi.GetQueryAndResponceGeometricData(data.Id, appSettings, apiRequestService, httpClientFactory, httpContextAccessor, cancellationToken);
+                return await DataApi.CreateQueryAndGetResponseGeometricData(data.Id, appSettings, apiRequestService, httpClientFactory, httpContextAccessor, cancellationToken);
 
             case CalorimetricData data:
-                return await DataApi.GetQueryAndResponceCalorimetricData(data.Id, appSettings, apiRequestService, httpClientFactory, httpContextAccessor, cancellationToken);
+                return await DataApi.CreateQueryAndGetResponseCalorimetricData(data.Id, appSettings, apiRequestService, httpClientFactory, httpContextAccessor, cancellationToken);
 
             case HygrothermalData data:
-                return await DataApi.GetQueryAndResponceHygrothermalData(data.Id, appSettings, apiRequestService, httpClientFactory, httpContextAccessor, cancellationToken);
+                return await DataApi.CreateQueryAndGetResponseHygrothermalData(data.Id, appSettings, apiRequestService, httpClientFactory, httpContextAccessor, cancellationToken);
 
             case PhotovoltaicData data:
-                return await DataApi.GetQueryAndResponcePhotovoltaicData(data.Id, appSettings, apiRequestService, httpClientFactory, httpContextAccessor, cancellationToken);
+                return await DataApi.CreateQueryAndGetResponsePhotovoltaicData(data.Id, appSettings, apiRequestService, httpClientFactory, httpContextAccessor, cancellationToken);
 
             case OpticalData data:
-                return await DataApi.GetQueryAndResponceOpticalData(data.Id, appSettings, apiRequestService, httpClientFactory, httpContextAccessor, cancellationToken);
+                return await DataApi.CreateQueryAndGetResponseOpticalData(data.Id, appSettings, apiRequestService, httpClientFactory, httpContextAccessor, cancellationToken);
 
             default:
                 return (null, null);

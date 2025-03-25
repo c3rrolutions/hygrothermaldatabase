@@ -1,14 +1,18 @@
 ﻿using System;
 using System.Net.Http;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Database.Data;
+using Database.ApiRequest.Dto;
 using Database.Services;
 using GraphQL;
 using Microsoft.AspNetCore.Http;
 
 namespace Database.ApiRequest;
 
+/// <summary>
+/// Class to request XData from Database API.
+/// </summary>
 public class DataApi
 {
     private static readonly string[] _calorimetricDataFileNames =
@@ -36,13 +40,23 @@ public class DataApi
         "OpticalData.graphql"
     };
 
-    private sealed record CalorimetricDataResponse(CalorimetricData CalorimetricData);
-    private sealed record GeometricDataResponse(GeometricData GeometricData);
-    private sealed record HygrothermalDataResponse(HygrothermalData HygrothermalData);
-    private sealed record PhotovoltaicDataResponse(PhotovoltaicData PhotovoltaicData);
-    private sealed record OpticalDataResponse(OpticalData OpticalData);
+    private sealed record CalorimetricDataResponse(CalorimetricDataDto CalorimetricData);
+    private sealed record GeometricDataResponse(GeometricDataDto GeometricData);
+    private sealed record HygrothermalDataResponse(HygrothermalDataDto HygrothermalData);
+    private sealed record PhotovoltaicDataResponse(PhotovoltaicDataDto PhotovoltaicData);
+    private sealed record OpticalDataResponse(OpticalDataDto OpticalData);
 
-    public static async Task<(string? Query, string? Response)> GetQueryAndResponceCalorimetricData(
+    /// <summary>
+    /// Create query to request calorimetric data and get response.
+    /// </summary>
+    /// <param name="dataId">              Id of data to request. </param>
+    /// <param name="appSettings">         <see cref="AppSettings"/> </param>
+    /// <param name="apiRequestService">   <see cref="IApiRequestService"/> </param>
+    /// <param name="httpClientFactory">   <see cref="IHttpClientFactory"/> </param>
+    /// <param name="httpContextAccessor"> <see cref="IHttpContextAccessor"/> </param>
+    /// <param name="cancellationToken">   <see cref="CancellationToken"/> </param>
+    /// <returns> Query and response for calorimetric data. </returns>
+    public static async Task<(string? Query, string? Response)> CreateQueryAndGetResponseCalorimetricData(
         Guid dataId,
         AppSettings appSettings,
         IApiRequestService apiRequestService,
@@ -53,8 +67,8 @@ public class DataApi
     {
         var request = new GraphQLRequest(
             await apiRequestService.ConstructGraphQlQuery(_calorimetricDataFileNames).ConfigureAwait(false),
-            new { uuid = dataId },
-            "Data"
+            dataId,
+            "GetCalorimetricData"
             );
         var response = await apiRequestService.Database().QueryGraphQl<CalorimetricDataResponse>(
             appSettings,
@@ -64,10 +78,20 @@ public class DataApi
             cancellationToken
             ).ConfigureAwait(false);
 
-        return (request.Query, response.ToString());
+        return (request.Query, JsonSerializer.Serialize(response));
     }
 
-    public static async Task<(string? Query, string? Response)> GetQueryAndResponceGeometricData(
+    /// <summary>
+    /// Create query to request geometric data and get response.
+    /// </summary>
+    /// <param name="dataId">              Id of data to request. </param>
+    /// <param name="appSettings">         <see cref="AppSettings"/> </param>
+    /// <param name="apiRequestService">   <see cref="IApiRequestService"/> </param>
+    /// <param name="httpClientFactory">   <see cref="IHttpClientFactory"/> </param>
+    /// <param name="httpContextAccessor"> <see cref="IHttpContextAccessor"/> </param>
+    /// <param name="cancellationToken">   <see cref="CancellationToken"/> </param>
+    /// <returns> Query and response for geometric data. </returns>
+    public static async Task<(string? Query, string? Response)> CreateQueryAndGetResponseGeometricData(
         Guid dataId,
         AppSettings appSettings,
         IApiRequestService apiRequestService,
@@ -79,7 +103,7 @@ public class DataApi
         var request = new GraphQLRequest(
             await apiRequestService.ConstructGraphQlQuery(_geometricDataFileNames).ConfigureAwait(false),
             new { uuid = dataId },
-            "Data"
+            "GeometricData"
             );
         var response = await apiRequestService.Database().QueryGraphQl<GeometricDataResponse>(
             appSettings,
@@ -89,10 +113,20 @@ public class DataApi
             cancellationToken
             ).ConfigureAwait(false);
 
-        return (Query: request.Query, response.ToString());
+        return (Query: request.Query, JsonSerializer.Serialize(response));
     }
 
-    public static async Task<(string? Query, string? Response)> GetQueryAndResponceHygrothermalData(
+    /// <summary>
+    /// Create query to request hygrothemal data and get response.
+    /// </summary>
+    /// <param name="dataId">              Id of data to request. </param>
+    /// <param name="appSettings">         <see cref="AppSettings"/> </param>
+    /// <param name="apiRequestService">   <see cref="IApiRequestService"/> </param>
+    /// <param name="httpClientFactory">   <see cref="IHttpClientFactory"/> </param>
+    /// <param name="httpContextAccessor"> <see cref="IHttpContextAccessor"/> </param>
+    /// <param name="cancellationToken">   <see cref="CancellationToken"/> </param>
+    /// <returns> Query and response for hygrothermal data. </returns>
+    public static async Task<(string? Query, string? Response)> CreateQueryAndGetResponseHygrothermalData(
         Guid dataId,
         AppSettings appSettings,
         IApiRequestService apiRequestService,
@@ -103,8 +137,8 @@ public class DataApi
     {
         var request = new GraphQLRequest(
             await apiRequestService.ConstructGraphQlQuery(_hygrothermalDataFileNames).ConfigureAwait(false),
-            new { uuid = dataId },
-            "Data"
+            dataId,
+            "GetHygrothermalData"
             );
         var response = await apiRequestService.Database().QueryGraphQl<HygrothermalDataResponse>(
             appSettings,
@@ -114,10 +148,20 @@ public class DataApi
             cancellationToken
             ).ConfigureAwait(false);
 
-        return (request.Query, response.ToString());
+        return (request.Query, JsonSerializer.Serialize(response));
     }
 
-    public static async Task<(string? Query, string? Response)> GetQueryAndResponcePhotovoltaicData(
+    /// <summary>
+    /// Create query to request photovoltaic data and get response.
+    /// </summary>
+    /// <param name="dataId">              Id of data to request. </param>
+    /// <param name="appSettings">         <see cref="AppSettings"/> </param>
+    /// <param name="apiRequestService">   <see cref="IApiRequestService"/> </param>
+    /// <param name="httpClientFactory">   <see cref="IHttpClientFactory"/> </param>
+    /// <param name="httpContextAccessor"> <see cref="IHttpContextAccessor"/> </param>
+    /// <param name="cancellationToken">   <see cref="CancellationToken"/> </param>
+    /// <returns> Query and response for photovoltaic data. </returns>
+    public static async Task<(string? Query, string? Response)> CreateQueryAndGetResponsePhotovoltaicData(
         Guid dataId,
         AppSettings appSettings,
         IApiRequestService apiRequestService,
@@ -128,8 +172,8 @@ public class DataApi
     {
         var request = new GraphQLRequest(
             await apiRequestService.ConstructGraphQlQuery(_photovoltaicDataFileNames).ConfigureAwait(false),
-            new { uuid = dataId },
-            "Data"
+            dataId,
+            "GetPhotovoltaicData"
             );
         var response = await apiRequestService.Database().QueryGraphQl<PhotovoltaicDataResponse>(
             appSettings,
@@ -139,10 +183,20 @@ public class DataApi
             cancellationToken
             ).ConfigureAwait(false);
 
-        return (request.Query, response.ToString());
+        return (request.Query, JsonSerializer.Serialize(response));
     }
 
-    public static async Task<(string? Query, string? Response)> GetQueryAndResponceOpticalData(
+    /// <summary>
+    /// Create query to request optical data and get response.
+    /// </summary>
+    /// <param name="dataId">              Id of data to request. </param>
+    /// <param name="appSettings">         <see cref="AppSettings"/> </param>
+    /// <param name="apiRequestService">   <see cref="IApiRequestService"/> </param>
+    /// <param name="httpClientFactory">   <see cref="IHttpClientFactory"/> </param>
+    /// <param name="httpContextAccessor"> <see cref="IHttpContextAccessor"/> </param>
+    /// <param name="cancellationToken">   <see cref="CancellationToken"/> </param>
+    /// <returns> Query and response for optical data. </returns>
+    public static async Task<(string? Query, string? Response)> CreateQueryAndGetResponseOpticalData(
         Guid dataId,
         AppSettings appSettings,
         IApiRequestService apiRequestService,
@@ -153,8 +207,8 @@ public class DataApi
     {
         var request = new GraphQLRequest(
             await apiRequestService.ConstructGraphQlQuery(_opticalDataFileNames).ConfigureAwait(false),
-            new { uuid = dataId },
-            "Data"
+            dataId,
+            "GetOpticalData"
             );
         var response = await apiRequestService.Database().QueryGraphQl<OpticalDataResponse>(
             appSettings,
@@ -164,6 +218,6 @@ public class DataApi
             cancellationToken
             ).ConfigureAwait(false);
 
-        return (request.Query, response.ToString());
+        return (request.Query, JsonSerializer.Serialize(response));
     }
 }

@@ -5,7 +5,6 @@ using Database.Authorization;
 using Database.Data;
 using Database.Services;
 using HotChocolate.Types;
-using Microsoft.AspNetCore.Http;
 
 namespace Database.GraphQl.Approvals;
 
@@ -16,14 +15,13 @@ public sealed class ApprovalMutations
     public async Task<AddApprovalPayload> AddApprovalToDataAsync(
         ApprovalInput input,
         ApplicationDbContext context,
-        IHttpContextAccessor httpContextAccessor,
         IUserService userService,
         IDataService dataService,
+        IResponseApprovalService responseApprovalService,
         CancellationToken cancellationToken
     )
     {
         var currentUser = await userService.GetCurrentUser(
-            httpContextAccessor,
             cancellationToken).ConfigureAwait(false);
         if (currentUser == null)
         {
@@ -93,6 +91,26 @@ public sealed class ApprovalMutations
         }
         data.Approvals.Add(approval);
         await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+
+        try
+        {
+            ((Data.DataX)data).Approval = await responseApprovalService.CreateResponseApproval(data, cancellationToken).ConfigureAwait(false);
+            await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            context.Remove(data);
+            await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+
+            return new AddApprovalPayload(
+                approval,
+                new AddApprovalError(
+                    AddApprovalErrorCode.SIGNING_FAILED,
+                    $"Signing failed with message: {ex.Message}",
+                    []
+                )
+            );
+        }
         return new AddApprovalPayload(approval);
     }
 }

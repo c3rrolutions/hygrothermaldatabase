@@ -10,7 +10,6 @@ using Database.Data;
 using Database.Filters;
 using Database.Services;
 using Database.Utilities;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
@@ -49,20 +48,17 @@ public class FileUploadController : Controller
     private static readonly FormOptions _defaultFormOptions = new();
     private readonly ILogger<FileUploadController> _logger;
     private readonly ApplicationDbContext _context;
-    private readonly IHttpContextAccessor _httpContextAccessor;
 
     private readonly string[] _permittedExtensions =
         { ".json", ".xml", ".txt", ".csv", ".ifc", ".rad", ".svg", ".pdf", ".png" };
 
     public FileUploadController(
         ILogger<FileUploadController> logger,
-        ApplicationDbContext context,
-        IHttpContextAccessor httpContextAccessor
+        ApplicationDbContext context
     )
     {
         _logger = logger;
         _context = context;
-        _httpContextAccessor = httpContextAccessor;
         // To save physical files to the temporary files folder, use:
         //_targetDirectoryPath = Path.GetTempPath();
     }
@@ -93,7 +89,6 @@ public class FileUploadController : Controller
     )
     {
         var currentUser = await userService.GetCurrentUser(
-            _httpContextAccessor,
             cancellationToken).ConfigureAwait(false);
         if (currentUser == null)
         {

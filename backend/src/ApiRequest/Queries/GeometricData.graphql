@@ -1,4 +1,6 @@
-query GeometricData($uuid: Uuid!) {
+query GeometricData(
+    $uuid: Uuid!
+) {
   geometricData(id: $uuid) {
     uuid
     timestamp

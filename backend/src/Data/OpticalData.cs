@@ -35,9 +35,6 @@ public sealed class OpticalData
         warnings,
         creatorId,
         createdAt,
-        type,
-        subtype,
-        coatedSide,
         appliedMethod
     )
     {

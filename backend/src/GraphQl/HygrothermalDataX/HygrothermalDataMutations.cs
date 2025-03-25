@@ -1,12 +1,14 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Database.Authorization;
 using Database.Data;
+using Database.GraphQl.GeometricDataX;
 using Database.Services;
 using HotChocolate.Types;
-using Microsoft.AspNetCore.Http;
+using Org.BouncyCastle.Asn1.X509.Qualified;
 
 namespace Database.GraphQl.HygrothermalDataX;
 
@@ -18,12 +20,11 @@ public sealed class HygrothermalDataMutations
         CreateHygrothermalDataInput input,
         ApplicationDbContext context,
         IUserService userService,
-        IHttpContextAccessor httpContextAccessor,
+        IResponseApprovalService responseApprovalService,
         CancellationToken cancellationToken
     )
     {
         var currentUser = await userService.GetCurrentUser(
-            httpContextAccessor,
             cancellationToken).ConfigureAwait(false);
         if (currentUser == null)
         {
@@ -120,6 +121,26 @@ public sealed class HygrothermalDataMutations
         hygrothermalData.Resources.Add(resource);
         context.HygrothermalData.Add(hygrothermalData);
         await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+
+        try
+        {
+            hygrothermalData.Approval = await responseApprovalService.CreateResponseApproval(hygrothermalData, cancellationToken).ConfigureAwait(false);
+            await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            context.Remove(hygrothermalData);
+            await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+
+            return new CreateHygrothermalDataPayload(
+                hygrothermalData,
+                new CreateHygrothermalDataError(
+                    CreateHygrothermalDataErrorCode.SIGNING_FAILED,
+                    $"Signing failed with message: {ex.Message}",
+                    []
+                )
+            );
+        }
         return new CreateHygrothermalDataPayload(hygrothermalData);
     }
 }

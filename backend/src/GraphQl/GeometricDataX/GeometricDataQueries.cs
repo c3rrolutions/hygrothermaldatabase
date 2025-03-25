@@ -1,15 +1,17 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
+using Database.Data;
+using Database.GraphQl.Extensions;
+using Database.Services;
 using HotChocolate;
 using HotChocolate.Data;
 using HotChocolate.Data.Sorting;
-using HotChocolate.Types;
-using Database.Data;
-using Database.GraphQl.Extensions;
 using HotChocolate.Resolvers;
+using HotChocolate.Types;
+using Microsoft.EntityFrameworkCore;
 
 namespace Database.GraphQl.GeometricDataX;
 
@@ -19,18 +21,32 @@ public sealed class GeometricDataQueries
     [UsePaging]
     [UseFiltering(typeof(GeometricDataFilterType))]
     [UseSorting]
-    public IQueryable<GeometricData> GetAllGeometricData(
+    public async Task<IQueryable<GeometricData>> GetAllGeometricData(
         [GraphQLType<LocaleType>] string? locale,
         ApplicationDbContext context,
+        IAccessRightsService accessRightsService,
         ISortingContext sorting,
-        IResolverContext resolverContext
+        IResolverContext resolverContext,
+        CancellationToken cancellationToken
     )
     {
         sorting.StabilizeOrder<GeometricData>();
         IQueryable<GeometricData> filteredData = context.GeometricData.Sort(resolverContext).Filter(resolverContext);
 
+        var result = await accessRightsService.ApplyAccessRightsOnData(filteredData, cancellationToken).ConfigureAwait(false);
+
+        var errors = new List<IUserError>();
+        foreach (var error in result.Errors)
+        {
+            errors.Add(new QueryError(
+                QueryErrorCode.RESTRICTED,
+                error,
+                []));
+        }
+
         // TODO Use `locale`.
-        return filteredData;
+        //return new QueryPayload(result.Data as List<GeometricData>, errors);
+        return (result.Data as IEnumerable<GeometricData>).AsQueryable<GeometricData>();
     }
 
     public Task<GeometricData?> GetGeometricDataAsync(

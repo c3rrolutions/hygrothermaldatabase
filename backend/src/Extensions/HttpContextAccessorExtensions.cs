@@ -7,8 +7,16 @@ using OpenIddict.Client.AspNetCore;
 
 namespace Database.Extensions;
 
+/// <summary>
+/// Extensions of <see cref="HttpContextAccessor"/>
+/// </summary>
 public static class HttpContextAccessorExtensions
 {
+    /// <summary>
+    /// Extract bearer token from <see cref="HttpContextAccessor"/>. Only returns token if not expired.
+    /// </summary>
+    /// <param name="httpContextAccessor"> <see cref="IHttpContextAccessor"/> </param>
+    /// <returns> Bearer token or null. </returns>
     public static async Task<string?> ExtractBearerToken(this IHttpContextAccessor httpContextAccessor)
     {
         if (httpContextAccessor.HttpContext is null) return null;
@@ -24,6 +32,6 @@ public static class HttpContextAccessorExtensions
 
     private static bool CheckExpirationDate(string expirationDate)
     {
-        return DateTime.Parse(expirationDate) < DateTime.UtcNow;
+        return DateTime.UnixEpoch.AddSeconds(int.Parse(expirationDate)) < DateTime.UtcNow;
     }
 }

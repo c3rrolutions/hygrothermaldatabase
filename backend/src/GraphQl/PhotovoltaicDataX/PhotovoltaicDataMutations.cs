@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Net.Http;
 using System.Security.Claims;
 using System.Text.Json;
@@ -6,9 +7,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using Database.Authorization;
 using Database.Data;
+using Database.GraphQl.GeometricDataX;
 using Database.Services;
 using HotChocolate.Types;
-using Microsoft.AspNetCore.Http;
+using Org.BouncyCastle.Asn1.X509.Qualified;
 
 namespace Database.GraphQl.PhotovoltaicDataX;
 
@@ -20,12 +22,11 @@ public sealed class PhotovoltaicDataMutations
         CreatePhotovoltaicDataInput input,
         ApplicationDbContext context,
         IUserService userService,
-        IHttpContextAccessor httpContextAccessor,
+        IResponseApprovalService responseApprovalService,
         CancellationToken cancellationToken
     )
     {
         var currentUser = await userService.GetCurrentUser(
-            httpContextAccessor,
             cancellationToken).ConfigureAwait(false);
         if (currentUser == null)
         {
@@ -37,12 +38,14 @@ public sealed class PhotovoltaicDataMutations
                 )
             );
         }
+
         if (!PhotovoltaicDataAuthorization.IsAuthorizedToCreatePhotovoltaicDataForInstitution(
             currentUser,
             input.CreatorId,
             cancellationToken
             )
         )
+        {
             return new CreatePhotovoltaicDataPayload(
                 new CreatePhotovoltaicDataError(
                     CreatePhotovoltaicDataErrorCode.UNAUTHORIZED,
@@ -50,6 +53,8 @@ public sealed class PhotovoltaicDataMutations
                     []
                 )
             );
+        }
+
         var photovoltaicData = new PhotovoltaicData(
             input.Locale,
             input.ComponentId,
@@ -122,6 +127,26 @@ public sealed class PhotovoltaicDataMutations
         photovoltaicData.Resources.Add(resource);
         context.PhotovoltaicData.Add(photovoltaicData);
         await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+
+        try
+        {
+            photovoltaicData.Approval = await responseApprovalService.CreateResponseApproval(photovoltaicData, cancellationToken).ConfigureAwait(false);
+            await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            context.Remove(photovoltaicData);
+            await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+
+            return new CreatePhotovoltaicDataPayload(
+                photovoltaicData,
+                new CreatePhotovoltaicDataError(
+                    CreatePhotovoltaicDataErrorCode.SIGNING_FAILED,
+                    $"Signing failed with message: {ex.Message}",
+                    []
+                )
+            );
+        }
         return new CreatePhotovoltaicDataPayload(photovoltaicData);
     }
 }

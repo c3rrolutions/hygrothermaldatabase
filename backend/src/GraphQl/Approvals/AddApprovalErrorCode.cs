@@ -8,5 +8,6 @@ public enum AddApprovalErrorCode
     UNKNOWN,
     UNAUTHENTICATED,
     UNAUTHORIZED,
-    UNKNOWN_DATA
+    UNKNOWN_DATA,
+    SIGNING_FAILED
 }

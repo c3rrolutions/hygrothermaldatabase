@@ -14,9 +14,6 @@ public abstract class DataX
         string[] warnings,
         Guid creatorId,
         DateTime createdAt,
-        DataType? type,
-        DataSubtype? subtype,
-        CoatedSide? coatedSide,
         AppliedMethod appliedMethod
     )
         : this(

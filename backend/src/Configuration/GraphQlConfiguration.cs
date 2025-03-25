@@ -39,14 +39,17 @@ public static class GraphQlConfiguration
         AppSettings appSettings
     )
     {
-        // Stitching Services
-        // https://chillicream.com/docs/hotchocolate/v13/distributed-schema/schema-stitching
-        var httpClientBuilder = services.AddHttpClient(
+        // Stitching Services https://chillicream.com/docs/hotchocolate/v13/distributed-schema/schema-stitching
+        var httpMetaBaesClientBuilder = services.AddHttpClient(
             WellKnownSchemaNames.Metabase,
             _ => _.BaseAddress = new Uri($"{appSettings.MetabaseHost}/graphql")
         );
+        var httpDatabaseClientBuilder = services.AddHttpClient(
+            WellKnownSchemaNames.Database,
+            _ => _.BaseAddress = new Uri($"{appSettings.Host}/graphql")
+        );
         if (!environment.IsProduction())
-            httpClientBuilder.ConfigurePrimaryHttpMessageHandler(_ =>
+            httpMetaBaesClientBuilder.ConfigurePrimaryHttpMessageHandler(_ =>
                 new HttpClientHandler
                 {
                     // ClientCertificateOptions = ClientCertificateOption.Manual,
@@ -54,6 +57,14 @@ public static class GraphQlConfiguration
                         HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
                 }
             );
+        httpDatabaseClientBuilder.ConfigurePrimaryHttpMessageHandler(_ =>
+            new HttpClientHandler
+            {
+                // ClientCertificateOptions = ClientCertificateOption.Manual,
+                ServerCertificateCustomValidationCallback =
+                    HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+            }
+        );
         // Automatic-Persisted-Queries Services
         services
             .AddMemoryCache()
@@ -195,6 +206,7 @@ public static class GraphQlConfiguration
     public static class WellKnownSchemaNames
     {
         public const string Metabase = "metabase";
+        public const string Database = "database";
     }
 }
 

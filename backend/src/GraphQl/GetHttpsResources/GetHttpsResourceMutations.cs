@@ -8,7 +8,6 @@ using Database.Authorization;
 using Database.Enumerations;
 using Database.Extensions;
 using HotChocolate.Types;
-using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Database.Services;
 
@@ -22,7 +21,6 @@ public sealed class GetHttpsResourceMutations
         CreateGetHttpsResourceInput input,
         ApplicationDbContext context,
         IUserService userService,
-        IHttpContextAccessor httpContextAccessor,
         CancellationToken cancellationToken
     )
     {
@@ -47,7 +45,6 @@ public sealed class GetHttpsResourceMutations
         }
 
         var currentUser = await userService.GetCurrentUser(
-            httpContextAccessor,
             cancellationToken).ConfigureAwait(false);
         if (currentUser == null)
         {

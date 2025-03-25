@@ -25,9 +25,6 @@ public sealed class GeometricData
         warnings,
         creatorId,
         createdAt,
-        type,
-        subtype,
-        coatedSide,
         appliedMethod
     )
     {
@@ -42,9 +39,6 @@ public sealed class GeometricData
         string[] warnings,
         Guid creatorId,
         DateTime createdAt,
-        DataType? type,
-        DataSubtype? subtype,
-        CoatedSide? coatedSide,
         double[] thicknesses
     ) : base(
         locale,

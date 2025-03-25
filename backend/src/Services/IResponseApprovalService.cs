@@ -1,11 +1,19 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 using Database.Data;
-using Microsoft.AspNetCore.Http;
 
 namespace Database.Services;
 
+/// <summary>
+/// Service to create response approval
+/// </summary>
 public interface IResponseApprovalService
 {
-    Task<ResponseApproval> CreateResponseApproval(object dataObject, IHttpContextAccessor httpContextAccessor, CancellationToken cancellationToken);
+    /// <summary>
+    /// Create response approval by calling graphql Api and signing responce.
+    /// </summary>
+    /// <param name="dataObject">        <see cref="IData"/> </param>
+    /// <param name="cancellationToken"> <see cref="CancellationToken"/> </param>
+    /// <returns> <see cref="ResponseApproval"/> </returns>
+    Task<ResponseApproval> CreateResponseApproval(IData dataObject, CancellationToken cancellationToken);
 }

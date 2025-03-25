@@ -26,9 +26,6 @@ public sealed class CalorimetricData
         warnings,
         creatorId,
         createdAt,
-        type,
-        subtype,
-        coatedSide,
         appliedMethod
     )
     {
@@ -45,9 +42,6 @@ public sealed class CalorimetricData
         string[] warnings,
         Guid creatorId,
         DateTime createdAt,
-        DataType? type,
-        DataSubtype? subtype,
-        CoatedSide? coatedSide,
         double[] gValues,
         double[] uValues
     ) : base(

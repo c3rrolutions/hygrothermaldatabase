@@ -12,6 +12,9 @@ using Microsoft.AspNetCore.Http;
 
 namespace Database.ApiRequest;
 
+/// <summary>
+/// Class to request databases from Metabase API.
+/// </summary>
 public class DatabaseApi
 {
     private static readonly string[] _databaseFileNames =
@@ -26,6 +29,17 @@ public class DatabaseApi
 
     private sealed record DatabasesData(DatabasesConnection Databases);
 
+    /// <summary>
+    /// Request database from Metabase.
+    /// </summary>
+    /// <param name="appSettings">         <see cref="AppSettings"/> </param>
+    /// <param name="apiRequestService">   <see cref="IApiRequestService"/> </param>
+    /// <param name="httpClientFactory">   <see cref="IHttpClientFactory"/> </param>
+    /// <param name="httpContextAccessor"> <see cref="IHttpContextAccessor"/> </param>
+    /// <param name="resolverContext">     <see cref="IResolverContext"/> </param>
+    /// <param name="cancellationToken">   <see cref="CancellationToken"/> </param>
+    /// <returns> <see cref="DatabaseDto"/> if successful. </returns>
+    /// <exception cref="GraphQLException"> Throws exception if errors occur. </exception>
     public static async Task<DatabaseDto> RequestDatabase(
         AppSettings appSettings,
         IApiRequestService apiRequestService,
@@ -94,10 +108,20 @@ public class DatabaseApi
         return response.Data.Databases.Edges[0].Node;
     }
 
+    /// <summary>
+    /// Update database in Metabase.
+    /// </summary>
+    /// <param name="databaseRequest">     <see cref="DatabaseRequestDto"/> with update mutation. </param>
+    /// <param name="appSettings">         <see cref="AppSettings"/> </param>
+    /// <param name="apiRequestService">   <see cref="IApiRequestService"/> </param>
+    /// <param name="httpClientFactory">   <see cref="IHttpClientFactory"/> </param>
+    /// <param name="httpContextAccessor"> <see cref="IHttpContextAccessor"/> </param>
+    /// <param name="cancellationToken">   <see cref="CancellationToken"/> </param>
+    /// <returns> Updated <see cref="DatabaseDto"/> </returns>
     public static async Task<DatabaseDto?> UpdateDatabase(
         DatabaseRequestDto databaseRequest,
-        IApiRequestService apiRequestService,
         AppSettings appSettings,
+        IApiRequestService apiRequestService,
         IHttpClientFactory httpClientFactory,
         IHttpContextAccessor httpContextAccessor,
         CancellationToken cancellationToken

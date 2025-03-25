@@ -18,4 +18,12 @@ public class AddApprovalPayload
         : base(error)
     {
     }
+
+    public AddApprovalPayload(
+        DataApproval dataApproval,
+        AddApprovalError error
+    )
+        : base(dataApproval, error)
+    {
+    }
 }

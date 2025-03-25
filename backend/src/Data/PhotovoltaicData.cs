@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
-using Database.Enumerations;
 
 namespace Database.Data;
 
@@ -16,9 +15,6 @@ public sealed class PhotovoltaicData
         string[] warnings,
         Guid creatorId,
         DateTime createdAt,
-        DataType? type,
-        DataSubtype? subtype,
-        CoatedSide? coatedSide,
         AppliedMethod appliedMethod
     ) : base(
         locale,
@@ -28,9 +24,6 @@ public sealed class PhotovoltaicData
         warnings,
         creatorId,
         createdAt,
-        type,
-        subtype,
-        coatedSide,
         appliedMethod
     )
     {
@@ -44,10 +37,7 @@ public sealed class PhotovoltaicData
         string? description,
         string[] warnings,
         Guid creatorId,
-        DateTime createdAt,
-        DataType? type,
-        DataSubtype? subtype,
-        CoatedSide? coatedSide
+        DateTime createdAt
     ) : base(
         locale,
         componentId,

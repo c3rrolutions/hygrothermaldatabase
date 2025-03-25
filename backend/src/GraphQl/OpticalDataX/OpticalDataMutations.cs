@@ -1,12 +1,14 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Database.Authorization;
 using Database.Data;
+using Database.GraphQl.GeometricDataX;
 using Database.Services;
 using HotChocolate.Types;
-using Microsoft.AspNetCore.Http;
+using Org.BouncyCastle.Asn1.X509.Qualified;
 
 namespace Database.GraphQl.OpticalDataX;
 
@@ -18,12 +20,11 @@ public sealed class OpticalDataMutations
         CreateOpticalDataInput input,
         ApplicationDbContext context,
         IUserService userService,
-        IHttpContextAccessor httpContextAccessor,
+        IResponseApprovalService responseApprovalService,
         CancellationToken cancellationToken
     )
     {
         var currentUser = await userService.GetCurrentUser(
-            httpContextAccessor,
             cancellationToken).ConfigureAwait(false);
         if (currentUser == null)
         {
@@ -136,6 +137,26 @@ public sealed class OpticalDataMutations
         opticalData.Resources.Add(resource);
         context.OpticalData.Add(opticalData);
         await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+
+        try
+        {
+            opticalData.Approval = await responseApprovalService.CreateResponseApproval(opticalData, cancellationToken).ConfigureAwait(false);
+            await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            context.Remove(opticalData);
+            await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+
+            return new CreateOpticalDataPayload(
+                opticalData,
+                new CreateOpticalDataError(
+                    CreateOpticalDataErrorCode.SIGNING_FAILED,
+                    $"Signing failed with message: {ex.Message}",
+                    []
+                )
+            );
+        }
         return new CreateOpticalDataPayload(opticalData);
     }
 }

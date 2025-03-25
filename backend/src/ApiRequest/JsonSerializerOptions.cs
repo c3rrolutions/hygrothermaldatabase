@@ -4,13 +4,20 @@ using GraphQL.Client.Serializer.SystemTextJson;
 
 namespace Database.ApiRequest;
 
+/// <summary>
+/// Settings for Json serialization.
+/// </summary>
 public static class JsonSerializerSettings
 {
+    /// <summary>
+    /// Settings for GraphQL Json requests.
+    /// </summary>
     public static readonly JsonSerializerOptions GraphQL =
         new()
         {
             Converters = { new JsonStringEnumConverter(new ConstantCaseJsonNamingPolicy(), false) },
             NumberHandling = JsonNumberHandling.Strict,
+            AllowOutOfOrderMetadataProperties = true,
             PropertyNameCaseInsensitive = false,
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
             ReadCommentHandling = JsonCommentHandling.Disallow,
@@ -20,11 +27,15 @@ public static class JsonSerializerSettings
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
         }; //.SetupImmutableConverter();
 
+    /// <summary>
+    /// Settings for REST Json requests.
+    /// </summary>
     public static readonly JsonSerializerOptions REST =
         new()
         {
             Converters = { new JsonStringEnumConverter(new ConstantCaseJsonNamingPolicy(), false) },
             NumberHandling = JsonNumberHandling.Strict,
+            AllowOutOfOrderMetadataProperties = true,
             PropertyNameCaseInsensitive = false,
             PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
             ReadCommentHandling = JsonCommentHandling.Disallow,

@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -6,7 +7,6 @@ using Database.Authorization;
 using Database.Data;
 using Database.Services;
 using HotChocolate.Types;
-using Microsoft.AspNetCore.Http;
 
 namespace Database.GraphQl.CalorimetricDataX;
 
@@ -18,12 +18,11 @@ public sealed class CalorimetricDataMutations
         CreateCalorimetricDataInput input,
         ApplicationDbContext context,
         IUserService userService,
-        IHttpContextAccessor httpContextAccessor,
+        IResponseApprovalService responseApprovalService,
         CancellationToken cancellationToken
     )
     {
         var currentUser = await userService.GetCurrentUser(
-            httpContextAccessor,
             cancellationToken).ConfigureAwait(false);
         if (currentUser == null)
         {
@@ -123,6 +122,26 @@ public sealed class CalorimetricDataMutations
         calorimetricData.Resources.Add(resource);
         context.CalorimetricData.Add(calorimetricData);
         await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+
+        try
+        {
+            calorimetricData.Approval = await responseApprovalService.CreateResponseApproval(calorimetricData, cancellationToken).ConfigureAwait(false);
+            await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            context.Remove(calorimetricData);
+            await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+
+            return new CreateCalorimetricDataPayload(
+                calorimetricData,
+                new CreateCalorimetricDataError(
+                    CreateCalorimetricDataErrorCode.SIGNING_FAILED,
+                    $"Signing failed with message: {ex.Message}",
+                    []
+                )
+            );
+        }
         return new CreateCalorimetricDataPayload(calorimetricData);
     }
 }

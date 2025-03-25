@@ -9,6 +9,9 @@ using Microsoft.AspNetCore.Http;
 
 namespace Database.ApiRequest;
 
+/// <summary>
+/// Class to request user info from Metabase API.
+/// </summary>
 public class UserApi
 {
     private static readonly string[] _currentUserFileNames =
@@ -18,6 +21,15 @@ public class UserApi
 
     private sealed record CurrentUserData(CurrentUserDto CurrentUser);
 
+    /// <summary>
+    /// Request current user from Metabase.
+    /// </summary>
+    /// <param name="appSettings">         <see cref="AppSettings"/> </param>
+    /// <param name="apiRequestService">   <see cref="IApiRequestService"/> </param>
+    /// <param name="httpClientFactory">   <see cref="IHttpClientFactory"/> </param>
+    /// <param name="httpContextAccessor"> <see cref="IHttpContextAccessor"/> </param>
+    /// <param name="cancellationToken">   <see cref="CancellationToken"/> </param>
+    /// <returns> <see cref="CurrentUserDto"/> if successful. </returns>
     public static async Task<CurrentUserDto?> RequestCurrentUser(
         AppSettings appSettings,
         IApiRequestService apiRequestService,
@@ -40,6 +52,15 @@ public class UserApi
                ?? null;
     }
 
+    /// <summary>
+    /// Request user info from Metabase.
+    /// </summary>
+    /// <param name="appSettings">         <see cref="AppSettings"/> </param>
+    /// <param name="apiRequestService">   <see cref="IApiRequestService"/> </param>
+    /// <param name="httpClientFactory">   <see cref="IHttpClientFactory"/> </param>
+    /// <param name="httpContextAccessor"> <see cref="IHttpContextAccessor"/> </param>
+    /// <param name="cancellationToken">   <see cref="CancellationToken"/> </param>
+    /// <returns> <see cref="UserInfoDto"/> if successful. </returns>
     public static async Task<UserInfoDto?> RequestUserInfo(
         AppSettings appSettings,
         IApiRequestService apiRequestService,

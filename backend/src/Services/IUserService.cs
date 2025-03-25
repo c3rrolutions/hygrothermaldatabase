@@ -1,7 +1,6 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 using Database.ApiRequest.Dto;
-using Microsoft.AspNetCore.Http;
 
 namespace Database.Services;
 
@@ -11,10 +10,15 @@ namespace Database.Services;
 public interface IUserService
 {
     /// <summary>
-    /// Get current user from Mewtabase by extraxting token from <see cref="HttpContextAccessor"/>.
+    /// Get current user from Metabase.
     /// </summary>
-    /// <param name="httpContextAccessor"> <see cref="IHttpContextAccessor"/> </param>
-    /// <param name="cancellationToken">   <see cref="CancellationToken"/> </param>
+    /// <param name="cancellationToken"> <see cref="CancellationToken"/> </param>
     /// <returns> </returns>
-    public Task<CurrentUserDto?> GetCurrentUser(IHttpContextAccessor httpContextAccessor, CancellationToken cancellationToken);
+    public Task<CurrentUserDto?> GetCurrentUser(CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Get application from user calims.
+    /// </summary>
+    /// <returns> ClientId from claims as applicationId. </returns>
+    string? GetApplicationIdFromUser();
 }

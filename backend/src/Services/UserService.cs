@@ -1,5 +1,4 @@
-﻿using System;
-using System.Net.Http;
+﻿using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Database.ApiRequest;
@@ -7,27 +6,36 @@ using Database.ApiRequest.Dto;
 using Database.Extensions;
 using Database.Logging;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
+using OpenIddict.Abstractions;
+using static OpenIddict.Abstractions.OpenIddictConstants;
 
 namespace Database.Services;
 
 /// <summary>
 /// Implementation of <see cref="IUserService"/>
 /// </summary>
-/// <param name="appSettings">       <see cref="AppSettings"/> </param>
-/// <param name="httpClientFactory"> <see cref="IHttpClientFactory"/> </param>
-/// <param name="cache">             <see cref="IMemoryCache"/> to store already known users. </param>
-/// <param name="logger">            Instance of <see cref="ILogger"/> </param>
+/// <param name="appSettings">         <see cref="AppSettings"/> </param>
+/// <param name="httpContextAccessor"> <see cref="IHttpContextAccessor"/> </param>
+/// <param name="httpClientFactory">   <see cref="IHttpClientFactory"/> </param>
+/// <param name="cacheService">        <see cref="ICacheService"/> to store already known users. </param>
+/// <param name="logger">              Instance of <see cref="ILogger"/> </param>
 public class UserService(
     AppSettings appSettings,
     IApiRequestService apiRequestService,
+    IHttpContextAccessor httpContextAccessor,
     IHttpClientFactory httpClientFactory,
-    IMemoryCache cache,
+    ICacheService cacheService,
     ILogger<IUserService> logger) : IUserService
 {
     /// <inheritdoc/>
-    public async Task<CurrentUserDto?> GetCurrentUser(IHttpContextAccessor httpContextAccessor, CancellationToken cancellationToken)
+    public string? GetApplicationIdFromUser()
+    {
+        return httpContextAccessor.HttpContext?.User.GetClaim(Claims.ClientId);
+    }
+
+    /// <inheritdoc/>
+    public async Task<CurrentUserDto?> GetCurrentUser(CancellationToken cancellationToken)
     {
         // Extract token
         var token = await httpContextAccessor.ExtractBearerToken().ConfigureAwait(false);
@@ -35,24 +43,22 @@ public class UserService(
 
         if (token == null)
         {
-            return await GetCurrentUserFromMetabase(httpContextAccessor, cancellationToken).ConfigureAwait(false);
+            return await GetCurrentUserFromMetabase(cancellationToken).ConfigureAwait(false);
         }
 
         // Check if there is already a user for token
-        if (!cache.TryGetValue(token, out CurrentUserDto? cacheUser))
+        if (!cacheService.TryGetUser(token, out CurrentUserDto? cacheUser))
         {
             // Get user from Metabase
-            cacheUser = await GetCurrentUserFromMetabase(httpContextAccessor, cancellationToken).ConfigureAwait(false);
-            var cacheEntryOptions = new MemoryCacheEntryOptions()
-                .SetSlidingExpiration(TimeSpan.FromHours(1));
+            cacheUser = await GetCurrentUserFromMetabase(cancellationToken).ConfigureAwait(false);
             // Store user in cache
-            cache.Set(token, cacheUser, cacheEntryOptions);
+            cacheService.SetUser(token, cacheUser);
         }
 
         return cacheUser;
     }
 
-    private Task<CurrentUserDto?> GetCurrentUserFromMetabase(IHttpContextAccessor httpContextAccessor, CancellationToken cancellationToken)
+    private Task<CurrentUserDto?> GetCurrentUserFromMetabase(CancellationToken cancellationToken)
     {
         return UserApi.RequestCurrentUser(
             appSettings,

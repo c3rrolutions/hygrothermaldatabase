@@ -14,24 +14,38 @@ using Microsoft.AspNetCore.Http;
 
 namespace Database.Services;
 
+/// <summary>
+/// Implementation of <see cref="IApiRequestService"/>
+/// </summary>
 public class ApiRequestService() : IApiRequestService
 {
+    /// <summary>
+    /// Name of Metabase http client.
+    /// </summary>
     public const string MetabaseHttpClient = "Metabase";
+
+    /// <summary>
+    /// Name of Database http client.
+    /// </summary>
     public const string DatabaseHttpClient = "Database";
+
     private static bool _useMetabase = true;
 
+    /// <inheritdoc/>
     public ApiRequestService Metabase()
     {
         _useMetabase = true;
         return this;
     }
 
+    /// <inheritdoc/>
     public ApiRequestService Database()
     {
         _useMetabase = false;
         return this;
     }
 
+    /// <inheritdoc/>
     public async Task<string> ConstructGraphQlQuery(
         string[] fileNames
     )
@@ -46,6 +60,7 @@ public class ApiRequestService() : IApiRequestService
         );
     }
 
+    /// <inheritdoc/>
     public Task<GraphQLResponse<TGraphQlResponse>> QueryGraphQl<TGraphQlResponse>(
         AppSettings appSettings,
         GraphQLRequest request,
@@ -68,6 +83,7 @@ public class ApiRequestService() : IApiRequestService
         );
     }
 
+    /// <inheritdoc/>
     public Task<TResponse> QueryRest<TResponse>(
         Uri uri,
         IHttpClientFactory httpClientFactory,
@@ -105,7 +121,10 @@ public class ApiRequestService() : IApiRequestService
             uri
         );
         httpRequestMessage.Content = httpContent;
-        httpRequestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", bearerToken);
+        if (bearerToken != null)
+        {
+            httpRequestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", bearerToken);
+        }
         using var httpResponseMessage =
             await httpClient.SendAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
         if (httpResponseMessage.StatusCode != HttpStatusCode.OK)

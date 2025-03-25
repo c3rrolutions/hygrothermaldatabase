@@ -7,7 +7,6 @@ using Database.Authorization;
 using Database.Data;
 using Database.Services;
 using HotChocolate.Types;
-using Microsoft.AspNetCore.Http;
 
 namespace Database.GraphQl.GeometricDataX;
 
@@ -21,14 +20,11 @@ public sealed class GeometricDataMutations
         ApplicationDbContext context,
         IUserService userService,
         IResponseApprovalService responseApprovalService,
-        IHttpContextAccessor httpContextAccessor,
         CancellationToken cancellationToken
     )
     {
-        var currentUser = await userService.GetCurrentUser(
-            httpContextAccessor,
-            cancellationToken).ConfigureAwait(false);
-        if (currentUser == null)
+        var currentUser = await userService.GetCurrentUser(cancellationToken).ConfigureAwait(false);
+        if (currentUser is null)
         {
             return new CreateGeometricDataPayload(
                 new CreateGeometricDataError(
@@ -114,15 +110,18 @@ public sealed class GeometricDataMutations
 
         try
         {
-            geometricData.Approval = await responseApprovalService.CreateResponseApproval(geometricData, httpContextAccessor, cancellationToken).ConfigureAwait(false);
+            geometricData.Approval = await responseApprovalService.CreateResponseApproval(geometricData, cancellationToken).ConfigureAwait(false);
             await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
+            context.Remove(geometricData);
+            await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+
             return new CreateGeometricDataPayload(
                 geometricData,
                 new CreateGeometricDataError(
-                    CreateGeometricDataErrorCode.SIGNINGFAILED,
+                    CreateGeometricDataErrorCode.SIGNING_FAILED,
                     $"Signing failed with message: {ex.Message}",
                     []
                 )

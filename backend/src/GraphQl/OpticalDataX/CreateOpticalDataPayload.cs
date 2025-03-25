@@ -1,4 +1,4 @@
-using Database.Data;
+﻿using Database.Data;
 
 namespace Database.GraphQl.OpticalDataX;
 
@@ -16,6 +16,14 @@ public sealed class CreateOpticalDataPayload
         CreateOpticalDataError error
     )
         : base(error)
+    {
+    }
+
+    public CreateOpticalDataPayload(
+        OpticalData opticalData,
+        CreateOpticalDataError error
+    )
+        : base(opticalData, error)
     {
     }
 }

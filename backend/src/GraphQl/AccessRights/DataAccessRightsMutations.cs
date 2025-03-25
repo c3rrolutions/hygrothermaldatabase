@@ -12,7 +12,7 @@ namespace Database.GraphQl.AccessRights;
 [ExtendObjectType(nameof(Mutation))]
 public class DataAccessRightsMutations
 {
-    public async Task<AddDataAccessRightsPayload> AddAccessRightsToDataAsync(
+    public async Task<UpdateDataAccessRightsPayload> UpdateAccessRightsToDataAsync(
         DataAccessRightsInput input,
         ApplicationDbContext context,
         AppSettings appSettings,
@@ -24,13 +24,12 @@ public class DataAccessRightsMutations
     )
     {
         var currentUser = await userService.GetCurrentUser(
-            httpContextAccessor,
             cancellationToken).ConfigureAwait(false);
         if (currentUser == null)
         {
-            return new AddDataAccessRightsPayload(
-                new AddDataAccessRightsError(
-                    AddDataAccessRightsErrorCode.UNAUTHENTICATED,
+            return new UpdateDataAccessRightsPayload(
+                new UpdateDataAccessRightsError(
+                    UpdateDataAccessRightsErrorCode.UNAUTHENTICATED,
                     $"The user is not authenticated.",
                     []
                 )
@@ -57,27 +56,32 @@ public class DataAccessRightsMutations
         var data = await dataService.GetDataAsync(input.DataId, context, cancellationToken).ConfigureAwait(false);
         if (data == null)
         {
-            return new AddDataAccessRightsPayload(
-                new AddDataAccessRightsError(
-                    AddDataAccessRightsErrorCode.UNKNOWN_DATA,
+            return new UpdateDataAccessRightsPayload(
+                new UpdateDataAccessRightsError(
+                    UpdateDataAccessRightsErrorCode.UNKNOWN_DATA,
                     $"Unknown data.",
                     []
                 )
             );
         }
 
-        data.DataAccess = input.DataAccessMode;
-        if (data.DataAccess == Enumerations.DataAccessMode.RESTRICTED)
+        data.DataAccessRights.AllowedInstitutions = input.DataAccessRights.AllowedInstitutions;
+        data.DataAccessRights.AllowedApplications = input.DataAccessRights.AllowedApplications;
+        data.DataAccessRights.AllowedUserAndQuantity = input.DataAccessRights.AllowedUserAndQuantity;
+
+        if (data.DataAccessRights.AllowedInstitutions?.Count > 0
+            || data.DataAccessRights.AllowedApplications?.Count > 0
+            || data.DataAccessRights.AllowedUserAndQuantity?.Count > 0)
         {
-            data.DataAccessRights.AllowedInstitutions = input.DataAccessRights.AllowedInstitutions;
-
-            data.DataAccessRights.AllowedApplications = input.DataAccessRights.AllowedApplications;
-
-            data.DataAccessRights.AllowedUserAndQuantity = input.DataAccessRights.AllowedUserAndQuantity;
+            data.DataAccess = Enumerations.DataAccessMode.RESTRICTED;
+        }
+        else
+        {
+            data.DataAccess = Enumerations.DataAccessMode.UNRESTRICTED;
         }
 
         await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
-        return new AddDataAccessRightsPayload(data.DataAccessRights);
+        return new UpdateDataAccessRightsPayload(data.DataAccessRights);
     }
 
     public async Task<AddAccessRightsPayload> AddAccessRightsAsync(
@@ -92,13 +96,12 @@ public class DataAccessRightsMutations
     )
     {
         var currentUser = await userService.GetCurrentUser(
-            httpContextAccessor,
             cancellationToken).ConfigureAwait(false);
         if (currentUser == null)
         {
             return new AddAccessRightsPayload(
-                new AddAccessRightsError(
-                    AddAccessRightsErrorCode.UNAUTHENTICATED,
+                new AccessRightsError(
+                    AccessRightsErrorCode.UNAUTHENTICATED,
                     $"The user is not authenticated.",
                     []
                 )
@@ -127,8 +130,8 @@ public class DataAccessRightsMutations
         if (accessRights is not null)
         {
             return new AddAccessRightsPayload(
-                new AddAccessRightsError(
-                    AddAccessRightsErrorCode.ALREADY_EXISTS,
+                new AccessRightsError(
+                    AccessRightsErrorCode.ALREADY_EXISTS,
                     $"The access rights for this institution already exist.",
                     []
                 )
@@ -148,7 +151,7 @@ public class DataAccessRightsMutations
         return new AddAccessRightsPayload(accessRights);
     }
 
-    public async Task<AddAccessRightsPayload> UpdateAccessRightsAsync(
+    public async Task<UpdateAccessRightsPayload> UpdateAccessRightsAsync(
         AccessRightsInput input,
         ApplicationDbContext context,
         AppSettings appSettings,
@@ -160,13 +163,12 @@ public class DataAccessRightsMutations
     )
     {
         var currentUser = await userService.GetCurrentUser(
-            httpContextAccessor,
             cancellationToken).ConfigureAwait(false);
         if (currentUser == null)
         {
-            return new AddAccessRightsPayload(
-                new AddAccessRightsError(
-                    AddAccessRightsErrorCode.UNAUTHENTICATED,
+            return new UpdateAccessRightsPayload(
+                new AccessRightsError(
+                    AccessRightsErrorCode.UNAUTHENTICATED,
                     $"The user is not authenticated.",
                     []
                 )
@@ -200,9 +202,9 @@ public class DataAccessRightsMutations
         }
         else
         {
-            return new AddAccessRightsPayload(
-                new AddAccessRightsError(
-                    AddAccessRightsErrorCode.UNKNOWN_ACCESSRIGHTS,
+            return new UpdateAccessRightsPayload(
+                new AccessRightsError(
+                    AccessRightsErrorCode.UNKNOWN_ACCESSRIGHTS,
                     $"There are no access rights for this institution.",
                     []
                 )
@@ -210,6 +212,6 @@ public class DataAccessRightsMutations
         }
 
         await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
-        return new AddAccessRightsPayload(accessRights);
+        return new UpdateAccessRightsPayload(accessRights);
     }
 }

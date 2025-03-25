@@ -2,11 +2,11 @@
 
 namespace Database.GraphQl.AccessRights;
 
-public class AddAccessRightsError
-    : UserErrorBase<AddAccessRightsErrorCode>
+public class AccessRightsError
+    : UserErrorBase<AccessRightsErrorCode>
 {
-    public AddAccessRightsError(
-        AddAccessRightsErrorCode code,
+    public AccessRightsError(
+        AccessRightsErrorCode code,
         string message,
         IReadOnlyList<string> path
     )

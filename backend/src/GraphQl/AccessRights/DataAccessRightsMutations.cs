@@ -24,7 +24,6 @@ public class DataAccessRightsMutations
     )
     {
         var currentUser = await userService.GetCurrentUser(
-            httpContextAccessor,
             cancellationToken).ConfigureAwait(false);
         if (currentUser == null)
         {
@@ -92,7 +91,6 @@ public class DataAccessRightsMutations
     )
     {
         var currentUser = await userService.GetCurrentUser(
-            httpContextAccessor,
             cancellationToken).ConfigureAwait(false);
         if (currentUser == null)
         {
@@ -160,7 +158,6 @@ public class DataAccessRightsMutations
     )
     {
         var currentUser = await userService.GetCurrentUser(
-            httpContextAccessor,
             cancellationToken).ConfigureAwait(false);
         if (currentUser == null)
         {

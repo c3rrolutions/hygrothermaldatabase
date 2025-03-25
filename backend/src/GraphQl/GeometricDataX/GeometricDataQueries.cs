@@ -24,7 +24,7 @@ public sealed class GeometricDataQueries
     public async Task<IQueryable<GeometricData>> GetAllGeometricData(
         [GraphQLType<LocaleType>] string? locale,
         ApplicationDbContext context,
-        IAccessRightsService accessRightsService,
+        //IAccessRightsService accessRightsService,
         ISortingContext sorting,
         IResolverContext resolverContext,
         CancellationToken cancellationToken
@@ -32,21 +32,21 @@ public sealed class GeometricDataQueries
     {
         sorting.StabilizeOrder<GeometricData>();
         IQueryable<GeometricData> filteredData = context.GeometricData.Sort(resolverContext).Filter(resolverContext);
+        return filteredData;
+        //var result = await accessRightsService.ApplyAccessRightsOnData(filteredData, cancellationToken).ConfigureAwait(false);
 
-        var result = await accessRightsService.ApplyAccessRightsOnData(filteredData, cancellationToken).ConfigureAwait(false);
+        //var errors = new List<IUserError>();
+        //foreach (var error in result.Restrictions)
+        //{
+        //    errors.Add(new QueryError(
+        //        QueryErrorCode.RESTRICTED,
+        //        error,
+        //        []));
+        //}
 
-        var errors = new List<IUserError>();
-        foreach (var error in result.Restrictions)
-        {
-            errors.Add(new QueryError(
-                QueryErrorCode.RESTRICTED,
-                error,
-                []));
-        }
-
-        // TODO Use `locale`.
-        //return new QueryPayload(result.Data as List<GeometricData>, errors);
-        return (result.Data as IEnumerable<GeometricData>).AsQueryable<GeometricData>();
+        //// TODO Use `locale`.
+        ////return new QueryPayload(result.Data as List<GeometricData>, errors);
+        //return (result.Data as IEnumerable<GeometricData>).AsQueryable<GeometricData>();
     }
 
     public Task<GeometricData?> GetGeometricDataAsync(

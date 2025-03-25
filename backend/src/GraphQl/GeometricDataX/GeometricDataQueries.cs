@@ -36,7 +36,7 @@ public sealed class GeometricDataQueries
         var result = await accessRightsService.ApplyAccessRightsOnData(filteredData, cancellationToken).ConfigureAwait(false);
 
         var errors = new List<IUserError>();
-        foreach (var error in result.Errors)
+        foreach (var error in result.Restrictions)
         {
             errors.Add(new QueryError(
                 QueryErrorCode.RESTRICTED,

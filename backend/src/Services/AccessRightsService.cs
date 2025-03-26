@@ -20,16 +20,17 @@ public class AccessRightsService(
     ICacheService cacheService) : IAccessRightsService
 {
     /// <inheritdoc/>
-    public async Task<(IEnumerable<IData> Data, IEnumerable<string> Restrictions)> ApplyAccessRightsOnData(IQueryable<IData> data, CancellationToken cancellationToken)
+    public async Task<(ICollection<IData> Data, ICollection<string> Restrictions)> ApplyAccessRightsOnData(ICollection<IData> data, CancellationToken cancellationToken)
     {
         List<IData> filteredData = new List<IData>();
         List<string> restrictions = new List<string>();
-        var applicationId = userService.GetApplicationIdFromUser();
         List<Guid> institutions = new List<Guid>();
-        var currentUser = await userService.GetCurrentUser(cancellationToken).ConfigureAwait(false);
-        var alreadyAccessedCount = cacheService.GetAccessCountForUser(currentUser.Uuid);
-
         List<AccessRights> accessRights = new List<AccessRights>();
+
+        var applicationId = userService.GetApplicationIdFromUser() ?? throw new Exception("Application Id could not be aquired.");
+        var currentUser = await userService.GetCurrentUser(cancellationToken).ConfigureAwait(false) ?? throw new Exception("Could not get current user!");
+
+        var alreadyAccessedCount = cacheService.GetAccessCountForUser(currentUser.Uuid);
         foreach (var institution in currentUser.RepresentedInstitutions.Edges)
         {
             institutions.Add(institution.Node.Uuid);
@@ -63,11 +64,21 @@ public class AccessRightsService(
                 {
                     continue;
                 }
+
+                cacheService.SetAccessCountForUser(currentUser.Uuid, ++alreadyAccessedCount);
             }
 
             filteredData.Add(dataItem);
         }
 
         return (filteredData, restrictions);
+    }
+
+    /// <inheritdoc/>
+    public async Task<(IData? Data, string? Restrictions)> ApplyAccessRightsOnData(IData data, CancellationToken cancellationToken)
+    {
+        var result = await ApplyAccessRightsOnData(new List<IData> { data }, cancellationToken).ConfigureAwait(false);
+
+        return (result.Data.FirstOrDefault(), result.Restrictions.FirstOrDefault());
     }
 }

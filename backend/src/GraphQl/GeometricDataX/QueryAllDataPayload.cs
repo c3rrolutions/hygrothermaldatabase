@@ -3,10 +3,24 @@ using Database.Data;
 
 namespace Database.GraphQl.GeometricDataX;
 
-public class QueryPayload
+public class QueryAllDataPayload
     : Payload
 {
-    public QueryPayload(
+    public QueryAllDataPayload(
+        ICollection<GeometricData> geometricData
+    )
+    {
+        GeometricData = geometricData;
+    }
+
+    public QueryAllDataPayload(
+        IReadOnlyCollection<IUserError> errors
+    )
+    {
+        Errors = errors;
+    }
+
+    public QueryAllDataPayload(
         ICollection<GeometricData> geometricData,
         IReadOnlyCollection<IUserError> errors
     )

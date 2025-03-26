@@ -143,7 +143,7 @@ public class DataAccessRightsMutations
                 input.InstitutionId,
                 input.AllowedUserCount,
                 input.AllowedDatasetsPerTimeSpan,
-                input.Period);
+                input.PeriodInDays);
             context.AccessRights.Add(accessRights);
         }
 
@@ -198,7 +198,7 @@ public class DataAccessRightsMutations
         {
             accessRights.AllowedUserCount = input.AllowedUserCount;
             accessRights.AllowedDatasetsPerTime = input.AllowedDatasetsPerTimeSpan;
-            accessRights.Period = input.Period;
+            accessRights.Period = TimeSpan.FromDays(input.PeriodInDays);
         }
         else
         {

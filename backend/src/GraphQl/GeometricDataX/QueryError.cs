@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Database.GraphQl.GeometricDataX;
 
@@ -15,7 +16,9 @@ public class QueryError
     }
 }
 
+[SuppressMessage("Naming", "CA1707")]
 public enum QueryErrorCode
 {
+    NO_ELEMENTS,
     RESTRICTED
 }

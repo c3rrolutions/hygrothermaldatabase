@@ -5,7 +5,7 @@ using System.Security.Claims;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Database.ApiRequest;
+using Database.ApiRequests;
 using Database.Data;
 using Database.Services;
 using HotChocolate;

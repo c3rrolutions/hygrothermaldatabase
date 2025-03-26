@@ -40,7 +40,7 @@ public static class GraphQlConfiguration
     )
     {
         // Stitching Services https://chillicream.com/docs/hotchocolate/v13/distributed-schema/schema-stitching
-        var httpMetaBaesClientBuilder = services.AddHttpClient(
+        var httpMetabaseClientBuilder = services.AddHttpClient(
             WellKnownSchemaNames.Metabase,
             _ => _.BaseAddress = new Uri($"{appSettings.MetabaseHost}/graphql")
         );
@@ -49,7 +49,7 @@ public static class GraphQlConfiguration
             _ => _.BaseAddress = new Uri($"{appSettings.Host}/graphql")
         );
         if (!environment.IsProduction())
-            httpMetaBaesClientBuilder.ConfigurePrimaryHttpMessageHandler(_ =>
+            httpMetabaseClientBuilder.ConfigurePrimaryHttpMessageHandler(_ =>
                 new HttpClientHandler
                 {
                     // ClientCertificateOptions = ClientCertificateOption.Manual,

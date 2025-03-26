@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Database.Data;
 using Database.Enumerations;
 
-namespace Database.ApiRequest.Dto;
+namespace Database.ApiRequests.Dto;
 
 public record GeometricDataDto(
     string Uuid,

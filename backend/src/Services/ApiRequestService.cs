@@ -7,7 +7,7 @@ using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Database.ApiRequest;
+using Database.ApiRequests;
 using Database.Extensions;
 using GraphQL;
 using Microsoft.AspNetCore.Http;
@@ -54,7 +54,7 @@ public class ApiRequestService() : IApiRequestService
             Environment.NewLine,
             await Task.WhenAll(
                 fileNames.Select(fileName =>
-                    File.ReadAllTextAsync($"ApiRequest/Queries/{fileName}")
+                    File.ReadAllTextAsync($"ApiRequests/Queries/{fileName}")
                 )
             ).ConfigureAwait(false)
         );

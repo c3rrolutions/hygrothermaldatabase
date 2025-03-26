@@ -1,8 +1,8 @@
 ﻿using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Database.ApiRequest;
-using Database.ApiRequest.Dto;
+using Database.ApiRequests;
+using Database.ApiRequests.Dto;
 using Database.Extensions;
 using Database.Logging;
 using Microsoft.AspNetCore.Http;

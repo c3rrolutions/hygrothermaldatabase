@@ -1,0 +1,10 @@
+fragment OpticalDataFields on OpticalData {
+  id
+  ...DataFields
+  infraredEmittances
+  nearnormalHemisphericalSolarReflectances
+  nearnormalHemisphericalSolarTransmittances
+  nearnormalHemisphericalVisibleReflectances
+  nearnormalHemisphericalVisibleTransmittances
+  colorRenderingIndices
+}

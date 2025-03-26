@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Database.ApiRequest.Dto;
+namespace Database.ApiRequests.Dto;
 
 public sealed record Address(
     string Formatted

@@ -216,10 +216,10 @@ public sealed class Startup(
     private static void ConfigureHttpClientServices(IServiceCollection services, IWebHostEnvironment environment)
     {
         services.AddHttpClient();
-        var metabasesHttpClientBuilder = services.AddHttpClient(ApiRequestService.MetabaseHttpClient);
+        var metabaseHttpClientBuilder = services.AddHttpClient(ApiRequestService.MetabaseHttpClient);
         if (environment.IsDevelopment())
         {
-            metabasesHttpClientBuilder.ConfigurePrimaryHttpMessageHandler(_ =>
+            metabaseHttpClientBuilder.ConfigurePrimaryHttpMessageHandler(_ =>
                 new HttpClientHandler
                 {
                     ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator

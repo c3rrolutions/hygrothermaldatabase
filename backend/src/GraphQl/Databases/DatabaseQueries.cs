@@ -4,7 +4,7 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Database.ApiRequest;
+using Database.ApiRequests;
 using Database.Services;
 using HotChocolate;
 using HotChocolate.Resolvers;

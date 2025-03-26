@@ -1,6 +1,6 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
-using Database.ApiRequest.Dto;
+using Database.ApiRequests.Dto;
 
 namespace Database.Services;
 

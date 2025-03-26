@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Database.Data;
 
@@ -14,6 +15,7 @@ public interface IResponseApprovalService
     /// </summary>
     /// <param name="dataObject">        <see cref="IData"/> </param>
     /// <param name="cancellationToken"> <see cref="CancellationToken"/> </param>
+    /// <exception cref="Exception"> Thows exception, when singing of data failed. </exception>
     /// <returns> <see cref="ResponseApproval"/> </returns>
     Task<ResponseApproval> CreateResponseApproval(IData dataObject, CancellationToken cancellationToken);
 }

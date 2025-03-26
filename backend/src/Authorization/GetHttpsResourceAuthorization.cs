@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Threading;
-using Database.ApiRequest.Dto;
+using Database.ApiRequests.Dto;
 
 namespace Database.Authorization;
 

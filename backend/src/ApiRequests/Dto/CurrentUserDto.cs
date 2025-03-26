@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Database.ApiRequest.Dto;
+namespace Database.ApiRequests.Dto;
 
 public enum InstitutionRepresentativeRole
 {
@@ -9,6 +9,7 @@ public enum InstitutionRepresentativeRole
     ASSISTANT
 }
 
+[System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1711:Bezeichner dürfen kein falsches Suffix aufweisen", Justification = "<Ausstehend>")]
 public enum DataSigningPermission
 {
     NEVER,

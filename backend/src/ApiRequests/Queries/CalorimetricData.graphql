@@ -1,0 +1,5 @@
+query CalorimetricData($uuid: Uuid!) {
+  calorimetricData(id: $uuid) {
+    ...CalorimetricDataFields
+  }
+}

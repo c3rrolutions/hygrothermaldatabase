@@ -2,7 +2,7 @@
 using System.Text.Json.Serialization;
 using GraphQL.Client.Serializer.SystemTextJson;
 
-namespace Database.ApiRequest;
+namespace Database.ApiRequests;
 
 /// <summary>
 /// Settings for Json serialization.

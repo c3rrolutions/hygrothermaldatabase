@@ -30,6 +30,7 @@ public static class HttpContextAccessorExtensions
         return !String.IsNullOrEmpty(token) && !String.IsNullOrEmpty(expirationDate) && CheckExpirationDate(expirationDate) ? token : null;
     }
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1305:IFormatProvider angeben", Justification = "No need at this point.")]
     private static bool CheckExpirationDate(string expirationDate)
     {
         return DateTime.UnixEpoch.AddSeconds(int.Parse(expirationDate)) < DateTime.UtcNow;

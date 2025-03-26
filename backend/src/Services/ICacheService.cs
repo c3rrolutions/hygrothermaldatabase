@@ -1,5 +1,5 @@
 ﻿using System;
-using Database.ApiRequest.Dto;
+using Database.ApiRequests.Dto;
 
 namespace Database.Services;
 

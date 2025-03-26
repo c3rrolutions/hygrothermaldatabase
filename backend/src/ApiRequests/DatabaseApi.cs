@@ -2,7 +2,6 @@
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Database.ApiRequest.Dto;
 using Database.GraphQl.Databases;
 using Database.Services;
 using GraphQL;
@@ -10,7 +9,7 @@ using HotChocolate;
 using HotChocolate.Resolvers;
 using Microsoft.AspNetCore.Http;
 
-namespace Database.ApiRequest;
+namespace Database.ApiRequests;
 
 /// <summary>
 /// Class to request databases from Metabase API.
@@ -111,7 +110,7 @@ public class DatabaseApi
     /// <summary>
     /// Update database in Metabase.
     /// </summary>
-    /// <param name="databaseRequest">     <see cref="DatabaseRequestDto"/> with update mutation. </param>
+    /// <param name="updateDatabaseInput"> <see cref="UpdateDatabaseInput"/> with update mutation. </param>
     /// <param name="appSettings">         <see cref="AppSettings"/> </param>
     /// <param name="apiRequestService">   <see cref="IApiRequestService"/> </param>
     /// <param name="httpClientFactory">   <see cref="IHttpClientFactory"/> </param>
@@ -119,7 +118,7 @@ public class DatabaseApi
     /// <param name="cancellationToken">   <see cref="CancellationToken"/> </param>
     /// <returns> Updated <see cref="DatabaseDto"/> </returns>
     public static async Task<DatabaseDto?> UpdateDatabase(
-        DatabaseRequestDto databaseRequest,
+        UpdateDatabaseInput updateDatabaseInput,
         AppSettings appSettings,
         IApiRequestService apiRequestService,
         IHttpClientFactory httpClientFactory,
@@ -135,7 +134,7 @@ public class DatabaseApi
                     ).ConfigureAwait(false),
                 new
                 {
-                    databaseRequest
+                    updateDatabaseInput
                 },
                 "UpdateDatabase"
                 ),

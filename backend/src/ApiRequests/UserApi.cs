@@ -2,12 +2,12 @@
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Database.ApiRequest.Dto;
+using Database.ApiRequests.Dto;
 using Database.Services;
 using GraphQL;
 using Microsoft.AspNetCore.Http;
 
-namespace Database.ApiRequest;
+namespace Database.ApiRequests;
 
 /// <summary>
 /// Class to request user info from Metabase API.

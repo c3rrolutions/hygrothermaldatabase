@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using Database.ApiRequest.Dto;
+using Database.ApiRequests.Dto;
 
 namespace Database.Data;
 

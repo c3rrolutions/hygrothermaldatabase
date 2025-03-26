@@ -2,7 +2,8 @@
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Database.ApiRequest;
+using Database.ApiRequests;
+using Database.ApiRequests.Dto;
 using Database.Data;
 using Database.Logging;
 using Microsoft.AspNetCore.Http;
@@ -27,6 +28,12 @@ public class ResponseApprovalService(
     IHttpContextAccessor httpContextAccessor,
     ILogger<IResponseApprovalService> logger) : IResponseApprovalService
 {
+    private sealed record CalorimetricDataResponse(CalorimetricDataDto CalorimetricData);
+    private sealed record GeometricDataResponse(GeometricDataDto GeometricData);
+    private sealed record HygrothermalDataResponse(HygrothermalDataDto HygrothermalData);
+    private sealed record PhotovoltaicDataResponse(PhotovoltaicDataDto PhotovoltaicData);
+    private sealed record OpticalDataResponse(OpticalDataDto OpticalData);
+
     /// <inheritdoc/>
     public async Task<ResponseApproval> CreateResponseApproval(IData dataObject, CancellationToken cancellationToken)
     {
@@ -34,48 +41,39 @@ public class ResponseApprovalService(
         logger.GetQueryAndResponse(dataObject.GetType().Name);
         var queryAdnResponse = await GetQueryAndResponse(dataObject, cancellationToken).ConfigureAwait(false);
 
-        if (string.IsNullOrEmpty(queryAdnResponse.Query))
-        {
-            throw new ArgumentNullException(queryAdnResponse.Query);
-        }
-        if (string.IsNullOrEmpty(queryAdnResponse.Response))
-        {
-            throw new ArgumentNullException(queryAdnResponse.Response);
-        }
-
         logger.QueryAndResponce(queryAdnResponse.Query, queryAdnResponse.Response);
 
         var signatureResult = await signingService.SignData(queryAdnResponse.Response).ConfigureAwait(false);
 
         if (!signatureResult.Success)
         {
-            throw new ArgumentException("Signing failed");
+            throw new Exception("Signing of data failed!");
         }
 
         return new ResponseApproval(DateTime.UtcNow, signatureResult.Signature, signingService.Fingerprint, queryAdnResponse.Query, queryAdnResponse.Response);
     }
 
-    private async Task<(string? Query, string? Response)> GetQueryAndResponse(IData dataObject, CancellationToken cancellationToken)
+    private async Task<(string Query, string Response)> GetQueryAndResponse(IData dataObject, CancellationToken cancellationToken)
     {
         switch (dataObject)
         {
             case GeometricData data:
-                return await DataApi.CreateQueryAndGetResponseGeometricData(data.Id, appSettings, apiRequestService, httpClientFactory, httpContextAccessor, cancellationToken);
+                return await DataApi.CreateQueryAndGetResponse<GeometricDataResponse>(data.Id, DataApi.GeometricDataFileNames, appSettings, apiRequestService, httpClientFactory, httpContextAccessor, cancellationToken);
 
             case CalorimetricData data:
-                return await DataApi.CreateQueryAndGetResponseCalorimetricData(data.Id, appSettings, apiRequestService, httpClientFactory, httpContextAccessor, cancellationToken);
+                return await DataApi.CreateQueryAndGetResponse<CalorimetricDataResponse>(data.Id, DataApi.CalorimetricDataFileNames, appSettings, apiRequestService, httpClientFactory, httpContextAccessor, cancellationToken);
 
             case HygrothermalData data:
-                return await DataApi.CreateQueryAndGetResponseHygrothermalData(data.Id, appSettings, apiRequestService, httpClientFactory, httpContextAccessor, cancellationToken);
+                return await DataApi.CreateQueryAndGetResponse<HygrothermalDataResponse>(data.Id, DataApi.HygrothermalDataFileNames, appSettings, apiRequestService, httpClientFactory, httpContextAccessor, cancellationToken);
 
             case PhotovoltaicData data:
-                return await DataApi.CreateQueryAndGetResponsePhotovoltaicData(data.Id, appSettings, apiRequestService, httpClientFactory, httpContextAccessor, cancellationToken);
+                return await DataApi.CreateQueryAndGetResponse<PhotovoltaicDataResponse>(data.Id, DataApi.PhotovoltaicDataFileNames, appSettings, apiRequestService, httpClientFactory, httpContextAccessor, cancellationToken);
 
             case OpticalData data:
-                return await DataApi.CreateQueryAndGetResponseOpticalData(data.Id, appSettings, apiRequestService, httpClientFactory, httpContextAccessor, cancellationToken);
+                return await DataApi.CreateQueryAndGetResponse<OpticalDataResponse>(data.Id, DataApi.OpticalDataFileNames, appSettings, apiRequestService, httpClientFactory, httpContextAccessor, cancellationToken);
 
             default:
-                return (null, null);
+                throw new ArgumentException("Unknown IData object.");
         }
     }
 }

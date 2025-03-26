@@ -2,8 +2,7 @@
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Database.ApiRequest;
-using Database.ApiRequest.Dto;
+using Database.ApiRequests;
 using Database.Services;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
@@ -23,11 +22,7 @@ public sealed class DatabaseMutations
     )
     {
         var database = await DatabaseApi.UpdateDatabase(
-            new DatabaseRequestDto(
-                input.DatabaseId,
-                input.Description,
-                input.Name,
-                input.Locator),
+            input,
             appSettings,
             apiRequestService,
             httpClientFactory,

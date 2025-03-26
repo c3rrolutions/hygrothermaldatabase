@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Database.Enumerations;
 
 namespace Database.Data;
@@ -68,4 +69,36 @@ public abstract class DataX
 
     public DataAccessMode DataAccess { get; set; } = DataAccessMode.UNRESTRICTED;
     public DataAccessRights DataAccessRights { get; } = new DataAccessRights();
+
+    /// <inheritdoc/>
+    public bool IsRestrictedByApplication(string applicationId)
+    {
+        if (this.DataAccess == DataAccessMode.UNRESTRICTED)
+            return false;
+        return this.DataAccessRights.AllowedApplications.Contains(applicationId);
+    }
+
+    /// <inheritdoc/>
+    public bool IsRestrictedByInstitutions(List<Guid> institutions)
+    {
+        if (this.DataAccess == DataAccessMode.UNRESTRICTED)
+            return false;
+        return this.DataAccessRights.AllowedInstitutions.Any(a => institutions.Any(b => a.Equals(b)));
+    }
+
+    /// <inheritdoc/>
+    public bool IsRestrictedByUser(Guid uuid, int alreadyAccesedCount)
+    {
+        if (this.DataAccess == DataAccessMode.UNRESTRICTED)
+            return false;
+        int limit;
+        if (this.DataAccessRights.AllowedUserAndQuantity.TryGetValue(uuid, out limit))
+        {
+            if (limit < 0 || limit > alreadyAccesedCount)
+            {
+                return false;
+            }
+        }
+        return true;
+    }
 }

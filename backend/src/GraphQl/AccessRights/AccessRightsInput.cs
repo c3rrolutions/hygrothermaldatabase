@@ -12,5 +12,5 @@ public sealed record AccessRightsInput
     // Count of allowed datasets for institution
     // -1 = unlimited 0 = no access
     int AllowedDatasetsPerTimeSpan,
-    TimeSpan Period
+    int PeriodInDays
 );

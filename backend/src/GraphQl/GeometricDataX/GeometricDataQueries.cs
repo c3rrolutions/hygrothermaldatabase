@@ -21,7 +21,7 @@ public sealed class GeometricDataQueries
     [UsePaging]
     [UseFiltering(typeof(GeometricDataFilterType))]
     [UseSorting]
-    public async Task<IQueryable<GeometricData>> GetAllGeometricData(
+    public async Task<QueryAllDataPayload> GetAllGeometricData(
         [GraphQLType<LocaleType>] string? locale,
         ApplicationDbContext context,
         //IAccessRightsService accessRightsService,
@@ -32,34 +32,56 @@ public sealed class GeometricDataQueries
     {
         sorting.StabilizeOrder<GeometricData>();
         IQueryable<GeometricData> filteredData = context.GeometricData.Sort(resolverContext).Filter(resolverContext);
-        return filteredData;
-        //var result = await accessRightsService.ApplyAccessRightsOnData(filteredData, cancellationToken).ConfigureAwait(false);
+        if (!filteredData.Any(x => x.DataAccess == Enumerations.DataAccessMode.RESTRICTED))
+        {
+            return new QueryAllDataPayload(filteredData.ToList());
+        }
 
-        //var errors = new List<IUserError>();
-        //foreach (var error in result.Restrictions)
-        //{
-        //    errors.Add(new QueryError(
-        //        QueryErrorCode.RESTRICTED,
-        //        error,
-        //        []));
-        //}
+        var result = await accessRightsService.ApplyAccessRightsOnData(filteredData.ToList<IData>(), cancellationToken).ConfigureAwait(false);
 
-        //// TODO Use `locale`.
-        ////return new QueryPayload(result.Data as List<GeometricData>, errors);
-        //return (result.Data as IEnumerable<GeometricData>).AsQueryable<GeometricData>();
+        var restrictions = new List<IUserError>();
+        foreach (var restriction in result.Restrictions)
+        {
+            restrictions.Add(new QueryError(
+                QueryErrorCode.RESTRICTED,
+                restriction,
+                []));
+        }
+
+        // TODO Use `locale`.
+        return new QueryAllDataPayload((ICollection<GeometricData>)result.Data, restrictions);
     }
 
-    public Task<GeometricData?> GetGeometricDataAsync(
+    public async Task<QueryDataPayload> GetGeometricDataAsync(
         Guid id,
         [GraphQLType<LocaleType>] string? locale,
         GeometricDataByIdDataLoader byId,
+        IAccessRightsService accessRightsService,
         CancellationToken cancellationToken
     )
     {
         // TODO Use `locale`.
-        return byId.LoadAsync(
+        var geometricData = await byId.LoadAsync(
             id,
             cancellationToken
-        );
+        ).ConfigureAwait(false);
+
+        if (geometricData == null)
+        {
+            return new QueryDataPayload(new QueryError(
+                QueryErrorCode.NO_ELEMENTS,
+                "No elements",
+                []));
+        }
+
+        var result = await accessRightsService.ApplyAccessRightsOnData(geometricData, cancellationToken).ConfigureAwait(false);
+        if (result.Restrictions is not null)
+        {
+            return new QueryDataPayload(new QueryError(
+                QueryErrorCode.RESTRICTED,
+                result.Restrictions,
+                []));
+        }
+        return new QueryDataPayload(result.Data as GeometricData);
     }
 }

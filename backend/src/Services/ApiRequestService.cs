@@ -96,7 +96,7 @@ public class ApiRequestService() : IApiRequestService
             HttpMethod.Get,
             uri,
             null,
-            JsonSerializerSettings.REST,
+            JsonSerializerSettings.Rest,
             httpClientFactory,
             httpContextAccessor,
             cancellationToken

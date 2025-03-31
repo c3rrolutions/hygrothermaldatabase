@@ -25,6 +25,6 @@ public interface ISigningService
     /// Sign passed data string and return signature.
     /// </summary>
     /// <param name="data"> Data string to create signature from. </param>
-    /// <returns> True and generated signature, if successful. Otherwise false. </returns>
-    public Task<(bool Success, string Signature)> SignData(string data);
+    /// <returns> True and generated signature, if successful. Otherwise false and error. </returns>
+    public Task<(bool Success, string Output)> SignData(string data);
 }

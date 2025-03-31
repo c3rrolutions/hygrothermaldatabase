@@ -44,10 +44,8 @@ public class SigningService(
     }
 
     /// <inheritdoc/>
-    public async Task<(bool Success, string Signature)> SignData(string data)
+    public async Task<(bool Success, string Output)> SignData(string data)
     {
-        string signature = "";
-
         // Write data string to file
         if (!WriteDataToFile(data))
         {
@@ -60,8 +58,8 @@ public class SigningService(
         if (success)
         {
             // Read signature from file
-            success = ReadSignatureFromFile(out signature);
-            logger.Signature(signature);
+            (success, outout) = ReadSignatureFromFile();
+            logger.Signature(outout);
         }
         else
         {
@@ -70,7 +68,7 @@ public class SigningService(
 
         // Remove created files
         RemoveFiles();
-        return (success, signature);
+        return (success, outout);
     }
 
     private async Task<(bool, string)> ExecuteGnuCommand(string command)
@@ -137,21 +135,19 @@ public class SigningService(
         }
     }
 
-    private bool ReadSignatureFromFile(out string signature)
+    private (bool, string) ReadSignatureFromFile()
     {
         try
         {
             using (StreamReader file = new StreamReader(FILENAME + FILE_EXTENSION))
             {
-                signature = file.ReadToEnd();
+                return (true, file.ReadToEnd());
             }
-            return true;
         }
-        catch (Exception ex)
+        catch (IOException ex)
         {
             logger.ReadFileException(ex.ToString());
-            signature = "";
-            return false;
+            return (false, ex.ToString());
         }
     }
 

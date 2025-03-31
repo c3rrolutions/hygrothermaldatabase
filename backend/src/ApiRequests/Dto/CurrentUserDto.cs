@@ -20,21 +20,21 @@ public enum DataSigningPermission
 public sealed record CurrentUserDto(
     Guid Id,
     Guid Uuid,
-    RepresentedInstitutions RepresentedInstitutions
+    RepresentedInstitutionsDto RepresentedInstitutions
 );
 
-public sealed record Edge(
-    Node Node,
+public sealed record EdgeDto(
+    NodeDto Node,
     InstitutionRepresentativeRole Role,
     DataSigningPermission DataSigningPermission
 );
 
-public sealed record Node(
+public sealed record NodeDto(
     Guid Id,
     Guid Uuid,
     string Name
 );
 
-public sealed record RepresentedInstitutions(
-    IReadOnlyList<Edge> Edges
+public sealed record RepresentedInstitutionsDto(
+    IReadOnlyList<EdgeDto> Edges
 );

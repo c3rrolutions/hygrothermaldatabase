@@ -25,6 +25,7 @@ public class AccessRightsService(
     ILogger<IAccessRightsService> logger) : IAccessRightsService
 {
     /// <inheritdoc/>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2201:Keine reservierten Ausnahmetypen auslösen", Justification = "<Ausstehend>")]
     public async Task<IQueryable<T>> ApplyAccessRightsOnData<T>(ICollection<T> data, CancellationToken cancellationToken)
     where T : IData
     {

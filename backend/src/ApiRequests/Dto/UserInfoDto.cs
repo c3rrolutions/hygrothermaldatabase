@@ -2,12 +2,8 @@
 
 namespace Database.ApiRequests.Dto;
 
-public sealed record Address(
-    string Formatted
-);
-
 public sealed record UserInfoDto(
-    Address? Address,
+    AddressDto? Address,
     string Email,
     bool EmailVerified,
     string Name,
@@ -16,4 +12,8 @@ public sealed record UserInfoDto(
     IReadOnlyList<string>? Roles,
     string Sub, // Subject
     string? Website
+);
+
+public sealed record AddressDto(
+    string Formatted
 );

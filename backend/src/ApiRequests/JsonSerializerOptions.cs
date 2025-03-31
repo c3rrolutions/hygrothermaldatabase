@@ -30,7 +30,7 @@ public static class JsonSerializerSettings
     /// <summary>
     /// Settings for REST Json requests.
     /// </summary>
-    public static readonly JsonSerializerOptions REST =
+    public static readonly JsonSerializerOptions Rest =
         new()
         {
             Converters = { new JsonStringEnumConverter(new ConstantCaseJsonNamingPolicy(), false) },

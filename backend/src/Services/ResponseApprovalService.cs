@@ -35,6 +35,7 @@ public class ResponseApprovalService(
     private sealed record OpticalDataResponse(OpticalDataDto OpticalData);
 
     /// <inheritdoc/>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2201:Keine reservierten Ausnahmetypen auslösen", Justification = "<Ausstehend>")]
     public async Task<ResponseApproval> CreateResponseApproval(IData dataObject, CancellationToken cancellationToken)
     {
         // Get dataset
@@ -47,10 +48,10 @@ public class ResponseApprovalService(
 
         if (!signatureResult.Success)
         {
-            throw new Exception("Signing of data failed!");
+            throw new Exception($"Signing of data failed! {signatureResult.Output}");
         }
 
-        return new ResponseApproval(DateTime.UtcNow, signatureResult.Signature, signingService.Fingerprint, queryAdnResponse.Query, queryAdnResponse.Response);
+        return new ResponseApproval(DateTime.UtcNow, signatureResult.Output, signingService.Fingerprint, queryAdnResponse.Query, queryAdnResponse.Response);
     }
 
     private async Task<(string Query, string Response)> GetQueryAndResponse(IData dataObject, CancellationToken cancellationToken)

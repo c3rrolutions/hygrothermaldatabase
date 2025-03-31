@@ -26,7 +26,7 @@ public class DatabaseApi
         "UpdateDatabase.graphql"
     };
 
-    private sealed record DatabasesData(DatabasesConnection Databases);
+    private sealed record DatabasesData(DatabasesConnectionDto Databases);
 
     /// <summary>
     /// Request database from Metabase.

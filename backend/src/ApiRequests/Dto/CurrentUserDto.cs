@@ -23,7 +23,7 @@ public sealed record CurrentUserDto(
     RepresentedInstitutionsDto RepresentedInstitutions
 );
 
-public sealed record EdgeDto(
+public sealed record RepresentedInstitutionsEdge(
     NodeDto Node,
     InstitutionRepresentativeRole Role,
     DataSigningPermission DataSigningPermission
@@ -36,5 +36,5 @@ public sealed record NodeDto(
 );
 
 public sealed record RepresentedInstitutionsDto(
-    IReadOnlyList<EdgeDto> Edges
+    IReadOnlyList<RepresentedInstitutionsEdge> Edges
 );

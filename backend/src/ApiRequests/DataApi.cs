@@ -63,6 +63,7 @@ public class DataApi
     /// Throws exception, when query could not be constructed or no response.
     /// </exception>
     /// <returns> Query and response for data. </returns>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2201:Keine reservierten Ausnahmetypen auslösen", Justification = "<Ausstehend>")]
     public static async Task<(string Query, string Response)> CreateQueryAndGetResponse<TGraphQlResponse>(
         Guid dataId,
         string[] filenames,

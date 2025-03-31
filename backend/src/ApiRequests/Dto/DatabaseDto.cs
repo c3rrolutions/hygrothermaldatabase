@@ -17,7 +17,7 @@ public sealed record DatabaseDto(
      bool CanCurrentUserVerifyNode
 );
 
-public sealed record DatabasesConnection
+public sealed record DatabasesConnectionDto
 (
     IReadOnlyList<DatabaseEdge>? Edges
 );

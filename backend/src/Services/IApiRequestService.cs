@@ -13,13 +13,13 @@ namespace Database.Services;
 public interface IApiRequestService
 {
     /// <summary>
-    /// Use Metabase as target for following requests.
+    /// Use Metabase as target for following requests. See https://chillicream.com/docs/hotchocolate/v14/server/dependency-injection
     /// </summary>
     /// <returns> <see cref="IApiRequestService"/> </returns>
     public ApiRequestService Metabase();
 
     /// <summary>
-    /// Use Database as target for following requests.
+    /// Use Database as target for following requests. See https://chillicream.com/docs/hotchocolate/v14/server/dependency-injection
     /// </summary>
     /// <returns> <see cref="IApiRequestService"/> </returns>
     public ApiRequestService Database();

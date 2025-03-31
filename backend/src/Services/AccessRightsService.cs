@@ -20,7 +20,7 @@ public class AccessRightsService(
     ICacheService cacheService) : IAccessRightsService
 {
     /// <inheritdoc/>
-    public async Task<(ICollection<IData> Data, ICollection<string> Restrictions)> ApplyAccessRightsOnData(ICollection<IData> data, CancellationToken cancellationToken)
+    public async Task<IQueryable<IData>> ApplyAccessRightsOnData(ICollection<IData> data, CancellationToken cancellationToken)
     {
         List<IData> filteredData = new List<IData>();
         List<string> restrictions = new List<string>();
@@ -71,14 +71,14 @@ public class AccessRightsService(
             filteredData.Add(dataItem);
         }
 
-        return (filteredData, restrictions);
+        return filteredData.AsQueryable<IData>();
     }
 
     /// <inheritdoc/>
-    public async Task<(IData? Data, string? Restrictions)> ApplyAccessRightsOnData(IData data, CancellationToken cancellationToken)
+    public async Task<IData?> ApplyAccessRightsOnData(IData data, CancellationToken cancellationToken)
     {
         var result = await ApplyAccessRightsOnData(new List<IData> { data }, cancellationToken).ConfigureAwait(false);
 
-        return (result.Data.FirstOrDefault(), result.Restrictions.FirstOrDefault());
+        return result.FirstOrDefault();
     }
 }

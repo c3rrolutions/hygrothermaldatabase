@@ -28,6 +28,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using IServiceCollection = Microsoft.Extensions.DependencyInjection.IServiceCollection;
 using Database.GraphQl.Approvals;
+using Database.GraphQl.AccessRights;
 
 namespace Database.Configuration;
 
@@ -160,6 +161,7 @@ public static class GraphQlConfiguration
             .AddType<PhotovoltaicDataMutations>()
             .AddType<GeometricDataMutations>()
             .AddType<ApprovalMutations>()
+            .AddType<DataAccessRightsMutations>()
             /* .AddSubscriptionType(d => d.Name(nameof(GraphQl.Subscription))) */
             /*     .AddType<ComponentSubscriptions>() */
             // Object Types

@@ -61,12 +61,8 @@ ALTER TABLE database.calorimetric_data DROP COLUMN "Approval_Timestamp";
 
 ALTER TABLE database.calorimetric_data DROP COLUMN "DataAccess";
 
-UPDATE database.get_https_resource SET "Description" = '' WHERE "Description" IS NULL;
-ALTER TABLE database.get_https_resource ALTER COLUMN "Description" SET NOT NULL;
-ALTER TABLE database.get_https_resource ALTER COLUMN "Description" SET DEFAULT '';
-
 DELETE FROM "__EFMigrationsHistory"
-WHERE "MigrationId" = '20250319132121_AddAccessRights';
+WHERE "MigrationId" = '20250331092709_AddAccessRights';
 
 COMMIT;
 

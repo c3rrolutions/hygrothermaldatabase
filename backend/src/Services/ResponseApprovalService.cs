@@ -73,7 +73,7 @@ public class ResponseApprovalService(
                 return await DataApi.CreateQueryAndGetResponse<OpticalDataResponse>(data.Id, DataApi.OpticalDataFileNames, appSettings, apiRequestService, httpClientFactory, httpContextAccessor, cancellationToken);
 
             default:
-                throw new ArgumentException("Unknown IData object.");
+                throw new NotImplementedException("Unknown IData object.");
         }
     }
 }

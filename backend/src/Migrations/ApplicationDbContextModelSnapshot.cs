@@ -39,11 +39,11 @@ namespace Database.Migrations
                         .HasColumnType("uuid")
                         .HasDefaultValueSql("gen_random_uuid()");
 
-                    b.Property<int>("AllowedDatasetsPerTime")
-                        .HasColumnType("integer");
+                    b.Property<long?>("AllowedDatasetsPerTime")
+                        .HasColumnType("bigint");
 
-                    b.Property<int>("AllowedUserCount")
-                        .HasColumnType("integer");
+                    b.Property<long?>("AllowedUserCount")
+                        .HasColumnType("bigint");
 
                     b.Property<Guid>("InstitutionId")
                         .HasColumnType("uuid");
@@ -51,7 +51,7 @@ namespace Database.Migrations
                     b.Property<TimeSpan>("Period")
                         .HasColumnType("interval");
 
-                    b.PrimitiveCollection<List<Guid>>("UserOfInstitution")
+                    b.PrimitiveCollection<List<Guid>>("UserOfInstitutionAlreadyAccessed")
                         .IsRequired()
                         .HasColumnType("uuid[]");
 

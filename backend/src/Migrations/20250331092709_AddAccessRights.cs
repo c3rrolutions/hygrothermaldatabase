@@ -141,15 +141,6 @@ namespace Database.Migrations
                 nullable: false,
                 defaultValue: 0);
 
-            migrationBuilder.AlterColumn<string>(
-                name: "Description",
-                schema: "database",
-                table: "get_https_resource",
-                type: "text",
-                nullable: true,
-                oldClrType: typeof(string),
-                oldType: "text");
-
             migrationBuilder.AddColumn<string>(
                 name: "Approval_KeyFingerprint",
                 schema: "database",
@@ -243,10 +234,10 @@ namespace Database.Migrations
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
                     InstitutionId = table.Column<Guid>(type: "uuid", nullable: false),
-                    AllowedUserCount = table.Column<int>(type: "integer", nullable: false),
-                    UserOfInstitution = table.Column<List<Guid>>(type: "uuid[]", nullable: false),
-                    AllowedDatasetsPerTime = table.Column<int>(type: "integer", nullable: false),
+                    AllowedUserCount = table.Column<long>(type: "bigint", nullable: true),
+                    AllowedDatasetsPerTime = table.Column<long>(type: "bigint", nullable: true),
                     Period = table.Column<TimeSpan>(type: "interval", nullable: false),
+                    UserOfInstitutionAlreadyAccessed = table.Column<List<Guid>>(type: "uuid[]", nullable: false),
                     xmin = table.Column<uint>(type: "xid", rowVersion: true, nullable: false)
                 },
                 constraints: table =>
@@ -411,17 +402,6 @@ namespace Database.Migrations
                 name: "DataAccess",
                 schema: "database",
                 table: "calorimetric_data");
-
-            migrationBuilder.AlterColumn<string>(
-                name: "Description",
-                schema: "database",
-                table: "get_https_resource",
-                type: "text",
-                nullable: false,
-                defaultValue: "",
-                oldClrType: typeof(string),
-                oldType: "text",
-                oldNullable: true);
         }
     }
 }

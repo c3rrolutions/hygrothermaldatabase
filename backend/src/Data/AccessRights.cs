@@ -8,23 +8,23 @@ public class AccessRights
     : Entity
 {
     public Guid InstitutionId { get; set; }
-    public int AllowedUserCount { get; set; }
-    public List<Guid> UserOfInstitution { get; set; }
-    public int AllowedDatasetsPerTime { get; set; }
+    public uint? AllowedUserCount { get; set; }
+    public uint? AllowedDatasetsPerTime { get; set; }
     public TimeSpan Period { get; set; }
+    public List<Guid> UserOfInstitutionAlreadyAccessed { get; private set; }
 
     public AccessRights(
         Guid institutionId,
-        int allowedUserCount,
-        int allowedDatasetsPerTime,
-        int periodInDays
+        uint? allowedUserCount,
+        uint? allowedDatasetsPerTime,
+        TimeSpan period
         )
     {
         InstitutionId = institutionId;
         AllowedUserCount = allowedUserCount;
         AllowedDatasetsPerTime = allowedDatasetsPerTime;
-        Period = TimeSpan.FromDays(periodInDays);
-        UserOfInstitution = new List<Guid>();
+        Period = period;
+        UserOfInstitutionAlreadyAccessed = new List<Guid>();
     }
 
     /// <summary>
@@ -42,7 +42,7 @@ public class AccessRights
         restrictions = new List<string>();
 
         // Check restriction for time period
-        if (this.AllowedDatasetsPerTime > 0)
+        if (AllowedDatasetsPerTime is not null)
         {
             var accessesPerPeriod = cacheService.GetOrCreateAccessCountForPerirod(InstitutionId);
 
@@ -61,9 +61,9 @@ public class AccessRights
         }
 
         // Check restriction for users per institution
-        if (this.AllowedUserCount > 0)
+        if (this.AllowedUserCount is not null)
         {
-            if (this.UserOfInstitution.Count >= this.AllowedUserCount)
+            if (UserOfInstitutionAlreadyAccessed.Count >= AllowedUserCount)
             {
                 isRestricted = true;
                 restrictions.Add($"Id: {dataItem.Id} Reason: Maximum allowed users of institution {InstitutionId} reached.");
@@ -73,13 +73,13 @@ public class AccessRights
         // If restricted add user or count
         if (!isRestricted)
         {
-            if (this.AllowedDatasetsPerTime > 0)
+            if (AllowedDatasetsPerTime is not null && AllowedDatasetsPerTime > 0)
             {
                 cacheService.AddAccessCountToPeriod(InstitutionId);
             }
-            if (this.AllowedUserCount > 0)
+            if (AllowedUserCount is not null && AllowedUserCount > 0)
             {
-                this.UserOfInstitution.Add(currentUserId);
+                UserOfInstitutionAlreadyAccessed.Add(currentUserId);
             }
         }
 

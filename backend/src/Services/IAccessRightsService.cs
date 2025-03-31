@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Database.Data;
@@ -15,14 +16,14 @@ public interface IAccessRightsService
     /// </summary>
     /// <param name="data">              Data to apply acces rights on. </param>
     /// <param name="cancellationToken"> <see cref="CancellationToken"/> </param>
-    /// <returns> List of data that can be returned and restrictions. </returns>
-    Task<(ICollection<IData> Data, ICollection<string> Restrictions)> ApplyAccessRightsOnData(ICollection<IData> data, CancellationToken cancellationToken);
+    /// <returns> List of data that can be returned. </returns>
+    Task<IQueryable<IData>> ApplyAccessRightsOnData(ICollection<IData> data, CancellationToken cancellationToken);
 
     /// <summary>
     /// Apply access rights on passed data item.
     /// </summary>
     /// <param name="data">              Data to apply acces rights on. </param>
     /// <param name="cancellationToken"> <see cref="CancellationToken"/> </param>
-    /// <returns> Data item or restriction. </returns>
-    Task<(IData? Data, string? Restrictions)> ApplyAccessRightsOnData(IData data, CancellationToken cancellationToken);
+    /// <returns> Data item. </returns>
+    Task<IData?> ApplyAccessRightsOnData(IData data, CancellationToken cancellationToken);
 }

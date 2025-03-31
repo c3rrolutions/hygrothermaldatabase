@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -21,10 +20,10 @@ public sealed class GeometricDataQueries
     [UsePaging]
     [UseFiltering(typeof(GeometricDataFilterType))]
     [UseSorting]
-    public async Task<QueryAllDataPayload> GetAllGeometricData(
+    public async Task<IQueryable<GeometricData>> GetAllGeometricData(
         [GraphQLType<LocaleType>] string? locale,
         ApplicationDbContext context,
-        //IAccessRightsService accessRightsService,
+        IAccessRightsService accessRightsService,
         ISortingContext sorting,
         IResolverContext resolverContext,
         CancellationToken cancellationToken
@@ -32,27 +31,21 @@ public sealed class GeometricDataQueries
     {
         sorting.StabilizeOrder<GeometricData>();
         IQueryable<GeometricData> filteredData = context.GeometricData.Sort(resolverContext).Filter(resolverContext);
+
+        // Check if there is restricted data
         if (!filteredData.Any(x => x.DataAccess == Enumerations.DataAccessMode.RESTRICTED))
         {
-            return new QueryAllDataPayload(filteredData.ToList());
+            return filteredData;
         }
 
+        // Apply acces rights on data
         var result = await accessRightsService.ApplyAccessRightsOnData(filteredData.ToList<IData>(), cancellationToken).ConfigureAwait(false);
 
-        var restrictions = new List<IUserError>();
-        foreach (var restriction in result.Restrictions)
-        {
-            restrictions.Add(new QueryError(
-                QueryErrorCode.RESTRICTED,
-                restriction,
-                []));
-        }
-
         // TODO Use `locale`.
-        return new QueryAllDataPayload((ICollection<GeometricData>)result.Data, restrictions);
+        return (IQueryable<GeometricData>)result;
     }
 
-    public async Task<QueryDataPayload> GetGeometricDataAsync(
+    public async Task<GeometricData?> GetGeometricDataAsync(
         Guid id,
         [GraphQLType<LocaleType>] string? locale,
         GeometricDataByIdDataLoader byId,
@@ -68,20 +61,10 @@ public sealed class GeometricDataQueries
 
         if (geometricData == null)
         {
-            return new QueryDataPayload(new QueryError(
-                QueryErrorCode.NO_ELEMENTS,
-                "No elements",
-                []));
+            return geometricData;
         }
 
         var result = await accessRightsService.ApplyAccessRightsOnData(geometricData, cancellationToken).ConfigureAwait(false);
-        if (result.Restrictions is not null)
-        {
-            return new QueryDataPayload(new QueryError(
-                QueryErrorCode.RESTRICTED,
-                result.Restrictions,
-                []));
-        }
-        return new QueryDataPayload(result.Data as GeometricData);
+        return result as GeometricData;
     }
 }

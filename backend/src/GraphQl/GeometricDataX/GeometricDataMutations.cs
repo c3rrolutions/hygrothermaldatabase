@@ -127,6 +127,7 @@ public sealed class GeometricDataMutations
                 )
             );
         }
+
         return new CreateGeometricDataPayload(geometricData);
     }
 }

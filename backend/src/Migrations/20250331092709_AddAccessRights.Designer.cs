@@ -15,7 +15,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Database.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250319132121_AddAccessRights")]
+    [Migration("20250331092709_AddAccessRights")]
     partial class AddAccessRights
     {
         /// <inheritdoc />
@@ -42,11 +42,11 @@ namespace Database.Migrations
                         .HasColumnType("uuid")
                         .HasDefaultValueSql("gen_random_uuid()");
 
-                    b.Property<int>("AllowedDatasetsPerTime")
-                        .HasColumnType("integer");
+                    b.Property<long?>("AllowedDatasetsPerTime")
+                        .HasColumnType("bigint");
 
-                    b.Property<int>("AllowedUserCount")
-                        .HasColumnType("integer");
+                    b.Property<long?>("AllowedUserCount")
+                        .HasColumnType("bigint");
 
                     b.Property<Guid>("InstitutionId")
                         .HasColumnType("uuid");
@@ -54,7 +54,7 @@ namespace Database.Migrations
                     b.Property<TimeSpan>("Period")
                         .HasColumnType("interval");
 
-                    b.PrimitiveCollection<List<Guid>>("UserOfInstitution")
+                    b.PrimitiveCollection<List<Guid>>("UserOfInstitutionAlreadyAccessed")
                         .IsRequired()
                         .HasColumnType("uuid[]");
 

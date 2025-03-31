@@ -47,14 +47,6 @@ namespace Database.Migrations
                 type: "timestamp with time zone",
                 nullable: true);
 
-            migrationBuilder.AddColumn<int>(
-                name: "DataAccess",
-                schema: "database",
-                table: "photovoltaic_data",
-                type: "integer",
-                nullable: false,
-                defaultValue: 0);
-
             migrationBuilder.AddColumn<string>(
                 name: "Approval_KeyFingerprint",
                 schema: "database",
@@ -89,14 +81,6 @@ namespace Database.Migrations
                 table: "optical_data",
                 type: "timestamp with time zone",
                 nullable: true);
-
-            migrationBuilder.AddColumn<int>(
-                name: "DataAccess",
-                schema: "database",
-                table: "optical_data",
-                type: "integer",
-                nullable: false,
-                defaultValue: 0);
 
             migrationBuilder.AddColumn<string>(
                 name: "Approval_KeyFingerprint",
@@ -133,14 +117,6 @@ namespace Database.Migrations
                 type: "timestamp with time zone",
                 nullable: true);
 
-            migrationBuilder.AddColumn<int>(
-                name: "DataAccess",
-                schema: "database",
-                table: "hygrothermal_data",
-                type: "integer",
-                nullable: false,
-                defaultValue: 0);
-
             migrationBuilder.AddColumn<string>(
                 name: "Approval_KeyFingerprint",
                 schema: "database",
@@ -176,14 +152,6 @@ namespace Database.Migrations
                 type: "timestamp with time zone",
                 nullable: true);
 
-            migrationBuilder.AddColumn<int>(
-                name: "DataAccess",
-                schema: "database",
-                table: "geometric_data",
-                type: "integer",
-                nullable: false,
-                defaultValue: 0);
-
             migrationBuilder.AddColumn<string>(
                 name: "Approval_KeyFingerprint",
                 schema: "database",
@@ -218,14 +186,6 @@ namespace Database.Migrations
                 table: "calorimetric_data",
                 type: "timestamp with time zone",
                 nullable: true);
-
-            migrationBuilder.AddColumn<int>(
-                name: "DataAccess",
-                schema: "database",
-                table: "calorimetric_data",
-                type: "integer",
-                nullable: false,
-                defaultValue: 0);
 
             migrationBuilder.CreateTable(
                 name: "access_rights",
@@ -237,7 +197,7 @@ namespace Database.Migrations
                     AllowedUserCount = table.Column<long>(type: "bigint", nullable: true),
                     AllowedDatasetsPerTime = table.Column<long>(type: "bigint", nullable: true),
                     Period = table.Column<TimeSpan>(type: "interval", nullable: false),
-                    UserOfInstitutionAlreadyAccessed = table.Column<List<Guid>>(type: "uuid[]", nullable: false),
+                    UserAlreadyAccessed = table.Column<List<Guid>>(type: "uuid[]", nullable: false),
                     xmin = table.Column<uint>(type: "xid", rowVersion: true, nullable: false)
                 },
                 constraints: table =>
@@ -279,11 +239,6 @@ namespace Database.Migrations
                 table: "photovoltaic_data");
 
             migrationBuilder.DropColumn(
-                name: "DataAccess",
-                schema: "database",
-                table: "photovoltaic_data");
-
-            migrationBuilder.DropColumn(
                 name: "Approval_KeyFingerprint",
                 schema: "database",
                 table: "optical_data");
@@ -305,11 +260,6 @@ namespace Database.Migrations
 
             migrationBuilder.DropColumn(
                 name: "Approval_Timestamp",
-                schema: "database",
-                table: "optical_data");
-
-            migrationBuilder.DropColumn(
-                name: "DataAccess",
                 schema: "database",
                 table: "optical_data");
 
@@ -339,11 +289,6 @@ namespace Database.Migrations
                 table: "hygrothermal_data");
 
             migrationBuilder.DropColumn(
-                name: "DataAccess",
-                schema: "database",
-                table: "hygrothermal_data");
-
-            migrationBuilder.DropColumn(
                 name: "Approval_KeyFingerprint",
                 schema: "database",
                 table: "geometric_data");
@@ -369,11 +314,6 @@ namespace Database.Migrations
                 table: "geometric_data");
 
             migrationBuilder.DropColumn(
-                name: "DataAccess",
-                schema: "database",
-                table: "geometric_data");
-
-            migrationBuilder.DropColumn(
                 name: "Approval_KeyFingerprint",
                 schema: "database",
                 table: "calorimetric_data");
@@ -395,11 +335,6 @@ namespace Database.Migrations
 
             migrationBuilder.DropColumn(
                 name: "Approval_Timestamp",
-                schema: "database",
-                table: "calorimetric_data");
-
-            migrationBuilder.DropColumn(
-                name: "DataAccess",
                 schema: "database",
                 table: "calorimetric_data");
         }

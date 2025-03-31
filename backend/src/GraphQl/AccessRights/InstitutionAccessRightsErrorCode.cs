@@ -3,11 +3,11 @@
 namespace Database.GraphQl.AccessRights;
 
 [SuppressMessage("Naming", "CA1707")]
-public enum AccessRightsErrorCode
+public enum InstitutionAccessRightsErrorCode
 {
     UNKNOWN,
     UNAUTHENTICATED,
     UNAUTHORIZED,
     ALREADY_EXISTS,
-    UNKNOWN_ACCESSRIGHTS
+    UNKNOWN_ACCESS_RIGHTS
 }

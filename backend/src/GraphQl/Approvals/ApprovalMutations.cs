@@ -23,7 +23,7 @@ public sealed class ApprovalMutations
     {
         var currentUser = await userService.GetCurrentUser(
             cancellationToken).ConfigureAwait(false);
-        if (currentUser == null)
+        if (currentUser is null)
         {
             return new AddApprovalPayload(
                 new AddApprovalError(

@@ -1,7 +1,6 @@
 ﻿using System;
-using Database.GraphQl.Databases;
 
-namespace Database.Data;
+namespace Database.GraphQl.Databases;
 
 public sealed class Database
 {

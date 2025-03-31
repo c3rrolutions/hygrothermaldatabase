@@ -1,16 +1,16 @@
 ﻿namespace Database.GraphQl.AccessRights;
 
-public class UpdateAccessRightsPayload
+public class AddInstitutionAccessRightsPayload
     : InstitutionAccessRightsPayload<InstitutionAccessRightsError>
 {
-    public UpdateAccessRightsPayload(
+    public AddInstitutionAccessRightsPayload(
         Data.InstitutionAccessRights accessRights
     )
         : base(accessRights)
     {
     }
 
-    public UpdateAccessRightsPayload(
+    public AddInstitutionAccessRightsPayload(
         InstitutionAccessRightsError error
     )
         : base(error)

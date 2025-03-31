@@ -35,13 +35,13 @@ public sealed class OpticalDataQueries
         IQueryable<OpticalData> filteredData = context.OpticalData.Sort(resolverContext).Filter(resolverContext);
 
         // Check if there is restricted data
-        if (!filteredData.Any(x => x.DataAccess == Enumerations.DataAccessMode.RESTRICTED))
+        if (!filteredData.Any(x => x.DataAccessRights.HasRistrictions))
         {
             return filteredData;
         }
 
         // Apply acces rights on data
-        var result = await accessRightsService.ApplyAccessRightsOnData(filteredData.ToList<IData>(), cancellationToken).ConfigureAwait(false);
+        var result = await accessRightsService.ApplyAccessRightsOnData(filteredData.ToList(), cancellationToken).ConfigureAwait(false);
 
         // TODO Use `locale`.
         return (IQueryable<OpticalData>)result;

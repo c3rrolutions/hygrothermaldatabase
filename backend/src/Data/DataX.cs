@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Database.Enumerations;
 
 namespace Database.Data;
 
@@ -67,38 +66,39 @@ public abstract class DataX
     // this list and the graph must be connected. In other words, the resources must form a tree.
     public virtual ICollection<GetHttpsResource> Resources { get; } = new List<GetHttpsResource>();
 
-    public DataAccessMode DataAccess { get; set; } = DataAccessMode.UNRESTRICTED;
     public DataAccessRights DataAccessRights { get; } = new DataAccessRights();
 
     /// <inheritdoc/>
     public bool IsRestrictedByApplication(string applicationId)
     {
-        if (this.DataAccess == DataAccessMode.UNRESTRICTED)
-            return false;
-        return this.DataAccessRights.AllowedApplications.Contains(applicationId);
+        if (DataAccessRights.IsRestrictedByApplication)
+            return DataAccessRights.AllowedApplications!.Contains(applicationId);
+        return false;
     }
 
     /// <inheritdoc/>
     public bool IsRestrictedByInstitutions(List<Guid> institutions)
     {
-        if (this.DataAccess == DataAccessMode.UNRESTRICTED)
-            return false;
-        return this.DataAccessRights.AllowedInstitutions.Any(a => institutions.Any(b => a.Equals(b)));
+        if (DataAccessRights.IsRestrictedByInstitution)
+            return DataAccessRights.AllowedInstitutions!.Any(a => institutions.Any(b => a.Equals(b)));
+        return false;
     }
 
     /// <inheritdoc/>
     public bool IsRestrictedByUser(Guid uuid, int alreadyAccesedCount)
     {
-        if (this.DataAccess == DataAccessMode.UNRESTRICTED)
-            return false;
-        int limit;
-        if (this.DataAccessRights.AllowedUserAndQuantity.TryGetValue(uuid, out limit))
+        if (DataAccessRights.IsRestrictedByUser)
         {
-            if (limit < 0 || limit > alreadyAccesedCount)
+            int limit;
+            if (DataAccessRights.AllowedUserAndQuantity!.TryGetValue(uuid, out limit))
             {
-                return false;
+                if (limit < 0 || limit > alreadyAccesedCount)
+                {
+                    return false;
+                }
             }
+            return true;
         }
-        return true;
+        return false;
     }
 }

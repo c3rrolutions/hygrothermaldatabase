@@ -16,7 +16,7 @@ namespace Database.GraphQl.Databases;
 [ExtendObjectType(nameof(Query))]
 public sealed class DatabaseQueries
 {
-    public async Task<Data.Database> GetDatabaseAsync(
+    public async Task<Database> GetDatabaseAsync(
         AppSettings appSettings,
         IApiRequestService apiRequestService,
         IHttpClientFactory httpClientFactory,
@@ -34,7 +34,7 @@ public sealed class DatabaseQueries
                 httpContextAccessor,
                 resolverContext,
                 cancellationToken);
-            return Data.Database.FromDto(database);
+            return Database.FromDto(database);
         }
         catch (HttpRequestException e)
         {

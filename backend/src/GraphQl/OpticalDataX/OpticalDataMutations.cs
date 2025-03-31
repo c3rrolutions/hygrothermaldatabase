@@ -26,7 +26,7 @@ public sealed class OpticalDataMutations
     {
         var currentUser = await userService.GetCurrentUser(
             cancellationToken).ConfigureAwait(false);
-        if (currentUser == null)
+        if (currentUser is null)
         {
             return new CreateOpticalDataPayload(
                 new CreateOpticalDataError(

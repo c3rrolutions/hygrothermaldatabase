@@ -24,7 +24,7 @@ public sealed class CalorimetricDataMutations
     {
         var currentUser = await userService.GetCurrentUser(
             cancellationToken).ConfigureAwait(false);
-        if (currentUser == null)
+        if (currentUser is null)
         {
             return new CreateCalorimetricDataPayload(
                 new CreateCalorimetricDataError(

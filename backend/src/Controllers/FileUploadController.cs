@@ -90,7 +90,7 @@ public class FileUploadController : Controller
     {
         var currentUser = await userService.GetCurrentUser(
             cancellationToken).ConfigureAwait(false);
-        if (currentUser == null)
+        if (currentUser is null)
         {
             ModelState.AddModelError("CurrentUser",
                 $"User is not authenticated.");

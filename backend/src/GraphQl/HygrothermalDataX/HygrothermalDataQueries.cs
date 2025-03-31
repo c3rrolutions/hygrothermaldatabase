@@ -35,7 +35,7 @@ public sealed class HygrothermalDataQueries
         IQueryable<HygrothermalData> filteredData = context.HygrothermalData.Sort(resolverContext).Filter(resolverContext);
 
         // Check if there is restricted data
-        if (!filteredData.Any(x => x.DataAccess == Enumerations.DataAccessMode.RESTRICTED))
+        if (!filteredData.Any(x => x.DataAccessRights.HasRistrictions))
         {
             return filteredData;
         }

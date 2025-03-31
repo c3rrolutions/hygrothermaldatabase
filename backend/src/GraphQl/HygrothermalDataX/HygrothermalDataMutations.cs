@@ -26,7 +26,7 @@ public sealed class HygrothermalDataMutations
     {
         var currentUser = await userService.GetCurrentUser(
             cancellationToken).ConfigureAwait(false);
-        if (currentUser == null)
+        if (currentUser is null)
         {
             return new CreateHygrothermalDataPayload(
                 new CreateHygrothermalDataError(

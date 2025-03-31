@@ -7,7 +7,7 @@ public abstract class DatabasePayload<TDatabaseError>
     where TDatabaseError : IUserError
 {
     protected DatabasePayload(
-        Data.Database? database,
+        Database? database,
         IReadOnlyCollection<TDatabaseError>? errors
     )
     {
@@ -15,6 +15,6 @@ public abstract class DatabasePayload<TDatabaseError>
         Errors = errors;
     }
 
-    public Data.Database? Database { get; }
+    public Database? Database { get; }
     public IReadOnlyCollection<TDatabaseError>? Errors { get; }
 }

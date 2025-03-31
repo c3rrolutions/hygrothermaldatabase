@@ -24,7 +24,7 @@ public class DataAccessRightsMutations
     {
         var currentUser = await userService.GetCurrentUser(
             cancellationToken).ConfigureAwait(false);
-        if (currentUser == null)
+        if (currentUser is null)
         {
             return new UpdateDataAccessRightsPayload(
                 new UpdateDataAccessRightsError(
@@ -67,23 +67,12 @@ public class DataAccessRightsMutations
         data.DataAccessRights.AllowedApplications = input.DataAccessRights.AllowedApplications;
         data.DataAccessRights.AllowedUserAndQuantity = input.DataAccessRights.AllowedUserAndQuantity;
 
-        if (data.DataAccessRights.AllowedInstitutions?.Count > 0
-            || data.DataAccessRights.AllowedApplications?.Count > 0
-            || data.DataAccessRights.AllowedUserAndQuantity?.Count > 0)
-        {
-            data.DataAccess = Enumerations.DataAccessMode.RESTRICTED;
-        }
-        else
-        {
-            data.DataAccess = Enumerations.DataAccessMode.UNRESTRICTED;
-        }
-
         await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         return new UpdateDataAccessRightsPayload(data.DataAccessRights);
     }
 
-    public async Task<AddAccessRightsPayload> AddAccessRightsAsync(
-        AccessRightsInput input,
+    public async Task<AddInstitutionAccessRightsPayload> AddAccessRightsAsync(
+        InstitutionAccessRightsInput input,
         ApplicationDbContext context,
         AppSettings appSettings,
         IHttpClientFactory httpClientFactory,
@@ -95,11 +84,11 @@ public class DataAccessRightsMutations
     {
         var currentUser = await userService.GetCurrentUser(
             cancellationToken).ConfigureAwait(false);
-        if (currentUser == null)
+        if (currentUser is null)
         {
-            return new AddAccessRightsPayload(
-                new AccessRightsError(
-                    AccessRightsErrorCode.UNAUTHENTICATED,
+            return new AddInstitutionAccessRightsPayload(
+                new InstitutionAccessRightsError(
+                    InstitutionAccessRightsErrorCode.UNAUTHENTICATED,
                     $"The user is not authenticated.",
                     []
                 )
@@ -113,9 +102,9 @@ public class DataAccessRightsMutations
             )
         )
         {
-            return new AddAccessRightsPayload(
-                new AccessRightsError(
-                    AccessRightsErrorCode.UNAUTHORIZED,
+            return new AddInstitutionAccessRightsPayload(
+                new InstitutionAccessRightsError(
+                    InstitutionAccessRightsErrorCode.UNAUTHORIZED,
                     $"The current user is not authorized to add access rights for the institution.",
                     []
                 )
@@ -126,30 +115,27 @@ public class DataAccessRightsMutations
 
         if (accessRights is not null)
         {
-            return new AddAccessRightsPayload(
-                new AccessRightsError(
-                    AccessRightsErrorCode.ALREADY_EXISTS,
+            return new AddInstitutionAccessRightsPayload(
+                new InstitutionAccessRightsError(
+                    InstitutionAccessRightsErrorCode.ALREADY_EXISTS,
                     $"The access rights for this institution already exist.",
                     []
                 )
             );
         }
-        else
-        {
-            accessRights = new Data.AccessRights(
-                input.InstitutionId,
-                input.AllowedUserCount,
-                input.AllowedDatasetsPerTimeSpan,
-                TimeSpan.FromDays(input.PeriodInDays));
-            context.AccessRights.Add(accessRights);
-        }
 
+        accessRights = new Data.InstitutionAccessRights(
+            input.InstitutionId,
+            input.AllowedUserCount,
+            input.AllowedDatasetsPerTimeSpan,
+            TimeSpan.FromDays(input.PeriodInDays));
+        context.AccessRights.Add(accessRights);
         await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
-        return new AddAccessRightsPayload(accessRights);
+        return new AddInstitutionAccessRightsPayload(accessRights);
     }
 
     public async Task<UpdateAccessRightsPayload> UpdateAccessRightsAsync(
-        AccessRightsInput input,
+        InstitutionAccessRightsInput input,
         ApplicationDbContext context,
         AppSettings appSettings,
         IHttpClientFactory httpClientFactory,
@@ -161,11 +147,11 @@ public class DataAccessRightsMutations
     {
         var currentUser = await userService.GetCurrentUser(
             cancellationToken).ConfigureAwait(false);
-        if (currentUser == null)
+        if (currentUser is null)
         {
             return new UpdateAccessRightsPayload(
-                new AccessRightsError(
-                    AccessRightsErrorCode.UNAUTHENTICATED,
+                new InstitutionAccessRightsError(
+                    InstitutionAccessRightsErrorCode.UNAUTHENTICATED,
                     $"The user is not authenticated.",
                     []
                 )
@@ -180,8 +166,8 @@ public class DataAccessRightsMutations
         )
         {
             return new UpdateAccessRightsPayload(
-                new AccessRightsError(
-                    AccessRightsErrorCode.UNAUTHORIZED,
+                new InstitutionAccessRightsError(
+                    InstitutionAccessRightsErrorCode.UNAUTHORIZED,
                     $"The current user is not authorized to update access rights for the institution.",
                     []
                 )
@@ -193,8 +179,8 @@ public class DataAccessRightsMutations
         if (accessRights is null)
         {
             return new UpdateAccessRightsPayload(
-                new AccessRightsError(
-                    AccessRightsErrorCode.UNKNOWN_ACCESSRIGHTS,
+                new InstitutionAccessRightsError(
+                    InstitutionAccessRightsErrorCode.UNKNOWN_ACCESS_RIGHTS,
                     $"There are no access rights for this institution.",
                     []
                 )

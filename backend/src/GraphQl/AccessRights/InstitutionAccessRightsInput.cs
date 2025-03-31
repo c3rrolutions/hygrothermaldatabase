@@ -2,7 +2,7 @@
 
 namespace Database.GraphQl.AccessRights;
 
-public sealed record AccessRightsInput
+public sealed record InstitutionAccessRightsInput
 (
     // Id of institution
     Guid InstitutionId,

@@ -29,7 +29,7 @@ public sealed class DatabaseMutations
             httpContextAccessor,
             cancellationToken).ConfigureAwait(false);
         return database is not null ? new UpdateDatabasePayload(
-            Data.Database.FromDto(database),
+            Database.FromDto(database),
             null) : new UpdateDatabasePayload(
                    null,
                    new[]

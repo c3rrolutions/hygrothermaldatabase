@@ -4,16 +4,16 @@ using Database.Services;
 
 namespace Database.Data;
 
-public class AccessRights
+public class InstitutionAccessRights
     : Entity
 {
     public Guid InstitutionId { get; set; }
     public uint? AllowedUserCount { get; set; }
     public uint? AllowedDatasetsPerTime { get; set; }
     public TimeSpan Period { get; set; }
-    public List<Guid> UserOfInstitutionAlreadyAccessed { get; private set; }
+    public List<Guid> UserAlreadyAccessed { get; private set; }
 
-    public AccessRights(
+    public InstitutionAccessRights(
         Guid institutionId,
         uint? allowedUserCount,
         uint? allowedDatasetsPerTime,
@@ -24,7 +24,7 @@ public class AccessRights
         AllowedUserCount = allowedUserCount;
         AllowedDatasetsPerTime = allowedDatasetsPerTime;
         Period = period;
-        UserOfInstitutionAlreadyAccessed = new List<Guid>();
+        UserAlreadyAccessed = new List<Guid>();
     }
 
     /// <summary>
@@ -34,12 +34,12 @@ public class AccessRights
     /// <param name="dataItem">      <see cref="IData"/> </param>
     /// <param name="currentUserId"> Id of current user. </param>
     /// <param name="cacheService">  <see cref="ICacheService"/> </param>
-    /// <param name="restrictions">  List or restrictions </param>
+    /// <param name="reason">        Reason, why data is restricted. </param>
     /// <returns> </returns>
-    internal bool IsDataRestricted(IData dataItem, Guid currentUserId, ICacheService cacheService, out List<string> restrictions)
+    internal bool IsDataRestricted(IData dataItem, Guid currentUserId, ICacheService cacheService, out string reason)
     {
         bool isRestricted = false;
-        restrictions = new List<string>();
+        reason = "";
 
         // Check restriction for time period
         if (AllowedDatasetsPerTime is not null)
@@ -51,7 +51,7 @@ public class AccessRights
                 if (accessesPerPeriod.Count >= AllowedDatasetsPerTime)
                 {
                     isRestricted = true;
-                    restrictions.Add($"Id: {dataItem.Id} Reason: Maximum amount of allowed datasets for institution {InstitutionId} reached.");
+                    reason = $"Id: {dataItem.Id} Reason: Maximum amount of allowed datasets for institution {InstitutionId} reached.";
                 }
             }
             else
@@ -63,10 +63,10 @@ public class AccessRights
         // Check restriction for users per institution
         if (this.AllowedUserCount is not null)
         {
-            if (UserOfInstitutionAlreadyAccessed.Count >= AllowedUserCount)
+            if (UserAlreadyAccessed.Count >= AllowedUserCount)
             {
                 isRestricted = true;
-                restrictions.Add($"Id: {dataItem.Id} Reason: Maximum allowed users of institution {InstitutionId} reached.");
+                reason = $"Id: {dataItem.Id} Reason: Maximum allowed users of institution {InstitutionId} reached.";
             }
         }
 
@@ -79,7 +79,7 @@ public class AccessRights
             }
             if (AllowedUserCount is not null && AllowedUserCount > 0)
             {
-                UserOfInstitutionAlreadyAccessed.Add(currentUserId);
+                UserAlreadyAccessed.Add(currentUserId);
             }
         }
 

@@ -32,40 +32,6 @@ namespace Database.Migrations
             NpgsqlModelBuilderExtensions.HasPostgresExtension(modelBuilder, "pgcrypto");
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("Database.Data.AccessRights", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasDefaultValueSql("gen_random_uuid()");
-
-                    b.Property<long?>("AllowedDatasetsPerTime")
-                        .HasColumnType("bigint");
-
-                    b.Property<long?>("AllowedUserCount")
-                        .HasColumnType("bigint");
-
-                    b.Property<Guid>("InstitutionId")
-                        .HasColumnType("uuid");
-
-                    b.Property<TimeSpan>("Period")
-                        .HasColumnType("interval");
-
-                    b.PrimitiveCollection<List<Guid>>("UserOfInstitutionAlreadyAccessed")
-                        .IsRequired()
-                        .HasColumnType("uuid[]");
-
-                    b.Property<uint>("Version")
-                        .IsConcurrencyToken()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("xid")
-                        .HasColumnName("xmin");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("access_rights", "database");
-                });
-
             modelBuilder.Entity("Database.Data.CalorimetricData", b =>
                 {
                     b.Property<Guid>("Id")
@@ -81,9 +47,6 @@ namespace Database.Migrations
 
                     b.Property<Guid>("CreatorId")
                         .HasColumnType("uuid");
-
-                    b.Property<int>("DataAccess")
-                        .HasColumnType("integer");
 
                     b.Property<string>("Description")
                         .HasColumnType("text");
@@ -133,9 +96,6 @@ namespace Database.Migrations
 
                     b.Property<Guid>("CreatorId")
                         .HasColumnType("uuid");
-
-                    b.Property<int>("DataAccess")
-                        .HasColumnType("integer");
 
                     b.Property<string>("Description")
                         .HasColumnType("text");
@@ -240,9 +200,6 @@ namespace Database.Migrations
                     b.Property<Guid>("CreatorId")
                         .HasColumnType("uuid");
 
-                    b.Property<int>("DataAccess")
-                        .HasColumnType("integer");
-
                     b.Property<string>("Description")
                         .HasColumnType("text");
 
@@ -268,6 +225,40 @@ namespace Database.Migrations
                     b.ToTable("hygrothermal_data", "database");
                 });
 
+            modelBuilder.Entity("Database.Data.InstitutionAccessRights", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasDefaultValueSql("gen_random_uuid()");
+
+                    b.Property<long?>("AllowedDatasetsPerTime")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("AllowedUserCount")
+                        .HasColumnType("bigint");
+
+                    b.Property<Guid>("InstitutionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<TimeSpan>("Period")
+                        .HasColumnType("interval");
+
+                    b.PrimitiveCollection<List<Guid>>("UserAlreadyAccessed")
+                        .IsRequired()
+                        .HasColumnType("uuid[]");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("access_rights", "database");
+                });
+
             modelBuilder.Entity("Database.Data.OpticalData", b =>
                 {
                     b.Property<Guid>("Id")
@@ -290,9 +281,6 @@ namespace Database.Migrations
 
                     b.Property<Guid>("CreatorId")
                         .HasColumnType("uuid");
-
-                    b.Property<int>("DataAccess")
-                        .HasColumnType("integer");
 
                     b.Property<string>("Description")
                         .HasColumnType("text");
@@ -360,9 +348,6 @@ namespace Database.Migrations
 
                     b.Property<Guid>("CreatorId")
                         .HasColumnType("uuid");
-
-                    b.Property<int>("DataAccess")
-                        .HasColumnType("integer");
 
                     b.Property<string>("Description")
                         .HasColumnType("text");

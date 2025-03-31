@@ -17,7 +17,7 @@ public interface IAccessRightsService
     /// <param name="data">              Data to apply acces rights on. </param>
     /// <param name="cancellationToken"> <see cref="CancellationToken"/> </param>
     /// <returns> List of data that can be returned. </returns>
-    Task<IQueryable<IData>> ApplyAccessRightsOnData(ICollection<IData> data, CancellationToken cancellationToken);
+    Task<IQueryable<T>> ApplyAccessRightsOnData<T>(ICollection<T> data, CancellationToken cancellationToken) where T : IData;
 
     /// <summary>
     /// Apply access rights on passed data item.
@@ -25,5 +25,5 @@ public interface IAccessRightsService
     /// <param name="data">              Data to apply acces rights on. </param>
     /// <param name="cancellationToken"> <see cref="CancellationToken"/> </param>
     /// <returns> Data item. </returns>
-    Task<IData?> ApplyAccessRightsOnData(IData data, CancellationToken cancellationToken);
+    Task<T?> ApplyAccessRightsOnData<T>(T data, CancellationToken cancellationToken) where T : IData;
 }

@@ -28,7 +28,7 @@ public sealed class PhotovoltaicDataMutations
     {
         var currentUser = await userService.GetCurrentUser(
             cancellationToken).ConfigureAwait(false);
-        if (currentUser == null)
+        if (currentUser is null)
         {
             return new CreatePhotovoltaicDataPayload(
                 new CreatePhotovoltaicDataError(

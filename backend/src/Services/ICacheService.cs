@@ -13,7 +13,7 @@ public interface ICacheService
 
     int SetAccessCountForUser(Guid userId, int count);
 
-    (DateTime StartTime, int Count) GetOrCreateAccessCountForPerirod(Guid institutionId);
+    (DateTime StartTime, int Count) GetOrCreateAccessCountForPeriod(Guid institutionId);
 
     (DateTime StartTime, int Count) AddAccessCountToPeriod(Guid institutionId);
 

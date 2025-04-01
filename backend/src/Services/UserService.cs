@@ -41,7 +41,7 @@ public class UserService(
         var token = await httpContextAccessor.ExtractBearerToken().ConfigureAwait(false);
         logger.ExtractedToken(token);
 
-        if (token == null)
+        if (token is null)
         {
             return await GetCurrentUserFromMetabase(cancellationToken).ConfigureAwait(false);
         }

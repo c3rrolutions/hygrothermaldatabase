@@ -36,7 +36,7 @@ public class DataAccessRightsMutations
         }
 
         var data = await dataService.GetDataAsync(input.DataId, context, cancellationToken).ConfigureAwait(false);
-        if (data == null)
+        if (data is null)
         {
             return new UpdateDataAccessRightsPayload(
                 new UpdateDataAccessRightsError(

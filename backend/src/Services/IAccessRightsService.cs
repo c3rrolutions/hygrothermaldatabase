@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Database.Data;
@@ -17,7 +16,7 @@ public interface IAccessRightsService
     /// <param name="data">              Data to apply acces rights on. </param>
     /// <param name="cancellationToken"> <see cref="CancellationToken"/> </param>
     /// <returns> List of data that can be returned. </returns>
-    Task<IQueryable<T>> ApplyAccessRightsOnData<T>(ICollection<T> data, CancellationToken cancellationToken) where T : IData;
+    Task<IQueryable<T>> ApplyAccessRightsOnData<T>(IQueryable<T> data, CancellationToken cancellationToken) where T : IData;
 
     /// <summary>
     /// Apply access rights on passed data item.

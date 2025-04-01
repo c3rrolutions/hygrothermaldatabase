@@ -31,6 +31,7 @@ public sealed class HygrothermalDataQueries
         CancellationToken cancellationToken
     )
     {
+        // TODO Use `locale`.
         sorting.StabilizeOrder<HygrothermalData>();
         IQueryable<HygrothermalData> filteredData = context.HygrothermalData.Sort(resolverContext).Filter(resolverContext);
 
@@ -41,10 +42,7 @@ public sealed class HygrothermalDataQueries
         }
 
         // Apply acces rights on data
-        var result = await accessRightsService.ApplyAccessRightsOnData(filteredData.ToList<IData>(), cancellationToken).ConfigureAwait(false);
-
-        // TODO Use `locale`.
-        return (IQueryable<HygrothermalData>)result;
+        return await accessRightsService.ApplyAccessRightsOnData(filteredData, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<HygrothermalData?> GetHygrothermalDataAsync(
@@ -61,12 +59,11 @@ public sealed class HygrothermalDataQueries
             cancellationToken
         );
 
-        if (hygrothermalData == null)
+        if (hygrothermalData is null)
         {
             return hygrothermalData;
         }
 
-        var result = await accessRightsService.ApplyAccessRightsOnData(hygrothermalData, cancellationToken).ConfigureAwait(false);
-        return result as HygrothermalData;
+        return await accessRightsService.ApplyAccessRightsOnData(hygrothermalData, cancellationToken).ConfigureAwait(false);
     }
 }

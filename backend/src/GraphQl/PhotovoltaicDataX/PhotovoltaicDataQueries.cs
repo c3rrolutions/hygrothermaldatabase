@@ -31,6 +31,7 @@ public sealed class PhotovoltaicDataQueries
         CancellationToken cancellationToken
     )
     {
+        // TODO Use `locale`.
         sorting.StabilizeOrder<PhotovoltaicData>();
         IQueryable<PhotovoltaicData> filteredData = context.PhotovoltaicData.Sort(resolverContext).Filter(resolverContext);
 
@@ -41,10 +42,7 @@ public sealed class PhotovoltaicDataQueries
         }
 
         // Apply acces rights on data
-        var result = await accessRightsService.ApplyAccessRightsOnData(filteredData.ToList(), cancellationToken).ConfigureAwait(false);
-
-        // TODO Use `locale`.
-        return (IQueryable<PhotovoltaicData>)result;
+        return await accessRightsService.ApplyAccessRightsOnData(filteredData, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<PhotovoltaicData?> GetPhotovoltaicDataAsync(
@@ -61,12 +59,11 @@ public sealed class PhotovoltaicDataQueries
             cancellationToken
         );
 
-        if (photovoltaicData == null)
+        if (photovoltaicData is null)
         {
             return photovoltaicData;
         }
 
-        var result = await accessRightsService.ApplyAccessRightsOnData(photovoltaicData, cancellationToken).ConfigureAwait(false);
-        return result as PhotovoltaicData;
+        return await accessRightsService.ApplyAccessRightsOnData(photovoltaicData, cancellationToken).ConfigureAwait(false);
     }
 }

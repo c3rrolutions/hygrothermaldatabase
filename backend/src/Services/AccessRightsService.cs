@@ -26,7 +26,7 @@ public class AccessRightsService(
 {
     /// <inheritdoc/>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2201:Keine reservierten Ausnahmetypen auslösen", Justification = "<Ausstehend>")]
-    public async Task<IQueryable<T>> ApplyAccessRightsOnData<T>(ICollection<T> data, CancellationToken cancellationToken)
+    public async Task<IQueryable<T>> ApplyAccessRightsOnData<T>(IQueryable<T> data, CancellationToken cancellationToken)
     where T : IData
     {
         List<T> filteredData = new List<T>();
@@ -48,20 +48,24 @@ public class AccessRightsService(
             }
         }
 
-        return ProcessData(data, applicationId, institutions, currentUser, alreadyAccessedCount, cacheService, accessRights).AsQueryable<T>();
+        var result = ProcessData(data, applicationId, institutions, currentUser, alreadyAccessedCount, cacheService, accessRights);
+
+        // Save InstitutionAccessRight changes
+        await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        return result.AsQueryable<T>();
     }
 
     /// <inheritdoc/>
     public async Task<T?> ApplyAccessRightsOnData<T>(T data, CancellationToken cancellationToken)
     where T : IData
     {
-        var result = await ApplyAccessRightsOnData(new List<T> { data }, cancellationToken).ConfigureAwait(false);
+        var result = await ApplyAccessRightsOnData((new List<T> { data }).AsQueryable(), cancellationToken).ConfigureAwait(false);
 
         return result.FirstOrDefault();
     }
 
     private IEnumerable<T> ProcessData<T>(
-        ICollection<T> data,
+        IQueryable<T> data,
         string applicationId,
         List<Guid> institutions,
         CurrentUserDto currentUser,

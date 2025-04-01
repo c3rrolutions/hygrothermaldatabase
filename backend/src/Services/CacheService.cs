@@ -36,7 +36,7 @@ public class CacheService(
         return accessCountCache.Set(userId, count);
     }
 
-    public (DateTime StartTime, int Count) GetOrCreateAccessCountForPerirod(Guid institutionId)
+    public (DateTime StartTime, int Count) GetOrCreateAccessCountForPeriod(Guid institutionId)
     {
         (DateTime StartTime, int Count) accessesPerPeriod;
         if (!timePeriodCountCache.TryGetValue(institutionId, out accessesPerPeriod))
@@ -48,7 +48,7 @@ public class CacheService(
 
     public (DateTime StartTime, int Count) AddAccessCountToPeriod(Guid institutionId)
     {
-        var accessesPerPeriod = GetOrCreateAccessCountForPerirod(institutionId);
+        var accessesPerPeriod = GetOrCreateAccessCountForPeriod(institutionId);
         accessesPerPeriod.Count++;
         return timePeriodCountCache.Set(institutionId, accessesPerPeriod);
     }

@@ -31,6 +31,7 @@ public sealed class OpticalDataQueries
         CancellationToken cancellationToken
     )
     {
+        // TODO Use `locale`.
         sorting.StabilizeOrder<OpticalData>();
         IQueryable<OpticalData> filteredData = context.OpticalData.Sort(resolverContext).Filter(resolverContext);
 
@@ -41,10 +42,7 @@ public sealed class OpticalDataQueries
         }
 
         // Apply acces rights on data
-        var result = await accessRightsService.ApplyAccessRightsOnData(filteredData.ToList(), cancellationToken).ConfigureAwait(false);
-
-        // TODO Use `locale`.
-        return (IQueryable<OpticalData>)result;
+        return await accessRightsService.ApplyAccessRightsOnData(filteredData, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<OpticalData?> GetOpticalDataAsync(
@@ -61,12 +59,11 @@ public sealed class OpticalDataQueries
             cancellationToken
         );
 
-        if (opticalData == null)
+        if (opticalData is null)
         {
             return opticalData;
         }
 
-        var result = await accessRightsService.ApplyAccessRightsOnData(opticalData, cancellationToken).ConfigureAwait(false);
-        return result as OpticalData;
+        return await accessRightsService.ApplyAccessRightsOnData(opticalData, cancellationToken).ConfigureAwait(false);
     }
 }

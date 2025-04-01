@@ -44,7 +44,7 @@ public class InstitutionAccessRights
         // Check restriction for time period
         if (AllowedDatasetsPerTime is not null)
         {
-            var accessesPerPeriod = cacheService.GetOrCreateAccessCountForPerirod(InstitutionId);
+            var accessesPerPeriod = cacheService.GetOrCreateAccessCountForPeriod(InstitutionId);
 
             if (accessesPerPeriod.StartTime.Add(Period) < DateTime.Now)
             {
@@ -61,7 +61,7 @@ public class InstitutionAccessRights
         }
 
         // Check restriction for users per institution
-        if (this.AllowedUserCount is not null)
+        if (AllowedUserCount is not null)
         {
             if (UserAlreadyAccessed.Count >= AllowedUserCount)
             {

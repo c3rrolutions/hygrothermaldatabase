@@ -31,6 +31,7 @@ public sealed class CalorimetricDataQueries
         CancellationToken cancellationToken
     )
     {
+        // TODO Use `locale`.
         sorting.StabilizeOrder<CalorimetricData>();
         IQueryable<CalorimetricData> filteredData = context.CalorimetricData.Sort(resolverContext).Filter(resolverContext);
 
@@ -41,10 +42,7 @@ public sealed class CalorimetricDataQueries
         }
 
         // Apply acces rights on data
-        var result = await accessRightsService.ApplyAccessRightsOnData(filteredData.ToList(), cancellationToken).ConfigureAwait(false);
-
-        // TODO Use `locale`.
-        return (IQueryable<CalorimetricData>)result;
+        return await accessRightsService.ApplyAccessRightsOnData(filteredData, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<CalorimetricData?> GetCalorimetricDataAsync(
@@ -60,12 +58,11 @@ public sealed class CalorimetricDataQueries
             id,
             cancellationToken
         );
-        if (calorimetricData == null)
+        if (calorimetricData is null)
         {
             return calorimetricData;
         }
 
-        var result = await accessRightsService.ApplyAccessRightsOnData(calorimetricData, cancellationToken).ConfigureAwait(false);
-        return result as CalorimetricData;
+        return await accessRightsService.ApplyAccessRightsOnData(calorimetricData, cancellationToken).ConfigureAwait(false);
     }
 }

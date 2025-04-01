@@ -71,26 +71,22 @@ public abstract class DataX
     /// <inheritdoc/>
     public bool IsRestrictedByApplication(string applicationId)
     {
-        if (DataAccessRights.IsRestrictedByApplication)
-            return DataAccessRights.AllowedApplications!.Contains(applicationId);
-        return false;
+        return DataAccessRights.AllowedApplications is not null && DataAccessRights.AllowedApplications.Contains(applicationId);
     }
 
     /// <inheritdoc/>
     public bool IsRestrictedByInstitutions(List<Guid> institutions)
     {
-        if (DataAccessRights.IsRestrictedByInstitution)
-            return DataAccessRights.AllowedInstitutions!.Any(a => institutions.Any(b => a.Equals(b)));
-        return false;
+        return DataAccessRights.AllowedInstitutions is not null && DataAccessRights.AllowedInstitutions!.Any(a => institutions.Any(b => a.Equals(b)));
     }
 
     /// <inheritdoc/>
     public bool IsRestrictedByUser(Guid uuid, int alreadyAccesedCount)
     {
-        if (DataAccessRights.IsRestrictedByUser)
+        if (DataAccessRights.AllowedUserAndQuantity is not null)
         {
             int limit;
-            if (DataAccessRights.AllowedUserAndQuantity!.TryGetValue(uuid, out limit))
+            if (DataAccessRights.AllowedUserAndQuantity.TryGetValue(uuid, out limit))
             {
                 if (limit < 0 || limit > alreadyAccesedCount)
                 {

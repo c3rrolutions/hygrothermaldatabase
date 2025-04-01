@@ -14,7 +14,7 @@ public interface IData : IEntity
     AppliedMethod AppliedMethod { get; }
     ICollection<DataApproval> Approvals { get; }
     ICollection<GetHttpsResource> Resources { get; }
-    ResponseApproval? Approval { get; }
+    ResponseApproval? Approval { get; set; }
     string Locale { get; }
     DataAccessRights DataAccessRights { get; }
 

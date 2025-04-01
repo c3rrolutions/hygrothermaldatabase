@@ -121,7 +121,7 @@ public class ApiRequestService() : IApiRequestService
             uri
         );
         httpRequestMessage.Content = httpContent;
-        if (bearerToken != null)
+        if (bearerToken is not null)
         {
             httpRequestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", bearerToken);
         }

@@ -33,8 +33,8 @@ public sealed class DataAccessRights
     {
         get
         {
-            return AllowedUserAndQuantity is not null &&
-                AllowedInstitutions is not null &&
+            return AllowedUserAndQuantity is not null ||
+                AllowedInstitutions is not null ||
                 AllowedApplications is not null;
         }
     }
@@ -46,8 +46,7 @@ public sealed class DataAccessRights
     {
         get
         {
-            return AllowedUserAndQuantity is not null &&
-                AllowedUserAndQuantity.Count > 0;
+            return AllowedUserAndQuantity is not null;
         }
     }
 
@@ -58,8 +57,7 @@ public sealed class DataAccessRights
     {
         get
         {
-            return AllowedInstitutions is not null &&
-                AllowedInstitutions.Count > 0;
+            return AllowedInstitutions is not null;
         }
     }
 
@@ -70,8 +68,7 @@ public sealed class DataAccessRights
     {
         get
         {
-            return AllowedApplications is not null &&
-                AllowedApplications.Count > 0;
+            return AllowedApplications is not null;
         }
     }
 }

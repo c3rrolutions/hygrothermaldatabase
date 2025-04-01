@@ -49,7 +49,7 @@ public sealed class ApprovalMutations
             );
 
         var data = await dataService.GetDataAsync(input.DataId, context, cancellationToken).ConfigureAwait(false);
-        if (data == null)
+        if (data is null)
         {
             return new AddApprovalPayload(
                 new AddApprovalError(
@@ -67,7 +67,7 @@ public sealed class ApprovalMutations
                 input.Approval.Query,
                 input.Approval.Response,
                 currentUser.Id);
-        if (input.Approval.Publication != null)
+        if (input.Approval.Publication is not null)
         {
             approval.Publication = new Publication(
                 input.Approval.Publication.Title,
@@ -79,7 +79,7 @@ public sealed class ApprovalMutations
                 input.Approval.Publication.Urn,
                 input.Approval.Publication.WebAddress);
         }
-        if (input.Approval.Standard != null)
+        if (input.Approval.Standard is not null)
         {
             approval.Standard = new Standard(
                 input.Approval.Standard.Title,
@@ -94,7 +94,7 @@ public sealed class ApprovalMutations
 
         try
         {
-            ((Data.DataX)data).Approval = await responseApprovalService.CreateResponseApproval(data, cancellationToken).ConfigureAwait(false);
+            data.Approval = await responseApprovalService.CreateResponseApproval(data, cancellationToken).ConfigureAwait(false);
             await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         }
         catch (Exception ex)

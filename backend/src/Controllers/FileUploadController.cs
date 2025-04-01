@@ -141,7 +141,7 @@ public class FileUploadController : Controller
         var reader = new MultipartReader(boundary, HttpContext.Request.Body);
         var section = await reader.ReadNextSectionAsync(cancellationToken).ConfigureAwait(false);
 
-        while (section != null)
+        while (section is not null)
         {
             var hasContentDispositionHeader =
                 ContentDispositionHeaderValue.TryParse(

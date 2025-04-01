@@ -29,6 +29,7 @@ public sealed class GeometricDataQueries
         CancellationToken cancellationToken
     )
     {
+        // TODO Use `locale`.
         sorting.StabilizeOrder<GeometricData>();
         IQueryable<GeometricData> filteredData = context.GeometricData.Sort(resolverContext).Filter(resolverContext);
 
@@ -39,10 +40,7 @@ public sealed class GeometricDataQueries
         }
 
         // Apply acces rights on data
-        var result = await accessRightsService.ApplyAccessRightsOnData(filteredData.ToList(), cancellationToken).ConfigureAwait(false);
-
-        // TODO Use `locale`.
-        return (IQueryable<GeometricData>)result;
+        return await accessRightsService.ApplyAccessRightsOnData(filteredData, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<GeometricData?> GetGeometricDataAsync(
@@ -59,12 +57,11 @@ public sealed class GeometricDataQueries
             cancellationToken
         ).ConfigureAwait(false);
 
-        if (geometricData == null)
+        if (geometricData is null)
         {
             return geometricData;
         }
 
-        var result = await accessRightsService.ApplyAccessRightsOnData(geometricData, cancellationToken).ConfigureAwait(false);
-        return result as GeometricData;
+        return await accessRightsService.ApplyAccessRightsOnData(geometricData, cancellationToken).ConfigureAwait(false);
     }
 }

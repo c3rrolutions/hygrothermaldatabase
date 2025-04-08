@@ -7,5 +7,6 @@ public enum CreateGetHttpsResourceErrorCode
 {
     UNKNOWN,
     UNKNOWN_DATA,
-    UNAUTHORIZED
+    UNAUTHORIZED,
+    UNAUTHENTICATED,
 }

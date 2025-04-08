@@ -1,4 +1,4 @@
-using Database.Data;
+﻿using Database.Data;
 
 namespace Database.GraphQl.PhotovoltaicDataX;
 
@@ -16,6 +16,14 @@ public sealed class CreatePhotovoltaicDataPayload
         CreatePhotovoltaicDataError error
     )
         : base(error)
+    {
+    }
+
+    public CreatePhotovoltaicDataPayload(
+        PhotovoltaicData photovoltaicData,
+        CreatePhotovoltaicDataError error
+    )
+        : base(photovoltaicData, error)
     {
     }
 }

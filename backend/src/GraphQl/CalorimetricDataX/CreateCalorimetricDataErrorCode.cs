@@ -1,7 +1,12 @@
+﻿using System.Diagnostics.CodeAnalysis;
+
 namespace Database.GraphQl.CalorimetricDataX;
 
+[SuppressMessage("Naming", "CA1707")]
 public enum CreateCalorimetricDataErrorCode
 {
     UNKNOWN,
-    UNAUTHORIZED
+    UNAUTHORIZED,
+    UNAUTHENTICATED,
+    SIGNING_FAILED
 }

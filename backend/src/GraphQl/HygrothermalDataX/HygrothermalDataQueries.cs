@@ -1,14 +1,16 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
+using Database.Data;
+using Database.GraphQl.Extensions;
+using Database.Services;
 using HotChocolate;
 using HotChocolate.Data;
 using HotChocolate.Data.Sorting;
+using HotChocolate.Resolvers;
 using HotChocolate.Types;
-using Database.Data;
-using Database.GraphQl.Extensions;
+using Microsoft.EntityFrameworkCore;
 
 namespace Database.GraphQl.HygrothermalDataX;
 
@@ -16,31 +18,52 @@ namespace Database.GraphQl.HygrothermalDataX;
 public sealed class HygrothermalDataQueries
 {
     [UsePaging]
-    // [UseProjection] // We disabled projections because when requesting `id` all results had the same `id` and when also requesting `uuid`, the latter was always the empty UUID `000...`.
+    // [UseProjection] // We disabled projections because when requesting `id` all results had the
+    // same `id` and when also requesting `uuid`, the latter was always the empty UUID `000...`.
     [UseFiltering]
     [UseSorting]
-    public IQueryable<HygrothermalData> GetAllHygrothermalData(
+    public async Task<IQueryable<HygrothermalData>> GetAllHygrothermalData(
         [GraphQLType<LocaleType>] string? locale,
         ApplicationDbContext context,
-        ISortingContext sorting
-    )
-    {
-        sorting.StabilizeOrder<HygrothermalData>();
-        // TODO Use `locale`.
-        return context.HygrothermalData.AsNoTracking();
-    }
-
-    public Task<HygrothermalData?> GetHygrothermalDataAsync(
-        Guid id,
-        [GraphQLType<LocaleType>] string? locale,
-        HygrothermalDataByIdDataLoader byId,
+        IAccessRightsService accessRightsService,
+        IResolverContext resolverContext,
+        ISortingContext sorting,
         CancellationToken cancellationToken
     )
     {
         // TODO Use `locale`.
-        return byId.LoadAsync(
+        sorting.StabilizeOrder<HygrothermalData>();
+        IQueryable<HygrothermalData> filteredData = context.HygrothermalData.Sort(resolverContext).Filter(resolverContext);
+
+        // Check if there is restricted data
+        if (!filteredData.Any(x => x.DataAccessRights.HasRistrictions))
+        {
+            return filteredData;
+        }
+
+        // Apply acces rights on data
+        return await accessRightsService.ApplyAccessRightsOnData(filteredData, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task<HygrothermalData?> GetHygrothermalDataAsync(
+        Guid id,
+        [GraphQLType<LocaleType>] string? locale,
+        HygrothermalDataByIdDataLoader byId,
+        IAccessRightsService accessRightsService,
+        CancellationToken cancellationToken
+    )
+    {
+        // TODO Use `locale`.
+        var hygrothermalData = await byId.LoadAsync(
             id,
             cancellationToken
         );
+
+        if (hygrothermalData is null)
+        {
+            return hygrothermalData;
+        }
+
+        return await accessRightsService.ApplyAccessRightsOnData(hygrothermalData, cancellationToken).ConfigureAwait(false);
     }
 }

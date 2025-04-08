@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using Database.Enumerations;
@@ -20,8 +20,6 @@ public sealed class OpticalData
         OpticalComponentSubtype? subtype,
         CoatedSide? coatedSide,
         AppliedMethod appliedMethod,
-        ICollection<DataApproval> approvals,
-        // ResponseApproval approval
         double[] nearnormalHemisphericalVisibleTransmittances,
         double[] nearnormalHemisphericalVisibleReflectances,
         double[] nearnormalHemisphericalSolarTransmittances,
@@ -37,8 +35,7 @@ public sealed class OpticalData
         warnings,
         creatorId,
         createdAt,
-        appliedMethod,
-        approvals
+        appliedMethod
     )
     {
         Type = type;
@@ -65,7 +62,6 @@ public sealed class OpticalData
         OpticalComponentType? type,
         OpticalComponentSubtype? subtype,
         CoatedSide? coatedSide,
-        // ResponseApproval approval
         double[] nearnormalHemisphericalVisibleTransmittances,
         double[] nearnormalHemisphericalVisibleReflectances,
         double[] nearnormalHemisphericalSolarTransmittances,

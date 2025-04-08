@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using Database.Extensions;
-using Database.GraphQl.GeometricDataX;
 
 namespace Database.Data;
 
@@ -111,27 +110,27 @@ public sealed class GetHttpsResource
 
     public Guid? CalorimetricDataId { get; private set; }
 
-    [InverseProperty(nameof(Database.Data.CalorimetricData.Resources))]
+    [InverseProperty(nameof(CalorimetricData.Resources))]
     public CalorimetricData? CalorimetricData { get; set; }
 
     public Guid? HygrothermalDataId { get; private set; }
 
-    [InverseProperty(nameof(Database.Data.HygrothermalData.Resources))]
+    [InverseProperty(nameof(HygrothermalData.Resources))]
     public HygrothermalData? HygrothermalData { get; set; }
 
     public Guid? OpticalDataId { get; private set; }
 
-    [InverseProperty(nameof(Database.Data.OpticalData.Resources))]
+    [InverseProperty(nameof(OpticalData.Resources))]
     public OpticalData? OpticalData { get; set; }
 
     public Guid? PhotovoltaicDataId { get; private set; }
 
-    [InverseProperty(nameof(Database.Data.PhotovoltaicData.Resources))]
+    [InverseProperty(nameof(PhotovoltaicData.Resources))]
     public PhotovoltaicData? PhotovoltaicData { get; set; }
 
     public Guid? GeometricDataId { get; private set; }
 
-    [InverseProperty(nameof(Database.Data.GeometricData.Resources))]
+    [InverseProperty(nameof(GeometricData.Resources))]
     public GeometricData? GeometricData { get; set; }
 
     public Guid? ParentId { get; private set; }

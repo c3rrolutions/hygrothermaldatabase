@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -16,10 +16,8 @@ public sealed class GeometricData
         Guid creatorId,
         DateTime createdAt,
         AppliedMethod appliedMethod,
-        ICollection<DataApproval> approvals,
-        // ResponseApproval approval,
         double[] thicknesses
-    ) : base (
+    ) : base(
         locale,
         componentId,
         name,
@@ -27,14 +25,12 @@ public sealed class GeometricData
         warnings,
         creatorId,
         createdAt,
-        appliedMethod,
-        approvals
-        // approval
+        appliedMethod
     )
     {
         Thicknesses = thicknesses;
-
     }
+
     public GeometricData(
         string locale,
         Guid componentId,
@@ -43,7 +39,6 @@ public sealed class GeometricData
         string[] warnings,
         Guid creatorId,
         DateTime createdAt,
-        // ResponseApproval approval,
         double[] thicknesses
     ) : base(
         locale,
@@ -60,6 +55,6 @@ public sealed class GeometricData
 
     [InverseProperty(nameof(GetHttpsResource.GeometricData))]
     public override ICollection<GetHttpsResource> Resources { get; } = new List<GetHttpsResource>();
-    public double[] Thicknesses { get; private set;}
 
+    public double[] Thicknesses { get; private set; }
 }

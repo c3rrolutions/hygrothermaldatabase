@@ -1,7 +1,7 @@
-using Database.Data;
+﻿using Database.Data;
 using HotChocolate.Types;
 
-namespace Database.GraphQl.References;
+namespace Database.GraphQl.Approvals;
 
 public sealed class DataApprovalType
     : ObjectType<DataApproval>
@@ -14,6 +14,5 @@ public sealed class DataApprovalType
         descriptor
             .Field(t => t.Publication)
             .Ignore();
-
     }
 }

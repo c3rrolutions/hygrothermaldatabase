@@ -1,14 +1,16 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
+using Database.Data;
+using Database.GraphQl.Extensions;
+using Database.Services;
 using HotChocolate;
 using HotChocolate.Data;
 using HotChocolate.Data.Sorting;
+using HotChocolate.Resolvers;
 using HotChocolate.Types;
-using Database.Data;
-using Database.GraphQl.Extensions;
+using Microsoft.EntityFrameworkCore;
 
 namespace Database.GraphQl.GeometricDataX;
 
@@ -16,30 +18,50 @@ namespace Database.GraphQl.GeometricDataX;
 public sealed class GeometricDataQueries
 {
     [UsePaging]
-    [UseFiltering]
+    [UseFiltering(typeof(GeometricDataFilterType))]
     [UseSorting]
-    public IQueryable<GeometricData> GetAllGeometricData(
+    public async Task<IQueryable<GeometricData>> GetAllGeometricData(
         [GraphQLType<LocaleType>] string? locale,
         ApplicationDbContext context,
-        ISortingContext sorting
-    )
-    {
-        sorting.StabilizeOrder<GeometricData>();
-        // TODO Use `locale`.
-        return context.GeometricData.AsNoTracking();
-    }
-
-    public Task<GeometricData?> GetGeometricDataAsync(
-        Guid id,
-        [GraphQLType<LocaleType>] string? locale,
-        GeometricDataByIdDataLoader byId,
+        IAccessRightsService accessRightsService,
+        ISortingContext sorting,
+        IResolverContext resolverContext,
         CancellationToken cancellationToken
     )
     {
         // TODO Use `locale`.
-        return byId.LoadAsync(
+        sorting.StabilizeOrder<GeometricData>();
+        IQueryable<GeometricData> filteredData = context.GeometricData.Sort(resolverContext).Filter(resolverContext);
+
+        // Check if there is restricted data
+        if (!filteredData.Any(x => x.DataAccessRights.HasRistrictions))
+        {
+            return filteredData;
+        }
+
+        // Apply acces rights on data
+        return await accessRightsService.ApplyAccessRightsOnData(filteredData, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task<GeometricData?> GetGeometricDataAsync(
+        Guid id,
+        [GraphQLType<LocaleType>] string? locale,
+        GeometricDataByIdDataLoader byId,
+        IAccessRightsService accessRightsService,
+        CancellationToken cancellationToken
+    )
+    {
+        // TODO Use `locale`.
+        var geometricData = await byId.LoadAsync(
             id,
             cancellationToken
-        );
+        ).ConfigureAwait(false);
+
+        if (geometricData is null)
+        {
+            return geometricData;
+        }
+
+        return await accessRightsService.ApplyAccessRightsOnData(geometricData, cancellationToken).ConfigureAwait(false);
     }
 }

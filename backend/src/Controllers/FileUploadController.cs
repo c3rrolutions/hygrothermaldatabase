@@ -1,14 +1,14 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Database.Data;
 using Database.Authorization;
+using Database.Data;
 using Database.Filters;
+using Database.Services;
 using Database.Utilities;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
@@ -16,7 +16,6 @@ using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
-using Microsoft.AspNetCore.Http;
 
 namespace Database.Controllers;
 
@@ -49,26 +48,17 @@ public class FileUploadController : Controller
     private static readonly FormOptions _defaultFormOptions = new();
     private readonly ILogger<FileUploadController> _logger;
     private readonly ApplicationDbContext _context;
-    private readonly AppSettings _appSettings;
-    private readonly IHttpClientFactory _httpClientFactory;
-    private readonly IHttpContextAccessor _httpContextAccessor;
 
     private readonly string[] _permittedExtensions =
         { ".json", ".xml", ".txt", ".csv", ".ifc", ".rad", ".svg", ".pdf", ".png" };
 
     public FileUploadController(
         ILogger<FileUploadController> logger,
-        ApplicationDbContext context,
-        AppSettings appSettings,
-        IHttpClientFactory httpClientFactory,
-        IHttpContextAccessor httpContextAccessor
+        ApplicationDbContext context
     )
     {
         _logger = logger;
         _context = context;
-        _appSettings = appSettings;
-        _httpClientFactory = httpClientFactory;
-        _httpContextAccessor = httpContextAccessor;
         // To save physical files to the temporary files folder, use:
         //_targetDirectoryPath = Path.GetTempPath();
     }
@@ -94,9 +84,19 @@ public class FileUploadController : Controller
     [RequestSizeLimit(10737418240)] // 10 GiB
     public async Task<IActionResult> UploadFile(
         [FromQuery] Guid getHttpsResourceUuid,
+        IUserService userService,
         CancellationToken cancellationToken
     )
     {
+        var currentUser = await userService.GetCurrentUser(
+            cancellationToken).ConfigureAwait(false);
+        if (currentUser is null)
+        {
+            ModelState.AddModelError("CurrentUser",
+                $"User is not authenticated.");
+            return BadRequest(ModelState);
+        }
+
         if (!MultipartRequestHelper.IsMultipartContentType(Request.ContentType))
         {
             ModelState.AddModelError("File",
@@ -125,14 +125,10 @@ public class FileUploadController : Controller
                 $"There is no data set associated with the GET HTTPS resource with UUID {getHttpsResourceUuid:D}.");
             return BadRequest(ModelState);
         }
-        if (!await FileUploadDataAuthorization.IsAuthorizedToUploadFilesForInstitution(
-             getHttpsResource.Data.CreatorId,
-             _appSettings,
-             _httpClientFactory,
-             _httpContextAccessor,
-             cancellationToken
-             ).ConfigureAwait(false)
-        )
+        if (!FileUploadDataAuthorization.IsAuthorizedToUploadFilesForInstitution(
+            currentUser,
+            getHttpsResource.Data.CreatorId,
+            cancellationToken))
         {
             return Unauthorized();
         }
@@ -145,7 +141,7 @@ public class FileUploadController : Controller
         var reader = new MultipartReader(boundary, HttpContext.Request.Body);
         var section = await reader.ReadNextSectionAsync(cancellationToken).ConfigureAwait(false);
 
-        while (section != null)
+        while (section is not null)
         {
             var hasContentDispositionHeader =
                 ContentDispositionHeaderValue.TryParse(

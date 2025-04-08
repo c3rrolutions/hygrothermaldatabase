@@ -1,16 +1,15 @@
-using System;
+﻿using System;
 using System.IO;
+using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
-using System.Net.Http;
-using HotChocolate.AspNetCore;
 using Database.Configuration;
 using Database.Data;
 using Database.Data.Extensions;
 using Database.Enumerations;
 using Database.Services;
-using Database.Metabase;
+using HotChocolate.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
@@ -24,9 +23,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Npgsql;
-using Serilog;
 using Microsoft.OpenApi;
+using Serilog;
 
 namespace Database;
 
@@ -63,6 +61,13 @@ public sealed class Startup(
         services.AddSingleton(_appSettings);
         services.AddSingleton(_environment);
         // services.AddDatabaseDeveloperPageExceptionFilter();
+        services.AddSingleton<ISigningService, SigningService>();
+        services.AddSingleton<ICacheService, CacheService>();
+        services.AddScoped<IUserService, UserService>();
+        services.AddScoped<IDataService, DataService>();
+        services.AddScoped<IApiRequestService, ApiRequestService>();
+        services.AddScoped<IResponseApprovalService, ResponseApprovalService>();
+        //services.AddScoped<IAccessRightsService, AccessRightsService>();
     }
 
     private static void ConfigureRequestResponseServices(IServiceCollection services)
@@ -211,10 +216,20 @@ public sealed class Startup(
     private static void ConfigureHttpClientServices(IServiceCollection services, IWebHostEnvironment environment)
     {
         services.AddHttpClient();
-        var metabasesHttpClientBuilder = services.AddHttpClient(QueryingMetabase.MetabaseHttpClient);
+        var metabaseHttpClientBuilder = services.AddHttpClient(ApiRequestService.MetabaseHttpClient);
         if (environment.IsDevelopment())
         {
-            metabasesHttpClientBuilder.ConfigurePrimaryHttpMessageHandler(_ =>
+            metabaseHttpClientBuilder.ConfigurePrimaryHttpMessageHandler(_ =>
+                new HttpClientHandler
+                {
+                    ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+                }
+            );
+        }
+        var databaseHttpClientBuilder = services.AddHttpClient(ApiRequestService.DatabaseHttpClient);
+        if (environment.IsDevelopment())
+        {
+            databaseHttpClientBuilder.ConfigurePrimaryHttpMessageHandler(_ =>
                 new HttpClientHandler
                 {
                     ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator

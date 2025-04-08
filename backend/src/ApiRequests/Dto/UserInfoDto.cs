@@ -1,13 +1,9 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
-namespace Database.GraphQl.Users;
+namespace Database.ApiRequests.Dto;
 
-public sealed record Address(
-    string Formatted
-);
-
-public sealed record UserInfo(
-    Address? Address,
+public sealed record UserInfoDto(
+    AddressDto? Address,
     string Email,
     bool EmailVerified,
     string Name,
@@ -16,4 +12,8 @@ public sealed record UserInfo(
     IReadOnlyList<string>? Roles,
     string Sub, // Subject
     string? Website
+);
+
+public sealed record AddressDto(
+    string Formatted
 );

@@ -1,4 +1,4 @@
-using Database.Data;
+﻿using Database.Data;
 
 namespace Database.GraphQl.GeometricDataX;
 
@@ -16,6 +16,14 @@ public sealed class CreateGeometricDataPayload
         CreateGeometricDataError error
     )
         : base(error)
+    {
+    }
+
+    public CreateGeometricDataPayload(
+        GeometricData geometricData,
+        CreateGeometricDataError error
+    )
+        : base(geometricData, error)
     {
     }
 }

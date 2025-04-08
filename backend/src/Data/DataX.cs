@@ -1,5 +1,6 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Database.Data;
 
@@ -14,9 +15,7 @@ public abstract class DataX
         string[] warnings,
         Guid creatorId,
         DateTime createdAt,
-        AppliedMethod appliedMethod,
-        ICollection<DataApproval> approvals
-        // ResponseApproval approval
+        AppliedMethod appliedMethod
     )
         : this(
             locale,
@@ -29,8 +28,6 @@ public abstract class DataX
         )
     {
         AppliedMethod = appliedMethod;
-        Approvals = approvals;
-        // Approval = approval;
     }
 
     // `DbContext` needs this constructor without owned entities.
@@ -63,8 +60,41 @@ public abstract class DataX
     public AppliedMethod AppliedMethod { get; private set; } = default!;
 
     public ICollection<DataApproval> Approvals { get; } = new List<DataApproval>();
-    // public ResponseApproval Approval { get; private set; }
+    public ResponseApproval? Approval { get; set; }
 
-    // TODO Exactly one resource must not have a parent and each other resource must have one from this list and the graph must be connected. In other words, the resources must form a tree.
+    // TODO Exactly one resource must not have a parent and each other resource must have one from
+    // this list and the graph must be connected. In other words, the resources must form a tree.
     public virtual ICollection<GetHttpsResource> Resources { get; } = new List<GetHttpsResource>();
+
+    public DataAccessRights DataAccessRights { get; } = new DataAccessRights();
+
+    /// <inheritdoc/>
+    public bool IsRestrictedByApplication(string applicationId)
+    {
+        return DataAccessRights.AllowedApplications is not null && DataAccessRights.AllowedApplications.Contains(applicationId);
+    }
+
+    /// <inheritdoc/>
+    public bool IsRestrictedByInstitutions(List<Guid> institutions)
+    {
+        return DataAccessRights.AllowedInstitutions is not null && DataAccessRights.AllowedInstitutions!.Any(a => institutions.Any(b => a.Equals(b)));
+    }
+
+    /// <inheritdoc/>
+    public bool IsRestrictedByUser(Guid uuid, int alreadyAccesedCount)
+    {
+        if (DataAccessRights.AllowedUserAndQuantity is not null)
+        {
+            int limit;
+            if (DataAccessRights.AllowedUserAndQuantity.TryGetValue(uuid, out limit))
+            {
+                if (limit < 0 || limit > alreadyAccesedCount)
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+        return false;
+    }
 }

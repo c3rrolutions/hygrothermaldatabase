@@ -1,4 +1,4 @@
-using Database.Data;
+﻿using Database.Data;
 
 namespace Database.GraphQl.CalorimetricDataX;
 
@@ -16,6 +16,14 @@ public sealed class CreateCalorimetricDataPayload
         CreateCalorimetricDataError error
     )
         : base(error)
+    {
+    }
+
+    public CreateCalorimetricDataPayload(
+        CalorimetricData calorimetricData,
+        CreateCalorimetricDataError error
+    )
+        : base(calorimetricData, error)
     {
     }
 }

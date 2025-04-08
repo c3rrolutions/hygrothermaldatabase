@@ -77,7 +77,7 @@ public static class FileHelpers
             typeof(T).GetProperty(
                 formFile.Name[(formFile.Name.IndexOf('.') + 1)..]);
 
-        if (property != null)
+        if (property is not null)
             if (property.GetCustomAttribute<DisplayAttribute>() is
                 DisplayAttribute displayAttribute)
                 fieldDisplayName = $"{displayAttribute.Name} ";
@@ -185,7 +185,7 @@ public static class FileHelpers
 
     private static bool IsValidFileExtensionAndSignature(string? fileName, Stream data, string[] permittedExtensions)
     {
-        if (string.IsNullOrEmpty(fileName) || data == null || data.Length == 0) return false;
+        if (string.IsNullOrEmpty(fileName) || data is null || data.Length == 0) return false;
 
         var ext = Path.GetExtension(fileName).ToLowerInvariant();
 

@@ -63,6 +63,7 @@ services:
       args:
         - CERTIFICATE_AUTHORITY_BASE_FILE_NAME=${CERTIFICATE_AUTHORITY_BASE_FILE_NAME}
         - CERTIFICATE_AUTHORITY_PASSWORD=${CERTIFICATE_AUTHORITY_PASSWORD}
+        - GNUPG_PRIVATEKEY_FILE_NAME=${GNUPG_PRIVATEKEY_FILE_NAME}
     # user: 1000:1000
     command: [
       "dotnet", "watch",
@@ -85,6 +86,8 @@ services:
       - files:/app/src/files
       - backend_vscode_server:/home/me/.vscode-server
       - backend_vscode_server_insiders:/home/me/.vscode-server-insiders
+      # Create volume for GnuPG
+      - gnupg:/home/me/.gnupg
       # The following items make the engine create anonymous volumes for the
       # specified path with the effect that the service does not write
       # temporary files into the corresponding directory on the host file
@@ -114,6 +117,8 @@ services:
       - XBASE_Email__SmtpHost=${SMTP_HOST}
       - XBASE_Email__SmtpPort=${SMTP_PORT}
       - XBASE_VerificationCode=${VERIFICATION_CODE}
+      - XBASE_GnupgPrivateKeyFilename=${GNUPG_PRIVATEKEY_FILE_NAME}
+      - XBASE_GnupgPrivateKeyPassphrase=${GNUPG_PRIVATEKEY_PASSPHRASE}
       # https://learn.microsoft.com/en-us/dotnet/core/tools/dotnet-watch#environment-variables
       - DOTNET_USE_POLLING_FILE_WATCHER=true
       # https://docs.microsoft.com/en-us/aspnet/core/security/docker-compose-https#starting-a-container-with-https-support-using-docker-compose
@@ -122,6 +127,9 @@ services:
       # - SSL_CERT_FILE=/app/ssl/${SSL_CERTIFICATE_BASE_FILE_NAME}.pfx
       # - ASPNETCORE_DOTNET_SYSTEM_NET_HTTP_SOCKETSHTTPHANDLER_LOGGING=1
       # - ASPNETCORE_DOTNET_SYSTEM_NET_HTTP_SOCKETSHTTPHANDLER_LOGGING_SPECIFIER=all
+      # The value `/dev/pts/0` is the output of running `tty` within `shellb`
+      # https://www.gnupg.org/documentation/manuals/gnupg/Invoking-GPG_002dAGENT.html
+      - GPG_TTY=/dev/pts/0
     extra_hosts:
       - ${HOST}:host-gateway
       - ${METABASE_HOST}:host-gateway
@@ -195,5 +203,6 @@ volumes:
   data:
   emails:
   files:
+  gnupg:
   backend_vscode_server:
   backend_vscode_server_insiders:

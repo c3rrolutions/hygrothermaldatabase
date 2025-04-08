@@ -1,21 +1,17 @@
-using System;
-using System.Net.Http;
+﻿using System;
 using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
+using Database.ApiRequests.Dto;
 
 namespace Database.Authorization;
 
 public static class FileUploadDataAuthorization
 {
-    public static Task<bool> IsAuthorizedToUploadFilesForInstitution(
+    public static bool IsAuthorizedToUploadFilesForInstitution(
+        CurrentUserDto currentUser,
         Guid institutionId,
-        AppSettings appSettings,
-        IHttpClientFactory httpClientFactory,
-        IHttpContextAccessor httpContextAccessor,
         CancellationToken cancellationToken
     )
     {
-        return CommonAuthorization.IsCurrentUserAtLeastAssistantOfVerifiedInstitution(institutionId, appSettings, httpClientFactory, httpContextAccessor, cancellationToken);
+        return CommonAuthorization.IsCurrentUserAtLeastAssistantOfVerifiedInstitution(currentUser, institutionId, cancellationToken);
     }
 }

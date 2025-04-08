@@ -1,0 +1,15 @@
+query CurrentUser {
+  currentUser {
+    uuid
+    representedInstitutions {
+      edges {
+        node {
+          uuid
+          name
+        }
+        role
+        dataSigningPermission
+      }
+    }
+  }
+}

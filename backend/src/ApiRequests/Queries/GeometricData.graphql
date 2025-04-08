@@ -1,0 +1,5 @@
+query GeometricData($uuid: Uuid!) {
+  geometricData(id: $uuid) {
+    ...GeometricDataFields
+  }
+}

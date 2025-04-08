@@ -1,5 +1,4 @@
-using System;
-using System.Collections.Generic;
+﻿using System;
 using HotChocolate;
 using HotChocolate.Types;
 using Database.Enumerations;
@@ -15,8 +14,6 @@ public sealed record CreateGeometricDataInput(
     DateTime CreatedAt,
     Guid CreatorId,
     AppliedMethodInput AppliedMethod,
-    IReadOnlyList<DataApprovalInput> Approvals,
-    // ResponseApproval Approval,
     RootGetHttpsResourceInput RootResource,
     double[] Thicknesses
 );

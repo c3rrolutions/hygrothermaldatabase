@@ -1,3 +1,4 @@
+﻿using System;
 using System.Linq;
 using System.Net.Http;
 using System.Security.Claims;
@@ -6,36 +7,45 @@ using System.Threading;
 using System.Threading.Tasks;
 using Database.Authorization;
 using Database.Data;
-using Database.Extensions;
-using HotChocolate;
+using Database.GraphQl.GeometricDataX;
+using Database.Services;
 using HotChocolate.Types;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
+using Org.BouncyCastle.Asn1.X509.Qualified;
 
 namespace Database.GraphQl.PhotovoltaicDataX;
 
 [ExtendObjectType(nameof(Mutation))]
 public sealed class PhotovoltaicDataMutations
 {
-    // [UseUserManager]
-    // [Authorize(Policy = Configuration.AuthConfiguration.WritePolicy)]
+    // [UseUserManager] [Authorize(Policy = Configuration.AuthConfiguration.WritePolicy)]
     public async Task<CreatePhotovoltaicDataPayload> CreatePhotovoltaicDataAsync(
         CreatePhotovoltaicDataInput input,
         ApplicationDbContext context,
-        AppSettings appSettings,
-        IHttpClientFactory httpClientFactory,
-        IHttpContextAccessor httpContextAccessor,
+        IUserService userService,
+        IResponseApprovalService responseApprovalService,
         CancellationToken cancellationToken
     )
     {
-        if (!await PhotovoltaicDataAuthorization.IsAuthorizedToCreatePhotovoltaicDataForInstitution(
-             input.CreatorId,
-             appSettings,
-             httpClientFactory,
-             httpContextAccessor,
-             cancellationToken
-             ).ConfigureAwait(false)
+        var currentUser = await userService.GetCurrentUser(
+            cancellationToken).ConfigureAwait(false);
+        if (currentUser is null)
+        {
+            return new CreatePhotovoltaicDataPayload(
+                new CreatePhotovoltaicDataError(
+                    CreatePhotovoltaicDataErrorCode.UNAUTHENTICATED,
+                    $"The user is not authenticated.",
+                    []
+                )
+            );
+        }
+
+        if (!PhotovoltaicDataAuthorization.IsAuthorizedToCreatePhotovoltaicDataForInstitution(
+            currentUser,
+            input.CreatorId,
+            cancellationToken
+            )
         )
+        {
             return new CreatePhotovoltaicDataPayload(
                 new CreatePhotovoltaicDataError(
                     CreatePhotovoltaicDataErrorCode.UNAUTHORIZED,
@@ -43,6 +53,8 @@ public sealed class PhotovoltaicDataMutations
                     []
                 )
             );
+        }
+
         var photovoltaicData = new PhotovoltaicData(
             input.Locale,
             input.ComponentId,
@@ -78,42 +90,7 @@ public sealed class PhotovoltaicDataMutations
                         )
                     ))
                     .ToList()
-            ),
-            input.Approvals.Select(a =>
-                new DataApproval(
-                    a.Timestamp,
-                    a.Signature,
-                    a.KeyFingerprint,
-                    a.Query,
-                    a.Response,
-                    a.ApproverId
-                )
-                {
-                    Publication = a.Publication is null
-                        ? null
-                        : new Publication(
-                            a.Publication.Title,
-                            a.Publication.Abstract,
-                            a.Publication.Section,
-                            a.Publication.Authors,
-                            a.Publication.Doi,
-                            a.Publication.ArXiv,
-                            a.Publication.Urn,
-                            a.Publication.WebAddress
-                        ),
-                    Standard = a.Standard is null
-                        ? null
-                        : new Standard(
-                            a.Standard.Title,
-                            a.Standard.Abstract,
-                            a.Standard.Section,
-                            a.Standard.Year,
-                            a.Standard.Standardizers,
-                            a.Standard.Locator
-                        )
-                }
-            ).ToList()
-            // approval: input.Approval
+            )
         );
         var resource = new GetHttpsResource(
             input.RootResource.Description,
@@ -150,6 +127,26 @@ public sealed class PhotovoltaicDataMutations
         photovoltaicData.Resources.Add(resource);
         context.PhotovoltaicData.Add(photovoltaicData);
         await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+
+        try
+        {
+            photovoltaicData.Approval = await responseApprovalService.CreateResponseApproval(photovoltaicData, cancellationToken).ConfigureAwait(false);
+            await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            context.Remove(photovoltaicData);
+            await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+
+            return new CreatePhotovoltaicDataPayload(
+                photovoltaicData,
+                new CreatePhotovoltaicDataError(
+                    CreatePhotovoltaicDataErrorCode.SIGNING_FAILED,
+                    $"Signing failed with message: {ex.Message}",
+                    []
+                )
+            );
+        }
         return new CreatePhotovoltaicDataPayload(photovoltaicData);
     }
 }

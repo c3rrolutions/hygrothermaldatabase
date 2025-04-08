@@ -3,6 +3,7 @@ using System.Globalization;
 using System.IO;
 using System.Threading.Tasks;
 using Database.Data;
+using Database.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -57,6 +58,7 @@ public sealed class Program
             {
                 // Inspired by https://docs.microsoft.com/en-us/aspnet/core/data/ef-mvc/intro#initialize-db-with-test-data
                 await CreateAndSeedDb(scope.ServiceProvider).ConfigureAwait(false);
+                await InitializeSigningService(scope.ServiceProvider).ConfigureAwait(false);
             }
 
             await application.RunAsync().ConfigureAwait(false);
@@ -123,6 +125,14 @@ public sealed class Program
             var logger = services.GetRequiredService<ILogger<Program>>();
             logger.FailedToCreateAndSeedDatabase(exception);
         }
+    }
+
+    private static async Task InitializeSigningService(
+        IServiceProvider services
+    )
+    {
+        var signing = services.GetRequiredService<ISigningService>();
+        await signing.Initialize();
     }
 
     // https://docs.microsoft.com/en-us/aspnet/core/fundamentals/host/generic-host

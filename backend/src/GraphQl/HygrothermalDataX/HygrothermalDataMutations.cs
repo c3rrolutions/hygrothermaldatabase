@@ -1,40 +1,46 @@
+﻿using System;
 using System.Linq;
-using System.Net.Http;
-using System.Security.Claims;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Database.Authorization;
 using Database.Data;
-using Database.Extensions;
-using HotChocolate;
+using Database.GraphQl.GeometricDataX;
+using Database.Services;
 using HotChocolate.Types;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
+using Org.BouncyCastle.Asn1.X509.Qualified;
 
 namespace Database.GraphQl.HygrothermalDataX;
 
 [ExtendObjectType(nameof(Mutation))]
 public sealed class HygrothermalDataMutations
 {
-    // [UseUserManager]
-    // [Authorize(Policy = Configuration.AuthConfiguration.WritePolicy)]
+    // [UseUserManager] [Authorize(Policy = Configuration.AuthConfiguration.WritePolicy)]
     public async Task<CreateHygrothermalDataPayload> CreateHygrothermalDataAsync(
         CreateHygrothermalDataInput input,
         ApplicationDbContext context,
-        AppSettings appSettings,
-        IHttpClientFactory httpClientFactory,
-        IHttpContextAccessor httpContextAccessor,
+        IUserService userService,
+        IResponseApprovalService responseApprovalService,
         CancellationToken cancellationToken
     )
     {
-        if (!await HygrothermalDataAuthorization.IsAuthorizedToCreateHygrothermalDataForInstitution(
-             input.CreatorId,
-             appSettings,
-             httpClientFactory,
-             httpContextAccessor,
-             cancellationToken
-             ).ConfigureAwait(false)
+        var currentUser = await userService.GetCurrentUser(
+            cancellationToken).ConfigureAwait(false);
+        if (currentUser is null)
+        {
+            return new CreateHygrothermalDataPayload(
+                new CreateHygrothermalDataError(
+                    CreateHygrothermalDataErrorCode.UNAUTHENTICATED,
+                    $"The user is not authenticated.",
+                    []
+                )
+            );
+        }
+        if (!HygrothermalDataAuthorization.IsAuthorizedToCreateHygrothermalDataForInstitution(
+            currentUser,
+            input.CreatorId,
+            cancellationToken
+            )
         )
             return new CreateHygrothermalDataPayload(
                 new CreateHygrothermalDataError(
@@ -78,42 +84,7 @@ public sealed class HygrothermalDataMutations
                         )
                     ))
                     .ToList()
-            ),
-            input.Approvals.Select(a =>
-                new DataApproval(
-                    a.Timestamp,
-                    a.Signature,
-                    a.KeyFingerprint,
-                    a.Query,
-                    a.Response,
-                    a.ApproverId
-                )
-                {
-                    Publication = a.Publication is null
-                        ? null
-                        : new Publication(
-                            a.Publication.Title,
-                            a.Publication.Abstract,
-                            a.Publication.Section,
-                            a.Publication.Authors,
-                            a.Publication.Doi,
-                            a.Publication.ArXiv,
-                            a.Publication.Urn,
-                            a.Publication.WebAddress
-                        ),
-                    Standard = a.Standard is null
-                        ? null
-                        : new Standard(
-                            a.Standard.Title,
-                            a.Standard.Abstract,
-                            a.Standard.Section,
-                            a.Standard.Year,
-                            a.Standard.Standardizers,
-                            a.Standard.Locator
-                        )
-                }
-            ).ToList()
-            // approval: input.Approval
+            )
         );
         var resource = new GetHttpsResource(
             input.RootResource.Description,
@@ -150,6 +121,26 @@ public sealed class HygrothermalDataMutations
         hygrothermalData.Resources.Add(resource);
         context.HygrothermalData.Add(hygrothermalData);
         await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+
+        try
+        {
+            hygrothermalData.Approval = await responseApprovalService.CreateResponseApproval(hygrothermalData, cancellationToken).ConfigureAwait(false);
+            await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            context.Remove(hygrothermalData);
+            await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+
+            return new CreateHygrothermalDataPayload(
+                hygrothermalData,
+                new CreateHygrothermalDataError(
+                    CreateHygrothermalDataErrorCode.SIGNING_FAILED,
+                    $"Signing failed with message: {ex.Message}",
+                    []
+                )
+            );
+        }
         return new CreateHygrothermalDataPayload(hygrothermalData);
     }
 }

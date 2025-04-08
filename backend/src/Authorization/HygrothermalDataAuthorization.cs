@@ -1,21 +1,17 @@
-using System;
-using System.Net.Http;
+﻿using System;
 using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
+using Database.ApiRequests.Dto;
 
 namespace Database.Authorization;
 
 public static class HygrothermalDataAuthorization
 {
-    public static Task<bool> IsAuthorizedToCreateHygrothermalDataForInstitution(
+    public static bool IsAuthorizedToCreateHygrothermalDataForInstitution(
+        CurrentUserDto currentUser,
         Guid institutionId,
-        AppSettings appSettings,
-        IHttpClientFactory httpClientFactory,
-        IHttpContextAccessor httpContextAccessor,
         CancellationToken cancellationToken
     )
     {
-        return CommonAuthorization.IsCurrentUserAtLeastAssistantOfVerifiedInstitution(institutionId, appSettings, httpClientFactory, httpContextAccessor, cancellationToken);
+        return CommonAuthorization.IsCurrentUserAtLeastAssistantOfVerifiedInstitution(currentUser, institutionId, cancellationToken);
     }
 }

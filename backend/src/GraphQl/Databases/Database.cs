@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 
 namespace Database.GraphQl.Databases;
 
@@ -35,5 +35,19 @@ public sealed class Database
 
     // public Institution? Operator { get; set; }
     public bool CanCurrentUserUpdateNode { get; }
+
     public bool CanCurrentUserVerifyNode { get; }
+
+    public static Database FromDto(DatabaseDto databaseDto)
+    {
+        return new Database(
+            databaseDto.Uuid,
+            databaseDto.Name,
+            databaseDto.Description,
+            databaseDto.Locator,
+            databaseDto.VerificationState,
+            databaseDto.VerificationCode,
+            databaseDto.CanCurrentUserUpdateNode,
+            databaseDto.CanCurrentUserVerifyNode);
+    }
 }

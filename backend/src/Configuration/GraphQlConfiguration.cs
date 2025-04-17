@@ -29,6 +29,7 @@ using Microsoft.Extensions.Logging;
 using IServiceCollection = Microsoft.Extensions.DependencyInjection.IServiceCollection;
 using Database.GraphQl.Approvals;
 using Database.GraphQl.AccessRights;
+using Database.GraphQl.MethodAsService;
 
 namespace Database.Configuration;
 
@@ -151,6 +152,8 @@ public static class GraphQlConfiguration
             .AddType<UserQueries>()
             .AddType<VerificationCodeQueries>()
             .AddType<GeometricDataQueries>()
+            .AddType<MethodAsServiceQuaries>()
+            .AddType<DataQueries>()
             // Mutation Types
             .AddMutationType(d => d.Name(nameof(Mutation)))
             .AddType<CalorimetricDataMutations>()
@@ -179,6 +182,7 @@ public static class GraphQlConfiguration
             .AddType<StandardType>()
             .AddType<GeometricDataType>()
             .AddType<UserType>()
+            .AddType<UploadType>()
             // Data Loaders
             /* .AddDataLoader<GraphQl.Components.ComponentByIdDataLoader>() */
             // Paging

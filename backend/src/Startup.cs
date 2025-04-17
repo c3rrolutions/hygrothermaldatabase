@@ -9,6 +9,7 @@ using Database.Data;
 using Database.Data.Extensions;
 using Database.Enumerations;
 using Database.Services;
+using Database.Services.Interfaces;
 using HotChocolate.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection;

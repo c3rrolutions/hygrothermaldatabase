@@ -1,7 +1,7 @@
-using System.Threading.Tasks;
 using System;
+using System.Threading.Tasks;
 
-namespace Database.Services;
+namespace Database.Services.Interfaces;
 
 /// <summary>
 /// Service to sign data string with GNUPG.

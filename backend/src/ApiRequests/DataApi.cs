@@ -3,7 +3,7 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Database.Services;
+using Database.Services.Interfaces;
 using GraphQL;
 using Microsoft.AspNetCore.Http;
 
@@ -47,6 +47,12 @@ public class DataApi
         "DataFields.graphql",
         "OpticalDataFields.graphql",
         "OpticalData.graphql"
+    };
+
+    public static readonly string[] DataXFileNames =
+    {
+        "DataFields.graphql",
+        "DataX.graphql"
     };
 
     /// <summary>
@@ -95,5 +101,51 @@ public class DataApi
         }
 
         return (query, response);
+    }
+
+    /// <summary>
+    /// Create query to request data and get response.
+    /// </summary>
+    /// <param name="dataId">              Id of data to request. </param>
+    /// <param name="filenames">           File names of query files. </param>
+    /// <param name="appSettings">         <see cref="AppSettings"/> </param>
+    /// <param name="apiRequestService">   <see cref="IApiRequestService"/> </param>
+    /// <param name="httpClientFactory">   <see cref="IHttpClientFactory"/> </param>
+    /// <param name="httpContextAccessor"> <see cref="IHttpContextAccessor"/> </param>
+    /// <param name="cancellationToken">   <see cref="CancellationToken"/> </param>
+    /// <exception cref="Exception">
+    /// Throws exception, when query could not be constructed or no response.
+    /// </exception>
+    /// <returns> Query and response for data. </returns>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2201:Keine reservierten Ausnahmetypen auslösen", Justification = "<Ausstehend>")]
+    public static async Task<GraphQLResponse<TGraphQlResponse>> GetDataFromDatabase<TGraphQlResponse>(
+        Uri databaseUri,
+        Guid dataId,
+        string[] filenames,
+        AppSettings appSettings,
+        IApiRequestService apiRequestService,
+        IHttpClientFactory httpClientFactory,
+        IHttpContextAccessor httpContextAccessor,
+        CancellationToken cancellationToken)
+
+        where TGraphQlResponse : class
+    {
+        var request = new GraphQLRequest(
+            await apiRequestService.ConstructGraphQlQuery(filenames).ConfigureAwait(false),
+            new { uuid = dataId },
+            ""
+        );
+        if (request.Query is null) throw new Exception("Failed to construct GraphQL query.");
+
+        var responseObject = await apiRequestService.Database().QueryGraphQlFromUrl<TGraphQlResponse>(
+            appSettings,
+            databaseUri,
+            request,
+            httpClientFactory,
+            httpContextAccessor,
+            cancellationToken
+        ).ConfigureAwait(false);
+
+        return responseObject;
     }
 }

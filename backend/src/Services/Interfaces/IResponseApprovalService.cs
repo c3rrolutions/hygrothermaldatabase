@@ -3,7 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Database.Data;
 
-namespace Database.Services;
+namespace Database.Services.Interfaces;
 
 /// <summary>
 /// Service to create response approval

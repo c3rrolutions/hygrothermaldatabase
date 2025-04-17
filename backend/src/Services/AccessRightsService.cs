@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Database.ApiRequests.Dto;
 using Database.Data;
 using Database.Logging;
+using Database.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 

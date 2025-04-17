@@ -5,7 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Database.Authorization;
 using Database.Data;
-using Database.Services;
+using Database.Services.Interfaces;
 using HotChocolate.Types;
 
 namespace Database.GraphQl.GeometricDataX;

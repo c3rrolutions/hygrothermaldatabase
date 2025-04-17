@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Database.ApiRequests;
 using Database.Data;
-using Database.Services;
+using Database.Services.Interfaces;
 using HotChocolate;
 using HotChocolate.Resolvers;
 using HotChocolate.Types;

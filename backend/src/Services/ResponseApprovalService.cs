@@ -6,6 +6,7 @@ using Database.ApiRequests;
 using Database.ApiRequests.Dto;
 using Database.Data;
 using Database.Logging;
+using Database.Services.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 

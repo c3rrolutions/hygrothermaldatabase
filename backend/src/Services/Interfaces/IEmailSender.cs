@@ -1,6 +1,6 @@
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
-namespace Database.Services;
+namespace Database.Services.Interfaces;
 
 public interface IEmailSender
 {

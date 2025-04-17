@@ -1,7 +1,7 @@
 using System;
 using Database.ApiRequests.Dto;
 
-namespace Database.Services;
+namespace Database.Services.Interfaces;
 
 public interface ICacheService
 {

@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Database.ApiRequests;
 using Database.Extensions;
+using Database.Services.Interfaces;
 using GraphQL;
 using Microsoft.AspNetCore.Http;
 
@@ -75,6 +76,30 @@ public class ApiRequestService() : IApiRequestService
             // TODO Consider using [Flurl](https://flurl.dev) to construct URIs. For the pitfalls of
             // using `Uri` as below see the comments to https://stackoverflow.com/questions/372865/path-combine-for-urls/1527643#1527643
             new Uri(new Uri(_useMetabase ? appSettings.MetabaseHost : appSettings.Host), "/graphql/"),
+            MakeJsonHttpContent(request),
+            JsonSerializerSettings.GraphQL,
+            httpClientFactory,
+            httpContextAccessor,
+            cancellationToken
+        );
+    }
+
+    /// <inheritdoc/>
+    public Task<GraphQLResponse<TGraphQlResponse>> QueryGraphQlFromUrl<TGraphQlResponse>(
+        AppSettings appSettings,
+        Uri uri,
+        GraphQLRequest request,
+        IHttpClientFactory httpClientFactory,
+        IHttpContextAccessor httpContextAccessor,
+        CancellationToken cancellationToken
+    )
+        where TGraphQlResponse : class
+    {
+        return Query<GraphQLResponse<TGraphQlResponse>>(
+            HttpMethod.Post,
+            // TODO Consider using [Flurl](https://flurl.dev) to construct URIs. For the pitfalls of
+            // using `Uri` as below see the comments to https://stackoverflow.com/questions/372865/path-combine-for-urls/1527643#1527643
+            new Uri(uri, "/graphql/"),
             MakeJsonHttpContent(request),
             JsonSerializerSettings.GraphQL,
             httpClientFactory,

@@ -41,10 +41,15 @@ If you have a question for which you don't find the answer in this repository, p
    by running `make ssl`. If you are locally working on the metabase and the
    database and if you need them to communicate over HTTPS, then instead of
    running `make ssl`, make the `CERTIFICATE_AUTHORITY_*` variable values in
-   the `.env` file match the ones from the metabase, copy the certificate
-   authority files from the directories `./ssl`, `./backend/ssl`, and
-   `./frontend/ssl` of the metabase project into the respective directories in
-   the database project, and run the command `make generate-ssl-certificate`.
+   the `.env` file match the ones from the metabase (these variables match in
+   the `.env.sample` files), copy the certificate authority files from the
+   directories `./ssl`, `./backend/ssl`, and `./frontend/ssl` of the metabase
+   project into the respective directories in the database project (if the
+   repository reside alongside each other by running `mkdir ./ssl ./backend/ssl
+   ./frontend/ssl && cp ../metabase/ssl/ca.* ./ssl && cp
+   ../metabase/backend/ssl/ca.* ./backend/ssl && cp
+   ../metabase/frontend/ssl/ca.* ./frontend/ssl`), and run the command `make
+   generate-ssl-certificate`.
 1. Generate JSON Web Token (JWT) encryption and signing certificates by running
    `make jwt-certificates`.
 1. Start all services and follow their logs by running `make up logs`.

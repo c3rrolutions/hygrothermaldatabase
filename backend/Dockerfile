@@ -149,16 +149,15 @@ COPY \
 # GnuPG
 # Copy keys to image
 RUN \
-mkdir --parents \
-./gpg-keys
+  mkdir ./gpg-keys
 COPY \
---chown=me:us \
-./gpg-keys/${GNUPG_PRIVATEKEY_FILE_NAME} \
-./gpg-keys/
+  --chown=me:us \
+  ./gpg-keys/${GNUPG_PRIVATEKEY_FILE_NAME} \
+  ./gpg-keys/
 
 # Invoking GPG agent (https://www.gnupg.org/documentation/manuals/gnupg/Invoking-GPG_002dAGENT.html)
 RUN \
-export GPG_TTY=$(tty)
+  export GPG_TTY=$(tty)
 
 # https://github.com/dotnet/dotnet-docker/blob/master/samples/aspnetapp/Dockerfile.alpine-x64
 # https://github.com/dotnet/dotnet-docker/blob/master/samples/run-aspnetcore-https-development.md

@@ -8,6 +8,7 @@
 
 /secrets
 /ssl
+/gpg-keys
 
 /test/**/__snapshots__/__mismatch__
 

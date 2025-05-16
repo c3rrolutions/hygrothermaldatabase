@@ -220,6 +220,18 @@ prepare-release : ## Prepare release
 		make prepare-release
 .PHONY : prepare-release
 
+gpg : COMMENT =
+gpg : ## Generate GnuPG key with the passphrase `${GNUPG_PRIVATEKEY_PASSPHRASE}`, for example, `make NAME="Simon Wacker" COMMENT=solarbuildingenvelopes EMAIL=simon.wacker@ise.fraunhofer.de gpg`
+	gpg \
+		--quick-generate-key \
+		--pinentry-mode loopback \
+		--batch \
+		--passphrase ${GNUPG_PRIVATEKEY_PASSPHRASE} \
+		"${NAME} (${COMMENT}) <${EMAIL}>" \
+		ed25519 \
+		cert \
+		never
+
 # --------------------- #
 # Generate Certificates #
 # --------------------- #

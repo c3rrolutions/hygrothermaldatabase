@@ -52,6 +52,17 @@ If you have a question for which you don't find the answer in this repository, p
    generate-ssl-certificate`.
 1. Generate JSON Web Token (JWT) encryption and signing certificates by running
    `make jwt-certificates`.
+1. Generate a GnuPG key with the passphrase `${GNUPG_PRIVATEKEY_PASSPHRASE}`
+   given in the `.env` file by running `make NAME=${name} COMMENT=${comment}
+   EMAIL=${email} gpg` with your information filled in. List the secret keys
+   with their identifiers by running `gpg --list-secret-keys
+   --keyid-format=long` and copy the identifier of the new secret key to the
+   clipboard. Export the secret key to
+   `./backend/gpg-keys/${GNUPG_PRIVATEKEY_FILE_NAME}` by running
+   `mkdir --parents ./backend/gpg-keys && gpg --armor --export-secret-keys ${key_id} > ./backend/gpg-keys/${GNUPG_PRIVATEKEY_FILE_NAME}`
+   with `${key_id}` set to the key identifier and
+   `${GNUPG_PRIVATEKEY_FILE_NAME}` replaced by the value given in the `.env`
+   file.
 1. Start all services and follow their logs by running `make up logs`.
 1. To see the web frontend navigate to
    `https://local.solarbuildingenvelopes.com:5051` in your web browser, to see

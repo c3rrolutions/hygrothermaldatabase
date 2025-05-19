@@ -60,7 +60,7 @@ CREATE TABLE database.access_rights (
 );
 
 INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-VALUES ('20250331141152_AddAccessRights', '9.0.2');
+VALUES ('20250331141152_AddAccessRights', '9.0.5');
 
 COMMIT;
 

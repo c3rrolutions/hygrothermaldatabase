@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using Database.ApiRequests.Dto;
 
 namespace Database.Data;

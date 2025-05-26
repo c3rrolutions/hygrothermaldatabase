@@ -1,4 +1,4 @@
-﻿using Database.GraphQl.GeometricDataX;
+using Database.GraphQl.GeometricDataX;
 using System.Collections.Generic;
 
 namespace Database.GraphQl.Approvals;

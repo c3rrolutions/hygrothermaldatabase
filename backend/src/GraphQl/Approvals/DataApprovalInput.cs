@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Database.GraphQl.Publications;
 using Database.GraphQl.Standards;
 

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Database.ApiRequests.Dto;
 
 namespace Database.Services;

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Database.Services;
 using Microsoft.Extensions.Logging;
 

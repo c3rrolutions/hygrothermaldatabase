@@ -1,4 +1,4 @@
-﻿using Database.Data;
+using Database.Data;
 
 namespace Database.GraphQl.PhotovoltaicDataX;
 

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Database.ApiRequests.Dto;
 using Microsoft.Extensions.Caching.Memory;
 

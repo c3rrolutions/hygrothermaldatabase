@@ -1,4 +1,4 @@
-﻿using Database.Services;
+using Database.Services;
 using Microsoft.Extensions.Logging;
 
 namespace Database.Logging;

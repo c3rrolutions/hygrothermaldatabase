@@ -1,4 +1,4 @@
-﻿using Database.Data;
+using Database.Data;
 using System.Collections.Generic;
 
 namespace Database.GraphQl.AccessRights;

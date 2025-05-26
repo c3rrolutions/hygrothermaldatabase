@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using HotChocolate;
 using HotChocolate.Types;
 using Database.Enumerations;

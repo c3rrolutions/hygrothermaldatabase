@@ -1,4 +1,4 @@
-﻿using Database.Enumerations;
+using Database.Enumerations;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Database.Data;
 
 namespace Database.GraphQl.AccessRights;

@@ -6,6 +6,14 @@ query CurrentUser {
         node {
           uuid
           name
+          managedInstitutions {
+            edges {
+            node {
+              uuid
+              name
+            }
+            }
+          }
         }
         role
         dataSigningPermission

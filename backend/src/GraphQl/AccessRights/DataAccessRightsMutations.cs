@@ -47,7 +47,7 @@ public class DataAccessRightsMutations
             );
         }
 
-        if (!CommonAuthorization.IsCurrentUserAtLeastAssistantOfVerifiedInstitution(
+        if (!CommonAuthorization.IsCurrentUserAtLeastAssistantManagerOfVerifiedInstitution(
             currentUser,
             data.CreatorId,
             cancellationToken
@@ -95,7 +95,7 @@ public class DataAccessRightsMutations
             );
         }
 
-        if (!CommonAuthorization.IsCurrentUserAtLeastAssistantOfVerifiedInstitution(
+        if (!CommonAuthorization.IsCurrentUserAtLeastAssistantManagerOfVerifiedInstitution(
             currentUser,
             input.InstitutionId,
             cancellationToken
@@ -158,7 +158,7 @@ public class DataAccessRightsMutations
             );
         }
 
-        if (!CommonAuthorization.IsCurrentUserAtLeastAssistantOfVerifiedInstitution(
+        if (!CommonAuthorization.IsCurrentUserAtLeastAssistantManagerOfVerifiedInstitution(
             currentUser,
             input.InstitutionId,
             cancellationToken

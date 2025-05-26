@@ -7,13 +7,25 @@ namespace Database.Authorization;
 
 public static class CommonAuthorization
 {
-    public static bool IsCurrentUserAtLeastAssistantOfVerifiedInstitution(
+    public static bool IsCurrentUserAtLeastAssistantManagerOfVerifiedInstitution(
         CurrentUserDto currentUser,
         Guid institutionId,
         CancellationToken cancellationToken
     )
     {
-        return currentUser.RepresentedInstitutions.Edges.Any(t => t.Node.Uuid == institutionId && (t.Role == InstitutionRepresentativeRole.ASSISTANT || t.Role == InstitutionRepresentativeRole.OWNER));
+        return currentUser.RepresentedInstitutions.Edges.Any(t =>
+            (
+                t.Role is InstitutionRepresentativeRole.ASSISTANT
+                || t.Role is InstitutionRepresentativeRole.OWNER
+            )
+            &&
+            (
+                t.Node.Uuid == institutionId
+                || t.Node.ManagedInstitutions.Edges.Any(t =>
+                    t.Node.Uuid == institutionId
+                )
+            )
+        );
     }
 
     public static bool IsAuthorizedToAddApprovalForInstitution(
@@ -22,6 +34,9 @@ public static class CommonAuthorization
         CancellationToken cancellationToken
         )
     {
-        return currentUser.RepresentedInstitutions.Edges.Any(t => t.Node.Uuid == institutionId && t.DataSigningPermission == DataSigningPermission.GRANTED);
+        return currentUser.RepresentedInstitutions.Edges.Any(
+            t => t.Node.Uuid == institutionId
+            && t.DataSigningPermission == DataSigningPermission.GRANTED
+        );
     }
 }

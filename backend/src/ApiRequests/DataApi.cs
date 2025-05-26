@@ -63,7 +63,6 @@ public class DataApi
     /// Throws exception, when query could not be constructed or no response.
     /// </exception>
     /// <returns> Query and response for data. </returns>
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2201:Keine reservierten Ausnahmetypen auslösen", Justification = "<Ausstehend>")]
     public static async Task<(string Query, string Response)> CreateQueryAndGetResponse<TGraphQlResponse>(
         Guid dataId,
         string[] filenames,
@@ -80,7 +79,7 @@ public class DataApi
             new { uuid = dataId },
             ""
         );
-        var query = request.Query ?? throw new Exception("Failed to construct GraphQL query.");
+        var query = request.Query ?? throw new InvalidOperationException("Failed to construct GraphQL query.");
 
         var responseObject = await apiRequestService.Database().QueryGraphQl<TGraphQlResponse>(
             appSettings,
@@ -90,7 +89,10 @@ public class DataApi
             cancellationToken
         ).ConfigureAwait(false);
         var response = JsonSerializer.Serialize(responseObject);
-        if (string.IsNullOrEmpty(response)) throw new Exception("No response for query.");
+        if (string.IsNullOrEmpty(response))
+        {
+            throw new InvalidOperationException("No response for query.");
+        }
 
         return (query, response);
     }

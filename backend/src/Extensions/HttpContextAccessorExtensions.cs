@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -27,12 +28,11 @@ public static class HttpContextAccessorExtensions
             CookieAuthenticationDefaults.AuthenticationScheme,
             OpenIddictClientAspNetCoreConstants.Tokens.BackchannelAccessTokenExpirationDate);
 
-        return !String.IsNullOrEmpty(token) && !String.IsNullOrEmpty(expirationDate) && CheckExpirationDate(expirationDate) ? token : null;
+        return !string.IsNullOrEmpty(token) && !string.IsNullOrEmpty(expirationDate) && CheckExpirationDate(expirationDate) ? token : null;
     }
 
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1305:IFormatProvider angeben", Justification = "No need at this point.")]
     private static bool CheckExpirationDate(string expirationDate)
     {
-        return DateTime.UnixEpoch.AddSeconds(int.Parse(expirationDate)) < DateTime.UtcNow;
+        return DateTime.UnixEpoch.AddSeconds(int.Parse(expirationDate, CultureInfo.InvariantCulture)) < DateTime.UtcNow;
     }
 }

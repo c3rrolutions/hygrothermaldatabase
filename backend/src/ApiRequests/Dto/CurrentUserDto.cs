@@ -9,7 +9,7 @@ public enum InstitutionRepresentativeRole
     ASSISTANT
 }
 
-[System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1711:Bezeichner dürfen kein falsches Suffix aufweisen", Justification = "<Ausstehend>")]
+[System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1711")]
 public enum DataSigningPermission
 {
     NEVER,

@@ -25,7 +25,6 @@ public class AccessRightsService(
     ILogger<IAccessRightsService> logger) : IAccessRightsService
 {
     /// <inheritdoc/>
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2201:Keine reservierten Ausnahmetypen auslösen", Justification = "<Ausstehend>")]
     public async Task<IQueryable<T>> ApplyAccessRightsOnData<T>(IQueryable<T> data, CancellationToken cancellationToken)
     where T : IData
     {
@@ -34,8 +33,8 @@ public class AccessRightsService(
         List<Guid> institutions = new List<Guid>();
         List<InstitutionAccessRights> accessRights = new List<InstitutionAccessRights>();
 
-        var applicationId = userService.GetApplicationIdFromUser() ?? throw new Exception("Application Id could not be aquired.");
-        var currentUser = await userService.GetCurrentUser(cancellationToken).ConfigureAwait(false) ?? throw new Exception("Could not get current user!");
+        var applicationId = userService.GetApplicationIdFromUser() ?? throw new InvalidOperationException("Application Id could not be aquired.");
+        var currentUser = await userService.GetCurrentUser(cancellationToken).ConfigureAwait(false) ?? throw new InvalidOperationException("Could not get current user!");
 
         var alreadyAccessedCount = cacheService.GetAccessCountForUser(currentUser.Uuid);
         foreach (var institution in currentUser.RepresentedInstitutions.Edges)

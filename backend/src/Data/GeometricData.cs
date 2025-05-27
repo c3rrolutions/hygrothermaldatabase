@@ -54,7 +54,7 @@ public sealed class GeometricData
     }
 
     [InverseProperty(nameof(GetHttpsResource.GeometricData))]
-    public override ICollection<GetHttpsResource> Resources { get; } = new List<GetHttpsResource>();
+    public override ICollection<GetHttpsResource> Resources { get; } = [];
 
     public double[] Thicknesses { get; private set; }
 }

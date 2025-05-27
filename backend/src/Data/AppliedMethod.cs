@@ -21,6 +21,6 @@ public sealed class AppliedMethod(
     }
 
     public Guid MethodId { get; private set; } = methodId;
-    public ICollection<NamedMethodArgument> Arguments { get; private set; } = new List<NamedMethodArgument>();
-    public ICollection<NamedMethodSource> Sources { get; private set; } = new List<NamedMethodSource>();
+    public ICollection<NamedMethodArgument> Arguments { get; private set; } = [];
+    public ICollection<NamedMethodSource> Sources { get; private set; } = [];
 }

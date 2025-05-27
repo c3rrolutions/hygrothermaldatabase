@@ -9,7 +9,7 @@ namespace Database.Services;
 
 public class MethodCalculationService : IMethodCalculationService
 {
-    private List<IMethod> _methods = new List<IMethod>();
+    private List<IMethod> _methods = [];
 
     public void AddMethod(IMethod method)
     {

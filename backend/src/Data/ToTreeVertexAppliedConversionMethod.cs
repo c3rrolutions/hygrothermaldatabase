@@ -24,6 +24,6 @@ public sealed class ToTreeVertexAppliedConversionMethod(
     }
 
     public Guid MethodId { get; private set; } = methodId;
-    public ICollection<NamedMethodArgument> Arguments { get; private set; } = new List<NamedMethodArgument>();
+    public ICollection<NamedMethodArgument> Arguments { get; private set; } = [];
     public string SourceName { get; private set; } = sourceName;
 }

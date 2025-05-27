@@ -92,7 +92,7 @@ public sealed class GetHttpsResource(
     public Guid DataFormatId { get; private set; } = dataFormatId;
 
     public ICollection<FileMetaInformation> ArchivedFilesMetaInformation { get; private set; } =
-        new List<FileMetaInformation>();
+        [];
 
     // TODO Make sure that at least one ID is always present. In that case `Guid.Empty` should never be used!
     [NotMapped]
@@ -134,7 +134,7 @@ public sealed class GetHttpsResource(
     [InverseProperty(nameof(Children))] public GetHttpsResource? Parent { get; set; }
 
     [InverseProperty(nameof(Parent))]
-    public ICollection<GetHttpsResource> Children { get; } = new List<GetHttpsResource>();
+    public ICollection<GetHttpsResource> Children { get; } = [];
 
     public static string ConstructVertexId(Guid id)
     {

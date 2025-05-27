@@ -16,7 +16,7 @@ public class InstitutionAccessRights(
     public uint? AllowedUserCount { get; set; } = allowedUserCount;
     public uint? AllowedDatasetsPerTime { get; set; } = allowedDatasetsPerTime;
     public TimeSpan Period { get; set; } = period;
-    public List<Guid> UserAlreadyAccessed { get; private set; } = new List<Guid>();
+    public List<Guid> UserAlreadyAccessed { get; private set; } = [];
 
     /// <summary>
     /// Check if dataset is restricted by access rights for institution. Datasets per time period of

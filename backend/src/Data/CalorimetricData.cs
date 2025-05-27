@@ -59,7 +59,7 @@ public sealed class CalorimetricData
     }
 
     [InverseProperty(nameof(GetHttpsResource.CalorimetricData))]
-    public override ICollection<GetHttpsResource> Resources { get; } = new List<GetHttpsResource>();
+    public override ICollection<GetHttpsResource> Resources { get; } = [];
 
     public double[] GValues { get; private set; }
     public double[] UValues { get; private set; }

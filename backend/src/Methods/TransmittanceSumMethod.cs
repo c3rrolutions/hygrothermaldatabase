@@ -18,9 +18,9 @@ public class TransmittanceSumMethod : IMethod
             transmittanceSum += dataPoint.Results.Transmittance;
         }
 
-        return new List<DataPoint>
-        {
+        return
+        [
             new DataPoint(new Incidence(new Wavelengths(0), new Direction(0)), new Emergence(new Direction(0)), new Results(transmittanceSum))
-        };
+        ];
     }
 }

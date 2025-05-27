@@ -51,5 +51,5 @@ public sealed class PhotovoltaicData
     }
 
     [InverseProperty(nameof(GetHttpsResource.PhotovoltaicData))]
-    public override ICollection<GetHttpsResource> Resources { get; } = new List<GetHttpsResource>();
+    public override ICollection<GetHttpsResource> Resources { get; } = [];
 }

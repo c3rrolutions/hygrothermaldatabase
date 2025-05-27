@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using Database.Services;
+using Database.Services.Interfaces;
 
 namespace Database.Data;
 

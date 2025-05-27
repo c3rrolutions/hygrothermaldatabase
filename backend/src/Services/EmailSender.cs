@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using Database.Services.Interfaces;
 using MailKit.Net.Smtp;
 using MailKit.Security;
 using Microsoft.Extensions.Logging;

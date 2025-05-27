@@ -3,7 +3,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Database.ApiRequests;
-using Database.Services;
+using Database.Services.Interfaces;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 

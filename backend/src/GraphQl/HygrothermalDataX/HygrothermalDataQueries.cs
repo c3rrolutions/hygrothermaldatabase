@@ -4,7 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Database.Data;
 using Database.GraphQl.Extensions;
-using Database.Services;
+using Database.Services.Interfaces;
 using HotChocolate;
 using HotChocolate.Data;
 using HotChocolate.Data.Sorting;

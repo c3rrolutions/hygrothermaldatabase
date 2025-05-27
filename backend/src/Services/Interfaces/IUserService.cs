@@ -2,7 +2,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Database.ApiRequests.Dto;
 
-namespace Database.Services;
+namespace Database.Services.Interfaces;
 
 /// <summary>
 /// Service to get current user from Metabase

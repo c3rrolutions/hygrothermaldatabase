@@ -9,7 +9,7 @@ using Database.Enumerations;
 using Database.Extensions;
 using HotChocolate.Types;
 using Microsoft.EntityFrameworkCore;
-using Database.Services;
+using Database.Services.Interfaces;
 
 namespace Database.GraphQl.GetHttpsResources;
 

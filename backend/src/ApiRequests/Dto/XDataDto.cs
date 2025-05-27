@@ -5,6 +5,22 @@ using Database.Enumerations;
 
 namespace Database.ApiRequests.Dto;
 
+public record DataXDto(
+    string Uuid,
+    DateTime Timestamp,
+    string ComponentId,
+    string Name,
+    string Description,
+    AppliedMethodDto AppliedMethod,
+    ResourceTreeDto ResourceTree,
+    IReadOnlyList<DataApproval> Approvals,
+    DateTime CreatedAt,
+    string CreatorId,
+    string Locale,
+    IReadOnlyList<ResourceDto> Resources,
+    IReadOnlyList<string> Warnings
+);
+
 public sealed record GeometricDataDto(
     string Uuid,
     DateTime Timestamp,

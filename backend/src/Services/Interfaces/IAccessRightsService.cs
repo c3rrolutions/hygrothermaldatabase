@@ -3,7 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Database.Data;
 
-namespace Database.Services;
+namespace Database.Services.Interfaces;
 
 /// <summary>
 /// Service to check if requested data can be returned regarding access rights.

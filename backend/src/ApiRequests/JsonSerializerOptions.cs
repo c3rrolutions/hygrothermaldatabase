@@ -44,4 +44,22 @@ public static class JsonSerializerSettings
             IgnoreReadOnlyFields = true,
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
         }; //.SetupImmutableConverter();
+
+    /// <summary>
+    /// Settings for file Json requests.
+    /// </summary>
+    public static readonly JsonSerializerOptions File =
+        new()
+        {
+            Converters = { new JsonStringEnumConverter(new ConstantCaseJsonNamingPolicy(), false) },
+            NumberHandling = JsonNumberHandling.Strict,
+            AllowOutOfOrderMetadataProperties = true,
+            PropertyNameCaseInsensitive = false,
+            PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
+            ReadCommentHandling = JsonCommentHandling.Disallow,
+            IncludeFields = false,
+            IgnoreReadOnlyProperties = false,
+            IgnoreReadOnlyFields = true,
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+        }; //.SetupImmutableConverter();
 }

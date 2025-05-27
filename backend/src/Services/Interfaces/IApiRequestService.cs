@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using GraphQL;
 using Microsoft.AspNetCore.Http;
 
-namespace Database.Services;
+namespace Database.Services.Interfaces;
 
 /// <summary>
 /// Service to request Metabase or Database Api. GraphQL and REST.
@@ -43,6 +43,27 @@ public interface IApiRequestService
     /// <returns> <see cref="GraphQLResponse{T}"/> of expected type. </returns>
     public Task<GraphQLResponse<TGraphQlResponse>> QueryGraphQl<TGraphQlResponse>(
         AppSettings appSettings,
+        GraphQLRequest request,
+        IHttpClientFactory httpClientFactory,
+        IHttpContextAccessor httpContextAccessor,
+        CancellationToken cancellationToken
+    )
+        where TGraphQlResponse : class;
+
+    /// <summary>
+    /// Send GraphQL request to API and return response.
+    /// </summary>
+    /// <typeparam name="TGraphQlResponse"> Expected response type. </typeparam>
+    /// <param name="appSettings">         <see cref="AppSettings"/> </param>
+    /// <param name="uri">                 Uri of GraphQL Api. </param>
+    /// <param name="request">             <see cref="GraphQLRequest"/> </param>
+    /// <param name="httpClientFactory">   <see cref="IHttpClientFactory"/> </param>
+    /// <param name="httpContextAccessor"> <see cref="IHttpContextAccessor"/> </param>
+    /// <param name="cancellationToken">   <see cref="CancellationToken"/> </param>
+    /// <returns> <see cref="GraphQLResponse{T}"/> of expected type. </returns>
+    public Task<GraphQLResponse<TGraphQlResponse>> QueryGraphQlFromUrl<TGraphQlResponse>(
+        AppSettings appSettings,
+        Uri uri,
         GraphQLRequest request,
         IHttpClientFactory httpClientFactory,
         IHttpContextAccessor httpContextAccessor,

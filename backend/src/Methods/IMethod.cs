@@ -1,0 +1,13 @@
+﻿using System;
+using System.Collections.Generic;
+using Database.GraphQl.MethodAsService;
+
+namespace Database.Methods;
+
+public interface IMethod
+{
+    string Name { get; }
+    Guid Id { get; }
+
+    List<DataPoint> Calculate(List<DataPoint> dataPoints);
+}

@@ -4,8 +4,16 @@ using System.Linq;
 
 namespace Database.Data;
 
-public abstract class DataX
-    : Entity, IData
+public abstract class DataX(
+    string locale,
+    Guid componentId,
+    string? name,
+    string? description,
+    string[] warnings,
+    Guid creatorId,
+    DateTime createdAt
+    )
+        : Entity, IData
 {
     protected DataX(
         string locale,
@@ -30,33 +38,13 @@ public abstract class DataX
         AppliedMethod = appliedMethod;
     }
 
-    // `DbContext` needs this constructor without owned entities.
-    protected DataX(
-        string locale,
-        Guid componentId,
-        string? name,
-        string? description,
-        string[] warnings,
-        Guid creatorId,
-        DateTime createdAt
-    )
-    {
-        Locale = locale;
-        ComponentId = componentId;
-        Name = name;
-        Description = description;
-        Warnings = warnings;
-        CreatorId = creatorId;
-        CreatedAt = createdAt;
-    }
-
-    public string Locale { get; private set; }
-    public Guid ComponentId { get; private set; }
-    public string? Name { get; private set; }
-    public string? Description { get; private set; }
-    public string[] Warnings { get; private set; }
-    public Guid CreatorId { get; private set; }
-    public DateTime CreatedAt { get; private set; }
+    public string Locale { get; private set; } = locale;
+    public Guid ComponentId { get; private set; } = componentId;
+    public string? Name { get; private set; } = name;
+    public string? Description { get; private set; } = description;
+    public string[] Warnings { get; private set; } = warnings;
+    public Guid CreatorId { get; private set; } = creatorId;
+    public DateTime CreatedAt { get; private set; } = createdAt;
     public AppliedMethod AppliedMethod { get; private set; } = default!;
 
     public ICollection<DataApproval> Approvals { get; } = new List<DataApproval>();

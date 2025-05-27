@@ -5,16 +5,11 @@ using System.Threading.Tasks;
 
 namespace Database.GraphQl.DataX;
 
-public sealed class GetHttpsResourceTree
-{
-    private readonly Data.DataX _data;
-
-    public GetHttpsResourceTree(
-        Data.DataX data
+public sealed class GetHttpsResourceTree(
+    Data.DataX data
     )
-    {
-        _data = data;
-    }
+{
+    private readonly Data.DataX _data = data;
 
     public async Task<GetHttpsResourceTreeRoot> GetRoot(
         GetHttpsResourceTreeRootByDataIdDataLoader byId,

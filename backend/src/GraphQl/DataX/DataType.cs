@@ -3,15 +3,10 @@ using Database.Data;
 
 namespace Database.GraphQl.DataX;
 
-public sealed class DataType
-    : InterfaceType<IData>
+public sealed class DataType(AppSettings appSettings)
+        : InterfaceType<IData>
 {
-    private readonly AppSettings _appSettings;
-
-    public DataType(AppSettings appSettings)
-    {
-        _appSettings = appSettings;
-    }
+    private readonly AppSettings _appSettings = appSettings;
 
     protected override void Configure(
         IInterfaceTypeDescriptor<IData> descriptor

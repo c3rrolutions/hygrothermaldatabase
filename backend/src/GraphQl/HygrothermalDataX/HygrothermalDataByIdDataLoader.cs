@@ -5,20 +5,16 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Database.GraphQl.HygrothermalDataX;
 
-public sealed class HygrothermalDataByIdDataLoader
-    : EntityByIdDataLoader<HygrothermalData>
-{
-    public HygrothermalDataByIdDataLoader(
-        IBatchScheduler batchScheduler,
-        DataLoaderOptions options,
-        IDbContextFactory<ApplicationDbContext> dbContextFactory
+public sealed class HygrothermalDataByIdDataLoader(
+    IBatchScheduler batchScheduler,
+    DataLoaderOptions options,
+    IDbContextFactory<ApplicationDbContext> dbContextFactory
     )
-        : base(
-            batchScheduler,
-            options,
-            dbContextFactory,
-            dbContext => dbContext.HygrothermalData
+        : EntityByIdDataLoader<HygrothermalData>(
+        batchScheduler,
+        options,
+        dbContextFactory,
+        dbContext => dbContext.HygrothermalData
         )
-    {
-    }
+{
 }

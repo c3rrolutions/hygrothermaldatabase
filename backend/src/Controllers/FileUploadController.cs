@@ -35,7 +35,10 @@ public static partial class Log
 
 // Inspired by https://docs.microsoft.com/en-us/aspnet/core/mvc/models/file-uploads?view=aspnetcore-5.0#upload-large-files-with-streaming
 // and https://github.com/dotnet/AspNetCore.Docs/blob/b4599432690b8753fc2eac23d52957f47e01997a/aspnetcore/mvc/models/file-uploads/samples/3.x/SampleApp/
-public class FileUploadController : Controller
+public class FileUploadController(
+    ILogger<FileUploadController> logger,
+    ApplicationDbContext context
+    ) : Controller
 {
     private const long
         _fileSizeLimit =
@@ -46,22 +49,11 @@ public class FileUploadController : Controller
     // Get the default form options so that we can use them to set the default
     // limits for request body data.
     private static readonly FormOptions _defaultFormOptions = new();
-    private readonly ILogger<FileUploadController> _logger;
-    private readonly ApplicationDbContext _context;
+    private readonly ILogger<FileUploadController> _logger = logger;
+    private readonly ApplicationDbContext _context = context;
 
     private readonly string[] _permittedExtensions =
         [".json", ".xml", ".txt", ".csv", ".ifc", ".rad", ".svg", ".pdf", ".png"];
-
-    public FileUploadController(
-        ILogger<FileUploadController> logger,
-        ApplicationDbContext context
-    )
-    {
-        _logger = logger;
-        _context = context;
-        // To save physical files to the temporary files folder, use:
-        //_targetDirectoryPath = Path.GetTempPath();
-    }
 
     // The following upload methods:
     //

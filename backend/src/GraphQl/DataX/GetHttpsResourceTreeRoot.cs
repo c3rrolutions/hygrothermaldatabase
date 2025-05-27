@@ -4,16 +4,11 @@ using HotChocolate.Types;
 
 namespace Database.GraphQl.DataX;
 
-public sealed class GetHttpsResourceTreeRoot : IGetHttpsResourceTreeVertex
+public sealed class GetHttpsResourceTreeRoot(
+    GetHttpsResource value
+    ) : IGetHttpsResourceTreeVertex
 {
-    public GetHttpsResourceTreeRoot(
-        GetHttpsResource value
-    )
-    {
-        Value = value;
-    }
-
     [GraphQLType<NonNullType<IdType>>] public string VertexId => GetHttpsResource.ConstructVertexId(Value.Id);
 
-    public GetHttpsResource Value { get; }
+    public GetHttpsResource Value { get; } = value;
 }

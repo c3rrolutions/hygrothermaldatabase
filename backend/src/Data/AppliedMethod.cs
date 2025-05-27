@@ -5,7 +5,9 @@ using Microsoft.EntityFrameworkCore;
 namespace Database.Data;
 
 [Owned]
-public sealed class AppliedMethod
+public sealed class AppliedMethod(
+    Guid methodId
+    )
 {
     public AppliedMethod(
         Guid methodId,
@@ -18,15 +20,7 @@ public sealed class AppliedMethod
         Sources = sources;
     }
 
-    // `DbContext` needs this constructor without owned entities.
-    public AppliedMethod(
-        Guid methodId
-    )
-    {
-        MethodId = methodId;
-    }
-
-    public Guid MethodId { get; private set; }
+    public Guid MethodId { get; private set; } = methodId;
     public ICollection<NamedMethodArgument> Arguments { get; private set; } = new List<NamedMethodArgument>();
     public ICollection<NamedMethodSource> Sources { get; private set; } = new List<NamedMethodSource>();
 }

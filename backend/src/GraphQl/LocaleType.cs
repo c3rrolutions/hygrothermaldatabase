@@ -20,8 +20,19 @@ namespace Database.GraphQl;
 ///     maintains the
 ///     [Language Subtag Registry](https://www.iana.org/assignments/lang-subtags-templates/lang-subtags-templates.xhtml).
 /// </summary>
-public class LocaleType
-    : RegexType
+/// <remarks>
+///     Initializes a new instance of the <see cref="LocaleType" /> class.
+/// </remarks>
+public class LocaleType(
+    string name,
+    string? description = null,
+    BindingBehavior bind = BindingBehavior.Explicit)
+        : RegexType(
+        name,
+        _validationPattern,
+        description,
+        RegexOptions.Compiled | RegexOptions.IgnoreCase,
+        bind)
 {
     private const string _validationPattern =
         "^[a-zA-Z0-9]+(-[a-zA-Z0-9]+)?(-[a-zA-Z0-9]+)?$";
@@ -34,22 +45,6 @@ public class LocaleType
             nameof(LocaleType).Remove(nameof(LocaleType).Length - "Type".Length),
             "BCP 47 compliant Language Tag string"
         )
-    {
-    }
-
-    /// <summary>
-    ///     Initializes a new instance of the <see cref="LocaleType" /> class.
-    /// </summary>
-    public LocaleType(
-        string name,
-        string? description = null,
-        BindingBehavior bind = BindingBehavior.Explicit)
-        : base(
-            name,
-            _validationPattern,
-            description,
-            RegexOptions.Compiled | RegexOptions.IgnoreCase,
-            bind)
     {
     }
 }

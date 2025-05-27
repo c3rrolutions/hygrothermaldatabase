@@ -5,23 +5,15 @@ using Microsoft.EntityFrameworkCore;
 namespace Database.Data;
 
 [Owned]
-public sealed class CrossDatabaseDataReference
-{
-    public CrossDatabaseDataReference(
-        Guid dataId,
-        DateTime dataTimestamp,
-        DataKind dataKind,
-        Guid databaseId
+public sealed class CrossDatabaseDataReference(
+    Guid dataId,
+    DateTime dataTimestamp,
+    DataKind dataKind,
+    Guid databaseId
     )
-    {
-        DataId = dataId;
-        DataTimestamp = dataTimestamp;
-        DataKind = dataKind;
-        DatabaseId = databaseId;
-    }
-
-    public Guid DataId { get; private set; }
-    public DateTime DataTimestamp { get; private set; }
-    public DataKind DataKind { get; private set; }
-    public Guid DatabaseId { get; private set; }
+{
+    public Guid DataId { get; private set; } = dataId;
+    public DateTime DataTimestamp { get; private set; } = dataTimestamp;
+    public DataKind DataKind { get; private set; } = dataKind;
+    public Guid DatabaseId { get; private set; } = databaseId;
 }

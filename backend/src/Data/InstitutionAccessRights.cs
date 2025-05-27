@@ -4,28 +4,19 @@ using Database.Services.Interfaces;
 
 namespace Database.Data;
 
-public class InstitutionAccessRights
-    : Entity
-{
-    public Guid InstitutionId { get; set; }
-    public uint? AllowedUserCount { get; set; }
-    public uint? AllowedDatasetsPerTime { get; set; }
-    public TimeSpan Period { get; set; }
-    public List<Guid> UserAlreadyAccessed { get; private set; }
-
-    public InstitutionAccessRights(
-        Guid institutionId,
-        uint? allowedUserCount,
-        uint? allowedDatasetsPerTime,
-        TimeSpan period
+public class InstitutionAccessRights(
+    Guid institutionId,
+    uint? allowedUserCount,
+    uint? allowedDatasetsPerTime,
+    TimeSpan period
         )
-    {
-        InstitutionId = institutionId;
-        AllowedUserCount = allowedUserCount;
-        AllowedDatasetsPerTime = allowedDatasetsPerTime;
-        Period = period;
-        UserAlreadyAccessed = new List<Guid>();
-    }
+        : Entity
+{
+    public Guid InstitutionId { get; set; } = institutionId;
+    public uint? AllowedUserCount { get; set; } = allowedUserCount;
+    public uint? AllowedDatasetsPerTime { get; set; } = allowedDatasetsPerTime;
+    public TimeSpan Period { get; set; } = period;
+    public List<Guid> UserAlreadyAccessed { get; private set; } = new List<Guid>();
 
     /// <summary>
     /// Check if dataset is restricted by access rights for institution. Datasets per time period of

@@ -5,20 +5,16 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Database.GraphQl.CalorimetricDataX;
 
-public sealed class CalorimetricDataByIdDataLoader
-    : EntityByIdDataLoader<CalorimetricData>
-{
-    public CalorimetricDataByIdDataLoader(
-        IBatchScheduler batchScheduler,
-        DataLoaderOptions options,
-        IDbContextFactory<ApplicationDbContext> dbContextFactory
+public sealed class CalorimetricDataByIdDataLoader(
+    IBatchScheduler batchScheduler,
+    DataLoaderOptions options,
+    IDbContextFactory<ApplicationDbContext> dbContextFactory
     )
-        : base(
-            batchScheduler,
-            options,
-            dbContextFactory,
-            dbContext => dbContext.CalorimetricData
+        : EntityByIdDataLoader<CalorimetricData>(
+        batchScheduler,
+        options,
+        dbContextFactory,
+        dbContext => dbContext.CalorimetricData
         )
-    {
-    }
+{
 }

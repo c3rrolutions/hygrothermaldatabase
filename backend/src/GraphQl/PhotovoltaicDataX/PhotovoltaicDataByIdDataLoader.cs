@@ -5,20 +5,16 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Database.GraphQl.PhotovoltaicDataX;
 
-public sealed class PhotovoltaicDataByIdDataLoader
-    : EntityByIdDataLoader<PhotovoltaicData>
-{
-    public PhotovoltaicDataByIdDataLoader(
-        IBatchScheduler batchScheduler,
-        DataLoaderOptions options,
-        IDbContextFactory<ApplicationDbContext> dbContextFactory
+public sealed class PhotovoltaicDataByIdDataLoader(
+    IBatchScheduler batchScheduler,
+    DataLoaderOptions options,
+    IDbContextFactory<ApplicationDbContext> dbContextFactory
     )
-        : base(
-            batchScheduler,
-            options,
-            dbContextFactory,
-            dbContext => dbContext.PhotovoltaicData
+        : EntityByIdDataLoader<PhotovoltaicData>(
+        batchScheduler,
+        options,
+        dbContextFactory,
+        dbContext => dbContext.PhotovoltaicData
         )
-    {
-    }
+{
 }

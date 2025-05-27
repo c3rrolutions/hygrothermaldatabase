@@ -7,24 +7,20 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Database.GraphQl.GetHttpsResources;
 
-public sealed class GetHttpsResourceChildrenByGetHttpsResourceIdDataLoader
-    : AssociationsByAssociateIdDataLoader<GetHttpsResource>
-{
-    public GetHttpsResourceChildrenByGetHttpsResourceIdDataLoader(
-        IBatchScheduler batchScheduler,
-        DataLoaderOptions options,
-        IDbContextFactory<ApplicationDbContext> dbContextFactory
+public sealed class GetHttpsResourceChildrenByGetHttpsResourceIdDataLoader(
+    IBatchScheduler batchScheduler,
+    DataLoaderOptions options,
+    IDbContextFactory<ApplicationDbContext> dbContextFactory
     )
-        : base(
-            batchScheduler,
-            options,
-            dbContextFactory,
-            (dbContext, ids) =>
+        : AssociationsByAssociateIdDataLoader<GetHttpsResource>(
+        batchScheduler,
+        options,
+        dbContextFactory,
+        (dbContext, ids) =>
                 dbContext.GetHttpsResources.AsNoTracking().Where(x =>
                     ids.Contains(x.ParentId ?? Guid.Empty)
                 ),
-            x => x.Id
+        x => x.Id
         )
-    {
-    }
+{
 }

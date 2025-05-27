@@ -33,7 +33,7 @@ public sealed class HygrothermalDataQueries
     {
         // TODO Use `locale`.
         sorting.StabilizeOrder<HygrothermalData>();
-        IQueryable<HygrothermalData> filteredData = context.HygrothermalData.Sort(resolverContext).Filter(resolverContext);
+        var filteredData = context.HygrothermalData.Sort(resolverContext).Filter(resolverContext);
 
         // Check if there is restricted data
         if (!filteredData.Any(x => x.DataAccessRights.HasRestrictions))

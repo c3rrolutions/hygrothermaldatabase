@@ -38,7 +38,7 @@ public class InstitutionAccessRights
     /// <returns> </returns>
     internal bool IsDataRestricted(IData dataItem, Guid currentUserId, ICacheService cacheService, out string reason)
     {
-        bool isRestricted = false;
+        var isRestricted = false;
         reason = "";
 
         // Check restriction for time period

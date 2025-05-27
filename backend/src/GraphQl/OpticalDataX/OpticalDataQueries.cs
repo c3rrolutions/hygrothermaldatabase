@@ -33,7 +33,7 @@ public sealed class OpticalDataQueries
     {
         // TODO Use `locale`.
         sorting.StabilizeOrder<OpticalData>();
-        IQueryable<OpticalData> filteredData = context.OpticalData.Sort(resolverContext).Filter(resolverContext);
+        var filteredData = context.OpticalData.Sort(resolverContext).Filter(resolverContext);
 
         // Check if there is restricted data
         if (!filteredData.Any(x => x.DataAccessRights.HasRestrictions))

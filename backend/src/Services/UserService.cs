@@ -48,7 +48,7 @@ public class UserService(
         }
 
         // Check if there is already a user for token
-        if (!cacheService.TryGetUser(token, out CurrentUserDto? cacheUser))
+        if (!cacheService.TryGetUser(token, out var cacheUser))
         {
             // Get user from Metabase
             cacheUser = await GetCurrentUserFromMetabase(cancellationToken).ConfigureAwait(false);

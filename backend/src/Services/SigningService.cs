@@ -88,8 +88,8 @@ public class SigningService(
 
         var proc = Process.Start(startInfo);
         ArgumentNullException.ThrowIfNull(proc);
-        string output = proc.StandardOutput.ReadToEnd();
-        string error = proc.StandardError.ReadToEnd();
+        var output = proc.StandardOutput.ReadToEnd();
+        var error = proc.StandardError.ReadToEnd();
         await proc.WaitForExitAsync();
         if (string.IsNullOrEmpty(output))
         {
@@ -106,7 +106,7 @@ public class SigningService(
 
     private async Task<string> GetFingerprintFromKeyList()
     {
-        string fingerprint = "";
+        var fingerprint = "";
 
         // Execute command to list keys with fingerprint, use 'with-colon' to split later
         var (success, outout) = await ExecuteGnuCommand($"gpg --list-keys --with-subkey-fingerprint --with-colon");
@@ -122,7 +122,7 @@ public class SigningService(
     {
         try
         {
-            using (StreamWriter outputFile = new StreamWriter(FILENAME))
+            using (var outputFile = new StreamWriter(FILENAME))
             {
                 outputFile.WriteLine(data);
             }
@@ -140,7 +140,7 @@ public class SigningService(
     {
         try
         {
-            using (StreamReader file = new StreamReader(FILENAME + FILE_EXTENSION))
+            using (var file = new StreamReader(FILENAME + FILE_EXTENSION))
             {
                 return (true, file.ReadToEnd());
             }

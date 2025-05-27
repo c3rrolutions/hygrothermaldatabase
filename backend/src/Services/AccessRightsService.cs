@@ -29,10 +29,10 @@ public class AccessRightsService(
     public async Task<IQueryable<T>> ApplyAccessRightsOnData<T>(IQueryable<T> data, CancellationToken cancellationToken)
     where T : IData
     {
-        List<T> filteredData = new List<T>();
-        List<string> restrictions = new List<string>();
-        List<Guid> institutions = new List<Guid>();
-        List<InstitutionAccessRights> accessRights = new List<InstitutionAccessRights>();
+        var filteredData = new List<T>();
+        var restrictions = new List<string>();
+        var institutions = new List<Guid>();
+        var accessRights = new List<InstitutionAccessRights>();
 
         var applicationId = userService.GetApplicationIdFromUser() ?? throw new InvalidOperationException("Application Id could not be aquired.");
         var currentUser = await userService.GetCurrentUser(cancellationToken).ConfigureAwait(false) ?? throw new InvalidOperationException("Could not get current user!");
@@ -74,7 +74,7 @@ public class AccessRightsService(
         List<InstitutionAccessRights> accessRights)
     where T : IData
     {
-        string reason = "";
+        var reason = "";
         foreach (var dataItem in data)
         {
             if (dataItem.DataAccessRights.HasRestrictions)

@@ -31,7 +31,7 @@ public sealed class GeometricDataQueries
     {
         // TODO Use `locale`.
         sorting.StabilizeOrder<GeometricData>();
-        IQueryable<GeometricData> filteredData = context.GeometricData.Sort(resolverContext).Filter(resolverContext);
+        var filteredData = context.GeometricData.Sort(resolverContext).Filter(resolverContext);
 
         // Check if there is restricted data
         if (!filteredData.Any(x => x.DataAccessRights.HasRestrictions))

@@ -39,7 +39,7 @@ public class MethodAsServiceQueries
             );
         }
 
-        await using Stream stream = input.File.OpenReadStream();
+        await using var stream = input.File.OpenReadStream();
         var fileInput = await JsonSerializer.DeserializeAsync<FileInputData>(
             stream,
             JsonSerializerSettings.File,

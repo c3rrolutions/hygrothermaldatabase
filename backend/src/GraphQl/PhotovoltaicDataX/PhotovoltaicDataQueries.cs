@@ -33,7 +33,7 @@ public sealed class PhotovoltaicDataQueries
     {
         // TODO Use `locale`.
         sorting.StabilizeOrder<PhotovoltaicData>();
-        IQueryable<PhotovoltaicData> filteredData = context.PhotovoltaicData.Sort(resolverContext).Filter(resolverContext);
+        var filteredData = context.PhotovoltaicData.Sort(resolverContext).Filter(resolverContext);
 
         // Check if there is restricted data
         if (!filteredData.Any(x => x.DataAccessRights.HasRestrictions))

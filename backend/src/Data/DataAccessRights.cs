@@ -28,7 +28,7 @@ public sealed class DataAccessRights
     public IReadOnlyList<string>? AllowedApplications { get; set; }
 
     /// <summary>
-    /// Is data access ristricted by data access rights.
+    /// Is data access restricted by data access rights.
     /// </summary>
     public bool HasRestrictions
     {
@@ -41,7 +41,7 @@ public sealed class DataAccessRights
     }
 
     /// <summary>
-    /// Is data access ristricted by user.
+    /// Is data access restricted by user.
     /// </summary>
     public bool IsRestrictedByUser
     {
@@ -52,7 +52,7 @@ public sealed class DataAccessRights
     }
 
     /// <summary>
-    /// Is data access ristricted by institution.
+    /// Is data access restricted by institution.
     /// </summary>
     public bool IsRestrictedByInstitution
     {
@@ -63,7 +63,7 @@ public sealed class DataAccessRights
     }
 
     /// <summary>
-    /// Is data access ristricted by application.
+    /// Is data access restricted by application.
     /// </summary>
     public bool IsRestrictedByApplication
     {

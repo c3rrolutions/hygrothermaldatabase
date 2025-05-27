@@ -35,6 +35,6 @@ public static class HttpContextAccessorExtensions
 
     private static bool LiesInTheFuture(string expirationDate)
     {
-        return DateTime.Parse(expirationDate, CultureInfo.InvariantCulture) < DateTime.UtcNow;
+        return DateTime.Parse(expirationDate, CultureInfo.InvariantCulture) > DateTime.UtcNow;
     }
 }

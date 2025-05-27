@@ -64,11 +64,12 @@ public sealed class Startup(
         // services.AddDatabaseDeveloperPageExceptionFilter();
         services.AddSingleton<ISigningService, SigningService>();
         services.AddSingleton<ICacheService, CacheService>();
-        services.AddScoped<IUserService, UserService>();
-        services.AddScoped<IDataService, DataService>();
-        services.AddScoped<IApiRequestService, ApiRequestService>();
-        services.AddScoped<IResponseApprovalService, ResponseApprovalService>();
         services.AddScoped<IAccessRightsService, AccessRightsService>();
+        services.AddScoped<IApiRequestService, ApiRequestService>();
+        services.AddScoped<IDataService, DataService>();
+        services.AddScoped<IMethodCalculationService, MethodCalculationService>();
+        services.AddScoped<IResponseApprovalService, ResponseApprovalService>();
+        services.AddScoped<IUserService, UserService>();
     }
 
     private static void ConfigureRequestResponseServices(IServiceCollection services)

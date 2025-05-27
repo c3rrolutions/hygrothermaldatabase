@@ -6,7 +6,7 @@ public class MethodAsServicePayload
     : Payload
 {
     public MethodAsServicePayload(
-        List<DataPoint> calculationResult
+        IReadOnlyList<DataPoint> calculationResult
     )
     {
         CalculationResult = calculationResult;
@@ -27,7 +27,7 @@ public class MethodAsServicePayload
     }
 
     public MethodAsServicePayload(
-        List<DataPoint> calculationResult,
+        IReadOnlyList<DataPoint> calculationResult,
         IReadOnlyCollection<MethodAsServiceError> errors
     )
     {
@@ -46,6 +46,6 @@ public class MethodAsServicePayload
     {
     }
 
-    public List<DataPoint>? CalculationResult { get; }
+    public IReadOnlyList<DataPoint>? CalculationResult { get; }
     public IReadOnlyCollection<MethodAsServiceError>? Errors { get; }
 }

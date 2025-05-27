@@ -153,7 +153,7 @@ public static class GraphQlConfiguration
             .AddType<UserQueries>()
             .AddType<VerificationCodeQueries>()
             .AddType<GeometricDataQueries>()
-            .AddType<MethodAsServiceQuaries>()
+            .AddType<MethodAsServiceQueries>()
             .AddType<DataQueries>()
             // Mutation Types
             .AddMutationType(d => d.Name(nameof(Mutation)))

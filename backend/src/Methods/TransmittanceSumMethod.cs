@@ -10,7 +10,7 @@ public class TransmittanceSumMethod : IMethod
 
     public Guid Id => Guid.Parse("dfa3a7b3-a6da-444c-b43f-5ffd021c4a5c");
 
-    public List<DataPoint> Calculate(List<DataPoint> dataPoints)
+    public List<DataPoint> Calculate(IReadOnlyList<DataPoint> dataPoints)
     {
         double transmittanceSum = 0;
         foreach (var dataPoint in dataPoints)

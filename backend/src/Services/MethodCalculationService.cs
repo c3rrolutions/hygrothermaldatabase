@@ -21,7 +21,7 @@ public class MethodCalculationService : IMethodCalculationService
         return _methods.Exists(x => x.Id == methodId);
     }
 
-    public List<DataPoint> UseMethodToCalculate(Guid methodId, List<DataPoint> dataPoints)
+    public List<DataPoint> UseMethodToCalculate(Guid methodId, IReadOnlyList<DataPoint> dataPoints)
     {
         var method = _methods.First(x => x.Id == methodId);
 

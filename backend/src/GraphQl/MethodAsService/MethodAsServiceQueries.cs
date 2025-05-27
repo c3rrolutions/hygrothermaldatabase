@@ -18,14 +18,12 @@ using Microsoft.AspNetCore.Http;
 namespace Database.GraphQl.MethodAsService;
 
 [ExtendObjectType(nameof(Query))]
-public class MethodAsServiceQuaries
+public class MethodAsServiceQueries
 {
     private sealed record DataXResponse(DataXDto DataX);
 
     public async Task<MethodAsServicePayload> MethodAsServiceWithFileAsync(
         MethodAsServiceWithFileInput input,
-        ApplicationDbContext context,
-        IUserService userService,
         IMethodCalculationService methodCalculationService,
         CancellationToken cancellationToken
     )
@@ -46,11 +44,9 @@ public class MethodAsServiceQuaries
             stream,
             JsonSerializerSettings.File,
             cancellationToken
-            ).ConfigureAwait(false);
+            ).ConfigureAwait(false) ?? throw new JsonException("Failed to deserialize the GraphQL response.");
 
-        if (fileInput is null) throw new JsonException("Failed to deserialize the GraphQL response.");
-
-        var result = methodCalculationService.UseMethodToCalculate(input.MethodId, fileInput.Data.DataPoints.ToList());
+        var result = methodCalculationService.UseMethodToCalculate(input.MethodId, fileInput.Data.DataPoints);
 
         return new MethodAsServicePayload(result);
     }

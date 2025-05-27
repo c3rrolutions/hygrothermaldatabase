@@ -9,5 +9,5 @@ public interface IMethod
     string Name { get; }
     Guid Id { get; }
 
-    List<DataPoint> Calculate(List<DataPoint> dataPoints);
+    List<DataPoint> Calculate(IReadOnlyList<DataPoint> dataPoints);
 }

@@ -11,5 +11,5 @@ public interface IMethodCalculationService
 
     bool MethodExists(Guid methodId);
 
-    List<DataPoint> UseMethodToCalculate(Guid methodId, List<DataPoint> dataPoints);
+    List<DataPoint> UseMethodToCalculate(Guid methodId, IReadOnlyList<DataPoint> dataPoints);
 }

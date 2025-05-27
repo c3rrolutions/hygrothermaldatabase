@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Database.GraphQl.AccessRights;
 
 [ExtendObjectType(nameof(Mutation))]
-public class DataAccessRightsMutations
+public sealed class DataAccessRightsMutations
 {
     public async Task<UpdateDataAccessRightsPayload> UpdateDataAccessRightsAsync(
         DataAccessRightsInput input,
@@ -105,7 +105,7 @@ public class DataAccessRightsMutations
             );
         }
 
-        var accessRights = await context.AccessRights.FirstOrDefaultAsync(x => x.InstitutionId == input.InstitutionId, cancellationToken).ConfigureAwait(false);
+        var accessRights = await context.InstitutionAccessRights.FirstOrDefaultAsync(x => x.InstitutionId == input.InstitutionId, cancellationToken).ConfigureAwait(false);
 
         if (accessRights is not null)
         {
@@ -123,7 +123,7 @@ public class DataAccessRightsMutations
             input.AllowedUserCount,
             input.AllowedDatasetsPerTimeSpan,
             TimeSpan.FromDays(input.PeriodInDays));
-        context.AccessRights.Add(accessRights);
+        context.InstitutionAccessRights.Add(accessRights);
         await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         return new AddInstitutionAccessRightsPayload(accessRights);
     }
@@ -164,7 +164,7 @@ public class DataAccessRightsMutations
             );
         }
 
-        var accessRights = await context.AccessRights.FirstOrDefaultAsync(x => x.InstitutionId == input.InstitutionId, cancellationToken).ConfigureAwait(false);
+        var accessRights = await context.InstitutionAccessRights.FirstOrDefaultAsync(x => x.InstitutionId == input.InstitutionId, cancellationToken).ConfigureAwait(false);
 
         if (accessRights is null)
         {

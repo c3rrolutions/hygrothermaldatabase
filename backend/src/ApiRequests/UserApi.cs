@@ -12,7 +12,7 @@ namespace Database.ApiRequests;
 /// <summary>
 /// Class to request user info from Metabase API.
 /// </summary>
-public class UserApi
+public sealed class UserApi
 {
     private static readonly string[] _currentUserFileNames =
     [

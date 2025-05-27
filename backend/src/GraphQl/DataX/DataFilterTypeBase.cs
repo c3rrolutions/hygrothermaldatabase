@@ -3,7 +3,7 @@ using HotChocolate.Data.Filters;
 
 namespace Database.GraphQl.DataX;
 
-public class DataFilterTypeBase<TData>
+public abstract class DataFilterTypeBase<TData>
     : FilterInputType<TData>
     where TData : IData
 {

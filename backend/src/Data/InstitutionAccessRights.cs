@@ -4,7 +4,7 @@ using Database.Services.Interfaces;
 
 namespace Database.Data;
 
-public class InstitutionAccessRights(
+public sealed class InstitutionAccessRights(
     Guid institutionId,
     uint? allowedUserCount,
     uint? allowedDatasetsPerTime,

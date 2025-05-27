@@ -23,7 +23,7 @@ namespace Database.GraphQl;
 /// <remarks>
 ///     Initializes a new instance of the <see cref="LocaleType" /> class.
 /// </remarks>
-public class LocaleType(
+public sealed class LocaleType(
     string name,
     string? description = null,
     BindingBehavior bind = BindingBehavior.Explicit)

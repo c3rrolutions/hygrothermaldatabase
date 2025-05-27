@@ -21,7 +21,7 @@ namespace Database.Services;
 /// <param name="httpClientFactory">   <see cref="IHttpClientFactory"/> </param>
 /// <param name="cacheService">        <see cref="ICacheService"/> to store already known users. </param>
 /// <param name="logger">              Instance of <see cref="ILogger"/> </param>
-public class UserService(
+public sealed class UserService(
     AppSettings appSettings,
     IApiRequestService apiRequestService,
     IHttpContextAccessor httpContextAccessor,

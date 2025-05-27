@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Database.GraphQl.MethodAsService;
@@ -7,7 +7,7 @@ using Database.Services.Interfaces;
 
 namespace Database.Services;
 
-public class MethodCalculationService : IMethodCalculationService
+public sealed class MethodCalculationService : IMethodCalculationService
 {
     private List<IMethod> _methods = [];
 

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Database.GraphQl.Approvals;
 
-public class AddApprovalError(
+public sealed class AddApprovalError(
     AddApprovalErrorCode code,
     string message,
     IReadOnlyList<string> path

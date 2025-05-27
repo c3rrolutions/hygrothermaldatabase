@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Database.GraphQl.MethodAsService;
 
 namespace Database.Methods;
 
-public class TransmittanceSumMethod : IMethod
+public sealed class TransmittanceSumMethod : IMethod
 {
     public string Name => "TransmittanceSum";
 

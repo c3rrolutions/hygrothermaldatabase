@@ -19,7 +19,7 @@ namespace Database.Services;
 /// <param name="userService">  <see cref="IUserService"/> </param>
 /// <param name="cacheService"> <see cref="ICacheService"/> </param>
 /// <param name="logger">       <see cref="ILogger"/> </param>
-public class AccessRightsService(
+public sealed class AccessRightsService(
     ApplicationDbContext context,
     IUserService userService,
     ICacheService cacheService,
@@ -41,7 +41,7 @@ public class AccessRightsService(
         foreach (var institution in currentUser.RepresentedInstitutions.Edges)
         {
             institutions.Add(institution.Node.Uuid);
-            var accessRightOfInstitution = await context.AccessRights.FirstOrDefaultAsync(x => x.InstitutionId == institution.Node.Uuid, cancellationToken).ConfigureAwait(false);
+            var accessRightOfInstitution = await context.InstitutionAccessRights.FirstOrDefaultAsync(x => x.InstitutionId == institution.Node.Uuid, cancellationToken).ConfigureAwait(false);
             if (accessRightOfInstitution is not null)
             {
                 accessRights.Add(accessRightOfInstitution);

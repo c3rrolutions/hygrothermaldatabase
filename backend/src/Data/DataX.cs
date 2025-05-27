@@ -54,7 +54,7 @@ public abstract class DataX(
     // this list and the graph must be connected. In other words, the resources must form a tree.
     public virtual ICollection<GetHttpsResource> Resources { get; } = [];
 
-    public DataAccessRights DataAccessRights { get; } = new DataAccessRights();
+    public DataAccessRights DataAccessRights { get; private set; } = new DataAccessRights();
 
     /// <inheritdoc/>
     public bool IsRestrictedByApplication(string applicationId)
@@ -77,17 +77,14 @@ public abstract class DataX(
     /// <inheritdoc/>
     public bool IsRestrictedByUser(Guid uuid, uint alreadyAccesedCount)
     {
-        if (DataAccessRights.AllowedUserAndQuantity is not null)
+        if (DataAccessRights.AllowedUserAndQuantity is null)
         {
-            if (DataAccessRights.AllowedUserAndQuantity.TryGetValue(uuid, out var limit))
-            {
-                if (limit is null || limit > alreadyAccesedCount)
-                {
-                    return false;
-                }
-            }
-            return true;
+            return false;
         }
-        return false;
+        if (DataAccessRights.AllowedUserAndQuantity.TryGetValue(uuid, out var limit))
+        {
+            return limit is not null && alreadyAccesedCount >= limit;
+        }
+        return true;
     }
 }

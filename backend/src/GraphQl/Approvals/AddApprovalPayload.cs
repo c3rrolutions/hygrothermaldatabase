@@ -2,7 +2,7 @@ using Database.Data;
 
 namespace Database.GraphQl.Approvals;
 
-public class AddApprovalPayload
+public sealed class AddApprovalPayload
     : ApprovalPayload<AddApprovalError>
 {
     public AddApprovalPayload(

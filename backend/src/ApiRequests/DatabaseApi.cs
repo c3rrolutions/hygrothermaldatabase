@@ -14,7 +14,7 @@ namespace Database.ApiRequests;
 /// <summary>
 /// Class to request databases from Metabase API.
 /// </summary>
-public class DatabaseApi
+public sealed class DatabaseApi
 {
     private static readonly string[] _databaseFileNames =
     [

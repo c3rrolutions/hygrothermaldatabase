@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 
 namespace Database.GraphQl.MethodAsService;
 
-public class MethodAsServicePayload
+public sealed class MethodAsServicePayload
     : Payload
 {
     public MethodAsServicePayload(

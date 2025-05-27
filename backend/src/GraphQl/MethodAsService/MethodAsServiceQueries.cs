@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -18,7 +18,7 @@ using Microsoft.AspNetCore.Http;
 namespace Database.GraphQl.MethodAsService;
 
 [ExtendObjectType(nameof(Query))]
-public class MethodAsServiceQueries
+public sealed class MethodAsServiceQueries
 {
     private sealed record DataXResponse(DataXDto DataX);
 

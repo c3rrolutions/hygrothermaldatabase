@@ -18,7 +18,7 @@ namespace Database.Services;
 /// <summary>
 /// Implementation of <see cref="IApiRequestService"/>
 /// </summary>
-public class ApiRequestService() : IApiRequestService
+public sealed class ApiRequestService() : IApiRequestService
 {
     /// <summary>
     /// Name of Metabase http client.

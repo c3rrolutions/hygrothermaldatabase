@@ -1,6 +1,6 @@
 namespace Database.GraphQl.AccessRights;
 
-public class AddInstitutionAccessRightsPayload
+public sealed class AddInstitutionAccessRightsPayload
     : InstitutionAccessRightsPayload<InstitutionAccessRightsError>
 {
     public AddInstitutionAccessRightsPayload(

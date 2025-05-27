@@ -1,9 +1,9 @@
-﻿using Database.GraphQl.GeometricDataX;
+using Database.GraphQl.GeometricDataX;
 using System.Collections.Generic;
 
 namespace Database.GraphQl.MethodAsService;
 
-public class MethodAsServiceError(
+public sealed class MethodAsServiceError(
     MethodAsServiceErrorCode code,
     string message,
     IReadOnlyList<string> path

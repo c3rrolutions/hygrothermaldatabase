@@ -12,7 +12,7 @@ namespace Database.ApiRequests;
 /// <summary>
 /// Class to request XData from Database API.
 /// </summary>
-public class DataApi
+public sealed class DataApi
 {
     public static readonly string[] CalorimetricDataFileNames =
     [

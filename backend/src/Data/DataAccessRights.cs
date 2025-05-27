@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
+using EntityFrameworkCore.Projectables;
 using Microsoft.EntityFrameworkCore;
 
 namespace Database.Data;
@@ -16,6 +17,7 @@ public sealed class DataAccessRights
     /// If the user ID is mapped to `null`, then this means that the user has unlimited
     /// access.
     /// </summary>
+    [Column(TypeName = "jsonb")]
     public IReadOnlyDictionary<Guid, uint?>? AllowedUserAndQuantity { get; set; }
 
     /// <summary>
@@ -32,49 +34,30 @@ public sealed class DataAccessRights
     /// Is data access restricted by data access rights.
     /// </summary>
     [NotMapped]
-    public bool HasRestrictions
-    {
-        get
-        {
-            return AllowedUserAndQuantity is not null ||
-                AllowedInstitutions is not null ||
-                AllowedApplications is not null;
-        }
-    }
+    [Projectable]
+    public bool HasRestrictions =>
+        AllowedUserAndQuantity != null ||
+        AllowedInstitutions != null ||
+        AllowedApplications != null;
 
     /// <summary>
     /// Is data access restricted by user.
     /// </summary>
     [NotMapped]
-    public bool IsRestrictedByUser
-    {
-        get
-        {
-            return AllowedUserAndQuantity is not null;
-        }
-    }
+    [Projectable]
+    public bool IsRestrictedByUser => AllowedUserAndQuantity != null;
 
     /// <summary>
     /// Is data access restricted by institution.
     /// </summary>
     [NotMapped]
-    public bool IsRestrictedByInstitution
-    {
-        get
-        {
-            return AllowedInstitutions is not null;
-        }
-    }
+    [Projectable]
+    public bool IsRestrictedByInstitution => AllowedInstitutions != null;
 
     /// <summary>
     /// Is data access restricted by application.
     /// </summary>
     [NotMapped]
-    public bool IsRestrictedByApplication
-    {
-        get
-        {
-            return AllowedApplications is not null;
-        }
-    }
+    [Projectable]
+    public bool IsRestrictedByApplication => AllowedApplications != null;
 }

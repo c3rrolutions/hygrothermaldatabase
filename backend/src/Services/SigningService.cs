@@ -13,7 +13,7 @@ namespace Database.Services;
 /// </summary>
 /// <param name="appSettings"> <see cref="AppSettings"/> </param>
 /// <param name="logger">      Instance of <see cref="ILogger"/> </param>
-public class SigningService(
+public sealed class SigningService(
     AppSettings appSettings,
     ILogger<ISigningService> logger) : ISigningService
 {

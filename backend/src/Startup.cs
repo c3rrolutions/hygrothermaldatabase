@@ -176,10 +176,11 @@ public sealed class Startup(
                     .MapEnum<OpticalComponentSubtype>(ApplicationDbContext.OpticalComponentSubtypeTypeName, appSettings.Database.SchemaName)
                     .MapEnum<OpticalComponentType>(ApplicationDbContext.OpticalComponentTypeTypeName, appSettings.Database.SchemaName)
                     .MapEnum<Standardizer>(ApplicationDbContext.StandardizerTypeName, appSettings.Database.SchemaName)
-                    // .UseNodaTime();
+            // .UseNodaTime();
             )
             .UseSchemaName(appSettings.Database.SchemaName)
-            .UseOpenIddict();
+            .UseOpenIddict()
+            .UseProjectables();
         if (!environment.IsProduction())
         {
             options

@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace Database.GraphQl.AccessRights;
 
-public class InstitutionAccessRightsPayload<TInstitutionAccessRightsError>
+public abstract class InstitutionAccessRightsPayload<TInstitutionAccessRightsError>
     : Payload
     where TInstitutionAccessRightsError : IUserError
 {

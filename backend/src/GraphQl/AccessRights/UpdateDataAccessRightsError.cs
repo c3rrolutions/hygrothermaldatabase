@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace Database.GraphQl.AccessRights;
 
-public class UpdateDataAccessRightsError(
+public sealed class UpdateDataAccessRightsError(
     UpdateDataAccessRightsErrorCode code,
     string message,
     IReadOnlyList<string> path

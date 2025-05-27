@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Database.GraphQl.Approvals;
 
-public class ApprovalPayload<TApprovalError>
+public abstract class ApprovalPayload<TApprovalError>
     : Payload
     where TApprovalError : IUserError
 {

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Database.GraphQl.AccessRights;
 
-public class DataAccessRightsPayload<TDataAccessRightsError>
+public abstract class DataAccessRightsPayload<TDataAccessRightsError>
     : Payload
     where TDataAccessRightsError : IUserError
 {

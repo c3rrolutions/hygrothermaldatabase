@@ -77,7 +77,7 @@ public class AccessRightsService(
         string reason = "";
         foreach (var dataItem in data)
         {
-            if (dataItem.DataAccessRights.HasRistrictions)
+            if (dataItem.DataAccessRights.HasRestrictions)
             {
                 if (dataItem.IsRestrictedByApplication(applicationId))
                 {

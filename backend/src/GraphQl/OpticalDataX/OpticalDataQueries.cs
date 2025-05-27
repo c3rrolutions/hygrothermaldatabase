@@ -36,7 +36,7 @@ public sealed class OpticalDataQueries
         IQueryable<OpticalData> filteredData = context.OpticalData.Sort(resolverContext).Filter(resolverContext);
 
         // Check if there is restricted data
-        if (!filteredData.Any(x => x.DataAccessRights.HasRistrictions))
+        if (!filteredData.Any(x => x.DataAccessRights.HasRestrictions))
         {
             return filteredData;
         }

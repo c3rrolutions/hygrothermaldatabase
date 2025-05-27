@@ -30,7 +30,7 @@ public sealed class DataAccessRights
     /// <summary>
     /// Is data access ristricted by data access rights.
     /// </summary>
-    public bool HasRistrictions
+    public bool HasRestrictions
     {
         get
         {

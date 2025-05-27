@@ -36,7 +36,7 @@ public sealed class CalorimetricDataQueries
         IQueryable<CalorimetricData> filteredData = context.CalorimetricData.Sort(resolverContext).Filter(resolverContext);
 
         // Check if there is restricted data
-        if (!filteredData.Any(x => x.DataAccessRights.HasRistrictions))
+        if (!filteredData.Any(x => x.DataAccessRights.HasRestrictions))
         {
             return filteredData;
         }

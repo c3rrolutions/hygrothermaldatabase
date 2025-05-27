@@ -68,7 +68,7 @@ public sealed class Startup(
         services.AddScoped<IDataService, DataService>();
         services.AddScoped<IApiRequestService, ApiRequestService>();
         services.AddScoped<IResponseApprovalService, ResponseApprovalService>();
-        //services.AddScoped<IAccessRightsService, AccessRightsService>();
+        services.AddScoped<IAccessRightsService, AccessRightsService>();
     }
 
     private static void ConfigureRequestResponseServices(IServiceCollection services)

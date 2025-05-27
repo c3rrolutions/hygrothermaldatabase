@@ -20,18 +20,24 @@ public static class HttpContextAccessorExtensions
     /// <returns> Bearer token or null. </returns>
     public static async Task<string?> ExtractBearerToken(this IHttpContextAccessor httpContextAccessor)
     {
-        if (httpContextAccessor.HttpContext is null) return null;
+        if (httpContextAccessor.HttpContext is null)
+        {
+            return null;
+        }
         var token = await httpContextAccessor.HttpContext.GetTokenAsync(
             CookieAuthenticationDefaults.AuthenticationScheme,
             OpenIddictClientAspNetCoreConstants.Tokens.BackchannelAccessToken);
         var expirationDate = await httpContextAccessor.HttpContext.GetTokenAsync(
             CookieAuthenticationDefaults.AuthenticationScheme,
             OpenIddictClientAspNetCoreConstants.Tokens.BackchannelAccessTokenExpirationDate);
-
-        return !string.IsNullOrEmpty(token) && !string.IsNullOrEmpty(expirationDate) && CheckExpirationDate(expirationDate) ? token : null;
+        if (expirationDate is null)
+        {
+            return token;
+        }
+        return LiesInTheFuture(expirationDate) ? token : null;
     }
 
-    private static bool CheckExpirationDate(string expirationDate)
+    private static bool LiesInTheFuture(string expirationDate)
     {
         return DateTime.UnixEpoch.AddSeconds(int.Parse(expirationDate, CultureInfo.InvariantCulture)) < DateTime.UtcNow;
     }

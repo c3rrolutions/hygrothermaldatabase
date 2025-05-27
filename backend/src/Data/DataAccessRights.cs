@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 
 namespace Database.Data;
@@ -30,6 +31,7 @@ public sealed class DataAccessRights
     /// <summary>
     /// Is data access restricted by data access rights.
     /// </summary>
+    [NotMapped]
     public bool HasRestrictions
     {
         get
@@ -43,6 +45,7 @@ public sealed class DataAccessRights
     /// <summary>
     /// Is data access restricted by user.
     /// </summary>
+    [NotMapped]
     public bool IsRestrictedByUser
     {
         get
@@ -54,6 +57,7 @@ public sealed class DataAccessRights
     /// <summary>
     /// Is data access restricted by institution.
     /// </summary>
+    [NotMapped]
     public bool IsRestrictedByInstitution
     {
         get
@@ -65,6 +69,7 @@ public sealed class DataAccessRights
     /// <summary>
     /// Is data access restricted by application.
     /// </summary>
+    [NotMapped]
     public bool IsRestrictedByApplication
     {
         get

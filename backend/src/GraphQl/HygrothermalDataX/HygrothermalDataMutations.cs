@@ -42,6 +42,7 @@ public sealed class HygrothermalDataMutations
             cancellationToken
             )
         )
+        {
             return new CreateHygrothermalDataPayload(
                 new CreateHygrothermalDataError(
                     CreateHygrothermalDataErrorCode.UNAUTHORIZED,
@@ -49,6 +50,8 @@ public sealed class HygrothermalDataMutations
                     []
                 )
             );
+        }
+
         var hygrothermalData = new HygrothermalData(
             input.Locale,
             input.ComponentId,

@@ -212,14 +212,19 @@ public sealed class AuthenticationController(
                     cancellationToken
                 );
         if (user is null)
+        {
             _context.Users.Add(
                 new User(
                     subject,
                     name
                 )
             );
+        }
         else
+        {
             user.Update(name);
+        }
+
         await _context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         // Ask the cookie authentication handler to return a new cookie and redirect
         // the user agent to the return URL stored in the authentication properties.

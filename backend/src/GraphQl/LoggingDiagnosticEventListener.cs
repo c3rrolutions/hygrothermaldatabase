@@ -156,7 +156,9 @@ public sealed class LoggingDiagnosticEventListener(
     )
     {
         foreach (var error in errors)
+        {
             _logger.FailedValidation(error.Exception, context.Request.Document, ConvertErrorToString(error));
+        }
     }
 
     private static string ConvertErrorToString(

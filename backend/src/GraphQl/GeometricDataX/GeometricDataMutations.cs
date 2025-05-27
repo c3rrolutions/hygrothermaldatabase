@@ -41,6 +41,7 @@ public sealed class GeometricDataMutations
              cancellationToken
              )
         )
+        {
             return new CreateGeometricDataPayload(
                 new CreateGeometricDataError(
                     CreateGeometricDataErrorCode.UNAUTHORIZED,
@@ -48,6 +49,7 @@ public sealed class GeometricDataMutations
                     []
                 )
             );
+        }
 
         var geometricData = new GeometricData(
             input.Locale,

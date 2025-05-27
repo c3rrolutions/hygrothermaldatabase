@@ -62,6 +62,7 @@ public sealed class GetHttpsResourceMutations
             cancellationToken
             )
         )
+        {
             return new CreateGetHttpsResourcePayload(
                 new CreateGetHttpsResourceError(
                     CreateGetHttpsResourceErrorCode.UNAUTHORIZED,
@@ -69,6 +70,8 @@ public sealed class GetHttpsResourceMutations
                     []
                 )
             );
+        }
+
         var getHttpsResource = new GetHttpsResource(
             input.Description,
             input.HashValue,

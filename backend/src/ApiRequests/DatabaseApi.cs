@@ -72,6 +72,7 @@ public sealed class DatabaseApi
                 ).ConfigureAwait(false);
 
         if (response is null)
+        {
             throw new GraphQLException(
                 ErrorBuilder.New()
             .SetCode("NULL_RESPONSE")
@@ -79,7 +80,10 @@ public sealed class DatabaseApi
                     .SetMessage("Response is null.")
                     .Build()
             );
+        }
+
         if (response.Data.Databases.Edges is null)
+        {
             throw new GraphQLException(
                 ErrorBuilder.New()
             .SetCode("NULL_EDGES")
@@ -87,7 +91,10 @@ public sealed class DatabaseApi
                     .SetMessage("The supposed list of databases is null.")
                     .Build()
             );
+        }
+
         if (response.Data.Databases.Edges.Count == 0)
+        {
             throw new GraphQLException(
                 ErrorBuilder.New()
             .SetCode("NO_DATABASE")
@@ -95,7 +102,10 @@ public sealed class DatabaseApi
                     .SetMessage("The list of databases is empty.")
                     .Build()
             );
+        }
+
         if (response.Data.Databases.Edges.Count >= 2)
+        {
             throw new GraphQLException(
                 ErrorBuilder.New()
                     .SetCode("AMBIGUOUS_DATABASE")
@@ -103,6 +113,7 @@ public sealed class DatabaseApi
                     .SetMessage("The list of databases has more than one entry.")
                     .Build()
             );
+        }
 
         return response.Data.Databases.Edges[0].Node;
     }
@@ -149,6 +160,7 @@ public sealed class DatabaseApi
                 ).ConfigureAwait(false);
 
         if (response is null)
+        {
             throw new GraphQLException(
                 ErrorBuilder.New()
             .SetCode("NULL_RESPONSE")
@@ -156,7 +168,10 @@ public sealed class DatabaseApi
                     .SetMessage("Response is null.")
                     .Build()
             );
+        }
+
         if (response.Data.Databases.Edges is null)
+        {
             throw new GraphQLException(
                 ErrorBuilder.New()
             .SetCode("NULL_EDGES")
@@ -164,7 +179,10 @@ public sealed class DatabaseApi
                     .SetMessage("The supposed list of databases is null.")
                     .Build()
             );
+        }
+
         if (response.Data.Databases.Edges.Count == 0)
+        {
             throw new GraphQLException(
                 ErrorBuilder.New()
             .SetCode("NO_DATABASE")
@@ -172,7 +190,10 @@ public sealed class DatabaseApi
                     .SetMessage("The list of databases is empty.")
                     .Build()
             );
+        }
+
         if (response.Data.Databases.Edges.Count >= 2)
+        {
             throw new GraphQLException(
                 ErrorBuilder.New()
                     .SetCode("AMBIGUOUS_DATABASE")
@@ -180,6 +201,7 @@ public sealed class DatabaseApi
                     .SetMessage("The list of databases has more than one entry.")
                     .Build()
             );
+        }
 
         return response.Data.Databases.Edges[0].Node;
     }

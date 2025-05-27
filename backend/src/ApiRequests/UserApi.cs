@@ -68,7 +68,7 @@ public sealed class UserApi
         IHttpContextAccessor httpContextAccessor,
         CancellationToken cancellationToken)
     {
-        var uri = new Uri(new Uri(appSettings.MetabaseHost), "/connect/userinfo");
+        var uri = new Uri(new Uri(appSettings.MetabaseHost, UriKind.Absolute), "/connect/userinfo");
 
         return await apiRequestService.Metabase().QueryRest<UserInfoDto>(
             uri,

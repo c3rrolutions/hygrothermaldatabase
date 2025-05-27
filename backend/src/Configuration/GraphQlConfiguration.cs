@@ -51,6 +51,7 @@ public static class GraphQlConfiguration
             _ => _.BaseAddress = new Uri($"{appSettings.Host}/graphql")
         );
         if (!environment.IsProduction())
+        {
             httpMetabaseClientBuilder.ConfigurePrimaryHttpMessageHandler(_ =>
                 new HttpClientHandler
                 {
@@ -59,6 +60,8 @@ public static class GraphQlConfiguration
                         HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
                 }
             );
+        }
+
         httpDatabaseClientBuilder.ConfigurePrimaryHttpMessageHandler(_ =>
             new HttpClientHandler
             {

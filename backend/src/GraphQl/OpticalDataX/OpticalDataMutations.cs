@@ -42,6 +42,7 @@ public sealed class OpticalDataMutations
             cancellationToken
             )
         )
+        {
             return new CreateOpticalDataPayload(
                 new CreateOpticalDataError(
                     CreateOpticalDataErrorCode.UNAUTHORIZED,
@@ -49,6 +50,8 @@ public sealed class OpticalDataMutations
                     []
                 )
             );
+        }
+
         var opticalData = new OpticalData(
             input.Locale,
             input.ComponentId,

@@ -177,7 +177,10 @@ public sealed class FileUploadController(
                     _fileSizeLimit
                 ).ConfigureAwait(false);
 
-                if (!ModelState.IsValid) return BadRequest(ModelState);
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
 
                 using var targetStream = System.IO.File.Create(
                     Path.Combine(_targetDirectoryPath, trustedFileNameForFileStorage));
@@ -207,8 +210,10 @@ public sealed class FileUploadController(
                 mediaType?.Encoding ??
                 throw new ArgumentException("Impossible (because `hasMediaTypeHeader` is `true`)!"))
            )
+        {
 #pragma warning restore SYSLIB0001
             return Encoding.UTF8;
+        }
 
         return mediaType.Encoding;
     }

@@ -135,7 +135,10 @@ public sealed class DataApi
             new { uuid = dataId },
             ""
         );
-        if (request.Query is null) throw new Exception("Failed to construct GraphQL query.");
+        if (request.Query is null)
+        {
+            throw new Exception("Failed to construct GraphQL query.");
+        }
 
         var responseObject = await apiRequestService.Database().QueryGraphQlFromUrl<TGraphQlResponse>(
             appSettings,

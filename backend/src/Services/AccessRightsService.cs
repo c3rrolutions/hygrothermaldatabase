@@ -59,7 +59,7 @@ public sealed class AccessRightsService(
     public async Task<T?> ApplyAccessRightsOnData<T>(T data, CancellationToken cancellationToken)
     where T : IData
     {
-        var result = await ApplyAccessRightsOnData((new List<T> { data }).AsQueryable(), cancellationToken).ConfigureAwait(false);
+        var result = await ApplyAccessRightsOnData(new List<T> { data }.AsQueryable(), cancellationToken).ConfigureAwait(false);
 
         return result.FirstOrDefault();
     }

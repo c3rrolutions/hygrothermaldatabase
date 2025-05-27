@@ -30,15 +30,11 @@ public static class HttpContextAccessorExtensions
         var expirationDate = await httpContextAccessor.HttpContext.GetTokenAsync(
             CookieAuthenticationDefaults.AuthenticationScheme,
             OpenIddictClientAspNetCoreConstants.Tokens.BackchannelAccessTokenExpirationDate);
-        if (expirationDate is null)
-        {
-            return token;
-        }
-        return LiesInTheFuture(expirationDate) ? token : null;
+        return expirationDate is not null && LiesInTheFuture(expirationDate) ? token : null;
     }
 
     private static bool LiesInTheFuture(string expirationDate)
     {
-        return DateTime.UnixEpoch.AddSeconds(int.Parse(expirationDate, CultureInfo.InvariantCulture)) < DateTime.UtcNow;
+        return DateTime.Parse(expirationDate, CultureInfo.InvariantCulture) < DateTime.UtcNow;
     }
 }

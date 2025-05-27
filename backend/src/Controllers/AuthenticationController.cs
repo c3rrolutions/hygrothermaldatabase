@@ -191,7 +191,7 @@ public sealed class AuthenticationController(
             properties.StoreTokens(result.Properties.GetTokens().Where(token => token.Name is
                 // Preserve the access, identity and refresh tokens returned in the token response, if available.
                 OpenIddictClientAspNetCoreConstants.Tokens.BackchannelAccessToken or
-                OpenIddictClientAspNetCoreConstants.Tokens.BackchannelIdentityToken or
+                OpenIddictClientAspNetCoreConstants.Tokens.BackchannelAccessTokenExpirationDate or
                 OpenIddictClientAspNetCoreConstants.Tokens.RefreshToken
             ));
         }

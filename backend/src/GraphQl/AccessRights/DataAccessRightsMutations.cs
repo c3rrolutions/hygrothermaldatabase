@@ -1,12 +1,10 @@
 using System;
-using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Database.Authorization;
 using Database.Data;
 using Database.Services.Interfaces;
 using HotChocolate.Types;
-using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 
 namespace Database.GraphQl.AccessRights;
@@ -63,9 +61,9 @@ public class DataAccessRightsMutations
             );
         }
 
-        data.DataAccessRights.AllowedInstitutions = input.DataAccessRights.AllowedInstitutions;
-        data.DataAccessRights.AllowedApplications = input.DataAccessRights.AllowedApplications;
-        data.DataAccessRights.AllowedUserAndQuantity = input.DataAccessRights.AllowedUserAndQuantity;
+        data.DataAccessRights.AllowedInstitutions = input.AllowedInstitutions;
+        data.DataAccessRights.AllowedApplications = input.AllowedApplications;
+        data.DataAccessRights.AllowedUserAndQuantity = input.AllowedUserAndQuantity;
 
         await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         return new UpdateDataAccessRightsPayload(data.DataAccessRights);
@@ -74,11 +72,7 @@ public class DataAccessRightsMutations
     public async Task<AddInstitutionAccessRightsPayload> AddAccessRightsAsync(
         InstitutionAccessRightsInput input,
         ApplicationDbContext context,
-        AppSettings appSettings,
-        IHttpClientFactory httpClientFactory,
-        IHttpContextAccessor httpContextAccessor,
         IUserService userService,
-        IDataService dataService,
         CancellationToken cancellationToken
     )
     {
@@ -137,11 +131,7 @@ public class DataAccessRightsMutations
     public async Task<UpdateAccessRightsPayload> UpdateAccessRightsAsync(
         InstitutionAccessRightsInput input,
         ApplicationDbContext context,
-        AppSettings appSettings,
-        IHttpClientFactory httpClientFactory,
-        IHttpContextAccessor httpContextAccessor,
         IUserService userService,
-        IDataService dataService,
         CancellationToken cancellationToken
     )
     {

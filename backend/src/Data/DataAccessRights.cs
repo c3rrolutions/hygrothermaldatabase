@@ -11,20 +11,21 @@ namespace Database.Data;
 public sealed class DataAccessRights
 {
     /// <summary>
-    /// Dictionary to store allowed user with the amount of a allowed dataset calls
-    /// -1 meens unlimited access.
+    /// Dictionary to store allowed user with the amount of a allowed dataset calls.
+    /// If the user ID is mapped to `null`, then this means that the user has unlimited
+    /// access.
     /// </summary>
-    public IDictionary<Guid, int>? AllowedUserAndQuantity { get; set; }
+    public IReadOnlyDictionary<Guid, uint?>? AllowedUserAndQuantity { get; set; }
 
     /// <summary>
     /// Allowed Institutions
     /// </summary>
-    public ICollection<Guid>? AllowedInstitutions { get; set; }
+    public IReadOnlyList<Guid>? AllowedInstitutions { get; set; }
 
     /// <summary>
     /// Allowed applications
     /// </summary>
-    public ICollection<string>? AllowedApplications { get; set; }
+    public IReadOnlyList<string>? AllowedApplications { get; set; }
 
     /// <summary>
     /// Is data access ristricted by data access rights.

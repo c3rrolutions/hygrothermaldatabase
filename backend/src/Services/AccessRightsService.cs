@@ -69,13 +69,13 @@ public class AccessRightsService(
         string applicationId,
         List<Guid> institutions,
         CurrentUserDto currentUser,
-        int alreadyAccessedCount,
+        uint alreadyAccessedCount,
         ICacheService cacheService,
         List<InstitutionAccessRights> accessRights)
     where T : IData
     {
         string reason = "";
-        foreach (T dataItem in data)
+        foreach (var dataItem in data)
         {
             if (dataItem.DataAccessRights.HasRistrictions)
             {

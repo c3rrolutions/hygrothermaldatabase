@@ -16,7 +16,7 @@ public sealed class DataApi
 {
     public static readonly string[] CalorimetricDataFileNames =
     [
-        "DataFields.grapql",
+        "DataFields.graphql",
         "CalorimetricDataFields.graphql",
         "CalorimetricData.graphql"
     ];

@@ -24,7 +24,7 @@ public class ApprovalPayload<TApprovalError>
     protected ApprovalPayload(
         TApprovalError error
     )
-        : this(new[] { error })
+        : this([error])
     {
     }
 
@@ -43,7 +43,7 @@ public class ApprovalPayload<TApprovalError>
     )
         : this(
             dataApproval,
-            new[] { error }
+            [error]
         )
     {
     }

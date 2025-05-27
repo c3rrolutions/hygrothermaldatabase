@@ -24,7 +24,7 @@ public abstract class PhotovoltaicDataPayload<TPhotovoltaicDataError>
     protected PhotovoltaicDataPayload(
         TPhotovoltaicDataError error
     )
-        : this(new[] { error })
+        : this([error])
     {
     }
 
@@ -43,7 +43,7 @@ public abstract class PhotovoltaicDataPayload<TPhotovoltaicDataError>
     )
         : this(
             photovoltaicData,
-            new[] { error }
+            [error]
         )
     {
     }

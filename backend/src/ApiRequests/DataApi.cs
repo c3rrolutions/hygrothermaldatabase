@@ -15,45 +15,45 @@ namespace Database.ApiRequests;
 public class DataApi
 {
     public static readonly string[] CalorimetricDataFileNames =
-    {
+    [
         "DataFields.grapql",
         "CalorimetricDataFields.graphql",
         "CalorimetricData.graphql"
-    };
+    ];
 
     public static readonly string[] GeometricDataFileNames =
-    {
+    [
         "DataFields.graphql",
         "GeometricDataFields.graphql",
         "GeometricData.graphql"
-    };
+    ];
 
     public static readonly string[] HygrothermalDataFileNames =
-    {
+    [
         "DataFields.graphql",
         "HygrothermalDataFields.graphql",
         "HygrothermalData.graphql"
-    };
+    ];
 
     public static readonly string[] PhotovoltaicDataFileNames =
-    {
+    [
         "DataFields.graphql",
         "PhotovoltaicDataFields.graphql",
         "PhotovoltaicData.graphql"
-    };
+    ];
 
     public static readonly string[] OpticalDataFileNames =
-    {
+    [
         "DataFields.graphql",
         "OpticalDataFields.graphql",
         "OpticalData.graphql"
-    };
+    ];
 
     public static readonly string[] DataXFileNames =
-    {
+    [
         "DataFields.graphql",
         "DataX.graphql"
-    };
+    ];
 
     /// <summary>
     /// Create query to request data and get response.

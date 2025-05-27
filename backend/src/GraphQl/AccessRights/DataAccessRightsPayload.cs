@@ -24,7 +24,7 @@ public class DataAccessRightsPayload<TDataAccessRightsError>
     protected DataAccessRightsPayload(
         TDataAccessRightsError error
     )
-        : this(new[] { error })
+        : this([error])
     {
     }
 
@@ -43,7 +43,7 @@ public class DataAccessRightsPayload<TDataAccessRightsError>
     )
         : this(
             dataAccessRights,
-            new[] { error }
+            [error]
         )
     {
     }

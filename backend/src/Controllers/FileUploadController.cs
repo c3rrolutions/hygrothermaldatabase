@@ -50,7 +50,7 @@ public class FileUploadController : Controller
     private readonly ApplicationDbContext _context;
 
     private readonly string[] _permittedExtensions =
-        { ".json", ".xml", ".txt", ".csv", ".ifc", ".rad", ".svg", ".pdf", ".png" };
+        [".json", ".xml", ".txt", ".csv", ".ifc", ".rad", ".svg", ".pdf", ".png"];
 
     public FileUploadController(
         ILogger<FileUploadController> logger,

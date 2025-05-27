@@ -17,14 +17,14 @@ namespace Database.ApiRequests;
 public class DatabaseApi
 {
     private static readonly string[] _databaseFileNames =
-    {
+    [
         "Databases.graphql"
-    };
+    ];
 
     private static readonly string[] _updateDatabaseFileNames =
-    {
+    [
         "UpdateDatabase.graphql"
-    };
+    ];
 
     private sealed record DatabasesData(DatabasesConnectionDto Databases);
 

@@ -23,7 +23,7 @@ public class InstitutionAccessRightsPayload<TInstitutionAccessRightsError>
     protected InstitutionAccessRightsPayload(
         TInstitutionAccessRightsError error
     )
-        : this(new[] { error })
+        : this([error])
     {
     }
 
@@ -42,7 +42,7 @@ public class InstitutionAccessRightsPayload<TInstitutionAccessRightsError>
     )
         : this(
             accessRights,
-            new[] { error }
+            [error]
         )
     {
     }

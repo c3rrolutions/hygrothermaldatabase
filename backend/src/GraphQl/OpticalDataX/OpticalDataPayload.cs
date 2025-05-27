@@ -24,7 +24,7 @@ public abstract class OpticalDataPayload<TOpticalDataError>
     protected OpticalDataPayload(
         TOpticalDataError error
     )
-        : this(new[] { error })
+        : this([error])
     {
     }
 
@@ -43,7 +43,7 @@ public abstract class OpticalDataPayload<TOpticalDataError>
     )
         : this(
             opticalData,
-            new[] { error }
+            [error]
         )
     {
     }

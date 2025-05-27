@@ -15,9 +15,9 @@ namespace Database.ApiRequests;
 public class UserApi
 {
     private static readonly string[] _currentUserFileNames =
-    {
+    [
         "CurrentUser.graphql"
-    };
+    ];
 
     private sealed record CurrentUserData(CurrentUserDto CurrentUser);
 

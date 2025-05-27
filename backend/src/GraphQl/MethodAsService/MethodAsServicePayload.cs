@@ -22,7 +22,7 @@ public class MethodAsServicePayload
     public MethodAsServicePayload(
         MethodAsServiceError error
     )
-        : this(new[] { error })
+        : this([error])
     {
     }
 
@@ -41,7 +41,7 @@ public class MethodAsServicePayload
     )
         : this(
             calculationResult,
-            new[] { error }
+            [error]
         )
     {
     }

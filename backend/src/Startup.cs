@@ -64,11 +64,12 @@ public sealed class Startup(
         // services.AddDatabaseDeveloperPageExceptionFilter();
         services.AddSingleton<ISigningService, SigningService>();
         services.AddSingleton<ICacheService, CacheService>();
-        services.AddScoped<IUserService, UserService>();
-        services.AddScoped<IDataService, DataService>();
+        services.AddScoped<IAccessRightsService, AccessRightsService>();
         services.AddScoped<IApiRequestService, ApiRequestService>();
+        services.AddScoped<IDataService, DataService>();
+        services.AddScoped<IMethodCalculationService, MethodCalculationService>();
         services.AddScoped<IResponseApprovalService, ResponseApprovalService>();
-        //services.AddScoped<IAccessRightsService, AccessRightsService>();
+        services.AddScoped<IUserService, UserService>();
     }
 
     private static void ConfigureRequestResponseServices(IServiceCollection services)
@@ -175,10 +176,11 @@ public sealed class Startup(
                     .MapEnum<OpticalComponentSubtype>(ApplicationDbContext.OpticalComponentSubtypeTypeName, appSettings.Database.SchemaName)
                     .MapEnum<OpticalComponentType>(ApplicationDbContext.OpticalComponentTypeTypeName, appSettings.Database.SchemaName)
                     .MapEnum<Standardizer>(ApplicationDbContext.StandardizerTypeName, appSettings.Database.SchemaName)
-                    // .UseNodaTime();
+            // .UseNodaTime();
             )
             .UseSchemaName(appSettings.Database.SchemaName)
-            .UseOpenIddict();
+            .UseOpenIddict()
+            .UseProjectables();
         if (!environment.IsProduction())
         {
             options

@@ -24,7 +24,7 @@ public abstract class CalorimetricDataPayload<TCalorimetricDataError>
     protected CalorimetricDataPayload(
         TCalorimetricDataError error
     )
-        : this(new[] { error })
+        : this([error])
     {
     }
 
@@ -43,7 +43,7 @@ public abstract class CalorimetricDataPayload<TCalorimetricDataError>
     )
         : this(
             calorimetricData,
-            new[] { error }
+            [error]
         )
     {
     }

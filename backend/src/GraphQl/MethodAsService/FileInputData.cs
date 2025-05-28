@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 
 namespace Database.GraphQl.MethodAsService;
 
@@ -46,16 +46,16 @@ public sealed record Wavelengths(
     int Wavelength
 );
 
-public record ColorTransmittance(
-    IReadOnlyList<CielabColor> CielabColors,
+public sealed record ColorTransmittance(
+    IReadOnlyList<MethodAsServiceCielabColor> CielabColors,
     IReadOnlyList<ColorRenderingIndex> ColorRenderingIndices
 );
 
-public record ColorReflectance(
-    IReadOnlyList<CielabColor> CielabColors
+public sealed record ColorReflectance(
+    IReadOnlyList<MethodAsServiceCielabColor> CielabColors
 );
 
-public record CielabColor(
+public sealed record MethodAsServiceCielabColor(
     int LStar,
     double AStar,
     double BStar,
@@ -63,7 +63,7 @@ public record CielabColor(
     string Illuminant
 );
 
-public record ColorRenderingIndex(
+public sealed record ColorRenderingIndex(
     int Ra,
     string Observer,
     string Illuminant

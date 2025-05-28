@@ -41,6 +41,7 @@ public sealed class CalorimetricDataMutations
             cancellationToken
             )
         )
+        {
             return new CreateCalorimetricDataPayload(
                 new CreateCalorimetricDataError(
                     CreateCalorimetricDataErrorCode.UNAUTHORIZED,
@@ -48,6 +49,8 @@ public sealed class CalorimetricDataMutations
                     []
                 )
             );
+        }
+
         var calorimetricData = new CalorimetricData(
             input.Locale,
             input.ComponentId,

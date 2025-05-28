@@ -40,6 +40,7 @@ public sealed class ApprovalMutations
             cancellationToken
             )
         )
+        {
             return new AddApprovalPayload(
                 new AddApprovalError(
                     AddApprovalErrorCode.UNAUTHORIZED,
@@ -47,6 +48,7 @@ public sealed class ApprovalMutations
                     []
                 )
             );
+        }
 
         var data = await dataService.GetDataAsync(input.DataId, context, cancellationToken).ConfigureAwait(false);
         if (data is null)

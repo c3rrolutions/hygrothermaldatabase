@@ -3,20 +3,13 @@ using Microsoft.EntityFrameworkCore;
 namespace Database.Data;
 
 [Owned]
-public sealed class CielabColor
-{
-    public CielabColor(
-        double lStar,
-        double aStar,
-        double bStar
+public sealed class CielabColor(
+    double lStar,
+    double aStar,
+    double bStar
     )
-    {
-        LStar = lStar;
-        AStar = aStar;
-        BStar = bStar;
-    }
-
-    public double LStar { get; private set; }
-    public double AStar { get; private set; }
-    public double BStar { get; private set; }
+{
+    public double LStar { get; private set; } = lStar;
+    public double AStar { get; private set; } = aStar;
+    public double BStar { get; private set; } = bStar;
 }

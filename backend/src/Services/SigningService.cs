@@ -13,7 +13,7 @@ namespace Database.Services;
 /// </summary>
 /// <param name="appSettings"> <see cref="AppSettings"/> </param>
 /// <param name="logger">      Instance of <see cref="ILogger"/> </param>
-public class SigningService(
+public sealed class SigningService(
     AppSettings appSettings,
     ILogger<ISigningService> logger) : ISigningService
 {
@@ -21,25 +21,21 @@ public class SigningService(
     private const string FILE_EXTENSION = ".asc";
 
     /// <inheritdoc/>
-    public string Fingerprint { get; private set; } = "";
-
-    /// <inheritdoc/>
     public async Task Initialize()
     {
         // Execute command to import private key
-        var (success, outout) = await ExecuteGnuCommand($"gpg --batch --passphrase {appSettings.GnupgPrivateKeyPassphrase} --import ../gpg-keys/{appSettings.GnupgPrivateKeyFilename}");
+        var (success, output) = await ExecuteGnuCommand($"gpg --batch --passphrase {appSettings.GnupgPrivateKeyPassphrase} --import ./gpg-keys/{appSettings.GnupgPrivateKeyFilename}");
         if (success)
         {
-            // Extract fingerprint
-            Fingerprint = await GetFingerprintFromKeyList();
-            if (!String.IsNullOrEmpty(Fingerprint))
+            var fingerprint = await GetFingerprint();
+            if (!string.IsNullOrEmpty(fingerprint))
             {
-                logger.Fingerprint(Fingerprint);
+                logger.Fingerprint(fingerprint);
             }
             else
             {
                 logger.FingerprintError();
-                throw new InvalidOperationException("Failed to initialize GNUPG signing service.");
+                throw new InvalidOperationException("Failed to initialize GnuPG signing service.");
             }
         }
     }
@@ -54,22 +50,22 @@ public class SigningService(
         }
 
         // Execute command to generate detached signature file Creates file with .asc ending
-        var (success, outout) = await ExecuteGnuCommand($"gpg --pinentry-mode loopback --batch --passphrase {appSettings.GnupgPrivateKeyPassphrase} --detach-sig --armor --local-user {Fingerprint} {FILENAME}");
+        var (success, output) = await ExecuteGnuCommand($"gpg --pinentry-mode loopback --batch --passphrase {appSettings.GnupgPrivateKeyPassphrase} --detach-sig --armor --local-user {await GetFingerprint()} {FILENAME}");
 
         if (success)
         {
             // Read signature from file
-            (success, outout) = ReadSignatureFromFile();
-            logger.Signature(outout);
+            (success, output) = ReadSignatureFromFile();
+            logger.Signature(output);
         }
         else
         {
-            logger.SignatureError(outout);
+            logger.SignatureError(output);
         }
 
         // Remove created files
         RemoveFiles();
-        return (success, outout);
+        return (success, output);
     }
 
     private async Task<(bool, string)> ExecuteGnuCommand(string command)
@@ -88,8 +84,8 @@ public class SigningService(
 
         var proc = Process.Start(startInfo);
         ArgumentNullException.ThrowIfNull(proc);
-        string output = proc.StandardOutput.ReadToEnd();
-        string error = proc.StandardError.ReadToEnd();
+        var output = proc.StandardOutput.ReadToEnd();
+        var error = proc.StandardError.ReadToEnd();
         await proc.WaitForExitAsync();
         if (string.IsNullOrEmpty(output))
         {
@@ -104,16 +100,12 @@ public class SigningService(
         return (proc.ExitCode == 0, output);
     }
 
-    private async Task<string> GetFingerprintFromKeyList()
+    public async Task<string> GetFingerprint()
     {
-        string fingerprint = "";
-
-        // Execute command to list keys with fingerprint, use 'with-colon' to split later
-        var (success, outout) = await ExecuteGnuCommand($"gpg --list-keys --with-subkey-fingerprint --with-colon");
-        if (success)
+        var (success, fingerprint) = await ExecuteGnuCommand("gpg --list-secret-keys --with-colons --keyid-format=long | awk -F: '$1==\"fpr\" {printf $10; exit}'");
+        if (!success)
         {
-            var splitedOutput = outout.Split(':');
-            fingerprint = splitedOutput[splitedOutput.Length - 2];
+            throw new InvalidOperationException("Failed to extract fingerprint.");
         }
         return fingerprint;
     }
@@ -122,7 +114,7 @@ public class SigningService(
     {
         try
         {
-            using (StreamWriter outputFile = new StreamWriter(FILENAME))
+            using (var outputFile = new StreamWriter(FILENAME))
             {
                 outputFile.WriteLine(data);
             }
@@ -140,7 +132,7 @@ public class SigningService(
     {
         try
         {
-            using (StreamReader file = new StreamReader(FILENAME + FILE_EXTENSION))
+            using (var file = new StreamReader(FILENAME + FILE_EXTENSION))
             {
                 return (true, file.ReadToEnd());
             }

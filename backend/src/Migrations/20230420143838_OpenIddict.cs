@@ -8,7 +8,7 @@ namespace Database.Migrations
     /// <inheritdoc />
     public partial class OpenIddict : Migration
     {
-        private static readonly string[] _applicationIdStatusSubjectAndTypeIndexColumns = new[] { "ApplicationId", "Status", "Subject", "Type" };
+        private static readonly string[] _applicationIdStatusSubjectAndTypeIndexColumns = ["ApplicationId", "Status", "Subject", "Type"];
 
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

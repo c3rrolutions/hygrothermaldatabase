@@ -21,7 +21,7 @@ namespace Database.Services;
 /// <param name="httpClientFactory">   <see cref="IHttpClientFactory"/> </param>
 /// <param name="cacheService">        <see cref="ICacheService"/> to store already known users. </param>
 /// <param name="logger">              Instance of <see cref="ILogger"/> </param>
-public class UserService(
+public sealed class UserService(
     AppSettings appSettings,
     IApiRequestService apiRequestService,
     IHttpContextAccessor httpContextAccessor,
@@ -32,7 +32,7 @@ public class UserService(
     /// <inheritdoc/>
     public string? GetApplicationIdFromUser()
     {
-        return httpContextAccessor.HttpContext?.User.GetClaim(Claims.ClientId);
+        return httpContextAccessor.HttpContext?.User.GetClaim(Claims.AuthorizedParty);
     }
 
     /// <inheritdoc/>
@@ -48,7 +48,7 @@ public class UserService(
         }
 
         // Check if there is already a user for token
-        if (!cacheService.TryGetUser(token, out CurrentUserDto? cacheUser))
+        if (!cacheService.TryGetUser(token, out var cacheUser))
         {
             // Get user from Metabase
             cacheUser = await GetCurrentUserFromMetabase(cancellationToken).ConfigureAwait(false);

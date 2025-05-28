@@ -41,7 +41,7 @@ public sealed class ApplicationDbContext
     public DbSet<User> Users { get; private set; } = default!;
     public DbSet<DataProtectionKey> DataProtectionKeys { get; private set; } = default!;
     public DbSet<GeometricData> GeometricData { get; private set; } = default!;
-    public DbSet<InstitutionAccessRights> AccessRights { get; private set; } = default!;
+    public DbSet<InstitutionAccessRights> InstitutionAccessRights { get; private set; } = default!;
 
     private static void CreateEnumerations(ModelBuilder builder, string schemaName)
     {
@@ -127,6 +127,6 @@ public sealed class ApplicationDbContext
         ConfigureEntity(
                 modelBuilder.Entity<InstitutionAccessRights>()
             )
-            .ToTable("access_rights");
+            .ToTable("institution_access_rights");
     }
 }

@@ -12,6 +12,6 @@ public static class CalorimetricDataAuthorization
         CancellationToken cancellationToken
     )
     {
-        return CommonAuthorization.IsCurrentUserAtLeastAssistantOfVerifiedInstitution(currentUser, institutionId, cancellationToken);
+        return CommonAuthorization.IsCurrentUserAtLeastAssistantManagerOfVerifiedInstitution(currentUser, institutionId, cancellationToken);
     }
 }

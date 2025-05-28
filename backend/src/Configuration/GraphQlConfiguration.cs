@@ -51,6 +51,7 @@ public static class GraphQlConfiguration
             _ => _.BaseAddress = new Uri($"{appSettings.Host}/graphql")
         );
         if (!environment.IsProduction())
+        {
             httpMetabaseClientBuilder.ConfigurePrimaryHttpMessageHandler(_ =>
                 new HttpClientHandler
                 {
@@ -59,6 +60,8 @@ public static class GraphQlConfiguration
                         HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
                 }
             );
+        }
+
         httpDatabaseClientBuilder.ConfigurePrimaryHttpMessageHandler(_ =>
             new HttpClientHandler
             {
@@ -74,6 +77,7 @@ public static class GraphQlConfiguration
         // GraphQL Server
         services
             .AddGraphQLServer()
+            .BindRuntimeType<uint, NonNegativeIntType>()
             // Services https://chillicream.com/docs/hotchocolate/v13/integrations/entity-framework#registerdbcontext
             .RegisterDbContextFactory<ApplicationDbContext>()
             .AddMutationConventions(new MutationConventionOptions { ApplyToAllMutations = false })
@@ -152,7 +156,7 @@ public static class GraphQlConfiguration
             .AddType<UserQueries>()
             .AddType<VerificationCodeQueries>()
             .AddType<GeometricDataQueries>()
-            .AddType<MethodAsServiceQuaries>()
+            .AddType<MethodAsServiceQueries>()
             .AddType<DataQueries>()
             // Mutation Types
             .AddMutationType(d => d.Name(nameof(Mutation)))

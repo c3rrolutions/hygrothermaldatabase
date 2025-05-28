@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Database.GraphQl.AccessRights;
 
-public class DataAccessRightsPayload<TDataAccessRightsError>
+public abstract class DataAccessRightsPayload<TDataAccessRightsError>
     : Payload
     where TDataAccessRightsError : IUserError
 {
@@ -24,7 +24,7 @@ public class DataAccessRightsPayload<TDataAccessRightsError>
     protected DataAccessRightsPayload(
         TDataAccessRightsError error
     )
-        : this(new[] { error })
+        : this([error])
     {
     }
 
@@ -43,7 +43,7 @@ public class DataAccessRightsPayload<TDataAccessRightsError>
     )
         : this(
             dataAccessRights,
-            new[] { error }
+            [error]
         )
     {
     }

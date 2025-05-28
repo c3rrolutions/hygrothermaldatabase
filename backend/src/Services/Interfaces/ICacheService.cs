@@ -9,13 +9,13 @@ public interface ICacheService
 
     CurrentUserDto? SetUser(string token, CurrentUserDto? cacheUser);
 
-    int GetAccessCountForUser(Guid userId);
+    uint GetAccessCountForUser(Guid userId);
 
-    int SetAccessCountForUser(Guid userId, int count);
+    uint SetAccessCountForUser(Guid userId, uint count);
 
-    (DateTime StartTime, int Count) GetOrCreateAccessCountForPeriod(Guid institutionId);
+    (DateTime StartTime, uint Count) GetOrCreateAccessCountForPeriod(Guid institutionId);
 
-    (DateTime StartTime, int Count) AddAccessCountToPeriod(Guid institutionId);
+    (DateTime StartTime, uint Count) AddAccessCountToPeriod(Guid institutionId);
 
-    (DateTime StartTime, int Count) SetNewTimePeriod(Guid institutionId);
+    (DateTime StartTime, uint Count) SetNewTimePeriod(Guid institutionId);
 }

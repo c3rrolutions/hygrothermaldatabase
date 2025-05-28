@@ -169,9 +169,16 @@ public sealed class AuthenticationController(
         // The claims are fetched from the userinfo endpoint of the authorization provider.
         // We add the claim `IdentityOptions.ClaimsIdentity.UserIdClaimType` to make
         // `UserManager.GetUserAsync(claimsPrincipal)` return the authenticated user.
+        // You can use the debugger to see which claims are present. Just now it were:
+        // iss, exp, iat, aud, sub, role, name, preferred_username, email, azp, nonce, at_hash, email_verified,
+        // phone_number_verified, as, oi_reg_id, http://schemas.xmlsoat.org/.../emailaddress,
+        // http://schemas.xmlsoat.org/.../name, http://schemas.xmlsoat.org/.../nameidentifier
         identity.SetClaim(_identityOptions.ClaimsIdentity.UserIdClaimType, result.Principal.GetClaim(ClaimTypes.NameIdentifier))
                 .SetClaim(ClaimTypes.Name, result.Principal.GetClaim(ClaimTypes.Name))
                 .SetClaim(ClaimTypes.NameIdentifier, result.Principal.GetClaim(ClaimTypes.NameIdentifier));
+
+        // Preserve `client_id` for usage by access-rights service.
+        identity.SetClaim(Claims.AuthorizedParty, result.Principal.GetClaim(Claims.AuthorizedParty));
 
         // Preserve the registration details to be able to resolve them later.
         identity.SetClaim(Claims.Private.RegistrationId, result.Principal.GetClaim(Claims.Private.RegistrationId))
@@ -191,7 +198,7 @@ public sealed class AuthenticationController(
             properties.StoreTokens(result.Properties.GetTokens().Where(token => token.Name is
                 // Preserve the access, identity and refresh tokens returned in the token response, if available.
                 OpenIddictClientAspNetCoreConstants.Tokens.BackchannelAccessToken or
-                OpenIddictClientAspNetCoreConstants.Tokens.BackchannelIdentityToken or
+                OpenIddictClientAspNetCoreConstants.Tokens.BackchannelAccessTokenExpirationDate or
                 OpenIddictClientAspNetCoreConstants.Tokens.RefreshToken
             ));
         }
@@ -212,14 +219,19 @@ public sealed class AuthenticationController(
                     cancellationToken
                 );
         if (user is null)
+        {
             _context.Users.Add(
                 new User(
                     subject,
                     name
                 )
             );
+        }
         else
+        {
             user.Update(name);
+        }
+
         await _context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         // Ask the cookie authentication handler to return a new cookie and redirect
         // the user agent to the return URL stored in the authentication properties.

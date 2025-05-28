@@ -26,7 +26,11 @@ public sealed class UserQueries
         CancellationToken cancellationToken
     )
     {
-        if (!claimsPrincipal.HasClaim(ClaimTypes.NameIdentifier)) return null;
+        if (!claimsPrincipal.HasClaim(ClaimTypes.NameIdentifier))
+        {
+            return null;
+        }
+
         return
             await context.Users.AsNoTracking()
                 .SingleOrDefaultAsync(

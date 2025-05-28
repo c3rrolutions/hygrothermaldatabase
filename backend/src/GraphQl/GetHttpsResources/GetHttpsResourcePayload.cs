@@ -24,7 +24,7 @@ public abstract class GetHttpsResourcePayload<TGetHttpsResourceError>
     protected GetHttpsResourcePayload(
         TGetHttpsResourceError error
     )
-        : this(new[] { error })
+        : this([error])
     {
     }
 
@@ -43,7 +43,7 @@ public abstract class GetHttpsResourcePayload<TGetHttpsResourceError>
     )
         : this(
             getHttpsResource,
-            new[] { error }
+            [error]
         )
     {
     }

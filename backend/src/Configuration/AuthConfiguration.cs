@@ -109,8 +109,10 @@ public abstract class AuthConfiguration
                 _.MaxConcurrency = 10
             );
             if (environment.IsEnvironment(Program.TestEnvironment))
+            {
                 // See https://gitter.im/MassTransit/MassTransit?at=5db2d058f6db7f4f856fb404
                 _.SchedulerName = Guid.NewGuid().ToString();
+            }
         });
         // Register the Quartz.NET service and configure it to block shutdown until jobs are complete.
         services.AddQuartzHostedService(_ =>

@@ -5,7 +5,7 @@ using Microsoft.Extensions.Caching.Memory;
 
 namespace Database.Services;
 
-public class CacheService(
+public sealed class CacheService(
     IMemoryCache currentUserCache,
     IMemoryCache accessCountCache,
     IMemoryCache timePeriodCountCache) : ICacheService
@@ -22,40 +22,38 @@ public class CacheService(
         return currentUserCache.TryGetValue(token, out cacheUser);
     }
 
-    public int GetAccessCountForUser(Guid userId)
+    public uint GetAccessCountForUser(Guid userId)
     {
-        int count;
-        if (!accessCountCache.TryGetValue(userId, out count))
+        if (!accessCountCache.TryGetValue(userId, out uint count))
         {
-            return accessCountCache.Set(userId, 0);
+            return accessCountCache.Set<uint>(userId, 0);
         }
         return count;
     }
 
-    public int SetAccessCountForUser(Guid userId, int count)
+    public uint SetAccessCountForUser(Guid userId, uint count)
     {
         return accessCountCache.Set(userId, count);
     }
 
-    public (DateTime StartTime, int Count) GetOrCreateAccessCountForPeriod(Guid institutionId)
+    public (DateTime StartTime, uint Count) GetOrCreateAccessCountForPeriod(Guid institutionId)
     {
-        (DateTime StartTime, int Count) accessesPerPeriod;
-        if (!timePeriodCountCache.TryGetValue(institutionId, out accessesPerPeriod))
+        if (!timePeriodCountCache.TryGetValue(institutionId, out (DateTime StartTime, uint Count) accessesPerPeriod))
         {
-            return timePeriodCountCache.Set(institutionId, (DateTime.Now, 0));
+            return timePeriodCountCache.Set(institutionId, (DateTime.Now, (uint)0));
         }
         return accessesPerPeriod;
     }
 
-    public (DateTime StartTime, int Count) AddAccessCountToPeriod(Guid institutionId)
+    public (DateTime StartTime, uint Count) AddAccessCountToPeriod(Guid institutionId)
     {
         var accessesPerPeriod = GetOrCreateAccessCountForPeriod(institutionId);
         accessesPerPeriod.Count++;
         return timePeriodCountCache.Set(institutionId, accessesPerPeriod);
     }
 
-    public (DateTime StartTime, int Count) SetNewTimePeriod(Guid institutionId)
+    public (DateTime StartTime, uint Count) SetNewTimePeriod(Guid institutionId)
     {
-        return timePeriodCountCache.Set(institutionId, (DateTime.Now, 0));
+        return timePeriodCountCache.Set(institutionId, (DateTime.Now, (uint)0));
     }
 }

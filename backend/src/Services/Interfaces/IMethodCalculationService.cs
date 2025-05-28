@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Database.GraphQl.MethodAsService;
 using Database.Methods;
@@ -11,5 +11,5 @@ public interface IMethodCalculationService
 
     bool MethodExists(Guid methodId);
 
-    List<DataPoint> UseMethodToCalculate(Guid methodId, List<DataPoint> dataPoints);
+    List<DataPoint> UseMethodToCalculate(Guid methodId, IReadOnlyList<DataPoint> dataPoints);
 }

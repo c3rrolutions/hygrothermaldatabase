@@ -219,3 +219,20 @@ switch-migrations : ## Turn current into previous and new into current
 	mv ./src/Migrations/current ./src/Migrations/previous
 	mv ./src/Migrations/new ./src/Migrations/current
 .PHONY : switch-migrations
+
+list-keys : ## List GnuPG keys
+	gpg --list-keys
+.PHONY : list-keys
+
+delete-key : ## Delete GnuPG key `${FINGERPRINT}`
+	gpg \
+		--pinentry-mode loopback \
+		--batch \
+		--yes \
+		--delete-secret-keys ${FINGERPRINT}
+	gpg \
+		--pinentry-mode loopback \
+		--batch \
+		--yes \
+		--delete-key ${FINGERPRINT}
+.PHONY : delete-key

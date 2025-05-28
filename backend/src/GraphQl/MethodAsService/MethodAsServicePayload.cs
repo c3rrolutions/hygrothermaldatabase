@@ -1,12 +1,12 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 
 namespace Database.GraphQl.MethodAsService;
 
-public class MethodAsServicePayload
+public sealed class MethodAsServicePayload
     : Payload
 {
     public MethodAsServicePayload(
-        List<DataPoint> calculationResult
+        IReadOnlyList<DataPoint> calculationResult
     )
     {
         CalculationResult = calculationResult;
@@ -22,12 +22,12 @@ public class MethodAsServicePayload
     public MethodAsServicePayload(
         MethodAsServiceError error
     )
-        : this(new[] { error })
+        : this([error])
     {
     }
 
     public MethodAsServicePayload(
-        List<DataPoint> calculationResult,
+        IReadOnlyList<DataPoint> calculationResult,
         IReadOnlyCollection<MethodAsServiceError> errors
     )
     {
@@ -41,11 +41,11 @@ public class MethodAsServicePayload
     )
         : this(
             calculationResult,
-            new[] { error }
+            [error]
         )
     {
     }
 
-    public List<DataPoint>? CalculationResult { get; }
+    public IReadOnlyList<DataPoint>? CalculationResult { get; }
     public IReadOnlyCollection<MethodAsServiceError>? Errors { get; }
 }

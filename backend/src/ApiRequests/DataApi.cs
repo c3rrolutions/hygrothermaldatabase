@@ -12,48 +12,48 @@ namespace Database.ApiRequests;
 /// <summary>
 /// Class to request XData from Database API.
 /// </summary>
-public class DataApi
+public sealed class DataApi
 {
     public static readonly string[] CalorimetricDataFileNames =
-    {
-        "DataFields.grapql",
+    [
+        "DataFields.graphql",
         "CalorimetricDataFields.graphql",
         "CalorimetricData.graphql"
-    };
+    ];
 
     public static readonly string[] GeometricDataFileNames =
-    {
+    [
         "DataFields.graphql",
         "GeometricDataFields.graphql",
         "GeometricData.graphql"
-    };
+    ];
 
     public static readonly string[] HygrothermalDataFileNames =
-    {
+    [
         "DataFields.graphql",
         "HygrothermalDataFields.graphql",
         "HygrothermalData.graphql"
-    };
+    ];
 
     public static readonly string[] PhotovoltaicDataFileNames =
-    {
+    [
         "DataFields.graphql",
         "PhotovoltaicDataFields.graphql",
         "PhotovoltaicData.graphql"
-    };
+    ];
 
     public static readonly string[] OpticalDataFileNames =
-    {
+    [
         "DataFields.graphql",
         "OpticalDataFields.graphql",
         "OpticalData.graphql"
-    };
+    ];
 
     public static readonly string[] DataXFileNames =
-    {
+    [
         "DataFields.graphql",
         "DataX.graphql"
-    };
+    ];
 
     /// <summary>
     /// Create query to request data and get response.
@@ -135,7 +135,10 @@ public class DataApi
             new { uuid = dataId },
             ""
         );
-        if (request.Query is null) throw new Exception("Failed to construct GraphQL query.");
+        if (request.Query is null)
+        {
+            throw new Exception("Failed to construct GraphQL query.");
+        }
 
         var responseObject = await apiRequestService.Database().QueryGraphQlFromUrl<TGraphQlResponse>(
             appSettings,

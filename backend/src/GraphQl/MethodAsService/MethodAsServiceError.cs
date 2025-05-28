@@ -1,17 +1,13 @@
-﻿using Database.GraphQl.GeometricDataX;
+using Database.GraphQl.GeometricDataX;
 using System.Collections.Generic;
 
 namespace Database.GraphQl.MethodAsService;
 
-public class MethodAsServiceError
-    : UserErrorBase<MethodAsServiceErrorCode>
-{
-    public MethodAsServiceError(
-        MethodAsServiceErrorCode code,
-        string message,
-        IReadOnlyList<string> path
+public sealed class MethodAsServiceError(
+    MethodAsServiceErrorCode code,
+    string message,
+    IReadOnlyList<string> path
     )
-        : base(code, message, path)
-    {
-    }
+        : UserErrorBase<MethodAsServiceErrorCode>(code, message, path)
+{
 }

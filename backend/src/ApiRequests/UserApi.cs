@@ -12,12 +12,12 @@ namespace Database.ApiRequests;
 /// <summary>
 /// Class to request user info from Metabase API.
 /// </summary>
-public class UserApi
+public sealed class UserApi
 {
     private static readonly string[] _currentUserFileNames =
-    {
+    [
         "CurrentUser.graphql"
-    };
+    ];
 
     private sealed record CurrentUserData(CurrentUserDto CurrentUser);
 
@@ -68,7 +68,7 @@ public class UserApi
         IHttpContextAccessor httpContextAccessor,
         CancellationToken cancellationToken)
     {
-        var uri = new Uri(new Uri(appSettings.MetabaseHost), "/connect/userinfo");
+        var uri = new Uri(new Uri(appSettings.MetabaseHost, UriKind.Absolute), "/connect/userinfo");
 
         return await apiRequestService.Metabase().QueryRest<UserInfoDto>(
             uri,

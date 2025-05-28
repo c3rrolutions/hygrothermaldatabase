@@ -5,10 +5,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Database.Authorization;
 using Database.Data;
-using Database.GraphQl.GeometricDataX;
 using Database.Services.Interfaces;
 using HotChocolate.Types;
-using Org.BouncyCastle.Asn1.X509.Qualified;
 
 namespace Database.GraphQl.OpticalDataX;
 
@@ -42,6 +40,7 @@ public sealed class OpticalDataMutations
             cancellationToken
             )
         )
+        {
             return new CreateOpticalDataPayload(
                 new CreateOpticalDataError(
                     CreateOpticalDataErrorCode.UNAUTHORIZED,
@@ -49,6 +48,8 @@ public sealed class OpticalDataMutations
                     []
                 )
             );
+        }
+
         var opticalData = new OpticalData(
             input.Locale,
             input.ComponentId,

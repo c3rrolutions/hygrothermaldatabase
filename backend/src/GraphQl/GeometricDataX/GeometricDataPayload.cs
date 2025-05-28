@@ -24,7 +24,7 @@ public abstract class GeometricDataPayload<TGeometricDataError>
     protected GeometricDataPayload(
         TGeometricDataError error
     )
-        : this(new[] { error })
+        : this([error])
     {
     }
 
@@ -43,7 +43,7 @@ public abstract class GeometricDataPayload<TGeometricDataError>
     )
         : this(
             geometricData,
-            new[] { error }
+            [error]
         )
     {
     }

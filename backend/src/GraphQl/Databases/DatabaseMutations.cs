@@ -32,14 +32,13 @@ public sealed class DatabaseMutations
             Database.FromDto(database),
             null) : new UpdateDatabasePayload(
                    null,
-                   new[]
-                   {
+                   [
                        new UpdateDatabaseError(
                            UpdateDatabaseErrorCode.UNKNOWN,
                            "Unknown error.",
                            Array.Empty<string>()
                        )
-                   }
+                   ]
                );
     }
 }

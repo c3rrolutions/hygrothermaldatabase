@@ -2,7 +2,7 @@ using Database.Data;
 
 namespace Database.GraphQl.AccessRights;
 
-public class UpdateDataAccessRightsPayload
+public sealed class UpdateDataAccessRightsPayload
     : DataAccessRightsPayload<UpdateDataAccessRightsError>
 {
     public UpdateDataAccessRightsPayload(

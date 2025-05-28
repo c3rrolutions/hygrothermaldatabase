@@ -78,9 +78,13 @@ public static class FileHelpers
                 formFile.Name[(formFile.Name.IndexOf('.') + 1)..]);
 
         if (property is not null)
+        {
             if (property.GetCustomAttribute<DisplayAttribute>() is
                 DisplayAttribute displayAttribute)
+            {
                 fieldDisplayName = $"{displayAttribute.Name} ";
+            }
+        }
 
         // Don't trust the file name sent by the client. To display
         // the file name, HTML-encode the value.
@@ -116,17 +120,23 @@ public static class FileHelpers
             // content was a BOM and the content is actually
             // empty after removing the BOM.
             if (memoryStream.Length == 0)
+            {
                 modelState.AddModelError(formFile.Name,
                     $"{fieldDisplayName}({trustedFileNameForDisplay}) is empty.");
+            }
 
             if (!IsValidFileExtensionAndSignature(
                     formFile.FileName, memoryStream, permittedExtensions))
+            {
                 modelState.AddModelError(formFile.Name,
                     $"{fieldDisplayName}({trustedFileNameForDisplay}) file " +
                     "type isn't permitted or the file's signature " +
                     "doesn't match the file's extension.");
+            }
             else
+            {
                 return memoryStream.ToArray();
+            }
         }
         catch (Exception ex)
         {
@@ -185,11 +195,17 @@ public static class FileHelpers
 
     private static bool IsValidFileExtensionAndSignature(string? fileName, Stream data, string[] permittedExtensions)
     {
-        if (string.IsNullOrEmpty(fileName) || data is null || data.Length == 0) return false;
+        if (string.IsNullOrEmpty(fileName) || data is null || data.Length == 0)
+        {
+            return false;
+        }
 
         var ext = Path.GetExtension(fileName).ToLowerInvariant();
 
-        if (string.IsNullOrEmpty(ext) || !permittedExtensions.Contains(ext)) return false;
+        if (string.IsNullOrEmpty(ext) || !permittedExtensions.Contains(ext))
+        {
+            return false;
+        }
 
         data.Position = 0;
 
@@ -232,7 +248,10 @@ public static class FileHelpers
         // for files (when possible) for all file types you intend
         // to allow on the system and perform the file signature
         // check.
-        if (!_fileSignature.TryGetValue(ext, out var value)) return true;
+        if (!_fileSignature.TryGetValue(ext, out var value))
+        {
+            return true;
+        }
 
         // File signature check
         // --------------------

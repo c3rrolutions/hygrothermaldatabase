@@ -5,8 +5,13 @@ using Database.Extensions;
 
 namespace Database.Data;
 
-public sealed class GetHttpsResource
-    : Entity
+public sealed class GetHttpsResource(
+    string? description,
+    string hashValue,
+    Guid dataFormatId,
+    Guid? parentId
+    )
+        : Entity
 {
     public GetHttpsResource(
         string? description,
@@ -82,25 +87,12 @@ public sealed class GetHttpsResource
         GeometricDataId = geometricDataId;
     }
 
-    public GetHttpsResource(
-        string? description,
-        string hashValue,
-        Guid dataFormatId,
-        Guid? parentId
-    )
-    {
-        Description = description;
-        HashValue = hashValue;
-        DataFormatId = dataFormatId;
-        ParentId = parentId;
-    }
-
-    public string? Description { get; private set; }
-    public string HashValue { get; private set; }
-    public Guid DataFormatId { get; private set; }
+    public string? Description { get; private set; } = description;
+    public string HashValue { get; private set; } = hashValue;
+    public Guid DataFormatId { get; private set; } = dataFormatId;
 
     public ICollection<FileMetaInformation> ArchivedFilesMetaInformation { get; private set; } =
-        new List<FileMetaInformation>();
+        [];
 
     // TODO Make sure that at least one ID is always present. In that case `Guid.Empty` should never be used!
     [NotMapped]
@@ -133,7 +125,7 @@ public sealed class GetHttpsResource
     [InverseProperty(nameof(GeometricData.Resources))]
     public GeometricData? GeometricData { get; set; }
 
-    public Guid? ParentId { get; private set; }
+    public Guid? ParentId { get; private set; } = parentId;
 
     // TODO Require the conversion method to be given whenever there is a parent. In other words, either both are `null` or both are non-`null`.
     public ToTreeVertexAppliedConversionMethod? AppliedConversionMethod { get; private set; }
@@ -142,7 +134,7 @@ public sealed class GetHttpsResource
     [InverseProperty(nameof(Children))] public GetHttpsResource? Parent { get; set; }
 
     [InverseProperty(nameof(Parent))]
-    public ICollection<GetHttpsResource> Children { get; } = new List<GetHttpsResource>();
+    public ICollection<GetHttpsResource> Children { get; } = [];
 
     public static string ConstructVertexId(Guid id)
     {

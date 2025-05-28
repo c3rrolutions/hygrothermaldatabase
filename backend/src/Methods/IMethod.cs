@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Database.GraphQl.MethodAsService;
 
@@ -9,5 +9,5 @@ public interface IMethod
     string Name { get; }
     Guid Id { get; }
 
-    List<DataPoint> Calculate(List<DataPoint> dataPoints);
+    List<DataPoint> Calculate(IReadOnlyList<DataPoint> dataPoints);
 }

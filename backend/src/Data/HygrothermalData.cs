@@ -51,5 +51,5 @@ public sealed class HygrothermalData
     }
 
     [InverseProperty(nameof(GetHttpsResource.HygrothermalData))]
-    public override ICollection<GetHttpsResource> Resources { get; } = new List<GetHttpsResource>();
+    public override ICollection<GetHttpsResource> Resources { get; } = [];
 }

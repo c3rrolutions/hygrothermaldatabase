@@ -19,7 +19,7 @@ namespace Database.Services;
 /// <param name="userService">  <see cref="IUserService"/> </param>
 /// <param name="cacheService"> <see cref="ICacheService"/> </param>
 /// <param name="logger">       <see cref="ILogger"/> </param>
-public class AccessRightsService(
+public sealed class AccessRightsService(
     ApplicationDbContext context,
     IUserService userService,
     ICacheService cacheService,
@@ -29,19 +29,19 @@ public class AccessRightsService(
     public async Task<IQueryable<T>> ApplyAccessRightsOnData<T>(IQueryable<T> data, CancellationToken cancellationToken)
     where T : IData
     {
-        List<T> filteredData = new List<T>();
-        List<string> restrictions = new List<string>();
-        List<Guid> institutions = new List<Guid>();
-        List<InstitutionAccessRights> accessRights = new List<InstitutionAccessRights>();
+        var filteredData = new List<T>();
+        var restrictions = new List<string>();
+        var institutions = new List<Guid>();
+        var accessRights = new List<InstitutionAccessRights>();
 
-        var applicationId = userService.GetApplicationIdFromUser() ?? throw new InvalidOperationException("Application Id could not be aquired.");
+        var applicationId = userService.GetApplicationIdFromUser() ?? throw new InvalidOperationException("Application identifier could not be acquired.");
         var currentUser = await userService.GetCurrentUser(cancellationToken).ConfigureAwait(false) ?? throw new InvalidOperationException("Could not get current user!");
 
         var alreadyAccessedCount = cacheService.GetAccessCountForUser(currentUser.Uuid);
         foreach (var institution in currentUser.RepresentedInstitutions.Edges)
         {
             institutions.Add(institution.Node.Uuid);
-            var accessRightOfInstitution = await context.AccessRights.FirstOrDefaultAsync(x => x.InstitutionId == institution.Node.Uuid, cancellationToken).ConfigureAwait(false);
+            var accessRightOfInstitution = await context.InstitutionAccessRights.FirstOrDefaultAsync(x => x.InstitutionId == institution.Node.Uuid, cancellationToken).ConfigureAwait(false);
             if (accessRightOfInstitution is not null)
             {
                 accessRights.Add(accessRightOfInstitution);
@@ -59,7 +59,7 @@ public class AccessRightsService(
     public async Task<T?> ApplyAccessRightsOnData<T>(T data, CancellationToken cancellationToken)
     where T : IData
     {
-        var result = await ApplyAccessRightsOnData((new List<T> { data }).AsQueryable(), cancellationToken).ConfigureAwait(false);
+        var result = await ApplyAccessRightsOnData(new List<T> { data }.AsQueryable(), cancellationToken).ConfigureAwait(false);
 
         return result.FirstOrDefault();
     }
@@ -69,15 +69,15 @@ public class AccessRightsService(
         string applicationId,
         List<Guid> institutions,
         CurrentUserDto currentUser,
-        int alreadyAccessedCount,
+        uint alreadyAccessedCount,
         ICacheService cacheService,
         List<InstitutionAccessRights> accessRights)
     where T : IData
     {
-        string reason = "";
-        foreach (T dataItem in data)
+        var reason = "";
+        foreach (var dataItem in data)
         {
-            if (dataItem.DataAccessRights.HasRistrictions)
+            if (dataItem.DataAccessRights.HasRestrictions)
             {
                 if (dataItem.IsRestrictedByApplication(applicationId))
                 {

@@ -24,7 +24,7 @@ public abstract class HygrothermalDataPayload<THygrothermalDataError>
     protected HygrothermalDataPayload(
         THygrothermalDataError error
     )
-        : this(new[] { error })
+        : this([error])
     {
     }
 
@@ -43,7 +43,7 @@ public abstract class HygrothermalDataPayload<THygrothermalDataError>
     )
         : this(
             hygrothermalData,
-            new[] { error }
+            [error]
         )
     {
     }

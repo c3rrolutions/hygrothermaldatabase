@@ -7,26 +7,22 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Database.GraphQl.DataX;
 
-public sealed class GetHttpsResourceTreeRootByDataIdDataLoader
-    : AssociationsByAssociateIdDataLoader<GetHttpsResource>
-{
-    public GetHttpsResourceTreeRootByDataIdDataLoader(
-        IBatchScheduler batchScheduler,
-        DataLoaderOptions options,
-        IDbContextFactory<ApplicationDbContext> dbContextFactory
+public sealed class GetHttpsResourceTreeRootByDataIdDataLoader(
+    IBatchScheduler batchScheduler,
+    DataLoaderOptions options,
+    IDbContextFactory<ApplicationDbContext> dbContextFactory
     )
-        : base(
-            batchScheduler,
-            options,
-            dbContextFactory,
-            (dbContext, ids) =>
+        : AssociationsByAssociateIdDataLoader<GetHttpsResource>(
+        batchScheduler,
+        options,
+        dbContextFactory,
+        (dbContext, ids) =>
                 dbContext.GetHttpsResources.AsNoTracking().Where(x =>
                     x.ParentId == null && ids.Contains(x.CalorimetricDataId ??
                                                        x.HygrothermalDataId ?? x.OpticalDataId ??
                                                        x.PhotovoltaicDataId ?? x.GeometricDataId ?? Guid.Empty)
                 ),
-            x => x.DataId
+        x => x.DataId
         )
-    {
-    }
+{
 }

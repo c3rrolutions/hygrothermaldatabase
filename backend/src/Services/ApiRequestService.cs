@@ -18,7 +18,7 @@ namespace Database.Services;
 /// <summary>
 /// Implementation of <see cref="IApiRequestService"/>
 /// </summary>
-public class ApiRequestService() : IApiRequestService
+public sealed class ApiRequestService() : IApiRequestService
 {
     /// <summary>
     /// Name of Metabase http client.
@@ -30,19 +30,19 @@ public class ApiRequestService() : IApiRequestService
     /// </summary>
     public const string DatabaseHttpClient = "Database";
 
-    private static bool _useMetabase = true;
+    private static bool s_useMetabase = true;
 
     /// <inheritdoc/>
     public ApiRequestService Metabase()
     {
-        _useMetabase = true;
+        s_useMetabase = true;
         return this;
     }
 
     /// <inheritdoc/>
     public ApiRequestService Database()
     {
-        _useMetabase = false;
+        s_useMetabase = false;
         return this;
     }
 
@@ -55,7 +55,7 @@ public class ApiRequestService() : IApiRequestService
             Environment.NewLine,
             await Task.WhenAll(
                 fileNames.Select(fileName =>
-                    File.ReadAllTextAsync($"ApiRequests/Queries/{fileName}")
+                    File.ReadAllTextAsync($"./ApiRequests/Queries/{fileName}")
                 )
             ).ConfigureAwait(false)
         );
@@ -75,7 +75,7 @@ public class ApiRequestService() : IApiRequestService
             HttpMethod.Post,
             // TODO Consider using [Flurl](https://flurl.dev) to construct URIs. For the pitfalls of
             // using `Uri` as below see the comments to https://stackoverflow.com/questions/372865/path-combine-for-urls/1527643#1527643
-            new Uri(new Uri(_useMetabase ? appSettings.MetabaseHost : appSettings.Host), "/graphql/"),
+            new Uri(new Uri(s_useMetabase ? appSettings.MetabaseHost : appSettings.Host, UriKind.Absolute), "/graphql/"),
             MakeJsonHttpContent(request),
             JsonSerializerSettings.GraphQL,
             httpClientFactory,
@@ -139,7 +139,10 @@ public class ApiRequestService() : IApiRequestService
     )
         where TResponse : class
     {
-        using var httpClient = _useMetabase ? httpClientFactory.CreateClient(MetabaseHttpClient) : httpClientFactory.CreateClient(DatabaseHttpClient);
+        using var httpClient =
+            s_useMetabase
+            ? httpClientFactory.CreateClient(MetabaseHttpClient)
+            : httpClientFactory.CreateClient(DatabaseHttpClient);
         var bearerToken = await httpContextAccessor.ExtractBearerToken().ConfigureAwait(false);
         using var httpRequestMessage = new HttpRequestMessage(
             httpMethod,
@@ -153,9 +156,11 @@ public class ApiRequestService() : IApiRequestService
         using var httpResponseMessage =
             await httpClient.SendAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
         if (httpResponseMessage.StatusCode != HttpStatusCode.OK)
+        {
             throw new HttpRequestException(
                 $"The status code is not {HttpStatusCode.OK} but {httpResponseMessage.StatusCode}.", null,
                 httpResponseMessage.StatusCode);
+        }
 
         // We could use
         // `httpResponseMessage.Content.ReadFromJsonAsync<GraphQL.GraphQLResponse<TResponse>>` which
@@ -170,10 +175,7 @@ public class ApiRequestService() : IApiRequestService
             responseStream,
             serializerOptions,
             cancellationToken
-            ).ConfigureAwait(false);
-
-        if (deserializedResponse is null) throw new JsonException("Failed to deserialize the GraphQL response.");
-
+            ).ConfigureAwait(false) ?? throw new JsonException("Failed to deserialize the GraphQL response.");
         return deserializedResponse;
     }
 

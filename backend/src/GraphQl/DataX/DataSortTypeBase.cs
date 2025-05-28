@@ -3,7 +3,7 @@ using HotChocolate.Data.Sorting;
 
 namespace Database.GraphQl.DataX;
 
-public class DataSortTypeBase<TData>
+public abstract class DataSortTypeBase<TData>
     : SortInputType<TData>
     where TData : IData
 {

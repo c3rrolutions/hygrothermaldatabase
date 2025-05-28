@@ -2,19 +2,13 @@ using System.Collections.Generic;
 
 namespace Database.GraphQl.Databases;
 
-public abstract class DatabasePayload<TDatabaseError>
+public abstract class DatabasePayload<TDatabaseError>(
+    Database? database,
+    IReadOnlyCollection<TDatabaseError>? errors
+    )
     : Payload
     where TDatabaseError : IUserError
 {
-    protected DatabasePayload(
-        Database? database,
-        IReadOnlyCollection<TDatabaseError>? errors
-    )
-    {
-        Database = database;
-        Errors = errors;
-    }
-
-    public Database? Database { get; }
-    public IReadOnlyCollection<TDatabaseError>? Errors { get; }
+    public Database? Database { get; } = database;
+    public IReadOnlyCollection<TDatabaseError>? Errors { get; } = errors;
 }

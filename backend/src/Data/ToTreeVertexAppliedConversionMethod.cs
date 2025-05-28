@@ -5,7 +5,10 @@ using Microsoft.EntityFrameworkCore;
 namespace Database.Data;
 
 [Owned]
-public sealed class ToTreeVertexAppliedConversionMethod
+public sealed class ToTreeVertexAppliedConversionMethod(
+    Guid methodId,
+    string sourceName
+    )
 {
     public ToTreeVertexAppliedConversionMethod(
         Guid methodId,
@@ -20,17 +23,7 @@ public sealed class ToTreeVertexAppliedConversionMethod
         Arguments = arguments;
     }
 
-    // `DbContext` needs this constructor without owned entities.
-    public ToTreeVertexAppliedConversionMethod(
-        Guid methodId,
-        string sourceName
-    )
-    {
-        MethodId = methodId;
-        SourceName = sourceName;
-    }
-
-    public Guid MethodId { get; private set; }
-    public ICollection<NamedMethodArgument> Arguments { get; private set; } = new List<NamedMethodArgument>();
-    public string SourceName { get; private set; }
+    public Guid MethodId { get; private set; } = methodId;
+    public ICollection<NamedMethodArgument> Arguments { get; private set; } = [];
+    public string SourceName { get; private set; } = sourceName;
 }

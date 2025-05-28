@@ -21,7 +21,7 @@ namespace Database.Services;
 /// <param name="httpClientFactory">   <see cref="IHttpClientFactory"/> </param>
 /// <param name="httpContextAccessor"> <see cref="IHttpContextAccessor"/> </param>
 /// <param name="logger">              <see cref="ILogger"/> </param>
-public class ResponseApprovalService(
+public sealed class ResponseApprovalService(
     AppSettings appSettings,
     ISigningService signingService,
     IApiRequestService apiRequestService,
@@ -51,7 +51,7 @@ public class ResponseApprovalService(
             throw new InvalidOperationException($"Signing of data failed! {signatureResult.Output}");
         }
 
-        return new ResponseApproval(DateTime.UtcNow, signatureResult.Output, signingService.Fingerprint, queryAdnResponse.Query, queryAdnResponse.Response);
+        return new ResponseApproval(DateTime.UtcNow, signatureResult.Output, await signingService.GetFingerprint(), queryAdnResponse.Query, queryAdnResponse.Response);
     }
 
     private async Task<(string Query, string Response)> GetQueryAndResponse(IData dataObject, CancellationToken cancellationToken)

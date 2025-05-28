@@ -6,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Database.Filters;
 
-public class GenerateAntiforgeryTokenCookieAttribute : ResultFilterAttribute
+public sealed class GenerateAntiforgeryTokenCookieAttribute : ResultFilterAttribute
 {
     public const string RequestVerificationTokenName = "RequestVerificationToken";
 

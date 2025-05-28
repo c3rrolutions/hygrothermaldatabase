@@ -30,7 +30,7 @@ public interface IData : IEntity
     /// </summary>
     /// <param name="institutions"> List of institution ids. </param>
     /// <returns> True, if dataset is rescricted. Otherwise false. </returns>
-    bool IsRestrictedByInstitutions(List<Guid> institutions);
+    bool IsRestrictedByInstitutions(IEnumerable<Guid> institutions);
 
     /// <summary>
     /// Check if dataset is restricted for passed user.
@@ -38,5 +38,5 @@ public interface IData : IEntity
     /// <param name="uuid">                Id of user. </param>
     /// <param name="alreadyAccesedCount"> Count of already accessed datasets by user. </param>
     /// <returns> True, if dataset is rescricted. Otherwise false. </returns>
-    bool IsRestrictedByUser(Guid uuid, int alreadyAccesedCount);
+    bool IsRestrictedByUser(Guid uuid, uint alreadyAccesedCount);
 }

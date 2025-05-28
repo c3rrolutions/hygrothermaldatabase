@@ -90,7 +90,7 @@ public sealed class OpticalData
     }
 
     [InverseProperty(nameof(GetHttpsResource.OpticalData))]
-    public override ICollection<GetHttpsResource> Resources { get; } = new List<GetHttpsResource>();
+    public override ICollection<GetHttpsResource> Resources { get; } = [];
 
     public OpticalComponentType? Type { get; private set; }
     public OpticalComponentSubtype? Subtype { get; private set; }
@@ -101,5 +101,5 @@ public sealed class OpticalData
     public double[] NearnormalHemisphericalSolarReflectances { get; private set; }
     public double[] InfraredEmittances { get; private set; }
     public double[] ColorRenderingIndices { get; private set; }
-    public ICollection<CielabColor> CielabColors { get; private set; } = new List<CielabColor>();
+    public ICollection<CielabColor> CielabColors { get; private set; } = [];
 }

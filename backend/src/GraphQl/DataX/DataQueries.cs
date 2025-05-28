@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Database.Data;
@@ -9,7 +9,7 @@ using HotChocolate.Types;
 namespace Database.GraphQl.DataX;
 
 [ExtendObjectType(nameof(Query))]
-public class DataQueries
+public sealed class DataQueries
 {
     public async Task<IData?> GetDataAsync(
         Guid id,

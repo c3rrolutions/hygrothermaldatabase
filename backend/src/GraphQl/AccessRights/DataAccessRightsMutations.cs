@@ -1,18 +1,16 @@
 using System;
-using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Database.Authorization;
 using Database.Data;
 using Database.Services.Interfaces;
 using HotChocolate.Types;
-using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 
 namespace Database.GraphQl.AccessRights;
 
 [ExtendObjectType(nameof(Mutation))]
-public class DataAccessRightsMutations
+public sealed class DataAccessRightsMutations
 {
     public async Task<UpdateDataAccessRightsPayload> UpdateDataAccessRightsAsync(
         DataAccessRightsInput input,
@@ -47,7 +45,7 @@ public class DataAccessRightsMutations
             );
         }
 
-        if (!CommonAuthorization.IsCurrentUserAtLeastAssistantOfVerifiedInstitution(
+        if (!CommonAuthorization.IsCurrentUserAtLeastAssistantManagerOfVerifiedInstitution(
             currentUser,
             data.CreatorId,
             cancellationToken
@@ -63,9 +61,9 @@ public class DataAccessRightsMutations
             );
         }
 
-        data.DataAccessRights.AllowedInstitutions = input.DataAccessRights.AllowedInstitutions;
-        data.DataAccessRights.AllowedApplications = input.DataAccessRights.AllowedApplications;
-        data.DataAccessRights.AllowedUserAndQuantity = input.DataAccessRights.AllowedUserAndQuantity;
+        data.DataAccessRights.AllowedInstitutions = input.AllowedInstitutions;
+        data.DataAccessRights.AllowedApplications = input.AllowedApplications;
+        data.DataAccessRights.AllowedUserAndQuantity = input.AllowedUserAndQuantity;
 
         await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         return new UpdateDataAccessRightsPayload(data.DataAccessRights);
@@ -74,11 +72,7 @@ public class DataAccessRightsMutations
     public async Task<AddInstitutionAccessRightsPayload> AddAccessRightsAsync(
         InstitutionAccessRightsInput input,
         ApplicationDbContext context,
-        AppSettings appSettings,
-        IHttpClientFactory httpClientFactory,
-        IHttpContextAccessor httpContextAccessor,
         IUserService userService,
-        IDataService dataService,
         CancellationToken cancellationToken
     )
     {
@@ -95,7 +89,7 @@ public class DataAccessRightsMutations
             );
         }
 
-        if (!CommonAuthorization.IsCurrentUserAtLeastAssistantOfVerifiedInstitution(
+        if (!CommonAuthorization.IsCurrentUserAtLeastAssistantManagerOfVerifiedInstitution(
             currentUser,
             input.InstitutionId,
             cancellationToken
@@ -111,7 +105,7 @@ public class DataAccessRightsMutations
             );
         }
 
-        var accessRights = await context.AccessRights.FirstOrDefaultAsync(x => x.InstitutionId == input.InstitutionId, cancellationToken).ConfigureAwait(false);
+        var accessRights = await context.InstitutionAccessRights.FirstOrDefaultAsync(x => x.InstitutionId == input.InstitutionId, cancellationToken).ConfigureAwait(false);
 
         if (accessRights is not null)
         {
@@ -129,7 +123,7 @@ public class DataAccessRightsMutations
             input.AllowedUserCount,
             input.AllowedDatasetsPerTimeSpan,
             TimeSpan.FromDays(input.PeriodInDays));
-        context.AccessRights.Add(accessRights);
+        context.InstitutionAccessRights.Add(accessRights);
         await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         return new AddInstitutionAccessRightsPayload(accessRights);
     }
@@ -137,11 +131,7 @@ public class DataAccessRightsMutations
     public async Task<UpdateAccessRightsPayload> UpdateAccessRightsAsync(
         InstitutionAccessRightsInput input,
         ApplicationDbContext context,
-        AppSettings appSettings,
-        IHttpClientFactory httpClientFactory,
-        IHttpContextAccessor httpContextAccessor,
         IUserService userService,
-        IDataService dataService,
         CancellationToken cancellationToken
     )
     {
@@ -158,7 +148,7 @@ public class DataAccessRightsMutations
             );
         }
 
-        if (!CommonAuthorization.IsCurrentUserAtLeastAssistantOfVerifiedInstitution(
+        if (!CommonAuthorization.IsCurrentUserAtLeastAssistantManagerOfVerifiedInstitution(
             currentUser,
             input.InstitutionId,
             cancellationToken
@@ -174,7 +164,7 @@ public class DataAccessRightsMutations
             );
         }
 
-        var accessRights = await context.AccessRights.FirstOrDefaultAsync(x => x.InstitutionId == input.InstitutionId, cancellationToken).ConfigureAwait(false);
+        var accessRights = await context.InstitutionAccessRights.FirstOrDefaultAsync(x => x.InstitutionId == input.InstitutionId, cancellationToken).ConfigureAwait(false);
 
         if (accessRights is null)
         {

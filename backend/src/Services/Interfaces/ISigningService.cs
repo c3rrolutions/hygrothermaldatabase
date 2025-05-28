@@ -9,12 +9,6 @@ namespace Database.Services.Interfaces;
 public interface ISigningService
 {
     /// <summary>
-    /// Get fingerprint
-    /// </summary>
-    /// <returns> Fingerprint as string </returns>
-    public string Fingerprint { get; }
-
-    /// <summary>
     /// Initialize service by importing private key from file passed into container.
     /// </summary>
     /// <returns> True, if privat key was successfully imported and fingerprint set. </returns>
@@ -27,4 +21,11 @@ public interface ISigningService
     /// <param name="data"> Data string to create signature from. </param>
     /// <returns> True and generated signature, if successful. Otherwise false and error. </returns>
     public Task<(bool Success, string Output)> SignData(string data);
+
+    /// <summary>
+    /// Get fingerprint.
+    /// </summary>
+    /// <returns> The fingerprint. </returns>
+    /// <exception cref="InvalidOperationException"> If fingerprint extraction failed. </exception>
+    public Task<string> GetFingerprint();
 }

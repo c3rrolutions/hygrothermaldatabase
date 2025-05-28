@@ -5,7 +5,7 @@ using Database.Enumerations;
 
 namespace Database.ApiRequests.Dto;
 
-public record DataXDto(
+public sealed record DataXDto(
     string Uuid,
     DateTime Timestamp,
     string ComponentId,

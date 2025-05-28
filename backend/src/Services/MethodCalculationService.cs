@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Database.GraphQl.MethodAsService;
@@ -7,9 +7,9 @@ using Database.Services.Interfaces;
 
 namespace Database.Services;
 
-public class MethodCalculationService : IMethodCalculationService
+public sealed class MethodCalculationService : IMethodCalculationService
 {
-    private List<IMethod> _methods = new List<IMethod>();
+    private List<IMethod> _methods = [];
 
     public void AddMethod(IMethod method)
     {
@@ -21,7 +21,7 @@ public class MethodCalculationService : IMethodCalculationService
         return _methods.Exists(x => x.Id == methodId);
     }
 
-    public List<DataPoint> UseMethodToCalculate(Guid methodId, List<DataPoint> dataPoints)
+    public List<DataPoint> UseMethodToCalculate(Guid methodId, IReadOnlyList<DataPoint> dataPoints)
     {
         var method = _methods.First(x => x.Id == methodId);
 

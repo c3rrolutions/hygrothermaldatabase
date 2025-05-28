@@ -51,7 +51,7 @@ public sealed class ResponseApprovalService(
             throw new InvalidOperationException($"Signing of data failed! {signatureResult.Output}");
         }
 
-        return new ResponseApproval(DateTime.UtcNow, signatureResult.Output, signingService.Fingerprint, queryAdnResponse.Query, queryAdnResponse.Response);
+        return new ResponseApproval(DateTime.UtcNow, signatureResult.Output, await signingService.GetFingerprint(), queryAdnResponse.Query, queryAdnResponse.Response);
     }
 
     private async Task<(string Query, string Response)> GetQueryAndResponse(IData dataObject, CancellationToken cancellationToken)

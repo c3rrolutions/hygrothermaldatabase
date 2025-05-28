@@ -146,15 +146,6 @@ COPY \
   ./test/Database.Tests.csproj \
   ./test/
 
-# GnuPG
-# Copy keys to image
-RUN \
-  mkdir ./gpg-keys
-COPY \
-  --chown=me:us \
-  ./gpg-keys/${GNUPG_PRIVATEKEY_FILE_NAME} \
-  ./gpg-keys/
-
 # Invoking GPG agent (https://www.gnupg.org/documentation/manuals/gnupg/Invoking-GPG_002dAGENT.html)
 RUN \
   export GPG_TTY=$(tty)

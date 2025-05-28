@@ -5,10 +5,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Database.Authorization;
 using Database.Data;
-using Database.GraphQl.GeometricDataX;
 using Database.Services.Interfaces;
 using HotChocolate.Types;
-using Org.BouncyCastle.Asn1.X509.Qualified;
 
 namespace Database.GraphQl.OpticalDataX;
 

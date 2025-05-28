@@ -229,8 +229,23 @@ gpg : ## Generate GnuPG key with the passphrase `${GNUPG_PRIVATEKEY_PASSPHRASE}`
 		--passphrase ${GNUPG_PRIVATEKEY_PASSPHRASE} \
 		"${NAME} (${COMMENT}) <${EMAIL}>" \
 		ed25519 \
-		cert \
+		sign \
 		never
+	fingerprint=gpg \
+		--list-secret-keys \
+		--with-colons \
+		--keyid-format=long \
+		${EMAIL} \
+	| grep \
+		--before=3 \
+		"${NAME} (${COMMENT}) <${EMAIL}>" \
+	| awk -F: '$$1=="fpr" {print $$10; exit}'
+	mkdir --parents \
+		./backend/src/gpg-keys
+	gpg \
+		--armor \
+		--export-secret-keys $$fingerprint \
+	> ./backend/src/gpg-keys/${GNUPG_PRIVATEKEY_FILE_NAME}
 
 # --------------------- #
 # Generate Certificates #

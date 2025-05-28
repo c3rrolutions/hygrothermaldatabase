@@ -55,7 +55,7 @@ public sealed class ApiRequestService() : IApiRequestService
             Environment.NewLine,
             await Task.WhenAll(
                 fileNames.Select(fileName =>
-                    File.ReadAllTextAsync($"ApiRequests/Queries/{fileName}")
+                    File.ReadAllTextAsync($"./ApiRequests/Queries/{fileName}")
                 )
             ).ConfigureAwait(false)
         );

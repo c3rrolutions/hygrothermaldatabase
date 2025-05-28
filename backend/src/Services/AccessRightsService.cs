@@ -34,7 +34,7 @@ public sealed class AccessRightsService(
         var institutions = new List<Guid>();
         var accessRights = new List<InstitutionAccessRights>();
 
-        var applicationId = userService.GetApplicationIdFromUser() ?? throw new InvalidOperationException("Application Id could not be aquired.");
+        var applicationId = userService.GetApplicationIdFromUser() ?? throw new InvalidOperationException("Application identifier could not be acquired.");
         var currentUser = await userService.GetCurrentUser(cancellationToken).ConfigureAwait(false) ?? throw new InvalidOperationException("Could not get current user!");
 
         var alreadyAccessedCount = cacheService.GetAccessCountForUser(currentUser.Uuid);

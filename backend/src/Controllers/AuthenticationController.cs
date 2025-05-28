@@ -169,9 +169,16 @@ public sealed class AuthenticationController(
         // The claims are fetched from the userinfo endpoint of the authorization provider.
         // We add the claim `IdentityOptions.ClaimsIdentity.UserIdClaimType` to make
         // `UserManager.GetUserAsync(claimsPrincipal)` return the authenticated user.
+        // You can use the debugger to see which claims are present. Just now it were:
+        // iss, exp, iat, aud, sub, role, name, preferred_username, email, azp, nonce, at_hash, email_verified,
+        // phone_number_verified, as, oi_reg_id, http://schemas.xmlsoat.org/.../emailaddress,
+        // http://schemas.xmlsoat.org/.../name, http://schemas.xmlsoat.org/.../nameidentifier
         identity.SetClaim(_identityOptions.ClaimsIdentity.UserIdClaimType, result.Principal.GetClaim(ClaimTypes.NameIdentifier))
                 .SetClaim(ClaimTypes.Name, result.Principal.GetClaim(ClaimTypes.Name))
                 .SetClaim(ClaimTypes.NameIdentifier, result.Principal.GetClaim(ClaimTypes.NameIdentifier));
+
+        // Preserve `client_id` for usage by access-rights service.
+        identity.SetClaim(Claims.AuthorizedParty, result.Principal.GetClaim(Claims.AuthorizedParty));
 
         // Preserve the registration details to be able to resolve them later.
         identity.SetClaim(Claims.Private.RegistrationId, result.Principal.GetClaim(Claims.Private.RegistrationId))

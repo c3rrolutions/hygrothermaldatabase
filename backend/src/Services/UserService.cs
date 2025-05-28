@@ -32,7 +32,7 @@ public sealed class UserService(
     /// <inheritdoc/>
     public string? GetApplicationIdFromUser()
     {
-        return httpContextAccessor.HttpContext?.User.GetClaim(Claims.ClientId);
+        return httpContextAccessor.HttpContext?.User.GetClaim(Claims.AuthorizedParty);
     }
 
     /// <inheritdoc/>

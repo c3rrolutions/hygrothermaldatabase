@@ -239,7 +239,7 @@ gpg : ## Generate GnuPG key with the passphrase `${GNUPG_PRIVATEKEY_PASSPHRASE}`
 	| grep \
 		--before=3 \
 		"${NAME} (${COMMENT}) <${EMAIL}>" \
-	| awk -F: '$$1=="fpr" {print $$10; exit}'
+	| awk -F: '$$1=="fpr" {printf $$10; exit}'
 	mkdir --parents \
 		./backend/src/gpg-keys
 	gpg \

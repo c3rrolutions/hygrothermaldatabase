@@ -27,7 +27,7 @@ public sealed class SigningService(
     public async Task Initialize()
     {
         // Execute command to import private key
-        var (success, outout) = await ExecuteGnuCommand($"gpg --batch --passphrase {appSettings.GnupgPrivateKeyPassphrase} --import ../gpg-keys/{appSettings.GnupgPrivateKeyFilename}");
+        var (success, outout) = await ExecuteGnuCommand($"gpg --batch --passphrase {appSettings.GnupgPrivateKeyPassphrase} --import ./gpg-keys/{appSettings.GnupgPrivateKeyFilename}");
         if (success)
         {
             // Extract fingerprint

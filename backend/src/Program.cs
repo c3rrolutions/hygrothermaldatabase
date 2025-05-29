@@ -3,7 +3,7 @@ using System.Globalization;
 using System.IO;
 using System.Threading.Tasks;
 using Database.Data;
-using Database.Services.Interfaces;
+using Database.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -131,7 +131,7 @@ public sealed class Program
         IServiceProvider services
     )
     {
-        var signing = services.GetRequiredService<ISigningService>();
+        var signing = services.GetRequiredService<SigningService>();
         await signing.Initialize();
     }
 

@@ -5,7 +5,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Database.ApiRequests;
-using Database.Services.Interfaces;
+using Database.Services;
 using HotChocolate;
 using HotChocolate.Resolvers;
 using HotChocolate.Types;
@@ -18,7 +18,7 @@ public sealed class DatabaseQueries
 {
     public async Task<Database> GetDatabaseAsync(
         AppSettings appSettings,
-        IApiRequestService apiRequestService,
+        ApiRequestService apiRequestService,
         IHttpClientFactory httpClientFactory,
         IHttpContextAccessor httpContextAccessor,
         IResolverContext resolverContext,

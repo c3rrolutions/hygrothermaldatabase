@@ -3,24 +3,28 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using Database.Logging;
-using Database.Services.Interfaces;
+using Database.Services;
 using Microsoft.Extensions.Logging;
 
 namespace Database.Services;
 
 /// <summary>
-/// Implementation of <see cref="ISigningService"/>
+/// Service to sign data string with GNUPG.
 /// </summary>
 /// <param name="appSettings"> <see cref="AppSettings"/> </param>
 /// <param name="logger">      Instance of <see cref="ILogger"/> </param>
 public sealed class SigningService(
     AppSettings appSettings,
-    ILogger<ISigningService> logger) : ISigningService
+    ILogger<SigningService> logger)
 {
     private const string FILENAME = "dataToSign";
     private const string FILE_EXTENSION = ".asc";
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Initialize service by importing private key from file passed into container.
+    /// </summary>
+    /// <returns> True, if privat key was successfully imported and fingerprint set. </returns>
+    /// <exception cref="InvalidOperationException"> If initialization failed. </exception>
     public async Task Initialize()
     {
         // Execute command to import private key
@@ -40,7 +44,11 @@ public sealed class SigningService(
         }
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Sign passed data string and return signature.
+    /// </summary>
+    /// <param name="data"> Data string to create signature from. </param>
+    /// <returns> True and generated signature, if successful. Otherwise false and error. </returns>
     public async Task<(bool Success, string Output)> SignData(string data)
     {
         // Write data string to file
@@ -100,6 +108,11 @@ public sealed class SigningService(
         return (proc.ExitCode == 0, output);
     }
 
+    /// <summary>
+    /// Get fingerprint.
+    /// </summary>
+    /// <returns> The fingerprint. </returns>
+    /// <exception cref="InvalidOperationException"> If fingerprint extraction failed. </exception>
     public async Task<string> GetFingerprint()
     {
         var (success, fingerprint) = await ExecuteGnuCommand("gpg --list-secret-keys --with-colons --keyid-format=long | awk -F: '$1==\"fpr\" {printf $10; exit}'");

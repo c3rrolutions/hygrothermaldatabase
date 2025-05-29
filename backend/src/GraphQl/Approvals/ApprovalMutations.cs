@@ -3,7 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Database.Authorization;
 using Database.Data;
-using Database.Services.Interfaces;
+using Database.Services;
 using HotChocolate.Types;
 
 namespace Database.GraphQl.Approvals;
@@ -15,9 +15,9 @@ public sealed class ApprovalMutations
     public async Task<AddApprovalPayload> AddApprovalToDataAsync(
         ApprovalInput input,
         ApplicationDbContext context,
-        IUserService userService,
-        IDataService dataService,
-        IResponseApprovalService responseApprovalService,
+        UserService userService,
+        DataService dataService,
+        ResponseApprovalService responseApprovalService,
         CancellationToken cancellationToken
     )
     {

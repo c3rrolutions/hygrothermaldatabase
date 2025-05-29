@@ -6,26 +6,31 @@ using System.Threading.Tasks;
 using Database.ApiRequests.Dto;
 using Database.Data;
 using Database.Logging;
-using Database.Services.Interfaces;
+using Database.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace Database.Services;
 
 /// <summary>
-/// Implementation of <see cref="IAccessRightsService"/>
+/// Service to check if requested data can be returned regarding access rights.
 /// </summary>
 /// <param name="context">      <see cref="ApplicationDbContext"/> </param>
-/// <param name="userService">  <see cref="IUserService"/> </param>
-/// <param name="cacheService"> <see cref="ICacheService"/> </param>
+/// <param name="userService">  <see cref="UserService"/> </param>
+/// <param name="cacheService"> <see cref="CacheService"/> </param>
 /// <param name="logger">       <see cref="ILogger"/> </param>
 public sealed class AccessRightsService(
     ApplicationDbContext context,
-    IUserService userService,
-    ICacheService cacheService,
-    ILogger<IAccessRightsService> logger) : IAccessRightsService
+    UserService userService,
+    CacheService cacheService,
+    ILogger<AccessRightsService> logger)
 {
-    /// <inheritdoc/>
+    /// <summary>
+    /// Apply access rights to passed data list.
+    /// </summary>
+    /// <param name="data">              Data to apply acces rights on. </param>
+    /// <param name="cancellationToken"> <see cref="CancellationToken"/> </param>
+    /// <returns> List of data that can be returned. </returns>
     public async Task<IQueryable<T>> ApplyAccessRightsOnData<T>(IQueryable<T> data, CancellationToken cancellationToken)
     where T : IData
     {
@@ -55,7 +60,12 @@ public sealed class AccessRightsService(
         return result.AsQueryable<T>();
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Apply access rights on passed data item.
+    /// </summary>
+    /// <param name="data">              Data to apply acces rights on. </param>
+    /// <param name="cancellationToken"> <see cref="CancellationToken"/> </param>
+    /// <returns> Data item. </returns>
     public async Task<T?> ApplyAccessRightsOnData<T>(T data, CancellationToken cancellationToken)
     where T : IData
     {
@@ -70,7 +80,7 @@ public sealed class AccessRightsService(
         List<Guid> institutions,
         CurrentUserDto currentUser,
         uint alreadyAccessedCount,
-        ICacheService cacheService,
+        CacheService cacheService,
         List<InstitutionAccessRights> accessRights)
     where T : IData
     {

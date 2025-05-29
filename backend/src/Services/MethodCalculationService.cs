@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using Database.GraphQl.MethodAsService;
 using Database.Methods;
-using Database.Services.Interfaces;
+using Database.Services;
 
 namespace Database.Services;
 
-public sealed class MethodCalculationService : IMethodCalculationService
+public sealed class MethodCalculationService
 {
     private List<IMethod> _methods = [];
 

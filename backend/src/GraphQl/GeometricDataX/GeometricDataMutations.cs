@@ -5,7 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Database.Authorization;
 using Database.Data;
-using Database.Services.Interfaces;
+using Database.Services;
 using HotChocolate.Types;
 
 namespace Database.GraphQl.GeometricDataX;
@@ -18,8 +18,8 @@ public sealed class GeometricDataMutations
     public async Task<CreateGeometricDataPayload> CreateGeometricDataAsync(
         CreateGeometricDataInput input,
         ApplicationDbContext context,
-        IUserService userService,
-        IResponseApprovalService responseApprovalService,
+        UserService userService,
+        ResponseApprovalService responseApprovalService,
         CancellationToken cancellationToken
     )
     {

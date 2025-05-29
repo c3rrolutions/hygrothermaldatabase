@@ -5,7 +5,7 @@ using Database.ApiRequests;
 using Database.ApiRequests.Dto;
 using Database.Extensions;
 using Database.Logging;
-using Database.Services.Interfaces;
+using Database.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using OpenIddict.Abstractions;
@@ -14,28 +14,35 @@ using static OpenIddict.Abstractions.OpenIddictConstants;
 namespace Database.Services;
 
 /// <summary>
-/// Implementation of <see cref="IUserService"/>
+/// Service to get current user from Metabase
 /// </summary>
 /// <param name="appSettings">         <see cref="AppSettings"/> </param>
 /// <param name="httpContextAccessor"> <see cref="IHttpContextAccessor"/> </param>
 /// <param name="httpClientFactory">   <see cref="IHttpClientFactory"/> </param>
-/// <param name="cacheService">        <see cref="ICacheService"/> to store already known users. </param>
+/// <param name="cacheService">        <see cref="CacheService"/> to store already known users. </param>
 /// <param name="logger">              Instance of <see cref="ILogger"/> </param>
 public sealed class UserService(
     AppSettings appSettings,
-    IApiRequestService apiRequestService,
+    ApiRequestService apiRequestService,
     IHttpContextAccessor httpContextAccessor,
     IHttpClientFactory httpClientFactory,
-    ICacheService cacheService,
-    ILogger<IUserService> logger) : IUserService
+    CacheService cacheService,
+    ILogger<UserService> logger)
 {
-    /// <inheritdoc/>
+    /// <summary>
+    /// Get application from user calims.
+    /// </summary>
+    /// <returns> ClientId from claims as applicationId. </returns>
     public string? GetApplicationIdFromUser()
     {
         return httpContextAccessor.HttpContext?.User.GetClaim(Claims.AuthorizedParty);
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Get current user from Metabase.
+    /// </summary>
+    /// <param name="cancellationToken"> <see cref="CancellationToken"/> </param>
+    /// <returns> </returns>
     public async Task<CurrentUserDto?> GetCurrentUser(CancellationToken cancellationToken)
     {
         // Extract token

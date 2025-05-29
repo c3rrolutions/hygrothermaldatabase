@@ -6,28 +6,28 @@ using Database.ApiRequests;
 using Database.ApiRequests.Dto;
 using Database.Data;
 using Database.Logging;
-using Database.Services.Interfaces;
+using Database.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
 namespace Database.Services;
 
 /// <summary>
-/// Implementation of <see cref="IResponseApprovalService"/>
+/// Service to create response approval
 /// </summary>
 /// <param name="appSettings">         <see cref="AppSettings"/> </param>
-/// <param name="signingService">      <see cref="ISigningService"/> </param>
-/// <param name="apiRequestService">   <see cref="IApiRequestService"/> </param>
+/// <param name="signingService">      <see cref="SigningService"/> </param>
+/// <param name="apiRequestService">   <see cref="ApiRequestService"/> </param>
 /// <param name="httpClientFactory">   <see cref="IHttpClientFactory"/> </param>
 /// <param name="httpContextAccessor"> <see cref="IHttpContextAccessor"/> </param>
 /// <param name="logger">              <see cref="ILogger"/> </param>
 public sealed class ResponseApprovalService(
     AppSettings appSettings,
-    ISigningService signingService,
-    IApiRequestService apiRequestService,
+    SigningService signingService,
+    ApiRequestService apiRequestService,
     IHttpClientFactory httpClientFactory,
     IHttpContextAccessor httpContextAccessor,
-    ILogger<IResponseApprovalService> logger) : IResponseApprovalService
+    ILogger<ResponseApprovalService> logger)
 {
     private sealed record CalorimetricDataResponse(CalorimetricDataDto CalorimetricData);
     private sealed record GeometricDataResponse(GeometricDataDto GeometricData);
@@ -35,7 +35,13 @@ public sealed class ResponseApprovalService(
     private sealed record PhotovoltaicDataResponse(PhotovoltaicDataDto PhotovoltaicData);
     private sealed record OpticalDataResponse(OpticalDataDto OpticalData);
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Create response approval by calling graphql Api and signing responce.
+    /// </summary>
+    /// <param name="dataObject">        <see cref="IData"/> </param>
+    /// <param name="cancellationToken"> <see cref="CancellationToken"/> </param>
+    /// <exception cref="Exception"> Thows exception, when singing of data failed. </exception>
+    /// <returns> <see cref="ResponseApproval"/> </returns>
     public async Task<ResponseApproval> CreateResponseApproval(IData dataObject, CancellationToken cancellationToken)
     {
         // Get dataset

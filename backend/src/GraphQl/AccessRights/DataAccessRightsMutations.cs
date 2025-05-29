@@ -3,7 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Database.Authorization;
 using Database.Data;
-using Database.Services.Interfaces;
+using Database.Services;
 using HotChocolate.Types;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,8 +15,8 @@ public sealed class DataAccessRightsMutations
     public async Task<UpdateDataAccessRightsPayload> UpdateDataAccessRightsAsync(
         DataAccessRightsInput input,
         ApplicationDbContext context,
-        IUserService userService,
-        IDataService dataService,
+        UserService userService,
+        DataService dataService,
         CancellationToken cancellationToken
     )
     {
@@ -72,7 +72,7 @@ public sealed class DataAccessRightsMutations
     public async Task<AddInstitutionAccessRightsPayload> AddAccessRightsAsync(
         InstitutionAccessRightsInput input,
         ApplicationDbContext context,
-        IUserService userService,
+        UserService userService,
         CancellationToken cancellationToken
     )
     {
@@ -131,7 +131,7 @@ public sealed class DataAccessRightsMutations
     public async Task<UpdateAccessRightsPayload> UpdateAccessRightsAsync(
         InstitutionAccessRightsInput input,
         ApplicationDbContext context,
-        IUserService userService,
+        UserService userService,
         CancellationToken cancellationToken
     )
     {

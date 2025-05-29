@@ -18,7 +18,7 @@ public sealed class GetHttpsResourceTreeRootByDataIdDataLoader(
         dbContextFactory,
         (dbContext, ids) =>
                 dbContext.GetHttpsResources.AsNoTracking().Where(x =>
-                    x.ParentId is null && ids.Contains(x.CalorimetricDataId ??
+                    x.ParentId == null && ids.Contains(x.CalorimetricDataId ??
                                                        x.HygrothermalDataId ?? x.OpticalDataId ??
                                                        x.PhotovoltaicDataId ?? x.GeometricDataId ?? Guid.Empty)
                 ),

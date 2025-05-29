@@ -9,7 +9,7 @@ using Database.Enumerations;
 using Database.Extensions;
 using HotChocolate.Types;
 using Microsoft.EntityFrameworkCore;
-using Database.Services.Interfaces;
+using Database.Services;
 
 namespace Database.GraphQl.GetHttpsResources;
 
@@ -20,7 +20,7 @@ public sealed class GetHttpsResourceMutations
     public async Task<CreateGetHttpsResourcePayload> CreateGetHttpsResourceAsync(
         CreateGetHttpsResourceInput input,
         ApplicationDbContext context,
-        IUserService userService,
+        UserService userService,
         CancellationToken cancellationToken
     )
     {

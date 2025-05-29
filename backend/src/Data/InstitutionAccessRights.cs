@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using Database.Services.Interfaces;
+using Database.Services;
 
 namespace Database.Data;
 
@@ -24,10 +24,10 @@ public sealed class InstitutionAccessRights(
     /// </summary>
     /// <param name="dataItem">      <see cref="IData"/> </param>
     /// <param name="currentUserId"> Id of current user. </param>
-    /// <param name="cacheService">  <see cref="ICacheService"/> </param>
+    /// <param name="cacheService">  <see cref="CacheService"/> </param>
     /// <param name="reason">        Reason, why data is restricted. </param>
     /// <returns> </returns>
-    internal bool IsDataRestricted(IData dataItem, Guid currentUserId, ICacheService cacheService, out string reason)
+    internal bool IsDataRestricted(IData dataItem, Guid currentUserId, CacheService cacheService, out string reason)
     {
         var isRestricted = false;
         reason = "";

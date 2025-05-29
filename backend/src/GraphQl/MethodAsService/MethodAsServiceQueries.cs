@@ -9,7 +9,7 @@ using Database.ApiRequests;
 using Database.ApiRequests.Dto;
 using Database.Data;
 using Database.GraphQl.Databases;
-using Database.Services.Interfaces;
+using Database.Services;
 using HotChocolate;
 using HotChocolate.Resolvers;
 using HotChocolate.Types;
@@ -24,7 +24,7 @@ public sealed class MethodAsServiceQueries
 
     public async Task<MethodAsServicePayload> MethodAsServiceWithFileAsync(
         MethodAsServiceWithFileInput input,
-        IMethodCalculationService methodCalculationService,
+        MethodCalculationService methodCalculationService,
         CancellationToken cancellationToken
     )
     {
@@ -55,9 +55,9 @@ public sealed class MethodAsServiceQueries
         AppSettings appSettings,
         MethodAsServiceInput input,
         ApplicationDbContext context,
-        IUserService userService,
-        IMethodCalculationService methodCalculationService,
-        IApiRequestService apiRequestService,
+        UserService userService,
+        MethodCalculationService methodCalculationService,
+        ApiRequestService apiRequestService,
         IHttpClientFactory httpClientFactory,
         IHttpContextAccessor httpContextAccessor,
         IResolverContext resolverContext,

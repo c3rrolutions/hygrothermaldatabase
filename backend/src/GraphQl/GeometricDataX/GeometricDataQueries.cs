@@ -4,7 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Database.Data;
 using Database.GraphQl.Extensions;
-using Database.Services.Interfaces;
+using Database.Services;
 using HotChocolate;
 using HotChocolate.Data;
 using HotChocolate.Data.Sorting;
@@ -23,7 +23,7 @@ public sealed class GeometricDataQueries
     public async Task<IQueryable<GeometricData>> GetAllGeometricData(
         [GraphQLType<LocaleType>] string? locale,
         ApplicationDbContext context,
-        IAccessRightsService accessRightsService,
+        AccessRightsService accessRightsService,
         ISortingContext sorting,
         IResolverContext resolverContext,
         CancellationToken cancellationToken
@@ -47,7 +47,7 @@ public sealed class GeometricDataQueries
         Guid id,
         [GraphQLType<LocaleType>] string? locale,
         GeometricDataByIdDataLoader byId,
-        IAccessRightsService accessRightsService,
+        AccessRightsService accessRightsService,
         CancellationToken cancellationToken
     )
     {

@@ -3,7 +3,7 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Database.Services.Interfaces;
+using Database.Services;
 using GraphQL;
 using Microsoft.AspNetCore.Http;
 
@@ -61,7 +61,7 @@ public sealed class DataApi
     /// <param name="dataId">              Id of data to request. </param>
     /// <param name="filenames">           File names of query files. </param>
     /// <param name="appSettings">         <see cref="AppSettings"/> </param>
-    /// <param name="apiRequestService">   <see cref="IApiRequestService"/> </param>
+    /// <param name="apiRequestService">   <see cref="ApiRequestService"/> </param>
     /// <param name="httpClientFactory">   <see cref="IHttpClientFactory"/> </param>
     /// <param name="httpContextAccessor"> <see cref="IHttpContextAccessor"/> </param>
     /// <param name="cancellationToken">   <see cref="CancellationToken"/> </param>
@@ -73,7 +73,7 @@ public sealed class DataApi
         Guid dataId,
         string[] filenames,
         AppSettings appSettings,
-        IApiRequestService apiRequestService,
+        ApiRequestService apiRequestService,
         IHttpClientFactory httpClientFactory,
         IHttpContextAccessor httpContextAccessor,
         CancellationToken cancellationToken)
@@ -109,7 +109,7 @@ public sealed class DataApi
     /// <param name="dataId">              Id of data to request. </param>
     /// <param name="filenames">           File names of query files. </param>
     /// <param name="appSettings">         <see cref="AppSettings"/> </param>
-    /// <param name="apiRequestService">   <see cref="IApiRequestService"/> </param>
+    /// <param name="apiRequestService">   <see cref="ApiRequestService"/> </param>
     /// <param name="httpClientFactory">   <see cref="IHttpClientFactory"/> </param>
     /// <param name="httpContextAccessor"> <see cref="IHttpContextAccessor"/> </param>
     /// <param name="cancellationToken">   <see cref="CancellationToken"/> </param>
@@ -123,7 +123,7 @@ public sealed class DataApi
         Guid dataId,
         string[] filenames,
         AppSettings appSettings,
-        IApiRequestService apiRequestService,
+        ApiRequestService apiRequestService,
         IHttpClientFactory httpClientFactory,
         IHttpContextAccessor httpContextAccessor,
         CancellationToken cancellationToken)

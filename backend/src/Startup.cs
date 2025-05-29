@@ -9,7 +9,6 @@ using Database.Data;
 using Database.Data.Extensions;
 using Database.Enumerations;
 using Database.Services;
-using Database.Services.Interfaces;
 using HotChocolate.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection;
@@ -62,14 +61,14 @@ public sealed class Startup(
         services.AddSingleton(_appSettings);
         services.AddSingleton(_environment);
         // services.AddDatabaseDeveloperPageExceptionFilter();
-        services.AddSingleton<ISigningService, SigningService>();
-        services.AddSingleton<ICacheService, CacheService>();
-        services.AddScoped<IAccessRightsService, AccessRightsService>();
-        services.AddScoped<IApiRequestService, ApiRequestService>();
-        services.AddScoped<IDataService, DataService>();
-        services.AddScoped<IMethodCalculationService, MethodCalculationService>();
-        services.AddScoped<IResponseApprovalService, ResponseApprovalService>();
-        services.AddScoped<IUserService, UserService>();
+        services.AddSingleton<SigningService>();
+        services.AddSingleton<CacheService>();
+        services.AddScoped<AccessRightsService>();
+        services.AddScoped<ApiRequestService>();
+        services.AddScoped<DataService>();
+        services.AddScoped<MethodCalculationService>();
+        services.AddScoped<ResponseApprovalService>();
+        services.AddScoped<UserService>();
     }
 
     private static void ConfigureRequestResponseServices(IServiceCollection services)
@@ -129,7 +128,7 @@ public sealed class Startup(
 
     private void ConfigureMessageSenderServices(IServiceCollection services)
     {
-        services.AddTransient<IEmailSender>(serviceProvider =>
+        services.AddTransient<EmailSender>(serviceProvider =>
             new EmailSender(
                 _appSettings.Email.SmtpHost,
                 _appSettings.Email.SmtpPort,

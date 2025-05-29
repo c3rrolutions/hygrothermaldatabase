@@ -1,5 +1,4 @@
 using System.Threading.Tasks;
-using Database.Services.Interfaces;
 using MailKit.Net.Smtp;
 using MailKit.Security;
 using Microsoft.Extensions.Logging;
@@ -26,7 +25,6 @@ public sealed class EmailSender(
     int smtpPort,
     ILogger<EmailSender> logger
     )
-        : IEmailSender
 {
     private readonly ILogger<EmailSender> _logger = logger;
     private readonly string _smtpHost = smtpHost;

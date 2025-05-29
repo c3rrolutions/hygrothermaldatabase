@@ -1,6 +1,6 @@
 using System;
 using Database.ApiRequests.Dto;
-using Database.Services.Interfaces;
+using Database.Services;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace Database.Services;
@@ -8,7 +8,7 @@ namespace Database.Services;
 public sealed class CacheService(
     IMemoryCache currentUserCache,
     IMemoryCache accessCountCache,
-    IMemoryCache timePeriodCountCache) : ICacheService
+    IMemoryCache timePeriodCountCache)
 {
     public CurrentUserDto? SetUser(string token, CurrentUserDto? cacheUser)
     {

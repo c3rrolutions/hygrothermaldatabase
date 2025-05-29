@@ -3,7 +3,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Database.GraphQl.Databases;
-using Database.Services.Interfaces;
+using Database.Services;
 using GraphQL;
 using HotChocolate;
 using HotChocolate.Resolvers;
@@ -32,7 +32,7 @@ public sealed class DatabaseApi
     /// Request database from Metabase.
     /// </summary>
     /// <param name="appSettings">         <see cref="AppSettings"/> </param>
-    /// <param name="apiRequestService">   <see cref="IApiRequestService"/> </param>
+    /// <param name="apiRequestService">   <see cref="ApiRequestService"/> </param>
     /// <param name="httpClientFactory">   <see cref="IHttpClientFactory"/> </param>
     /// <param name="httpContextAccessor"> <see cref="IHttpContextAccessor"/> </param>
     /// <param name="resolverContext">     <see cref="IResolverContext"/> </param>
@@ -41,7 +41,7 @@ public sealed class DatabaseApi
     /// <exception cref="GraphQLException"> Throws exception if errors occur. </exception>
     public static async Task<DatabaseDto> RequestDatabase(
         AppSettings appSettings,
-        IApiRequestService apiRequestService,
+        ApiRequestService apiRequestService,
         IHttpClientFactory httpClientFactory,
         IHttpContextAccessor httpContextAccessor,
         IResolverContext resolverContext,
@@ -123,7 +123,7 @@ public sealed class DatabaseApi
     /// </summary>
     /// <param name="databaseId">          Id of database. </param>
     /// <param name="appSettings">         <see cref="AppSettings"/> </param>
-    /// <param name="apiRequestService">   <see cref="IApiRequestService"/> </param>
+    /// <param name="apiRequestService">   <see cref="ApiRequestService"/> </param>
     /// <param name="httpClientFactory">   <see cref="IHttpClientFactory"/> </param>
     /// <param name="httpContextAccessor"> <see cref="IHttpContextAccessor"/> </param>
     /// <param name="resolverContext">     <see cref="IResolverContext"/> </param>
@@ -133,7 +133,7 @@ public sealed class DatabaseApi
     public static async Task<DatabaseDto> RequestDatabaseById(
         Guid databaseId,
         AppSettings appSettings,
-        IApiRequestService apiRequestService,
+        ApiRequestService apiRequestService,
         IHttpClientFactory httpClientFactory,
         IHttpContextAccessor httpContextAccessor,
         IResolverContext resolverContext,
@@ -211,7 +211,7 @@ public sealed class DatabaseApi
     /// </summary>
     /// <param name="updateDatabaseInput"> <see cref="UpdateDatabaseInput"/> with update mutation. </param>
     /// <param name="appSettings">         <see cref="AppSettings"/> </param>
-    /// <param name="apiRequestService">   <see cref="IApiRequestService"/> </param>
+    /// <param name="apiRequestService">   <see cref="ApiRequestService"/> </param>
     /// <param name="httpClientFactory">   <see cref="IHttpClientFactory"/> </param>
     /// <param name="httpContextAccessor"> <see cref="IHttpContextAccessor"/> </param>
     /// <param name="cancellationToken">   <see cref="CancellationToken"/> </param>
@@ -219,7 +219,7 @@ public sealed class DatabaseApi
     public static async Task<DatabaseDto?> UpdateDatabase(
         UpdateDatabaseInput updateDatabaseInput,
         AppSettings appSettings,
-        IApiRequestService apiRequestService,
+        ApiRequestService apiRequestService,
         IHttpClientFactory httpClientFactory,
         IHttpContextAccessor httpContextAccessor,
         CancellationToken cancellationToken

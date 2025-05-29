@@ -4,7 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Database.Data;
 using Database.GraphQl.Extensions;
-using Database.Services.Interfaces;
+using Database.Services;
 using HotChocolate;
 using HotChocolate.Data;
 using HotChocolate.Data.Sorting;
@@ -25,7 +25,7 @@ public sealed class HygrothermalDataQueries
     public async Task<IQueryable<HygrothermalData>> GetAllHygrothermalData(
         [GraphQLType<LocaleType>] string? locale,
         ApplicationDbContext context,
-        IAccessRightsService accessRightsService,
+        AccessRightsService accessRightsService,
         IResolverContext resolverContext,
         ISortingContext sorting,
         CancellationToken cancellationToken
@@ -49,7 +49,7 @@ public sealed class HygrothermalDataQueries
         Guid id,
         [GraphQLType<LocaleType>] string? locale,
         HygrothermalDataByIdDataLoader byId,
-        IAccessRightsService accessRightsService,
+        AccessRightsService accessRightsService,
         CancellationToken cancellationToken
     )
     {

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using Database.Authorization;
 using Database.Data;
 using Database.GraphQl.GeometricDataX;
-using Database.Services.Interfaces;
+using Database.Services;
 using HotChocolate.Types;
 using Org.BouncyCastle.Asn1.X509.Qualified;
 
@@ -21,8 +21,8 @@ public sealed class PhotovoltaicDataMutations
     public async Task<CreatePhotovoltaicDataPayload> CreatePhotovoltaicDataAsync(
         CreatePhotovoltaicDataInput input,
         ApplicationDbContext context,
-        IUserService userService,
-        IResponseApprovalService responseApprovalService,
+        UserService userService,
+        ResponseApprovalService responseApprovalService,
         CancellationToken cancellationToken
     )
     {

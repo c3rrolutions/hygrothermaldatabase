@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using Database.Authorization;
 using Database.Data;
 using Database.Filters;
-using Database.Services.Interfaces;
+using Database.Services;
 using Database.Utilities;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
@@ -95,7 +95,7 @@ public sealed class FileUploadController(
     [RequestSizeLimit(10737418240)] // 10 GiB
     public async Task<IActionResult> UploadFile(
         [FromQuery] Guid getHttpsResourceUuid,
-        IUserService userService,
+        UserService userService,
         CancellationToken cancellationToken
     )
     {

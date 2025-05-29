@@ -2,7 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Database.Data;
-using Database.Services.Interfaces;
+using Database.Services;
 using HotChocolate;
 using HotChocolate.Types;
 
@@ -15,8 +15,8 @@ public sealed class DataQueries
         Guid id,
         [GraphQLType<LocaleType>] string? locale,
         ApplicationDbContext dbContext,
-        IDataService dataService,
-        IAccessRightsService accessRightsService,
+        DataService dataService,
+        AccessRightsService accessRightsService,
         CancellationToken cancellationToken
     )
     {

@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Database.ApiRequests;
 using Database.Data;
-using Database.Services.Interfaces;
+using Database.Services;
 using HotChocolate;
 using HotChocolate.Resolvers;
 using HotChocolate.Types;
@@ -41,7 +41,7 @@ public sealed class UserQueries
 
     public async Task<UserInfo?> GetCurrentUserInfoAsync(
         AppSettings appSettings,
-        IApiRequestService apiRequestService,
+        ApiRequestService apiRequestService,
         IHttpClientFactory httpClientFactory,
         IHttpContextAccessor httpContextAccessor,
         IResolverContext resolverContext,

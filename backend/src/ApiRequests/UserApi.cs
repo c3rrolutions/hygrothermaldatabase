@@ -3,7 +3,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Database.ApiRequests.Dto;
-using Database.Services.Interfaces;
+using Database.Services;
 using GraphQL;
 using Microsoft.AspNetCore.Http;
 
@@ -25,14 +25,14 @@ public sealed class UserApi
     /// Request current user from Metabase.
     /// </summary>
     /// <param name="appSettings">         <see cref="AppSettings"/> </param>
-    /// <param name="apiRequestService">   <see cref="IApiRequestService"/> </param>
+    /// <param name="apiRequestService">   <see cref="ApiRequestService"/> </param>
     /// <param name="httpClientFactory">   <see cref="IHttpClientFactory"/> </param>
     /// <param name="httpContextAccessor"> <see cref="IHttpContextAccessor"/> </param>
     /// <param name="cancellationToken">   <see cref="CancellationToken"/> </param>
     /// <returns> <see cref="CurrentUserDto"/> if successful. </returns>
     public static async Task<CurrentUserDto?> RequestCurrentUser(
         AppSettings appSettings,
-        IApiRequestService apiRequestService,
+        ApiRequestService apiRequestService,
         IHttpClientFactory httpClientFactory,
         IHttpContextAccessor httpContextAccessor,
         CancellationToken cancellationToken)
@@ -56,14 +56,14 @@ public sealed class UserApi
     /// Request user info from Metabase.
     /// </summary>
     /// <param name="appSettings">         <see cref="AppSettings"/> </param>
-    /// <param name="apiRequestService">   <see cref="IApiRequestService"/> </param>
+    /// <param name="apiRequestService">   <see cref="ApiRequestService"/> </param>
     /// <param name="httpClientFactory">   <see cref="IHttpClientFactory"/> </param>
     /// <param name="httpContextAccessor"> <see cref="IHttpContextAccessor"/> </param>
     /// <param name="cancellationToken">   <see cref="CancellationToken"/> </param>
     /// <returns> <see cref="UserInfoDto"/> if successful. </returns>
     public static async Task<UserInfoDto?> RequestUserInfo(
         AppSettings appSettings,
-        IApiRequestService apiRequestService,
+        ApiRequestService apiRequestService,
         IHttpClientFactory httpClientFactory,
         IHttpContextAccessor httpContextAccessor,
         CancellationToken cancellationToken)

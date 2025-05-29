@@ -18,9 +18,9 @@ public sealed class GetHttpsResourceTreeNonRootVerticesByDataIdDataLoader(
         dbContextFactory,
         (dbContext, ids) =>
                 dbContext.GetHttpsResources.AsNoTracking().Where(x =>
-                    x.ParentId != null && ids.Contains(x.CalorimetricDataId ??
-                                                       x.HygrothermalDataId ?? x.OpticalDataId ??
-                                                       x.PhotovoltaicDataId ?? x.GeometricDataId ?? Guid.Empty)
+                    x.ParentId is not null && ids.Contains(x.CalorimetricDataId ??
+                                                           x.HygrothermalDataId ?? x.OpticalDataId ??
+                                                           x.PhotovoltaicDataId ?? x.GeometricDataId ?? Guid.Empty)
                 ),
         x => x.DataId
         )

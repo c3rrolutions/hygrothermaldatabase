@@ -41,14 +41,14 @@ public sealed class FileUploadController(
     ) : Controller
 {
     private const long
-        _fileSizeLimit =
+        FileSizeLimit =
             10737418240; // 10 GiB = 10 * 1024 MiB = 10 * 1024 * 1024^2 Byte = 10 * 1024 * 1048576 Byte = 10737418240 Byte
 
     private const string _targetDirectoryPath = "./files/";
 
     // Get the default form options so that we can use them to set the default
     // limits for request body data.
-    private static readonly FormOptions _defaultFormOptions = new();
+    private static readonly FormOptions s_defaultFormOptions = new();
     private readonly ILogger<FileUploadController> _logger = logger;
     private readonly ApplicationDbContext _context = context;
 
@@ -129,7 +129,7 @@ public sealed class FileUploadController(
 
         var boundary = MultipartRequestHelper.GetBoundary(
             MediaTypeHeaderValue.Parse(Request.ContentType),
-            _defaultFormOptions.MultipartBoundaryLengthLimit);
+            s_defaultFormOptions.MultipartBoundaryLengthLimit);
         var reader = new MultipartReader(boundary, HttpContext.Request.Body);
         var section = await reader.ReadNextSectionAsync(cancellationToken).ConfigureAwait(false);
 
@@ -174,7 +174,7 @@ public sealed class FileUploadController(
                     contentDisposition,
                     ModelState,
                     _permittedExtensions,
-                    _fileSizeLimit
+                    FileSizeLimit
                 ).ConfigureAwait(false);
 
                 if (!ModelState.IsValid)

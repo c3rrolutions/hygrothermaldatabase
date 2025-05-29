@@ -264,7 +264,7 @@ public sealed class Startup(
             // app.UseHsts(); // Done by NGINX, see https://www.nginx.com/blog/http-strict-transport-security-hsts-and-nginx/
         }
 
-        // app.UseStatusCodePages();
+        app.UseStatusCodePages(); // [UseStatusCodePages](https://learn.microsoft.com/en-us/aspnet/core/fundamentals/error-handling?view=aspnetcore-9.0#usestatuscodepages)
         // app.UseHttpsRedirection(); // Done by NGINX
         app.UseSerilogRequestLogging();
         app.UseStaticFiles();

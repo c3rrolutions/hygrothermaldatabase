@@ -44,7 +44,7 @@ public sealed class FileUploadController(
         FileSizeLimit =
             10737418240; // 10 GiB = 10 * 1024 MiB = 10 * 1024 * 1024^2 Byte = 10 * 1024 * 1048576 Byte = 10737418240 Byte
 
-    private const string _targetDirectoryPath = "./files/";
+    private const string TargetDirectoryPath = "./files/";
 
     // Get the default form options so that we can use them to set the default
     // limits for request body data.
@@ -54,6 +54,25 @@ public sealed class FileUploadController(
 
     private readonly string[] _permittedExtensions =
         [".json", ".xml", ".txt", ".csv", ".ifc", ".rad", ".svg", ".pdf", ".png"];
+
+    private bool _disposed;
+
+    protected override void Dispose(bool disposing)
+    {
+        base.Dispose(disposing);
+        if (!_disposed)
+        {
+            // Dispose of resources held by this instance.
+            _context.Dispose();
+            _disposed = true;
+        }
+    }
+
+    // Disposable types implement a finalizer.
+    ~FileUploadController()
+    {
+        Dispose(false);
+    }
 
     // The following upload methods:
     //
@@ -125,7 +144,7 @@ public sealed class FileUploadController(
             return Unauthorized();
         }
 
-        Directory.CreateDirectory(_targetDirectoryPath);
+        Directory.CreateDirectory(TargetDirectoryPath);
 
         var boundary = MultipartRequestHelper.GetBoundary(
             MediaTypeHeaderValue.Parse(Request.ContentType),
@@ -183,10 +202,10 @@ public sealed class FileUploadController(
                 }
 
                 using var targetStream = System.IO.File.Create(
-                    Path.Combine(_targetDirectoryPath, trustedFileNameForFileStorage));
+                    Path.Combine(TargetDirectoryPath, trustedFileNameForFileStorage));
                 await targetStream.WriteAsync(streamedFileContent, cancellationToken).ConfigureAwait(false);
 
-                _logger.SavedUploadedFile(trustedFileNameForDisplay, _targetDirectoryPath,
+                _logger.SavedUploadedFile(trustedFileNameForDisplay, TargetDirectoryPath,
                     trustedFileNameForFileStorage);
             }
 

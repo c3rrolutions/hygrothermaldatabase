@@ -27,7 +27,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using IServiceCollection = Microsoft.Extensions.DependencyInjection.IServiceCollection;
-using Database.GraphQl.Approvals;
+using Database.GraphQl.DataApprovals;
 using Database.GraphQl.AccessRights;
 using Database.GraphQl.MethodAsService;
 
@@ -167,7 +167,7 @@ public static class GraphQlConfiguration
             .AddType<OpticalDataMutations>()
             .AddType<PhotovoltaicDataMutations>()
             .AddType<GeometricDataMutations>()
-            .AddType<ApprovalMutations>()
+            .AddType<DataApprovalMutations>()
             .AddType<DataAccessRightsMutations>()
             /* .AddSubscriptionType(d => d.Name(nameof(GraphQl.Subscription))) */
             /*     .AddType<ComponentSubscriptions>() */
@@ -232,14 +232,15 @@ public partial class CustomFilterConvention : FilterConvention
         descriptor.AllowAnd();
         descriptor.AllowOr();
         // Bind custom types
-        descriptor.BindRuntimeType<GetHttpsResource, GetHttpsResourceFilterType>();
-        descriptor.BindRuntimeType<NamedMethodArgument, NamedMethodArgumentFilterType>();
         descriptor.BindRuntimeType<CalorimetricData, CalorimetricDataFilterType>();
-        descriptor.BindRuntimeType<IData, DataFilterType>();
-        descriptor.BindRuntimeType<HygrothermalData, HygrothermalDataFilterType>();
-        descriptor.BindRuntimeType<OpticalData, OpticalDataFilterType>();
         descriptor.BindRuntimeType<GeometricData, GeometricDataFilterType>();
+        descriptor.BindRuntimeType<GetHttpsResource, GetHttpsResourceFilterType>();
+        descriptor.BindRuntimeType<HygrothermalData, HygrothermalDataFilterType>();
+        descriptor.BindRuntimeType<IData, DataFilterType>();
+        descriptor.BindRuntimeType<NamedMethodArgument, NamedMethodArgumentFilterType>();
+        descriptor.BindRuntimeType<OpticalData, OpticalDataFilterType>();
         descriptor.BindRuntimeType<PhotovoltaicData, PhotovoltaicDataFilterType>();
+        descriptor.BindRuntimeType<Reference, ReferenceFilterType>();
     }
 
     // TODO Overriding and changing type names in this way is _super_ error-prone. However, using `descriptor.Configure<...FilterInputType<T>>(x => x.Name(name))` does not work. Why?
@@ -410,13 +411,14 @@ public partial class CustomSortConvention : SortConvention
     {
         descriptor.AddDefaults();
         // Bind custom types
-        descriptor.BindRuntimeType<GetHttpsResource, GetHttpsResourceSortType>();
-        descriptor.BindRuntimeType<NamedMethodArgument, NamedMethodArgumentSortType>();
         descriptor.BindRuntimeType<CalorimetricData, CalorimetricDataSortType>();
-        descriptor.BindRuntimeType<IData, DataSortType>();
-        descriptor.BindRuntimeType<HygrothermalData, HygrothermalDataSortType>();
-        descriptor.BindRuntimeType<OpticalData, OpticalDataSortType>();
         descriptor.BindRuntimeType<GeometricData, GeometricDataSortType>();
+        descriptor.BindRuntimeType<GetHttpsResource, GetHttpsResourceSortType>();
+        descriptor.BindRuntimeType<HygrothermalData, HygrothermalDataSortType>();
+        descriptor.BindRuntimeType<IData, DataSortType>();
+        descriptor.BindRuntimeType<NamedMethodArgument, NamedMethodArgumentSortType>();
+        descriptor.BindRuntimeType<OpticalData, OpticalDataSortType>();
         descriptor.BindRuntimeType<PhotovoltaicData, PhotovoltaicDataSortType>();
+        descriptor.BindRuntimeType<Reference, ReferenceSortType>();
     }
 }

@@ -30,21 +30,15 @@ interface Node {
   id: ID!
 }
 
-interface Reference {
-  abstract: String
-  section: String
-  title: String
-}
-
-type AddApprovalError {
-  code: AddApprovalErrorCode!
+type AddDataApprovalError {
+  code: AddDataApprovalErrorCode!
   message: String!
   path: [String!]!
 }
 
-type AddApprovalPayload {
+type AddDataApprovalPayload {
   dataApproval: DataApproval
-  errors: [AddApprovalError!]
+  errors: [AddDataApprovalError!]
   query: Query!
 }
 
@@ -223,7 +217,7 @@ type DataApproval {
   query: String!
   response: String!
   signature: String!
-  statement: Reference
+  statement: Reference @cost(weight: "10")
   timestamp: DateTime!
 }
 
@@ -447,7 +441,7 @@ type MethodAsServicePayload {
 
 type Mutation {
   addAccessRights(input: InstitutionAccessRightsInput!): AddInstitutionAccessRightsPayload! @cost(weight: "10")
-  addApprovalToData(input: ApprovalInput!): AddApprovalPayload! @cost(weight: "10")
+  addDataApproval(input: DataApprovalInput!): AddDataApprovalPayload! @cost(weight: "10")
   createCalorimetricData(input: CreateCalorimetricDataInput!): CreateCalorimetricDataPayload! @cost(weight: "10")
   createGeometricData(input: CreateGeometricDataInput!): CreateGeometricDataPayload! @cost(weight: "10")
   createGetHttpsResource(input: CreateGetHttpsResourceInput!): CreateGetHttpsResourcePayload! @cost(weight: "10")
@@ -584,7 +578,7 @@ type PhotovoltaicDataEdge {
   node: PhotovoltaicData!
 }
 
-type Publication implements Reference {
+type Publication {
   abstract: String
   "The website arXiv.org is a free and open-access archive for publications. The arXiv identifier can be used to define a publication."
   arXiv: String
@@ -642,7 +636,7 @@ type Results {
 }
 
 "`ISO 52022` is an example of the abbreviation of a standardizer and the main number of the identifier."
-type Standard implements Reference {
+type Standard {
   abstract: String
   locator: Url
   numeration: Numeration!
@@ -713,6 +707,8 @@ type Wavelengths {
   wavelength: Int!
 }
 
+union Reference = Publication | Standard
+
 input AppliedMethodInput {
   arguments: [NamedMethodArgumentInput!]!
   methodId: Uuid!
@@ -729,12 +725,6 @@ input AppliedMethodPropositionInput {
 
 input AppliedMethodSortInput {
   methodId: SortEnumType @cost(weight: "10")
-}
-
-input ApprovalInput {
-  approval: DataApprovalInput!
-  creatorId: Uuid!
-  dataId: Uuid!
 }
 
 input BooleanPropositionInput {
@@ -875,27 +865,6 @@ input CreatePhotovoltaicDataInput {
   warnings: [String!]!
 }
 
-input CreatePublicationInput {
-  abstract: String
-  arXiv: String
-  authors: [String!]
-  doi: String
-  section: String
-  title: String
-  urn: String
-  webAddress: Url
-}
-
-input CreateStandardInput {
-  abstract: String
-  locator: Url
-  numeration: CreateNumerationInput!
-  section: String
-  standardizers: [Standardizer!]!
-  title: String
-  year: Int
-}
-
 input CrossDatabaseDataReferenceInput {
   databaseId: Uuid!
   dataId: Uuid!
@@ -921,12 +890,13 @@ input DataAccessRightsInput {
 
 input DataApprovalInput {
   approverId: Uuid!
+  creatorId: Uuid!
+  dataId: Uuid!
   keyFingerprint: String!
-  publication: CreatePublicationInput
   query: String!
   response: String!
   signature: String!
-  standard: CreateStandardInput
+  statement: ReferenceInput!
   timestamp: DateTime!
 }
 
@@ -939,9 +909,7 @@ input DataApprovalPropositionInput {
   keyFingerprint: StringPropositionInput
   query: StringPropositionInput
   response: StringPropositionInput
-  publication: PublicationPropositionInput
-  standard: StandardPropositionInput
-  statement: IReferencePropositionInput
+  statement: ReferencePropositionInput
 }
 
 input DataKindPropositionInput {
@@ -1101,14 +1069,6 @@ input IDataSortInput {
   creatorId: SortEnumType @cost(weight: "10")
   createdAt: SortEnumType @cost(weight: "10")
   appliedMethod: AppliedMethodSortInput @cost(weight: "10")
-}
-
-input IReferencePropositionInput {
-  and: [IReferencePropositionInput!]
-  or: [IReferencePropositionInput!]
-  title: StringPropositionInput
-  abstract: StringPropositionInput
-  section: StringPropositionInput
 }
 
 input InstitutionAccessRightsInput {
@@ -1329,6 +1289,17 @@ input PhotovoltaicDataSortInput {
   id: SortEnumType @cost(weight: "10")
 }
 
+input PublicationInput {
+  abstract: String
+  arXiv: String
+  authors: [String!]
+  doi: String
+  section: String
+  title: String
+  urn: String
+  webAddress: Url
+}
+
 input PublicationPropositionInput {
   and: [PublicationPropositionInput!]
   or: [PublicationPropositionInput!]
@@ -1347,12 +1318,34 @@ input PublicationPropositionInput {
   section: StringPropositionInput
 }
 
+input ReferenceInput {
+  publication: PublicationInput
+  standard: StandardInput
+}
+
+input ReferencePropositionInput {
+  and: [ReferencePropositionInput!]
+  or: [ReferencePropositionInput!]
+  standard: StandardPropositionInput
+  publication: PublicationPropositionInput
+}
+
 input RootGetHttpsResourceInput {
   appliedConversionMethod: ToTreeVertexAppliedConversionMethodInput
   archivedFilesMetaInformation: [FileMetaInformationInput!]!
   dataFormatId: Uuid!
   description: String!
   hashValue: String!
+}
+
+input StandardInput {
+  abstract: String
+  locator: Url
+  numeration: CreateNumerationInput!
+  section: String
+  standardizers: [Standardizer!]!
+  title: String
+  year: Int
 }
 
 "`ISO 52022` is an example of the abbreviation of a standardizer and the main number of the identifier."
@@ -1474,12 +1467,14 @@ input UuidPropositionInput {
   notLessThanOrEqualTo: Uuid @cost(weight: "10")
 }
 
-enum AddApprovalErrorCode {
+enum AddDataApprovalErrorCode {
   UNKNOWN
   UNAUTHENTICATED
   UNAUTHORIZED
   UNKNOWN_DATA
   SIGNING_FAILED
+  AMBIGUOUS_STATEMENT
+  MISSING_STATEMENT
 }
 
 "Defines when a policy shall be executed."

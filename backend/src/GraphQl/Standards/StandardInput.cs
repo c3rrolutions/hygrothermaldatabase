@@ -4,12 +4,12 @@ using Database.GraphQl.Numerations;
 
 namespace Database.GraphQl.Standards;
 
-public sealed record UpdateStandardInput(
+public sealed record StandardInput(
     string? Title,
     string? Abstract,
     string? Section,
     int? Year,
-    UpdateNumerationInput Numeration,
+    CreateNumerationInput Numeration,
     Standardizer[] Standardizers,
     Uri? Locator
 );

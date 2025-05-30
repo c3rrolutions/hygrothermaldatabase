@@ -1,34 +1,34 @@
 using Database.Data;
 using System.Collections.Generic;
 
-namespace Database.GraphQl.Approvals;
+namespace Database.GraphQl.DataApprovals;
 
-public abstract class ApprovalPayload<TApprovalError>
+public abstract class DataApprovalPayload<TApprovalError>
     : Payload
     where TApprovalError : IUserError
 {
-    protected ApprovalPayload(
+    protected DataApprovalPayload(
         DataApproval dataApproval
     )
     {
         DataApproval = dataApproval;
     }
 
-    protected ApprovalPayload(
+    protected DataApprovalPayload(
         IReadOnlyCollection<TApprovalError> errors
     )
     {
         Errors = errors;
     }
 
-    protected ApprovalPayload(
+    protected DataApprovalPayload(
         TApprovalError error
     )
         : this([error])
     {
     }
 
-    protected ApprovalPayload(
+    protected DataApprovalPayload(
         DataApproval dataApproval,
         IReadOnlyCollection<TApprovalError> errors
     )
@@ -37,7 +37,7 @@ public abstract class ApprovalPayload<TApprovalError>
         Errors = errors;
     }
 
-    protected ApprovalPayload(
+    protected DataApprovalPayload(
         DataApproval dataApproval,
         TApprovalError error
     )

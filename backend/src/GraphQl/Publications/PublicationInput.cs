@@ -2,7 +2,7 @@ using System;
 
 namespace Database.GraphQl.Publications;
 
-public sealed record CreatePublicationInput(
+public sealed record PublicationInput(
     string? Title,
     string? Abstract,
     string? Section,

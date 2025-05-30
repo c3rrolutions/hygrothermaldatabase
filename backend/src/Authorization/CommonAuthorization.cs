@@ -28,7 +28,7 @@ public static class CommonAuthorization
         );
     }
 
-    public static bool IsAuthorizedToAddApprovalForInstitution(
+    public static bool IsAuthorizedToAddDataApprovalForInstitution(
         CurrentUserDto currentUser,
         Guid institutionId,
         CancellationToken cancellationToken

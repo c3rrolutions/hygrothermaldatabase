@@ -10,4 +10,5 @@ public interface IMethod
     Guid Id { get; }
 
     List<DataPoint> Calculate(IReadOnlyList<DataPoint> dataPoints);
+    List<DataPoint> Calculate(IReadOnlyList<DataPoint> spectralDataPoints, IReadOnlyList<DataPoint> weightingSpectrum);
 }

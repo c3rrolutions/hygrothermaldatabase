@@ -24,4 +24,14 @@ public sealed class TransmittanceSumMethod : IMethod
         ];
     }
 
+    public List<DataPoint> Calculate(IReadOnlyList<DataPoint> spectralDataPoints, IReadOnlyList<DataPoint> weightingSpectrum)
+    {
+        Console.WriteLine("The TransmittanceSumMethod cannot be used with two lists of dataPoints as input.");
+
+        return
+        [
+            new DataPoint(new Incidence(new Wavelengths(0), new Direction(0)), new Emergence(new Direction(0)), new Results(0))
+        ];
+    }
+
 }

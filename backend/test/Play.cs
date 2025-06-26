@@ -34,15 +34,15 @@ public sealed class Play
         IReadOnlyList<DataPoint> myDataPoints = new List<DataPoint> { dataPoint0, dataPoint1, dataPoint2 };
         Console.WriteLine(myDataPoints);
 
-        // Use the TransmittanceSumMethod
-        TransmittanceSumMethod myTransmittanceSumMethod = new TransmittanceSumMethod();
-        List<DataPoint> transmittanceSumOutput = myTransmittanceSumMethod.Calculate(myDataPoints);
-        Console.WriteLine(transmittanceSumOutput);
-        foreach (var dataPoint in transmittanceSumOutput)
+        // Use the SpectralToIntegralMethod
+        SpectralToIntegralMethod mySpectralToIntegralMethod = new SpectralToIntegralMethod();
+        List<DataPoint> integralDataPoints = mySpectralToIntegralMethod.Calculate(myDataPoints, myDataPoints);
+        Console.WriteLine(integralDataPoints);
+        foreach (DataPoint integralDataPoint in integralDataPoints)
         {
-            Console.WriteLine($"Incidence Wavelength: {dataPoint.Incidence.Wavelengths.Wavelength}, Direction Polar: {dataPoint.Incidence.Direction.Polar}");
-            Console.WriteLine($"Emergence Direction Polar: {dataPoint.Emergence.Direction.Polar}");
-            Console.WriteLine($"Results Transmittance: {dataPoint.Results.Transmittance}");
+            Console.WriteLine($"Incidence Wavelength: {integralDataPoint.Incidence.Wavelengths.Wavelength}, Direction Polar: {integralDataPoint.Incidence.Direction.Polar}");
+            Console.WriteLine($"Emergence Direction Polar: {integralDataPoint.Emergence.Direction.Polar}");
+            Console.WriteLine($"Results Transmittance: {integralDataPoint.Results.Transmittance}");
         }
 
         await Task.FromResult(0);

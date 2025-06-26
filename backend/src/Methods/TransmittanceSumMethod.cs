@@ -24,5 +24,4 @@ public sealed class TransmittanceSumMethod : IMethod
         ];
     }
 
-    public string PrintDummyLine() { Console.WriteLine("Print dummy line."); return "DummyLinePrinted"; }
 }

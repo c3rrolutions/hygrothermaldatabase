@@ -2,6 +2,8 @@ using System;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Database.Methods;
+using Database.GraphQl.MethodAsService;
+using System.Collections.Generic;
 
 namespace Database.Tests;
 
@@ -12,8 +14,31 @@ public sealed class Play
     {
         Console.WriteLine("Do play!");
 
-        TransmittanceSumMethod myTransmittanceSumInstance = new TransmittanceSumMethod();
-        myTransmittanceSumInstance.PrintDummyLine();
+        // Create example dataPoints
+        var direction = new Direction(8);
+
+        var wavelengths0 = new Wavelengths(450);
+        var incidence0 = new Incidence(wavelengths0, direction);
+        var emergence0 = new Emergence(direction);
+        var results0 = new Results(0.5);
+
+        var wavelengths1 = new Wavelengths(550);
+        var incidence1 = new Incidence(wavelengths1, direction);
+        var emergence1 = new Emergence(direction);
+        var results1 = new Results(0.7);
+
+        var wavelengths2 = new Wavelengths(650);
+        var incidence2 = new Incidence(wavelengths2, direction);
+        var emergence2 = new Emergence(direction);
+        var results2 = new Results(0.8);
+
+        var dataPoint0 = new DataPoint(incidence0, emergence0, results0);
+        var dataPoint1 = new DataPoint(incidence1, emergence1, results1);
+        var dataPoint2 = new DataPoint(incidence2, emergence2, results2);
+
+        IReadOnlyList<DataPoint> dataPoints = new List<DataPoint> { dataPoint0, dataPoint1, dataPoint2 };
+
+        Console.WriteLine(dataPoints);
 
         await Task.FromResult(0);
     }

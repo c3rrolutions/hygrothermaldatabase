@@ -19,7 +19,7 @@ public sealed class Play
         var wavelengths0 = new Wavelengths(450);
         var incidence0 = new Incidence(wavelengths0, direction);
         var emergence0 = new Emergence(direction);
-        var results0 = new Results(0.5);
+        var results0 = new Results(0.1);
         var wavelengths1 = new Wavelengths(550);
         var incidence1 = new Incidence(wavelengths1, direction);
         var emergence1 = new Emergence(direction);
@@ -48,8 +48,6 @@ public sealed class Play
             Console.WriteLine($"Emergence Direction Polar: {integralDataPoint.Emergence.Direction.Polar}");
             Console.WriteLine($"Results Transmittance: {integralDataPoint.Results.Transmittance}");
         }
-
-        List<DataPoint> integralDataPoints2 = mySpectralToIntegralMethod.Calculate(spectralDataPoints);
 
         await Task.FromResult(0);
     }

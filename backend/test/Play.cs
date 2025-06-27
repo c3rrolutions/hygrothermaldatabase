@@ -49,6 +49,8 @@ public sealed class Play
             Console.WriteLine($"Results Transmittance: {integralDataPoint.Results.Transmittance}");
         }
 
+        List<DataPoint> integralDataPoints2 = mySpectralToIntegralMethod.Calculate(spectralDataPoints);
+
         await Task.FromResult(0);
     }
 }

@@ -25,7 +25,8 @@ public sealed class SpectralToIntegralMethod : IMethod
 
     public List<DataPoint> Calculate(IReadOnlyList<DataPoint> dataPoints)
     {
-        Console.WriteLine("The SpectralToIntegralMethod needs two list of dataPoints as input.");
+
+        throw new InvalidOperationException("The SpectralToIntegralMethod needs two lists of dataPoints as input.");
 
         return
         [

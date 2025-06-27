@@ -12,18 +12,20 @@ public sealed class SpectralToIntegralMethod : IMethod
 
     public List<DataPoint> Calculate(IReadOnlyList<DataPoint> spectralDataPoints, IReadOnlyList<DataPoint> weightingSpectrum)
     {
-        double integral = 0.0;
-        double weight = 1;
+        double numerator = 0.0;
+        double denominator = 0.0;
+        double weight = 1.0;
 
-        // for (int i = 0; i < spectralDataPoints.Count - 1; i++)
-        // {
-        //     // Trapezoidal rule to calculate an integral
-        //     double deltaX = spectralDataPoints[i + 1].Incidence.Wavelength - spectralDataPoints[i].DataPoint.Incidence.Wavelength;
-        //     double averageY = (spectralDataPoints[i].DataPoint.Results.Transmittance + spectralDataPoints[i + 1].DataPoint.Results.Transmittance) / 2;
-        //     integral += averageY * deltaX * weight;
-        // }
+        for (int i = 0; i < spectralDataPoints.Count - 1; i++)
+        {
+            // Trapezoidal rule to calculate an integral
+            double deltaX = spectralDataPoints[i + 1].Incidence.Wavelengths.Wavelength - spectralDataPoints[i].Incidence.Wavelengths.Wavelength;
+            double averageY = (spectralDataPoints[i].Results.Transmittance + spectralDataPoints[i + 1].Results.Transmittance) / 2;
+            numerator += averageY * deltaX * weight;
+            denominator += deltaX * weight;
+        }
 
-        DataPoint integralDataPoint = new DataPoint(new Incidence(new Wavelengths(0), new Direction(0)), new Emergence(new Direction(0)), new Results(integral));
+        DataPoint integralDataPoint = new DataPoint(new Incidence(new Wavelengths(0), new Direction(0)), new Emergence(new Direction(0)), new Results(numerator / denominator));
 
         return [integralDataPoint];
     }

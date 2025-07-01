@@ -43,8 +43,14 @@ public sealed class SpectralToIntegralMethod : IMethod
                 if ((spectralDataPointsSorted[j].Incidence.Wavelengths.Wavelength > wavelengthWeighting) && (spectralDataPointsSorted[j].Incidence.Wavelengths.Wavelength < spectralDataPointWavelengthAbove.Incidence.Wavelengths.Wavelength))
                 { spectralDataPointWavelengthAbove = spectralDataPointsSorted[j]; }
             }
+            // Calculate width of the wavelength interval at weightingDataPointsSorted[i]
+            switch (standard)
+            {
+                case "EN410":
+                    deltaWavelength = spectralDataPointWavelengthAbove.Incidence.Wavelengths.Wavelength - spectralDataPointWavelengthBelow.Incidence.Wavelengths.Wavelength;
+                    break;
+            }
             // Trapezoidal rule to calculate an integral
-            deltaWavelength = spectralDataPointWavelengthAbove.Incidence.Wavelengths.Wavelength - spectralDataPointWavelengthBelow.Incidence.Wavelengths.Wavelength;
             averageValue = (spectralDataPointWavelengthBelow.Results.Transmittance + spectralDataPointWavelengthAbove.Results.Transmittance) / 2;
             numerator += averageValue * deltaWavelength * weightingDataPointsSorted[i].Results.Transmittance;
             denominator += deltaWavelength * weightingDataPointsSorted[i].Results.Transmittance;

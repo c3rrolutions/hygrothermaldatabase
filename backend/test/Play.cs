@@ -31,7 +31,8 @@ public sealed class Play
         var dataPoint0 = new DataPoint(incidence0, emergence0, results0);
         var dataPoint1 = new DataPoint(incidence1, emergence1, results1);
         var dataPoint2 = new DataPoint(incidence2, emergence2, results2);
-        IReadOnlyList<DataPoint> spectralDataPoints = new List<DataPoint> { dataPoint0, dataPoint1, dataPoint2 };
+        DataPoint dataPoint3 = new DataPoint(new Incidence(new Wavelengths(-100), direction), new Emergence(direction), new Results(99));
+        IReadOnlyList<DataPoint> spectralDataPoints = new List<DataPoint> { dataPoint0, dataPoint1, dataPoint2, dataPoint3 };
 
         // Create example weightingSpectrum
         DataPoint dataPoint10 = new DataPoint(new Incidence(new Wavelengths(500), direction), new Emergence(direction), new Results(2));
@@ -41,12 +42,11 @@ public sealed class Play
         // Use the SpectralToIntegralMethod
         SpectralToIntegralMethod mySpectralToIntegralMethod = new SpectralToIntegralMethod();
         List<DataPoint> integralDataPoints = mySpectralToIntegralMethod.Calculate(spectralDataPoints, weightingSpectrum);
-        Console.WriteLine(integralDataPoints);
         foreach (DataPoint integralDataPoint in integralDataPoints)
         {
-            Console.WriteLine($"Incidence Wavelength: {integralDataPoint.Incidence.Wavelengths.Wavelength}, Direction Polar: {integralDataPoint.Incidence.Direction.Polar}");
+            Console.WriteLine($"integralDataPoint\nIncidence Wavelength: {integralDataPoint.Incidence.Wavelengths.Wavelength}, Direction Polar: {integralDataPoint.Incidence.Direction.Polar}");
             Console.WriteLine($"Emergence Direction Polar: {integralDataPoint.Emergence.Direction.Polar}");
-            Console.WriteLine($"Results Transmittance: {integralDataPoint.Results.Transmittance}");
+            Console.WriteLine($"Results Transmittance: {integralDataPoint.Results.Transmittance}\n");
         }
 
         await Task.FromResult(0);

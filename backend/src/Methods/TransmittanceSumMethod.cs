@@ -24,7 +24,7 @@ public sealed class TransmittanceSumMethod : IMethod
         ];
     }
 
-    public List<DataPoint> Calculate(IReadOnlyList<DataPoint> spectralDataPoints, IReadOnlyList<DataPoint> weightingSpectrum)
+    public List<DataPoint> Calculate(IReadOnlyList<DataPoint> spectralDataPoints, IReadOnlyList<DataPoint> weightingDataPoints)
     {
         throw new InvalidOperationException("The TransmittanceSumMethod cannot be used with two lists of dataPoints as input.");
     }

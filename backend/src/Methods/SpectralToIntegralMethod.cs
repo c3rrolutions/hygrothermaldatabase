@@ -10,40 +10,41 @@ public sealed class SpectralToIntegralMethod : IMethod
 
     public Guid Id => Guid.Parse("5abb16b2-7161-470c-9744-85dd14b0e637");
 
-    public List<DataPoint> Calculate(IReadOnlyList<DataPoint> spectralDataPoints, IReadOnlyList<DataPoint> weightingSpectrum)
+    public List<DataPoint> Calculate(IReadOnlyList<DataPoint> spectralDataPoints, IReadOnlyList<DataPoint> weightingDataPoints)
     {
-        double numerator = 0.0;
-        double denominator = 0.0;
-        double weight = 1.0;
-
-        for (int i = 0; i < spectralDataPoints.Count - 1; i++)
+        // TODO filter for spectral data points only, no integral data points.
+        double wavelengthWeighting = 0.0D, deltaWavelength = 0.0D, averageValue = 0.0D, numerator = 0.0D, denominator = 0.0D;
+        foreach (DataPoint weightingDataPoint in weightingDataPoints)
         {
+            wavelengthWeighting = weightingDataPoint.Incidence.Wavelengths.Wavelength;
+            DataPoint spectralDataPointWavelengthBelow = new DataPoint(new Incidence(new Wavelengths(0), new Direction(8)), new Emergence(new Direction(8)), new Results(99));
+            DataPoint spectralDataPointWavelengthAbove = new DataPoint(new Incidence(new Wavelengths(1000000), new Direction(8)), new Emergence(new Direction(8)), new Results(99));
+            foreach (DataPoint spectralDataPoint in spectralDataPoints)
+            {
+                // Find the spectralDataPoints with the wavelengths which are the closest to the wavelength of the weightingDataPoint
+                if ((spectralDataPoint.Incidence.Wavelengths.Wavelength <= wavelengthWeighting) && (spectralDataPoint.Incidence.Wavelengths.Wavelength > spectralDataPointWavelengthBelow.Incidence.Wavelengths.Wavelength))
+                { spectralDataPointWavelengthBelow = spectralDataPoint; }
+                if ((spectralDataPoint.Incidence.Wavelengths.Wavelength > wavelengthWeighting) && (spectralDataPoint.Incidence.Wavelengths.Wavelength < spectralDataPointWavelengthAbove.Incidence.Wavelengths.Wavelength))
+                { spectralDataPointWavelengthAbove = spectralDataPoint; }
+            }
             // Trapezoidal rule to calculate an integral
-            double deltaX = spectralDataPoints[i + 1].Incidence.Wavelengths.Wavelength - spectralDataPoints[i].Incidence.Wavelengths.Wavelength;
-            double averageY = (spectralDataPoints[i].Results.Transmittance + spectralDataPoints[i + 1].Results.Transmittance) / 2;
-            numerator += averageY * deltaX * weight;
-            denominator += deltaX * weight;
+            deltaWavelength = spectralDataPointWavelengthAbove.Incidence.Wavelengths.Wavelength - spectralDataPointWavelengthBelow.Incidence.Wavelengths.Wavelength;
+            averageValue = (spectralDataPointWavelengthBelow.Results.Transmittance + spectralDataPointWavelengthAbove.Results.Transmittance) / 2;
+            numerator += averageValue * deltaWavelength * weightingDataPoint.Results.Transmittance;
+            denominator += deltaWavelength * weightingDataPoint.Results.Transmittance;
+            // Print debug output
+            foreach (DataPoint dataPoint in new DataPoint[] { weightingDataPoint, spectralDataPointWavelengthBelow, spectralDataPointWavelengthAbove })
+            {
+                Console.WriteLine($"Incidence Wavelength: {dataPoint.Incidence.Wavelengths.Wavelength}, Direction Polar: {dataPoint.Incidence.Direction.Polar}");
+                Console.WriteLine($"Emergence Direction Polar: {dataPoint.Emergence.Direction.Polar}");
+                Console.WriteLine($"Results Transmittance: {dataPoint.Results.Transmittance}");
+            }
+            Console.WriteLine($"deltaWavelength = {deltaWavelength}\naverageValue = {averageValue}\nnumerator = {numerator}\ndenominator = {denominator}\n");
         }
-
         DataPoint integralDataPoint = new DataPoint(new Incidence(new Wavelengths(0), new Direction(0)), new Emergence(new Direction(0)), new Results(numerator / denominator));
 
         return [integralDataPoint];
     }
-
-    /*     static double CalculateWeightedIntegral(List<(double Wavelength, double Intensity)> data, double weight)
-        {
-            double integral = 0.0;
-
-            for (int i = 0; i < data.Count - 1; i++)
-            {
-                // Trapezregel zur Integralberechnung
-                double deltaX = data[i + 1].Wavelength - data[i].Wavelength;
-                double averageY = (data[i].Intensity + data[i + 1].Intensity) / 2;
-                integral += averageY * deltaX * weight;
-            }
-
-            return integral;
-        } */
 
     public List<DataPoint> Calculate(IReadOnlyList<DataPoint> dataPoints)
     {

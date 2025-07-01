@@ -13,30 +13,16 @@ public sealed class SpectralToIntegralMethod : IMethod
 
     public List<DataPoint> Calculate(IReadOnlyList<DataPoint> spectralDataPoints, IReadOnlyList<DataPoint> weightingDataPoints)
     {
-        // Filter for spectral data points only, no integral data points.
+        // Filter data points which have a wavelength which is out of bounds.
         List<DataPoint> spectralDataPointsToFilter = new List<DataPoint>(spectralDataPoints);
-        // List<DataPoint> weightingDataPointsFiltered = weightingDataPoints.RemoveAll(dataPoint => dataPoint.Incidence.Wavelengths == "integral");
-
-        // Print debug output
-        foreach (DataPoint dataPoint in spectralDataPoints)
-        {
-            Console.WriteLine($"Incidence Wavelength: {dataPoint.Incidence.Wavelengths.Wavelength}, Direction Polar: {dataPoint.Incidence.Direction.Polar}");
-            Console.WriteLine($"Emergence Direction Polar: {dataPoint.Emergence.Direction.Polar}");
-            Console.WriteLine($"Results Transmittance: {dataPoint.Results.Transmittance}");
-        }
-
-        Console.WriteLine($"\nspectralDataPointsToFilter.TrueForAll(WavelengthOutOfBounds) = {spectralDataPointsToFilter.TrueForAll(WavelengthOutOfBounds)}\n");
-        Console.WriteLine($"\nspectralDataPointsToFilter.Find(WavelengthOutOfBounds) = {spectralDataPointsToFilter.Find(WavelengthOutOfBounds)}\n");
-
+        List<DataPoint> weightingDataPointsToFilter = new List<DataPoint>(weightingDataPoints);
         List<DataPoint> spectralDataPointsFiltered = spectralDataPointsToFilter.Where(dataPoint => !WavelengthOutOfBounds(dataPoint)).ToList();
-
-        // List<DataPoint> spectralDataPointsFiltered = spectralDataPointsToFilter.RemoveAll(WavelengthOutOfBounds);
-
-        // Console.WriteLine($"\nspectralDataPointsToFilter.RemoveAll(WavelengthOutOfBounds) = {spectralDataPointsToFilter.RemoveAll(WavelengthOutOfBounds)}\n");
-        Console.WriteLine($"\nspectralDataPointsFiltered.Find(WavelengthOutOfBounds) = {spectralDataPointsFiltered.Find(WavelengthOutOfBounds)}\n");
-
-        // Print debug output
-        foreach (DataPoint dataPoint in spectralDataPointsFiltered)
+        List<DataPoint> weightingDataPointsFiltered = weightingDataPointsToFilter.Where(dataPoint => !WavelengthOutOfBounds(dataPoint)).ToList();
+        // Sort the dataPoints
+        List<DataPoint> spectralDataPointsSorted = spectralDataPointsFiltered.OrderBy(dataPoint => dataPoint.Incidence.Wavelengths.Wavelength).ToList();
+        List<DataPoint> weightingDataPointsSorted = weightingDataPointsFiltered.OrderBy(dataPoint => dataPoint.Incidence.Wavelengths.Wavelength).ToList();
+        // Print filtered and sorted spectralDataPoints
+        foreach (DataPoint dataPoint in spectralDataPointsSorted)
         {
             Console.WriteLine($"Incidence Wavelength: {dataPoint.Incidence.Wavelengths.Wavelength}, Direction Polar: {dataPoint.Incidence.Direction.Polar}");
             Console.WriteLine($"Emergence Direction Polar: {dataPoint.Emergence.Direction.Polar}");

@@ -32,7 +32,7 @@ public sealed class Play
         var dataPoint1 = new DataPoint(incidence1, emergence1, results1);
         var dataPoint2 = new DataPoint(incidence2, emergence2, results2);
         DataPoint dataPoint3 = new DataPoint(new Incidence(new Wavelengths(-100), direction), new Emergence(direction), new Results(99));
-        IReadOnlyList<DataPoint> spectralDataPoints = new List<DataPoint> { dataPoint0, dataPoint1, dataPoint2, dataPoint3 };
+        IReadOnlyList<DataPoint> spectralDataPoints = new List<DataPoint> { dataPoint0, dataPoint2, dataPoint1, dataPoint3 };
 
         // Create example weightingSpectrum
         DataPoint dataPoint10 = new DataPoint(new Incidence(new Wavelengths(500), direction), new Emergence(direction), new Results(2));

@@ -21,18 +21,18 @@ public sealed class Play
         //     new DataPoint(new Incidence(new Wavelengths(800), new Direction(8)), new Emergence(new Direction(8)), new Results(0.5)),
         //     new DataPoint(new Incidence(new Wavelengths(810), new Direction(8)), new Emergence(new Direction(8)), new Results(0.5)),
         //     new DataPoint(new Incidence(new Wavelengths(2600), new Direction(8)), new Emergence(new Direction(8)), new Results(0.5)) };
-        // only non-visible values
-        IReadOnlyList<DataPoint> spectralDataPoints = new List<DataPoint> {
-            new DataPoint(new Incidence(new Wavelengths(200), new Direction(8)), new Emergence(new Direction(8)), new Results(0)),
-            new DataPoint(new Incidence(new Wavelengths(780), new Direction(8)), new Emergence(new Direction(8)), new Results(0)),
-            new DataPoint(new Incidence(new Wavelengths(781), new Direction(8)), new Emergence(new Direction(8)), new Results(1)),
-            new DataPoint(new Incidence(new Wavelengths(2600), new Direction(8)), new Emergence(new Direction(8)), new Results(1)) };
-        // // only visible values
+        // // only non-visible values
         // IReadOnlyList<DataPoint> spectralDataPoints = new List<DataPoint> {
-        //     new DataPoint(new Incidence(new Wavelengths(200), new Direction(8)), new Emergence(new Direction(8)), new Results(1)),
-        //     new DataPoint(new Incidence(new Wavelengths(780), new Direction(8)), new Emergence(new Direction(8)), new Results(1)),
-        //     new DataPoint(new Incidence(new Wavelengths(781), new Direction(8)), new Emergence(new Direction(8)), new Results(0)),
-        //     new DataPoint(new Incidence(new Wavelengths(2600), new Direction(8)), new Emergence(new Direction(8)), new Results(0)) };
+        //     new DataPoint(new Incidence(new Wavelengths(200), new Direction(8)), new Emergence(new Direction(8)), new Results(0)),
+        //     new DataPoint(new Incidence(new Wavelengths(784), new Direction(8)), new Emergence(new Direction(8)), new Results(0)),
+        //     new DataPoint(new Incidence(new Wavelengths(785), new Direction(8)), new Emergence(new Direction(8)), new Results(1)),
+        //     new DataPoint(new Incidence(new Wavelengths(2600), new Direction(8)), new Emergence(new Direction(8)), new Results(1)) };
+        // only visible values
+        IReadOnlyList<DataPoint> spectralDataPoints = new List<DataPoint> {
+            new DataPoint(new Incidence(new Wavelengths(200), new Direction(8)), new Emergence(new Direction(8)), new Results(1)),
+            new DataPoint(new Incidence(new Wavelengths(784), new Direction(8)), new Emergence(new Direction(8)), new Results(1)),
+            new DataPoint(new Incidence(new Wavelengths(785), new Direction(8)), new Emergence(new Direction(8)), new Results(0)),
+            new DataPoint(new Incidence(new Wavelengths(2600), new Direction(8)), new Emergence(new Direction(8)), new Results(0)) };
 
         // Use the SpectralToIntegralMethod
         SpectralToIntegralMethod mySpectralToIntegralMethod = new SpectralToIntegralMethod();

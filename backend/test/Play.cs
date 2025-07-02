@@ -14,34 +14,28 @@ public sealed class Play
     {
         Console.WriteLine("Do play!");
 
-        // Create example spectralDataPoints
-        var direction = new Direction(8);
-        var wavelengths0 = new Wavelengths(450);
-        var incidence0 = new Incidence(wavelengths0, direction);
-        var emergence0 = new Emergence(direction);
-        var results0 = new Results(0.1);
-        var wavelengths1 = new Wavelengths(550);
-        var incidence1 = new Incidence(wavelengths1, direction);
-        var emergence1 = new Emergence(direction);
-        var results1 = new Results(0.7);
-        var wavelengths2 = new Wavelengths(650);
-        var incidence2 = new Incidence(wavelengths2, direction);
-        var emergence2 = new Emergence(direction);
-        var results2 = new Results(0.8);
-        var dataPoint0 = new DataPoint(incidence0, emergence0, results0);
-        var dataPoint1 = new DataPoint(incidence1, emergence1, results1);
-        var dataPoint2 = new DataPoint(incidence2, emergence2, results2);
-        DataPoint dataPoint3 = new DataPoint(new Incidence(new Wavelengths(-100), direction), new Emergence(direction), new Results(99));
-        IReadOnlyList<DataPoint> spectralDataPoints = new List<DataPoint> { dataPoint0, dataPoint2, dataPoint1, dataPoint3 };
-
-        // // Create example weightingSpectrum
-        // DataPoint dataPoint10 = new DataPoint(new Incidence(new Wavelengths(500), direction), new Emergence(direction), new Results(2));
-        // DataPoint dataPoint11 = new DataPoint(new Incidence(new Wavelengths(600), direction), new Emergence(direction), new Results(0.5));
-        // IReadOnlyList<DataPoint> weightingSpectrum = new List<DataPoint> { dataPoint10, dataPoint11 };
+        //// Create example spectralDataPoints
+        // // Flat spectrum
+        // IReadOnlyList<DataPoint> spectralDataPoints = new List<DataPoint> {
+        //     new DataPoint(new Incidence(new Wavelengths(200), new Direction(8)), new Emergence(new Direction(8)), new Results(0.5)),
+        //     new DataPoint(new Incidence(new Wavelengths(800), new Direction(8)), new Emergence(new Direction(8)), new Results(0.5)),
+        //     new DataPoint(new Incidence(new Wavelengths(810), new Direction(8)), new Emergence(new Direction(8)), new Results(0.5)),
+        //     new DataPoint(new Incidence(new Wavelengths(2600), new Direction(8)), new Emergence(new Direction(8)), new Results(0.5)) };
+        // only non-visible values
+        IReadOnlyList<DataPoint> spectralDataPoints = new List<DataPoint> {
+            new DataPoint(new Incidence(new Wavelengths(200), new Direction(8)), new Emergence(new Direction(8)), new Results(0)),
+            new DataPoint(new Incidence(new Wavelengths(780), new Direction(8)), new Emergence(new Direction(8)), new Results(0)),
+            new DataPoint(new Incidence(new Wavelengths(781), new Direction(8)), new Emergence(new Direction(8)), new Results(1)),
+            new DataPoint(new Incidence(new Wavelengths(2600), new Direction(8)), new Emergence(new Direction(8)), new Results(1)) };
+        // // only visible values
+        // IReadOnlyList<DataPoint> spectralDataPoints = new List<DataPoint> {
+        //     new DataPoint(new Incidence(new Wavelengths(200), new Direction(8)), new Emergence(new Direction(8)), new Results(1)),
+        //     new DataPoint(new Incidence(new Wavelengths(780), new Direction(8)), new Emergence(new Direction(8)), new Results(1)),
+        //     new DataPoint(new Incidence(new Wavelengths(781), new Direction(8)), new Emergence(new Direction(8)), new Results(0)),
+        //     new DataPoint(new Incidence(new Wavelengths(2600), new Direction(8)), new Emergence(new Direction(8)), new Results(0)) };
 
         // Use the SpectralToIntegralMethod
         SpectralToIntegralMethod mySpectralToIntegralMethod = new SpectralToIntegralMethod();
-
         foreach (IMethod.StandardType standard in Enum.GetValues<IMethod.StandardType>())
         {
             List<DataPoint> integralDataPoints = mySpectralToIntegralMethod.Calculate(spectralDataPoints, standard);

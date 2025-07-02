@@ -233,10 +233,10 @@ public sealed class SpectralToIntegralMethod : IMethod
                 wavelengthsWeights = en410VisibleWavelengthsWeights.ToList();
                 break;
             case IMethod.StandardType.en410Solar:
-                wavelengthsWeights = en410VisibleWavelengthsWeights.ToList();
+                wavelengthsWeights = en410SolarWavelengthsWeights.ToList();
                 break;
             case IMethod.StandardType.iso9050Solar:
-                wavelengthsWeights = en410VisibleWavelengthsWeights.ToList();
+                wavelengthsWeights = iso9050SolarWavelengthsWeights.ToList();
                 break;
         }
         // Filter data points which have a wavelength which is out of bounds.
@@ -245,7 +245,8 @@ public sealed class SpectralToIntegralMethod : IMethod
         List<DataPoint> spectralDataPointsSorted = spectralDataPointsFiltered.OrderBy(dataPoint => dataPoint.Incidence.Wavelengths.Wavelength).ToList();
         double wavelengthWeighting = 0.0D, deltaWavelength = 0.0D, averageValue = 0.0D, numerator = 0.0D, denominator = 0.0D;
 
-        for (int i = 0; i < 2/*wavelengthsWeights.Count*/; i++)
+        for (int i = 0; i < wavelengthsWeights.Count; i++)
+        // for (int i = 0; i < 3; i++)
         {
             wavelengthWeighting = wavelengthsWeights[i].wavelength;
             DataPoint spectralDataPointWavelengthBelow = new DataPoint(new Incidence(new Wavelengths(0), new Direction(8)), new Emergence(new Direction(8)), new Results(99));
@@ -263,14 +264,12 @@ public sealed class SpectralToIntegralMethod : IMethod
             averageValue = (spectralDataPointWavelengthBelow.Results.Transmittance + spectralDataPointWavelengthAbove.Results.Transmittance) / 2;
             numerator += averageValue * deltaWavelength * wavelengthsWeights[i].weight;
             denominator += deltaWavelength * wavelengthsWeights[i].weight;
-            // // Print debug output
-            // foreach (DataPoint dataPoint in new DataPoint[] { spectralDataPointWavelengthBelow, spectralDataPointWavelengthAbove })
+            // Debug output
+            // if (i == 2)
             // {
-            //     Console.WriteLine($"Incidence Wavelength: {dataPoint.Incidence.Wavelengths.Wavelength}, Direction Polar: {dataPoint.Incidence.Direction.Polar}");
-            //     Console.WriteLine($"Emergence Direction Polar: {dataPoint.Emergence.Direction.Polar}");
-            //     Console.WriteLine($"Results Transmittance: {dataPoint.Results.Transmittance}");
+            //     Console.WriteLine($"\nwavelengthWeighting={wavelengthWeighting}, wavelengthsWeights[i].weight={wavelengthsWeights[i].weight}, deltaWavelength ={deltaWavelength}, averageValue={averageValue}, numerator={numerator}, denominator={denominator}, ratio={numerator / denominator}\n");
             // }
-            // Console.WriteLine($"deltaWavelength = {deltaWavelength}\naverageValue = {averageValue}\nnumerator = {numerator}\ndenominator = {denominator}\n");
+            // Console.WriteLine($"ratio={numerator / denominator}");
         }
 
         DataPoint integralDataPoint = new DataPoint(new Incidence(new Wavelengths(0), new Direction(0)), new Emergence(new Direction(0)), new Results(numerator / denominator));

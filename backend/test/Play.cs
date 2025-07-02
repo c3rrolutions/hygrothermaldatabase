@@ -49,6 +49,8 @@ public sealed class Play
             Console.WriteLine($"Results Transmittance: {integralDataPoint.Results.Transmittance}\n");
         }
 
+        Console.WriteLine(mySpectralToIntegralMethod.en410WavelengthsWeights)
+
         await Task.FromResult(0);
     }
 }

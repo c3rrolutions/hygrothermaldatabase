@@ -47,7 +47,8 @@ public sealed class SpectralToIntegralMethod : IMethod
             switch (standard)
             {
                 case "EN410":
-                    deltaWavelength = spectralDataPointWavelengthAbove.Incidence.Wavelengths.Wavelength - spectralDataPointWavelengthBelow.Incidence.Wavelengths.Wavelength;
+                    if (wavelengthWeighting == 300)
+                        deltaWavelength = spectralDataPointWavelengthAbove.Incidence.Wavelengths.Wavelength - spectralDataPointWavelengthBelow.Incidence.Wavelengths.Wavelength;
                     break;
             }
             // Trapezoidal rule to calculate an integral
@@ -69,11 +70,55 @@ public sealed class SpectralToIntegralMethod : IMethod
         return [integralDataPoint];
     }
 
-    // Search predicate returns true if the wavelength is smaller than 0 nm or larger than 2500 nm.
+    List<(int wavelength, double weight, double deltaWavelength)> en410WeightingSpectrum = new List<(int, double, double)>
+        {
+            (380, 0, 5),
+            (390, 0.0005, 10),
+            (400, 0.003, 10),
+            (410, 0.0103, 10),
+            (420, 0.0352, 10),
+            (430, 0.0948, 10),
+            (440, 0.2274, 10),
+            (450, 0.4192, 10),
+            (460, 0.6663, 10),
+            (470, 0.985, 10),
+            (480, 1.5189, 10),
+            (490, 2.1336, 10),
+            (500, 3.3491, 10),
+            (510, 5.1393, 10),
+            (520, 7.0523, 10),
+            (530, 8.799, 10),
+            (540, 9.4427, 10),
+            (550, 9.8077, 10),
+            (560, 9.4306, 10),
+            (570, 8.6891, 10),
+            (580, 7.8994, 10),
+            (590, 6.3306, 10),
+            (600, 5.3542, 10),
+            (610, 4.2491, 10),
+            (620, 3.1502, 10),
+            (630, 2.0812, 10),
+            (640, 1.381, 10),
+            (650, 0.807, 10),
+            (660, 0.4612, 10),
+            (670, 0.2485, 10),
+            (680, 0.1255, 10),
+            (690, 0.0536, 10),
+            (700, 0.0276, 10),
+            (710, 0.0146, 10),
+            (720, 0.0057, 10),
+            (730, 0.0035, 10),
+            (740, 0.0021, 10),
+            (750, 0.0008, 10),
+            (760, 0.0001, 10),
+            (770, 0, 10),
+            (780, 0, 5)
+        };
+
+    // Search predicate returns true if the wavelength is smaller than 0 nm or larger than 3000 nm.
     private static bool WavelengthOutOfBounds(DataPoint dataPoint)
     {
-        return (dataPoint.Incidence.Wavelengths.Wavelength <= 0) || (dataPoint.Incidence.Wavelengths.Wavelength >= 2500);
-        // return (dataPoint.Incidence.Wavelengths.Wavelength <= 0) || (dataPoint.Incidence.Wavelengths.Wavelength >= 2500) || (dataPoint.Incidence.Wavelengths.Wavelength != null);
+        return (dataPoint.Incidence.Wavelengths.Wavelength <= 0) || (dataPoint.Incidence.Wavelengths.Wavelength >= 3000);
     }
 
     public List<DataPoint> Calculate(IReadOnlyList<DataPoint> dataPoints)

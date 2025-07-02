@@ -41,12 +41,17 @@ public sealed class Play
 
         // Use the SpectralToIntegralMethod
         SpectralToIntegralMethod mySpectralToIntegralMethod = new SpectralToIntegralMethod();
-        List<DataPoint> integralDataPoints = mySpectralToIntegralMethod.Calculate(spectralDataPoints, IMethod.StandardType.en410Solar);
-        foreach (DataPoint integralDataPoint in integralDataPoints)
+
+        foreach (IMethod.StandardType standard in Enum.GetValues<IMethod.StandardType>())
         {
-            Console.WriteLine($"integralDataPoint\nIncidence Wavelength: {integralDataPoint.Incidence.Wavelengths.Wavelength}, Direction Polar: {integralDataPoint.Incidence.Direction.Polar}");
-            Console.WriteLine($"Emergence Direction Polar: {integralDataPoint.Emergence.Direction.Polar}");
-            Console.WriteLine($"Results Transmittance: {integralDataPoint.Results.Transmittance}\n");
+            List<DataPoint> integralDataPoints = mySpectralToIntegralMethod.Calculate(spectralDataPoints, standard);
+            Console.WriteLine($"Standard: {standard}");
+            foreach (DataPoint integralDataPoint in integralDataPoints)
+            {
+                Console.WriteLine($"integralDataPoint\nIncidence Wavelength: {integralDataPoint.Incidence.Wavelengths.Wavelength}, Direction Polar: {integralDataPoint.Incidence.Direction.Polar}");
+                Console.WriteLine($"Emergence Direction Polar: {integralDataPoint.Emergence.Direction.Polar}");
+                Console.WriteLine($"Results Transmittance: {integralDataPoint.Results.Transmittance}\n");
+            }
         }
 
         await Task.FromResult(0);

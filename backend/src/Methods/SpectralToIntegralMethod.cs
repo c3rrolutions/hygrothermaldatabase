@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using Database.GraphQl.MethodAsService;
+using Database.Methods;
 
 namespace Database.Methods;
 
@@ -10,7 +11,7 @@ public sealed class SpectralToIntegralMethod : IMethod
 {
     public string Name => "SpectralToIntegral";
     public Guid Id => Guid.Parse("5abb16b2-7161-470c-9744-85dd14b0e637");
-    private List<(int wavelength, double weight, double deltaWavelength)> en410WavelengthsWeightsList = new List<(int, double, double)>
+    private List<(int wavelength, double weight, double deltaWavelength)> en410VisibleWavelengthsWeightsList = new List<(int, double, double)>
         {
             (380, 0, 5),
             (390, 0.0005, 10),
@@ -54,35 +55,194 @@ public sealed class SpectralToIntegralMethod : IMethod
             (770, 0, 10),
             (780, 0, 5)
         };
-    public IReadOnlyList<(int wavelength, double weight, double deltaWavelength)> en410WavelengthsWeights { get; }
+    private List<(int wavelength, double weight, double deltaWavelength)> en410SolarWavelengthsWeightsList = new List<(int, double, double)>
+                {
+            (300, 0.0005, 10),
+            (320, 0.0069, 20),
+            (340, 0.0122, 20),
+            (360, 0.0145, 20),
+            (380, 0.0177, 20),
+            (400, 0.0235, 20),
+            (420, 0.0268, 20),
+            (440, 0.0294, 20),
+            (460, 0.0343, 20),
+            (480, 0.0339, 20),
+            (500, 0.0326, 20),
+            (520, 0.0318, 20),
+            (540, 0.0321, 20),
+            (560, 0.0312, 20),
+            (580, 0.0294, 20),
+            (600, 0.0289, 20),
+            (620, 0.0289, 20),
+            (640, 0.028, 20),
+            (660, 0.0273, 20),
+            (680, 0.0246, 20),
+            (700, 0.0237, 20),
+            (720, 0.022, 20),
+            (740, 0.023, 20),
+            (760, 0.0199, 20),
+            (780, 0.0211, 20),
+            (800, 0.033, 35),
+            (850, 0.0453, 50),
+            (900, 0.0381, 50),
+            (950, 0.022, 50),
+            (1000, 0.0329, 50),
+            (1050, 0.0306, 50),
+            (1100, 0.0185, 50),
+            (1150, 0.0136, 50),
+            (1200, 0.021, 50),
+            (1250, 0.0211, 50),
+            (1300, 0.0166, 50),
+            (1350, 0.0042, 50),
+            (1400, 0.001, 50),
+            (1450, 0.0044, 50),
+            (1500, 0.0095, 50),
+            (1550, 0.0123, 50),
+            (1600, 0.011, 50),
+            (1650, 0.0106, 50),
+            (1700, 0.0093, 50),
+            (1750, 0.0068, 50),
+            (1800, 0.0024, 50),
+            (1850, 0.0005, 50),
+            (1900, 0.0002, 50),
+            (1950, 0.0012, 50),
+            (2000, 0.003, 50),
+            (2050, 0.0037, 50),
+            (2100, 0.0057, 75),
+            (2200, 0.0066, 100),
+            (2300, 0.006, 100),
+            (2400, 0.0041, 100),
+            (2500, 0.0006, 50)
+        };
+    private List<(int wavelength, double weight, double deltaWavelength)> iso9050SolarWavelengthsWeightsList = new List<(int, double, double)>
+    {
+                    (300, 0, 5),
+            (305, 0.000057, 5),
+            (310, 0.000236, 5),
+            (315, 0.000554, 5),
+            (320, 0.000916, 5),
+            (325, 0.001309, 5),
+            (330, 0.001914, 5),
+            (335, 0.002018, 5),
+            (340, 0.002189, 5),
+            (345, 0.00226, 5),
+            (350, 0.002445, 5),
+            (355, 0.002555, 5),
+            (360, 0.002683, 5),
+            (365, 0.00302, 5),
+            (370, 0.003359, 5),
+            (375, 0.003509, 5),
+            (380, 0.0036, 5),
+            (385, 0.003529, 5),
+            (390, 0.003551, 5),
+            (395, 0.004294, 5),
+            (400, 0.007812, 10),
+            (410, 0.011638, 10),
+            (420, 0.011877, 10),
+            (430, 0.011347, 10),
+            (440, 0.013246, 10),
+            (450, 0.015343, 10),
+            (460, 0.016166, 10),
+            (470, 0.016178, 10),
+            (480, 0.016402, 10),
+            (490, 0.015794, 10),
+            (500, 0.015801, 10),
+            (510, 0.015973, 10),
+            (520, 0.015357, 10),
+            (530, 0.015867, 10),
+            (540, 0.015827, 10),
+            (550, 0.015844, 10),
+            (560, 0.01559, 10),
+            (570, 0.015256, 10),
+            (580, 0.014745, 10),
+            (590, 0.01433, 10),
+            (600, 0.014663, 10),
+            (610, 0.01503, 10),
+            (620, 0.014859, 10),
+            (630, 0.014622, 10),
+            (640, 0.014526, 10),
+            (650, 0.014445, 10),
+            (660, 0.014313, 10),
+            (670, 0.014023, 10),
+            (680, 0.012838, 10),
+            (690, 0.011788, 10),
+            (700, 0.012453, 10),
+            (710, 0.012798, 10),
+            (720, 0.010589, 10),
+            (730, 0.011233, 10),
+            (740, 0.012175, 10),
+            (750, 0.012181, 10),
+            (760, 0.009515, 10),
+            (770, 0.010479, 10),
+            (780, 0.011381, 10),
+            (790, 0.011262, 10),
+            (800, 0.028718, 50),
+            (850, 0.04824, 50),
+            (900, 0.040297, 50),
+            (950, 0.021384, 50),
+            (1000, 0.036097, 50),
+            (1050, 0.03411, 50),
+            (1100, 0.018861, 50),
+            (1150, 0.013228, 50),
+            (1200, 0.022551, 50),
+            (1250, 0.023376, 50),
+            (1300, 0.017756, 50),
+            (1350, 0.003743, 50),
+            (1400, 0.000741, 50),
+            (1450, 0.003792, 50),
+            (1500, 0.009693, 50),
+            (1550, 0.013693, 50),
+            (1600, 0.012203, 50),
+            (1650, 0.010615, 50),
+            (1700, 0.007256, 50),
+            (1750, 0.007183, 50),
+            (1800, 0.002157, 50),
+            (1850, 0.000398, 50),
+            (1900, 0.000082, 50),
+            (1950, 0.001087, 50),
+            (2000, 0.003024, 50),
+            (2050, 0.003988, 50),
+            (2100, 0.004229, 50),
+            (2150, 0.004142, 50),
+            (2200, 0.00369, 50),
+            (2250, 0.003592, 50),
+            (2300, 0.003436, 50),
+            (2350, 0.003163, 50),
+            (2400, 0.002233, 50),
+            (2450, 0.001202, 50)
+        };
+    public IReadOnlyList<(int wavelength, double weight, double deltaWavelength)> en410VisibleWavelengthsWeights { get; }
+    public IReadOnlyList<(int wavelength, double weight, double deltaWavelength)> en410SolarWavelengthsWeights { get; }
+    public IReadOnlyList<(int wavelength, double weight, double deltaWavelength)> iso9050SolarWavelengthsWeights { get; }
 
     public SpectralToIntegralMethod()
     {
-        en410WavelengthsWeights = new ReadOnlyCollection<(int, double, double)>(en410WavelengthsWeightsList);
+        en410VisibleWavelengthsWeights = new ReadOnlyCollection<(int, double, double)>(en410VisibleWavelengthsWeightsList);
+        en410SolarWavelengthsWeights = new ReadOnlyCollection<(int, double, double)>(en410SolarWavelengthsWeightsList);
+        iso9050SolarWavelengthsWeights = new ReadOnlyCollection<(int, double, double)>(iso9050SolarWavelengthsWeightsList);
     }
 
-    public List<DataPoint> Calculate(IReadOnlyList<DataPoint> spectralDataPoints, string standard)
+    public List<DataPoint> Calculate(IReadOnlyList<DataPoint> spectralDataPoints, StandardType standard)
     {
         // Turn IReadOnlyLists into more flexible Lists
         List<DataPoint> spectralDataPointsToFilter = new List<DataPoint>(spectralDataPoints);
         List<(int wavelength, double weight, double deltaWavelength)> wavelengthsWeights = new List<(int, double, double)> { (0, 0, 0) };
         switch (standard)
         {
-            case "EN410":
-                wavelengthsWeights = en410WavelengthsWeights.ToList();
+            case "StandardType.en410Visible":
+                wavelengthsWeights = en410VisibleWavelengthsWeights.ToList();
+                break;
+            case "StandardType.en410Solar":
+                wavelengthsWeights = en410VisibleWavelengthsWeights.ToList();
+                break;
+            case "StandardType.iso9050Solar":
+                wavelengthsWeights = en410VisibleWavelengthsWeights.ToList();
                 break;
         }
         // Filter data points which have a wavelength which is out of bounds.
         List<DataPoint> spectralDataPointsFiltered = spectralDataPointsToFilter.Where(dataPoint => !WavelengthOutOfBounds(dataPoint)).ToList();
         // Sort the dataPoints
         List<DataPoint> spectralDataPointsSorted = spectralDataPointsFiltered.OrderBy(dataPoint => dataPoint.Incidence.Wavelengths.Wavelength).ToList();
-        // // Print filtered and sorted spectralDataPoints
-        // foreach (DataPoint dataPoint in spectralDataPointsSorted)
-        // {
-        //     Console.WriteLine($"Incidence Wavelength: {dataPoint.Incidence.Wavelengths.Wavelength}, Direction Polar: {dataPoint.Incidence.Direction.Polar}");
-        //     Console.WriteLine($"Emergence Direction Polar: {dataPoint.Emergence.Direction.Polar}");
-        //     Console.WriteLine($"Results Transmittance: {dataPoint.Results.Transmittance}");
-        // }
         double wavelengthWeighting = 0.0D, deltaWavelength = 0.0D, averageValue = 0.0D, numerator = 0.0D, denominator = 0.0D;
 
         for (int i = 0; i < 2/*wavelengthsWeights.Count*/; i++)
@@ -98,25 +258,19 @@ public sealed class SpectralToIntegralMethod : IMethod
                 if ((spectralDataPointsSorted[j].Incidence.Wavelengths.Wavelength > wavelengthWeighting) && (spectralDataPointsSorted[j].Incidence.Wavelengths.Wavelength < spectralDataPointWavelengthAbove.Incidence.Wavelengths.Wavelength))
                 { spectralDataPointWavelengthAbove = spectralDataPointsSorted[j]; }
             }
-            // Calculate width of the wavelength interval at weightingDataPointsSorted[i]
-            switch (standard)
-            {
-                case "EN410":
-                    deltaWavelength = 10;
-                    break;
-            }
             // Trapezoidal rule to calculate an integral
+            deltaWavelength = wavelengthsWeights[i].deltaWavelength;
             averageValue = (spectralDataPointWavelengthBelow.Results.Transmittance + spectralDataPointWavelengthAbove.Results.Transmittance) / 2;
             numerator += averageValue * deltaWavelength * wavelengthsWeights[i].weight;
             denominator += deltaWavelength * wavelengthsWeights[i].weight;
-            // Print debug output
-            foreach (DataPoint dataPoint in new DataPoint[] { spectralDataPointWavelengthBelow, spectralDataPointWavelengthAbove })
-            {
-                Console.WriteLine($"Incidence Wavelength: {dataPoint.Incidence.Wavelengths.Wavelength}, Direction Polar: {dataPoint.Incidence.Direction.Polar}");
-                Console.WriteLine($"Emergence Direction Polar: {dataPoint.Emergence.Direction.Polar}");
-                Console.WriteLine($"Results Transmittance: {dataPoint.Results.Transmittance}");
-            }
-            Console.WriteLine($"deltaWavelength = {deltaWavelength}\naverageValue = {averageValue}\nnumerator = {numerator}\ndenominator = {denominator}\n");
+            // // Print debug output
+            // foreach (DataPoint dataPoint in new DataPoint[] { spectralDataPointWavelengthBelow, spectralDataPointWavelengthAbove })
+            // {
+            //     Console.WriteLine($"Incidence Wavelength: {dataPoint.Incidence.Wavelengths.Wavelength}, Direction Polar: {dataPoint.Incidence.Direction.Polar}");
+            //     Console.WriteLine($"Emergence Direction Polar: {dataPoint.Emergence.Direction.Polar}");
+            //     Console.WriteLine($"Results Transmittance: {dataPoint.Results.Transmittance}");
+            // }
+            // Console.WriteLine($"deltaWavelength = {deltaWavelength}\naverageValue = {averageValue}\nnumerator = {numerator}\ndenominator = {denominator}\n");
         }
 
         DataPoint integralDataPoint = new DataPoint(new Incidence(new Wavelengths(0), new Direction(0)), new Emergence(new Direction(0)), new Results(numerator / denominator));

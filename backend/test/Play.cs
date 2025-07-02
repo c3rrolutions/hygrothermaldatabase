@@ -34,14 +34,14 @@ public sealed class Play
         DataPoint dataPoint3 = new DataPoint(new Incidence(new Wavelengths(-100), direction), new Emergence(direction), new Results(99));
         IReadOnlyList<DataPoint> spectralDataPoints = new List<DataPoint> { dataPoint0, dataPoint2, dataPoint1, dataPoint3 };
 
-        // Create example weightingSpectrum
-        DataPoint dataPoint10 = new DataPoint(new Incidence(new Wavelengths(500), direction), new Emergence(direction), new Results(2));
-        DataPoint dataPoint11 = new DataPoint(new Incidence(new Wavelengths(600), direction), new Emergence(direction), new Results(0.5));
-        IReadOnlyList<DataPoint> weightingSpectrum = new List<DataPoint> { dataPoint10, dataPoint11 };
+        // // Create example weightingSpectrum
+        // DataPoint dataPoint10 = new DataPoint(new Incidence(new Wavelengths(500), direction), new Emergence(direction), new Results(2));
+        // DataPoint dataPoint11 = new DataPoint(new Incidence(new Wavelengths(600), direction), new Emergence(direction), new Results(0.5));
+        // IReadOnlyList<DataPoint> weightingSpectrum = new List<DataPoint> { dataPoint10, dataPoint11 };
 
         // Use the SpectralToIntegralMethod
         SpectralToIntegralMethod mySpectralToIntegralMethod = new SpectralToIntegralMethod();
-        List<DataPoint> integralDataPoints = mySpectralToIntegralMethod.Calculate(spectralDataPoints, weightingSpectrum, "EN410");
+        List<DataPoint> integralDataPoints = mySpectralToIntegralMethod.Calculate(spectralDataPoints, "EN410");
         foreach (DataPoint integralDataPoint in integralDataPoints)
         {
             Console.WriteLine($"integralDataPoint\nIncidence Wavelength: {integralDataPoint.Incidence.Wavelengths.Wavelength}, Direction Polar: {integralDataPoint.Incidence.Direction.Polar}");
@@ -49,7 +49,7 @@ public sealed class Play
             Console.WriteLine($"Results Transmittance: {integralDataPoint.Results.Transmittance}\n");
         }
 
-        Console.WriteLine(mySpectralToIntegralMethod.en410WavelengthsWeights)
+        Console.WriteLine(mySpectralToIntegralMethod.en410WavelengthsWeights);
 
         await Task.FromResult(0);
     }

@@ -24,9 +24,9 @@ public sealed class TransmittanceSumMethod : IMethod
         ];
     }
 
-    public List<DataPoint> Calculate(IReadOnlyList<DataPoint> spectralDataPoints, IReadOnlyList<DataPoint> weightingDataPoints, string standard)
+    public List<DataPoint> Calculate(IReadOnlyList<DataPoint> spectralDataPoints, string standard)
     {
-        throw new InvalidOperationException("The TransmittanceSumMethod cannot be used with two lists of dataPoints and one standard as input.");
+        throw new InvalidOperationException("The TransmittanceSumMethod cannot be used with a standard as input.");
     }
 
 }

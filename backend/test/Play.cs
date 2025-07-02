@@ -41,7 +41,7 @@ public sealed class Play
 
         // Use the SpectralToIntegralMethod
         SpectralToIntegralMethod mySpectralToIntegralMethod = new SpectralToIntegralMethod();
-        List<DataPoint> integralDataPoints = mySpectralToIntegralMethod.Calculate(spectralDataPoints, "en410Solar");
+        List<DataPoint> integralDataPoints = mySpectralToIntegralMethod.Calculate(spectralDataPoints, IMethod.StandardType.en410Solar);
         foreach (DataPoint integralDataPoint in integralDataPoints)
         {
             Console.WriteLine($"integralDataPoint\nIncidence Wavelength: {integralDataPoint.Incidence.Wavelengths.Wavelength}, Direction Polar: {integralDataPoint.Incidence.Direction.Polar}");

@@ -222,20 +222,20 @@ public sealed class SpectralToIntegralMethod : IMethod
         iso9050SolarWavelengthsWeights = new ReadOnlyCollection<(int, double, double)>(iso9050SolarWavelengthsWeightsList);
     }
 
-    public List<DataPoint> Calculate(IReadOnlyList<DataPoint> spectralDataPoints, StandardType standard)
+    public List<DataPoint> Calculate(IReadOnlyList<DataPoint> spectralDataPoints, IMethod.StandardType standard)
     {
         // Turn IReadOnlyLists into more flexible Lists
         List<DataPoint> spectralDataPointsToFilter = new List<DataPoint>(spectralDataPoints);
         List<(int wavelength, double weight, double deltaWavelength)> wavelengthsWeights = new List<(int, double, double)> { (0, 0, 0) };
         switch (standard)
         {
-            case "StandardType.en410Visible":
+            case IMethod.StandardType.en410Visible:
                 wavelengthsWeights = en410VisibleWavelengthsWeights.ToList();
                 break;
-            case "StandardType.en410Solar":
+            case IMethod.StandardType.en410Solar:
                 wavelengthsWeights = en410VisibleWavelengthsWeights.ToList();
                 break;
-            case "StandardType.iso9050Solar":
+            case IMethod.StandardType.iso9050Solar:
                 wavelengthsWeights = en410VisibleWavelengthsWeights.ToList();
                 break;
         }

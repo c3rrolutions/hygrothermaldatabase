@@ -222,7 +222,20 @@ public sealed class SpectralToIntegralMethod : IMethod
         iso9050SolarWavelengthsWeights = new ReadOnlyCollection<(int, double, double)>(iso9050SolarWavelengthsWeightsList);
     }
 
-    public List<DataPoint> Calculate(IReadOnlyList<DataPoint> spectralDataPoints, IMethod.StandardType standard)
+    public List<DataPoint> Calculate(IReadOnlyList<DataPoint> dataPoints)
+    {
+        IMethod.StandardType[] standards = Enum.GetValues<IMethod.StandardType>();
+        List<DataPoint> resultsForOneStandard = new List<DataPoint>();
+        List<DataPoint> resultsForAllStandards = new List<DataPoint>();
+        for (int i = 0; i < standards.Length; i++)
+        {
+            resultsForOneStandard = CalculateOneStandard(dataPoints, standards[i]);
+            resultsForAllStandards.AddRange([new DataPoint(new Incidence(new Wavelengths(i), new Direction(0)), new Emergence(new Direction(0)), new Results(resultsForOneStandard[0].Results.Transmittance))]);
+        }
+        return resultsForAllStandards;
+    }
+
+    public List<DataPoint> CalculateOneStandard(IReadOnlyList<DataPoint> spectralDataPoints, IMethod.StandardType standard)
     {
         // Turn IReadOnlyLists into more flexible Lists
         List<DataPoint> spectralDataPointsToFilter = new List<DataPoint>(spectralDataPoints);
@@ -243,7 +256,7 @@ public sealed class SpectralToIntegralMethod : IMethod
         List<DataPoint> spectralDataPointsFiltered = spectralDataPointsToFilter.Where(dataPoint => !WavelengthOutOfBounds(dataPoint)).ToList();
         // Sort the dataPoints
         List<DataPoint> spectralDataPointsSorted = spectralDataPointsFiltered.OrderBy(dataPoint => dataPoint.Incidence.Wavelengths.Wavelength).ToList();
-        double wavelengthWeighting = 0.0D, deltaWavelength = 0.0D, averageValue = 0.0D, numerator = 0.0D, denominator = 0.0D;
+        double wavelengthWeighting = 0.0D, deltaWavelength = 0.0D, averageValue = 0.0D, numerator = 0.0D, denominator = 0.0D, integralValue = 0.0D;
 
         for (int i = 0; i < wavelengthsWeights.Count; i++)
         // for (int i = 0; i < 3; i++)
@@ -264,18 +277,12 @@ public sealed class SpectralToIntegralMethod : IMethod
             averageValue = (spectralDataPointWavelengthBelow.Results.Transmittance + spectralDataPointWavelengthAbove.Results.Transmittance) / 2;
             numerator += averageValue * deltaWavelength * wavelengthsWeights[i].weight;
             denominator += deltaWavelength * wavelengthsWeights[i].weight;
-            // Debug output
-            // if (i == 2)
-            // {
-            //     Console.WriteLine($"\nwavelengthWeighting={wavelengthWeighting}, wavelengthsWeights[i].weight={wavelengthsWeights[i].weight}, deltaWavelength ={deltaWavelength}, averageValue={averageValue}, numerator={numerator}, denominator={denominator}, ratio={numerator / denominator}\n");
-            // }
-            // Console.WriteLine($"ratio={numerator / denominator}");
         }
-
-        DataPoint integralDataPoint = new DataPoint(new Incidence(new Wavelengths(0), new Direction(0)), new Emergence(new Direction(0)), new Results(numerator / denominator));
-
-        return [integralDataPoint];
+        integralValue = numerator / denominator;
+        return [new DataPoint(new Incidence(new Wavelengths(0), new Direction(0)), new Emergence(new Direction(0)), new Results(integralValue))];
     }
+
+
 
     // Search predicate returns true if the wavelength is smaller than 0 nm or larger than 3000 nm.
     private static bool WavelengthOutOfBounds(DataPoint dataPoint)
@@ -283,9 +290,9 @@ public sealed class SpectralToIntegralMethod : IMethod
         return (dataPoint.Incidence.Wavelengths.Wavelength <= 0) || (dataPoint.Incidence.Wavelengths.Wavelength >= 3000);
     }
 
-    public List<DataPoint> Calculate(IReadOnlyList<DataPoint> dataPoints)
-    {
-        throw new InvalidOperationException("The SpectralToIntegralMethod needs two lists of dataPoints as input.");
-    }
+    // public List<DataPoint> Calculate(IReadOnlyList<DataPoint> dataPoints)
+    // {
+    //     throw new InvalidOperationException("The SpectralToIntegralMethod needs two lists of dataPoints as input.");
+    // }
 
 }

@@ -24,9 +24,4 @@ public sealed class TransmittanceSumMethod : IMethod
         ];
     }
 
-    public List<DataPoint> Calculate(IReadOnlyList<DataPoint> spectralDataPoints, IMethod.StandardType standard)
-    {
-        throw new InvalidOperationException("The TransmittanceSumMethod cannot be used with a standard as input.");
-    }
-
 }

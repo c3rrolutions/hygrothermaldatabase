@@ -8,7 +8,7 @@ public sealed class TransmittanceSumMethod : IMethod
 {
     public string Name => "TransmittanceSum";
 
-    public Guid Id => Guid.Parse("dfa3a7b3-a6da-444c-b43f-5ffd021c4a5c");
+    public Guid Id => Guid.Parse("8a7684c7-aaca-4057-8a30-1cb951c2c6a0");
 
     public List<DataPoint> Calculate(IReadOnlyList<DataPoint> dataPoints)
     {

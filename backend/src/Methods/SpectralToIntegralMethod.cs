@@ -10,7 +10,7 @@ namespace Database.Methods;
 public sealed class SpectralToIntegralMethod : IMethod
 {
     public string Name => "SpectralToIntegral";
-    public Guid Id => Guid.Parse("5abb16b2-7161-470c-9744-85dd14b0e637");
+    public Guid Id => Guid.Parse("285d172c-9bcf-4c57-9be0-ee95651ba7db");
     private List<(int wavelength, double weight, double deltaWavelength)> en410VisibleWavelengthsWeightsList = new List<(int, double, double)>
         {
             (380, 0, 5),

@@ -11,8 +11,7 @@ public sealed class SpectralToIntegralMethod : IMethod
 {
     public string Name => "SpectralToIntegral";
     public Guid Id => Guid.Parse("285d172c-9bcf-4c57-9be0-ee95651ba7db");
-    private List<(int wavelength, double weight, double deltaWavelength)> en410VisibleWavelengthsWeightsList = new List<(int, double, double)>
-        {
+    private List<(int wavelength, double weight, double deltaWavelength)> en410VisibleWavelengthsWeightsList = new List<(int, double, double)> {
             (380, 0, 5),
             (390, 0.0005, 10),
             (400, 0.003, 10),
@@ -55,8 +54,7 @@ public sealed class SpectralToIntegralMethod : IMethod
             (770, 0, 10),
             (780, 0, 5)
         };
-    private List<(int wavelength, double weight, double deltaWavelength)> en410SolarWavelengthsWeightsList = new List<(int, double, double)>
-                {
+    private List<(int wavelength, double weight, double deltaWavelength)> en410SolarWavelengthsWeightsList = new List<(int, double, double)> {
             (300, 0.0005, 10),
             (320, 0.0069, 20),
             (340, 0.0122, 20),
@@ -114,9 +112,8 @@ public sealed class SpectralToIntegralMethod : IMethod
             (2400, 0.0041, 100),
             (2500, 0.0006, 50)
         };
-    private List<(int wavelength, double weight, double deltaWavelength)> iso9050SolarWavelengthsWeightsList = new List<(int, double, double)>
-    {
-                    (300, 0, 5),
+    private List<(int wavelength, double weight, double deltaWavelength)> iso9050SolarWavelengthsWeightsList = new List<(int, double, double)> {
+            (300, 0, 5),
             (305, 0.000057, 5),
             (310, 0.000236, 5),
             (315, 0.000554, 5),

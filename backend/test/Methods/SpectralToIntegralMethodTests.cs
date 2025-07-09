@@ -4,7 +4,7 @@ using NUnit.Framework;
 using Database.Methods;
 using Database.GraphQl.MethodAsService;
 using System.Collections.Generic;
-using FluentAssertations;
+using FluentAssertions;
 
 namespace Database.Tests.Methods;
 
@@ -27,11 +27,14 @@ public sealed class SpectralToIntegralMethodTests
         foreach (DataPoint integralDataPoint in results)
         {
             if (integralDataPoint.Incidence.Wavelengths.Wavelength==0)
-            {integralDataPoint.Results.Transmittance.Should().BeApproximately(1.0F, 0.0000000000001F);}
+            {integralDataPoint.Results.Transmittance.Should().BeApproximately(1.0F, 0.000000000000001F);}
+            if (integralDataPoint.Incidence.Wavelengths.Wavelength==1)
+            {integralDataPoint.Results.Transmittance.Should().BeApproximately(0.3733675409177318F, 0.00000001F);}
+            if (integralDataPoint.Incidence.Wavelengths.Wavelength==2)
+            {integralDataPoint.Results.Transmittance.Should().BeApproximately(0.212543149312381F, 0.00000001F);}
+            // Console.WriteLine($"integralDataPoint\nIncidence Wavelength: {integralDataPoint.Incidence.Wavelengths.Wavelength}, Direction Polar: {integralDataPoint.Incidence.Direction.Polar}");
+            // Console.WriteLine($"Emergence Direction Polar: {integralDataPoint.Emergence.Direction.Polar}");
+            // Console.WriteLine($"Results Transmittance: {integralDataPoint.Results.Transmittance}\n");
         }
-
-        //     Console.WriteLine($"integralDataPoint\nIncidence Wavelength: {integralDataPoint.Incidence.Wavelengths.Wavelength}, Direction Polar: {integralDataPoint.Incidence.Direction.Polar}");
-        //     Console.WriteLine($"Emergence Direction Polar: {integralDataPoint.Emergence.Direction.Polar}");
-        //     Console.WriteLine($"Results Transmittance: {integralDataPoint.Results.Transmittance}\n");
     }
 }

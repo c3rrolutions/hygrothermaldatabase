@@ -8,7 +8,7 @@ docker_compose = \
 		--file docker-compose.yml \
 		--project-name ${NAME}
 
-database_name = xbase_development
+database_name = xbase
 
 # Taken from https://www.client9.com/self-documenting-makefiles/
 help : ## Print this help
@@ -180,7 +180,7 @@ list : ## List all containers with health status
 .PHONY : list
 
 createdb : DBNAME = ${database_name}
-createdb : ## Create database with name `${DBNAME}` defaulting to `xbase_development`
+createdb : ## Create database with name `${DBNAME}` defaulting to `xbase`
 	${docker_compose} exec \
 		database \
 		bash -c " \
@@ -189,7 +189,7 @@ createdb : ## Create database with name `${DBNAME}` defaulting to `xbase_develop
 .PHONY : createdb
 
 dropdb : DBNAME = ${database_name}
-dropdb : ## Drop database with name `${DBNAME}` defaulting to `xbase_development`
+dropdb : ## Drop database with name `${DBNAME}` defaulting to `xbase`
 	${docker_compose} exec \
 		database \
 		bash -c " \

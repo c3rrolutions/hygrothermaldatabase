@@ -19,6 +19,10 @@ FROM mcr.microsoft.com/dotnet/sdk:9.0-bookworm-slim-amd64 AS build
 RUN \
   apt-get update && \
   apt-get upgrade --assume-yes && \
+  apt-get install \
+    --assume-yes \
+    --no-install-recommends \
+    gnupg && \
   rm \
     --recursive \
     --force \

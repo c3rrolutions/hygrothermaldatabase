@@ -9,12 +9,10 @@ namespace Database.Services;
 
 public sealed class MethodCalculationService
 {
-    private List<IMethod> _methods = [];
-
-    public void AddMethod(IMethod method)
-    {
-        _methods.Add(method);
-    }
+    private List<IMethod> _methods = [
+        new TransmittanceSumMethod(),
+        new SpectralToIntegralMethod(),
+    ];
 
     public bool MethodExists(Guid methodId)
     {

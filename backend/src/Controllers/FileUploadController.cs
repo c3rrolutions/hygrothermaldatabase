@@ -95,7 +95,7 @@ public sealed class FileUploadController(
     [RequestSizeLimit(10737418240)] // 10 GiB
     public async Task<IActionResult> UploadFile(
         [FromQuery] Guid getHttpsResourceUuid,
-        UserService userService,
+        [FromServices] UserService userService,
         CancellationToken cancellationToken
     )
     {

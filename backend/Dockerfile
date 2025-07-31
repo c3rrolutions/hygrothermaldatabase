@@ -14,7 +14,6 @@ ARG GROUP_ID
 ARG USER_ID
 ARG CERTIFICATE_AUTHORITY_BASE_FILE_NAME
 ARG CERTIFICATE_AUTHORITY_PASSWORD
-ARG GNUPG_PRIVATEKEY_FILE_NAME
 
 # Create non-root user to run commands in (see https://medium.com/@mccode/processes-in-containers-should-not-run-as-root-2feae3f0df3b)
 RUN \

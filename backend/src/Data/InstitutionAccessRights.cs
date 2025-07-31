@@ -1,9 +1,14 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
+using Database.ApiRequests.Dto;
 using Database.Services;
+using EntityFrameworkCore.Projectables;
+using Microsoft.EntityFrameworkCore;
 
 namespace Database.Data;
 
+[Index(nameof(InstitutionId), IsUnique = true)]
 public sealed class InstitutionAccessRights(
     Guid institutionId,
     uint? allowedUserCount,
@@ -18,25 +23,28 @@ public sealed class InstitutionAccessRights(
     public TimeSpan Period { get; set; } = period;
     public List<Guid> UserAlreadyAccessed { get; private set; } = [];
 
-    /// <summary>
-    /// Check if dataset is restricted by access rights for institution. Datasets per time period of
-    /// max user per institution.
-    /// </summary>
-    /// <param name="dataItem">      <see cref="IData"/> </param>
-    /// <param name="currentUserId"> Id of current user. </param>
-    /// <param name="cacheService">  <see cref="CacheService"/> </param>
-    /// <param name="reason">        Reason, why data is restricted. </param>
-    /// <returns> </returns>
-    internal bool IsDataRestricted(IData dataItem, Guid currentUserId, CacheService cacheService, out string reason)
+    [NotMapped]
+    [Projectable]
+    public bool HasRestrictions =>
+        AllowedDatasetsPerTime != null
+        || AllowedUserCount != null;
+
+    [NotMapped]
+    [Projectable]
+    public bool HasRestrictionsByTime => AllowedDatasetsPerTime != null;
+
+    [NotMapped]
+    [Projectable]
+    public bool HasRestrictionsByUser => AllowedUserCount != null;
+
+    internal bool IsDataRestrictedByTime(IData dataItem, CacheService cacheService, out string? reason)
     {
         var isRestricted = false;
-        reason = "";
-
+        reason = null;
         // Check restriction for time period
         if (AllowedDatasetsPerTime is not null)
         {
             var accessesPerPeriod = cacheService.GetOrCreateAccessCountForPeriod(InstitutionId);
-
             if (accessesPerPeriod.StartTime.Add(Period) < DateTime.Now)
             {
                 if (accessesPerPeriod.Count >= AllowedDatasetsPerTime)
@@ -44,13 +52,20 @@ public sealed class InstitutionAccessRights(
                     isRestricted = true;
                     reason = $"Id: {dataItem.Id} Reason: Maximum amount of allowed datasets for institution {InstitutionId} reached.";
                 }
+                cacheService.AddAccessCountToPeriod(InstitutionId);
             }
             else
             {
                 cacheService.SetNewTimePeriod(InstitutionId);
             }
         }
+        return isRestricted;
+    }
 
+    internal bool IsDataRestrictedByUser(IData dataItem, Guid currentUserId, out string? reason)
+    {
+        var isRestricted = false;
+        reason = null;
         // Check restriction for users per institution
         if (AllowedUserCount is not null)
         {
@@ -59,21 +74,8 @@ public sealed class InstitutionAccessRights(
                 isRestricted = true;
                 reason = $"Id: {dataItem.Id} Reason: Maximum allowed users of institution {InstitutionId} reached.";
             }
+            UserAlreadyAccessed.Add(currentUserId);
         }
-
-        // If restricted add user or count
-        if (!isRestricted)
-        {
-            if (AllowedDatasetsPerTime is not null && AllowedDatasetsPerTime > 0)
-            {
-                cacheService.AddAccessCountToPeriod(InstitutionId);
-            }
-            if (AllowedUserCount is not null && AllowedUserCount > 0)
-            {
-                UserAlreadyAccessed.Add(currentUserId);
-            }
-        }
-
         return isRestricted;
     }
 }

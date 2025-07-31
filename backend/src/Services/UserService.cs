@@ -32,7 +32,7 @@ public sealed class UserService(
     /// Get application from user calims.
     /// </summary>
     /// <returns> ClientId from claims as applicationId. </returns>
-    public string? GetApplicationIdFromUser()
+    public string? GetOpenIdConnectClientId()
     {
         return httpContextAccessor.HttpContext?.User.GetClaim(Claims.AuthorizedParty);
     }

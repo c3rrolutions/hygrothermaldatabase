@@ -22,7 +22,7 @@ public sealed class OpticalDataQueries
     // same `id` and when also requesting `uuid`, the latter was always the empty UUID `000...`.
     [UseFiltering]
     [UseSorting]
-    public async Task<IQueryable<OpticalData>> GetAllOpticalData(
+    public Task<IQueryable<OpticalData>> GetAllOpticalData(
         [GraphQLType<LocaleType>] string? locale,
         ApplicationDbContext context,
         AccessRightsService accessRightsService,
@@ -34,15 +34,13 @@ public sealed class OpticalDataQueries
         // TODO Use `locale`.
         sorting.StabilizeOrder<OpticalData>();
         var filteredData = context.OpticalData.Sort(resolverContext).Filter(resolverContext);
-
         // Check if there is restricted data
         if (!filteredData.Any(x => x.DataAccessRights.HasRestrictions))
         {
-            return filteredData;
+            return Task.FromResult(filteredData);
         }
-
         // Apply acces rights on data
-        return await accessRightsService.ApplyAccessRightsOnData(filteredData, cancellationToken).ConfigureAwait(false);
+        return accessRightsService.ApplyAccessRightsOnData(filteredData, cancellationToken);
     }
 
     public async Task<OpticalData?> GetOpticalDataAsync(
@@ -58,12 +56,14 @@ public sealed class OpticalDataQueries
             id,
             cancellationToken
         );
-
         if (opticalData is null)
+        {
+            return null;
+        }
+        if (!opticalData.DataAccessRights.HasRestrictions)
         {
             return opticalData;
         }
-
         return await accessRightsService.ApplyAccessRightsOnData(opticalData, cancellationToken).ConfigureAwait(false);
     }
 }

@@ -11,112 +11,122 @@ using Microsoft.Extensions.Logging;
 
 namespace Database.Services;
 
-/// <summary>
-/// Service to check if requested data can be returned regarding access rights.
-/// </summary>
-/// <param name="context">      <see cref="ApplicationDbContext"/> </param>
-/// <param name="userService">  <see cref="UserService"/> </param>
-/// <param name="cacheService"> <see cref="CacheService"/> </param>
-/// <param name="logger">       <see cref="ILogger"/> </param>
 public sealed class AccessRightsService(
     ApplicationDbContext context,
     UserService userService,
     CacheService cacheService,
     ILogger<AccessRightsService> logger)
 {
-    /// <summary>
-    /// Apply access rights to passed data list.
-    /// </summary>
-    /// <param name="data">              Data to apply acces rights on. </param>
-    /// <param name="cancellationToken"> <see cref="CancellationToken"/> </param>
-    /// <returns> List of data that can be returned. </returns>
-    public async Task<IQueryable<T>> ApplyAccessRightsOnData<T>(IQueryable<T> data, CancellationToken cancellationToken)
+    public async Task<T?> ApplyAccessRightsOnData<T>(T data, CancellationToken cancellationToken)
     where T : IData
     {
-        var filteredData = new List<T>();
-        var restrictions = new List<string>();
-        var institutions = new List<Guid>();
-        var accessRights = new List<InstitutionAccessRights>();
+        return (
+            await ApplyAccessRightsOnData(new List<T> { data }.AsQueryable(), cancellationToken)
+        ).FirstOrDefault();
+    }
 
-        var currentUser = await userService.GetCurrentUser(cancellationToken).ConfigureAwait(false);
-        var applicationId = userService.GetApplicationIdFromUser();
-        if (currentUser is null || applicationId is null)
+    public async Task<IQueryable<T>> ApplyAccessRightsOnData<T>(
+        IQueryable<T> data,
+        CancellationToken cancellationToken
+    )
+    where T : IData
+    {
+        IReadOnlyList<Guid>? representedInstitutionIds = null;
+        IReadOnlyList<InstitutionAccessRights>? institutionAccessRights = null;
+        uint? alreadyAccessedCount = null;
+
+        var currentUser = await userService.GetCurrentUser(cancellationToken);
+        var openIdConnectClientId = userService.GetOpenIdConnectClientId();
+
+        if (currentUser is not null)
         {
-            logger.UnknownUserOrApplication(currentUser?.Uuid, applicationId);
-            return Enumerable.Empty<T>().AsQueryable();
+            representedInstitutionIds = currentUser.RepresentedInstitutions.Edges.Select(e => e.Node.Uuid).ToList().AsReadOnly();
+            institutionAccessRights = (await context.InstitutionAccessRights.AsQueryable()
+                .Where(x => representedInstitutionIds.Contains(x.InstitutionId))
+                .ToListAsync(cancellationToken))
+                .AsReadOnly();
+            alreadyAccessedCount = cacheService.GetAccessCountForUser(currentUser.Uuid);
         }
 
-        var alreadyAccessedCount = cacheService.GetAccessCountForUser(currentUser.Uuid);
-        foreach (var institution in currentUser.RepresentedInstitutions.Edges)
-        {
-            institutions.Add(institution.Node.Uuid);
-            var accessRightOfInstitution = await context.InstitutionAccessRights.FirstOrDefaultAsync(x => x.InstitutionId == institution.Node.Uuid, cancellationToken).ConfigureAwait(false);
-            if (accessRightOfInstitution is not null)
-            {
-                accessRights.Add(accessRightOfInstitution);
-            }
-        }
-
-        var result = ProcessData(data, applicationId, institutions, currentUser, alreadyAccessedCount, cacheService, accessRights);
+        var result = ProcessData(data, currentUser, openIdConnectClientId, representedInstitutionIds, institutionAccessRights, alreadyAccessedCount, cacheService);
 
         // Save InstitutionAccessRight changes
         await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         return result.AsQueryable<T>();
     }
 
-    /// <summary>
-    /// Apply access rights on passed data item.
-    /// </summary>
-    /// <param name="data">              Data to apply acces rights on. </param>
-    /// <param name="cancellationToken"> <see cref="CancellationToken"/> </param>
-    /// <returns> Data item. </returns>
-    public async Task<T?> ApplyAccessRightsOnData<T>(T data, CancellationToken cancellationToken)
-    where T : IData
-    {
-        var result = await ApplyAccessRightsOnData(new List<T> { data }.AsQueryable(), cancellationToken).ConfigureAwait(false);
-
-        return result.FirstOrDefault();
-    }
-
     private IEnumerable<T> ProcessData<T>(
         IQueryable<T> data,
-        string applicationId,
-        List<Guid> institutions,
-        CurrentUserDto currentUser,
-        uint alreadyAccessedCount,
-        CacheService cacheService,
-        List<InstitutionAccessRights> accessRights)
+        CurrentUserDto? currentUser,
+        string? openIdConnectClientId,
+        IReadOnlyList<Guid>? representedInstitutionIds,
+        IReadOnlyList<InstitutionAccessRights>? institutionAccessRights,
+        uint? alreadyAccessedCount,
+        CacheService cacheService
+    )
     where T : IData
     {
-        var reason = "";
         foreach (var dataItem in data)
         {
             if (dataItem.DataAccessRights.HasRestrictions)
             {
-                if (dataItem.IsRestrictedByApplication(applicationId))
+                if (dataItem.DataAccessRights.HasRestrictionsByApplication
+                    && (
+                        openIdConnectClientId is null
+                        || dataItem.IsRestrictedByApplication(openIdConnectClientId)
+                    )
+                )
                 {
                     logger.DataRestriction(dataItem.Id, "Application not allowed.");
                     continue;
                 }
-                if (dataItem.IsRestrictedByInstitutions(institutions))
+                if (dataItem.DataAccessRights.HasRestrictionsByInstitution
+                    && (
+                        representedInstitutionIds is null
+                        || dataItem.IsRestrictedByInstitutions(representedInstitutionIds)
+                    )
+                    )
                 {
                     logger.DataRestriction(dataItem.Id, "Institution not allowed.");
                     continue;
                 }
-                if (dataItem.IsRestrictedByUser(currentUser.Uuid, alreadyAccessedCount))
+                if (dataItem.DataAccessRights.HasRestrictionsByUser
+                    && (
+                        currentUser is null
+                        || alreadyAccessedCount is null
+                        || dataItem.IsRestrictedByUser(currentUser.Uuid, alreadyAccessedCount ?? 0)
+                    )
+                )
                 {
                     logger.DataRestriction(dataItem.Id, "Allowed accesses for user reached.");
                     continue;
                 }
-                if (accessRights.Any(x => x.IsDataRestricted(dataItem, currentUser.Uuid, cacheService, out reason)))
+                if (currentUser is not null && alreadyAccessedCount is not null)
+                {
+                    alreadyAccessedCount = alreadyAccessedCount + 1;
+                    cacheService.SetAccessCountForUser(currentUser.Uuid, alreadyAccessedCount ?? 0);
+                }
+                var reason = "";
+                if (institutionAccessRights is not null
+                    && institutionAccessRights.Any(x =>
+                        (
+                            x.HasRestrictionsByTime
+                            && x.IsDataRestrictedByTime(dataItem, cacheService, out reason)
+                        )
+                        || (
+                            x.HasRestrictionsByUser
+                            && (
+                                currentUser is null
+                                || x.IsDataRestrictedByUser(dataItem, currentUser.Uuid, out reason)
+                            )
+                        )
+                    )
+                )
                 {
                     logger.DataRestriction(dataItem.Id, reason);
                     continue;
                 }
-
-                cacheService.SetAccessCountForUser(currentUser.Uuid, ++alreadyAccessedCount);
             }
-
             yield return dataItem;
         }
     }

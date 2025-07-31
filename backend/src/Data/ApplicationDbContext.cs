@@ -64,6 +64,8 @@ public sealed class ApplicationDbContext
     {
         // https://www.npgsql.org/efcore/modeling/generated-properties.html#guiduuid-generation
         builder
+            .HasKey(e => e.Id);
+        builder
             .Property(e => e.Id)
             .HasDefaultValueSql("gen_random_uuid()");
         // https://www.npgsql.org/efcore/modeling/concurrency.html#the-postgresql-xmin-system-column

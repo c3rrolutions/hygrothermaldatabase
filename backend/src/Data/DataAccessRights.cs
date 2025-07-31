@@ -45,19 +45,19 @@ public sealed class DataAccessRights
     /// </summary>
     [NotMapped]
     [Projectable]
-    public bool IsRestrictedByUser => AllowedUserAndQuantity != null;
+    public bool HasRestrictionsByUser => AllowedUserAndQuantity != null;
 
     /// <summary>
     /// Is data access restricted by institution.
     /// </summary>
     [NotMapped]
     [Projectable]
-    public bool IsRestrictedByInstitution => AllowedInstitutions != null;
+    public bool HasRestrictionsByInstitution => AllowedInstitutions != null;
 
     /// <summary>
     /// Is data access restricted by application.
     /// </summary>
     [NotMapped]
     [Projectable]
-    public bool IsRestrictedByApplication => AllowedApplications != null;
+    public bool HasRestrictionsByApplication => AllowedApplications != null;
 }

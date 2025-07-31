@@ -76,10 +76,15 @@ services:
       - XBASE_Email__SmtpPort=${SMTP_PORT}
       - XBASE_OpenIdConnectClientSecret=${OPEN_ID_CONNECT_CLIENT_SECRET}
       - XBASE_VerificationCode=${VERIFICATION_CODE}
+      # The value `/dev/pts/0` is the output of running `tty` within `shellb`
+      # https://www.gnupg.org/documentation/manuals/gnupg/Invoking-GPG_002dAGENT.html
+      - GPG_TTY=/dev/pts/0
     volumes:
       - backend_logs:/app/logs
       - files:/app/files
       - ./secrets:/run/secrets:ro
+      # Create volume for GnuPG
+      - gnupg:/root/.gnupg
     depends_on:
       - database
       - email
@@ -128,4 +133,5 @@ volumes:
   data:
   emails:
   files:
+  gnupg:
   backend_logs:

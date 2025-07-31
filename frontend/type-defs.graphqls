@@ -916,7 +916,6 @@ input DataAccessRightsInput {
 
 input DataApprovalInput {
   approverId: Uuid!
-  creatorId: Uuid!
   dataId: Uuid!
   keyFingerprint: String!
   query: String!
@@ -1498,6 +1497,7 @@ enum AddDataApprovalErrorCode {
   UNAUTHENTICATED
   UNAUTHORIZED
   UNKNOWN_DATA
+  UNKNOWN_DATABASE
   CREATING_RESPONSE_APPROVAL_FAILED
   AMBIGUOUS_STATEMENT
   MISSING_STATEMENT

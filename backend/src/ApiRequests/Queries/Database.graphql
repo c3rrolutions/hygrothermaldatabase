@@ -1,0 +1,19 @@
+query Database(
+    $uuid: Uuid!
+) {
+    database(uuid: $uuid) {
+        uuid
+        name
+        description
+        locator
+        verificationState
+        verificationCode
+        operator {
+            node {
+                uuid
+            }
+        }
+        canCurrentUserUpdateNode
+        canCurrentUserVerifyNode
+    }
+}

@@ -41,8 +41,7 @@ public sealed class PhotovoltaicDataMutations
 
         if (!PhotovoltaicDataAuthorization.IsAuthorizedToCreatePhotovoltaicDataForInstitution(
             currentUser,
-            input.CreatorId,
-            cancellationToken
+            input.CreatorId
             )
         )
         {
@@ -133,7 +132,7 @@ public sealed class PhotovoltaicDataMutations
             photovoltaicData.Approval = await responseApprovalService.CreateResponseApproval(photovoltaicData, cancellationToken).ConfigureAwait(false);
             await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         }
-        catch (Exception ex)
+        catch (Exception exception)
         {
             context.Remove(photovoltaicData);
             await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
@@ -141,8 +140,8 @@ public sealed class PhotovoltaicDataMutations
             return new CreatePhotovoltaicDataPayload(
                 photovoltaicData,
                 new CreatePhotovoltaicDataError(
-                    CreatePhotovoltaicDataErrorCode.SIGNING_FAILED,
-                    $"Signing failed with message: {ex.Message}",
+                    CreatePhotovoltaicDataErrorCode.CREATING_RESPONSE_APPROVAL_FAILED,
+                    $"Signing failed with message: {exception.Message}",
                     []
                 )
             );

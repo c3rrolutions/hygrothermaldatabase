@@ -134,9 +134,9 @@ public sealed class SigningService(
 
             return true;
         }
-        catch (Exception ex)
+        catch (Exception exception)
         {
-            logger.WriteFileException(ex.ToString());
+            logger.WriteFileException(exception.ToString());
             return false;
         }
     }
@@ -150,10 +150,10 @@ public sealed class SigningService(
                 return (true, file.ReadToEnd());
             }
         }
-        catch (IOException ex)
+        catch (IOException exception)
         {
-            logger.ReadFileException(ex.ToString());
-            return (false, ex.ToString());
+            logger.ReadFileException(exception.ToString());
+            return (false, exception.ToString());
         }
     }
 

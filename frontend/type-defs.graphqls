@@ -194,6 +194,18 @@ type CreatePhotovoltaicDataPayload {
   query: Query!
 }
 
+type CreateResponseApprovalsError {
+  code: CreateResponseApprovalsErrorCode!
+  message: String!
+  path: [String!]!
+}
+
+type CreateResponseApprovalsPayload {
+  data: [Data!]
+  errors: [CreateResponseApprovalsError!]
+  query: Query!
+}
+
 type CrossDatabaseDataReference {
   databaseId: Uuid!
   dataId: Uuid!
@@ -448,9 +460,11 @@ type Mutation {
   createHygrothermalData(input: CreateHygrothermalDataInput!): CreateHygrothermalDataPayload! @cost(weight: "10")
   createOpticalData(input: CreateOpticalDataInput!): CreateOpticalDataPayload! @cost(weight: "10")
   createPhotovoltaicData(input: CreatePhotovoltaicDataInput!): CreatePhotovoltaicDataPayload! @cost(weight: "10")
+  createResponseApprovals: CreateResponseApprovalsPayload! @cost(weight: "10")
   updateAccessRights(input: InstitutionAccessRightsInput!): UpdateAccessRightsPayload! @cost(weight: "10")
   updateDataAccessRights(input: DataAccessRightsInput!): UpdateDataAccessRightsPayload! @cost(weight: "10")
   updateDatabase(input: UpdateDatabaseInput!): UpdateDatabasePayload! @cost(weight: "10")
+  updateResponseApprovals: UpdateResponseApprovalsPayload! @cost(weight: "10")
 }
 
 type NamedMethodArgument {
@@ -681,6 +695,18 @@ type UpdateDatabaseError {
 type UpdateDatabasePayload {
   database: Database
   errors: [UpdateDatabaseError!]
+  query: Query!
+}
+
+type UpdateResponseApprovalsError {
+  code: UpdateResponseApprovalsErrorCode!
+  message: String!
+  path: [String!]!
+}
+
+type UpdateResponseApprovalsPayload {
+  data: [Data!]
+  errors: [UpdateResponseApprovalsError!]
   query: Query!
 }
 
@@ -1472,7 +1498,7 @@ enum AddDataApprovalErrorCode {
   UNAUTHENTICATED
   UNAUTHORIZED
   UNKNOWN_DATA
-  SIGNING_FAILED
+  CREATING_RESPONSE_APPROVAL_FAILED
   AMBIGUOUS_STATEMENT
   MISSING_STATEMENT
 }
@@ -1498,14 +1524,14 @@ enum CreateCalorimetricDataErrorCode {
   UNKNOWN
   UNAUTHORIZED
   UNAUTHENTICATED
-  SIGNING_FAILED
+  CREATING_RESPONSE_APPROVAL_FAILED
 }
 
 enum CreateGeometricDataErrorCode {
   UNKNOWN
   UNAUTHORIZED
   UNAUTHENTICATED
-  SIGNING_FAILED
+  CREATING_RESPONSE_APPROVAL_FAILED
 }
 
 enum CreateGetHttpsResourceErrorCode {
@@ -1519,21 +1545,29 @@ enum CreateHygrothermalDataErrorCode {
   UNKNOWN
   UNAUTHORIZED
   UNAUTHENTICATED
-  SIGNING_FAILED
+  CREATING_RESPONSE_APPROVAL_FAILED
 }
 
 enum CreateOpticalDataErrorCode {
   UNKNOWN
   UNAUTHORIZED
   UNAUTHENTICATED
-  SIGNING_FAILED
+  CREATING_RESPONSE_APPROVAL_FAILED
 }
 
 enum CreatePhotovoltaicDataErrorCode {
   UNKNOWN
   UNAUTHORIZED
   UNAUTHENTICATED
-  SIGNING_FAILED
+  CREATING_RESPONSE_APPROVAL_FAILED
+}
+
+enum CreateResponseApprovalsErrorCode {
+  UNKNOWN
+  UNAUTHORIZED
+  UNAUTHENTICATED
+  UNKNOWN_DATABASE
+  CREATING_RESPONSE_APPROVAL_FAILED
 }
 
 enum DataKind {
@@ -1635,6 +1669,14 @@ enum UpdateDatabaseErrorCode {
   UNKNOWN
   UNAUTHORIZED
   UNKNOWN_DATABASE
+}
+
+enum UpdateResponseApprovalsErrorCode {
+  UNKNOWN
+  UNAUTHORIZED
+  UNAUTHENTICATED
+  UNKNOWN_DATABASE
+  UPDATING_RESPONSE_APPROVAL_FAILED
 }
 
 enum UriHostNameType {

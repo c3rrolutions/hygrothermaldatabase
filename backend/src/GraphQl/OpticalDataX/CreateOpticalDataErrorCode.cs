@@ -8,5 +8,5 @@ public enum CreateOpticalDataErrorCode
     UNKNOWN,
     UNAUTHORIZED,
     UNAUTHENTICATED,
-    SIGNING_FAILED
+    CREATING_RESPONSE_APPROVAL_FAILED
 }

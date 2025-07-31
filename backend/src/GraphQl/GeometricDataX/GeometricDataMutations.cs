@@ -37,8 +37,7 @@ public sealed class GeometricDataMutations
 
         if (!GeometricDataAuthorization.IsAuthorizedToCreateGeometricDataForInstitution(
              currentUser,
-             input.CreatorId,
-             cancellationToken
+             input.CreatorId
              )
         )
         {
@@ -115,7 +114,7 @@ public sealed class GeometricDataMutations
             geometricData.Approval = await responseApprovalService.CreateResponseApproval(geometricData, cancellationToken).ConfigureAwait(false);
             await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         }
-        catch (Exception ex)
+        catch (Exception exception)
         {
             context.Remove(geometricData);
             await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
@@ -123,8 +122,8 @@ public sealed class GeometricDataMutations
             return new CreateGeometricDataPayload(
                 geometricData,
                 new CreateGeometricDataError(
-                    CreateGeometricDataErrorCode.SIGNING_FAILED,
-                    $"Signing failed with message: {ex.Message}",
+                    CreateGeometricDataErrorCode.CREATING_RESPONSE_APPROVAL_FAILED,
+                    $"Signing failed with message: {exception.Message}",
                     []
                 )
             );

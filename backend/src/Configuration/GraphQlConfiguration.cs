@@ -30,6 +30,7 @@ using IServiceCollection = Microsoft.Extensions.DependencyInjection.IServiceColl
 using Database.GraphQl.DataApprovals;
 using Database.GraphQl.AccessRights;
 using Database.GraphQl.MethodAsService;
+using Database.GraphQl.ResponseApprovals;
 
 namespace Database.Configuration;
 
@@ -161,14 +162,15 @@ public static class GraphQlConfiguration
             // Mutation Types
             .AddMutationType(d => d.Name(nameof(Mutation)))
             .AddType<CalorimetricDataMutations>()
+            .AddType<DataAccessRightsMutations>()
+            .AddType<DataApprovalMutations>()
             .AddType<DatabaseMutations>()
+            .AddType<GeometricDataMutations>()
             .AddType<GetHttpsResourceMutations>()
             .AddType<HygrothermalDataMutations>()
             .AddType<OpticalDataMutations>()
             .AddType<PhotovoltaicDataMutations>()
-            .AddType<GeometricDataMutations>()
-            .AddType<DataApprovalMutations>()
-            .AddType<DataAccessRightsMutations>()
+            .AddType<ResponseApprovalMutations>()
             /* .AddSubscriptionType(d => d.Name(nameof(GraphQl.Subscription))) */
             /*     .AddType<ComponentSubscriptions>() */
             // Object Types
@@ -240,6 +242,7 @@ public partial class CustomFilterConvention : FilterConvention
         descriptor.BindRuntimeType<NamedMethodArgument, NamedMethodArgumentFilterType>();
         descriptor.BindRuntimeType<OpticalData, OpticalDataFilterType>();
         descriptor.BindRuntimeType<PhotovoltaicData, PhotovoltaicDataFilterType>();
+        descriptor.BindRuntimeType<Publication, PublicationFilterType>();
         descriptor.BindRuntimeType<Reference, ReferenceFilterType>();
     }
 
@@ -419,6 +422,7 @@ public partial class CustomSortConvention : SortConvention
         descriptor.BindRuntimeType<NamedMethodArgument, NamedMethodArgumentSortType>();
         descriptor.BindRuntimeType<OpticalData, OpticalDataSortType>();
         descriptor.BindRuntimeType<PhotovoltaicData, PhotovoltaicDataSortType>();
+        descriptor.BindRuntimeType<Publication, PublicationSortType>();
         descriptor.BindRuntimeType<Reference, ReferenceSortType>();
     }
 }

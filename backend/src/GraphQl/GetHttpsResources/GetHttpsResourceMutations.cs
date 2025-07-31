@@ -58,8 +58,7 @@ public sealed class GetHttpsResourceMutations
         }
         if (!GetHttpsResourceAuthorization.IsAuthorizedToCreateGetHttpsResourceForInstitution(
             currentUser,
-            data.CreatorId,
-            cancellationToken
+            data.CreatorId
             )
         )
         {

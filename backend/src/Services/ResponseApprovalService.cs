@@ -6,7 +6,6 @@ using Database.ApiRequests;
 using Database.ApiRequests.Dto;
 using Database.Data;
 using Database.Logging;
-using Database.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
@@ -62,25 +61,14 @@ public sealed class ResponseApprovalService(
 
     private async Task<(string Query, string Response)> GetQueryAndResponse(IData dataObject, CancellationToken cancellationToken)
     {
-        switch (dataObject)
+        return dataObject switch
         {
-            case GeometricData data:
-                return await DataApi.CreateQueryAndGetResponse<GeometricDataResponse>(data.Id, DataApi.GeometricDataFileNames, appSettings, apiRequestService, httpClientFactory, httpContextAccessor, cancellationToken);
-
-            case CalorimetricData data:
-                return await DataApi.CreateQueryAndGetResponse<CalorimetricDataResponse>(data.Id, DataApi.CalorimetricDataFileNames, appSettings, apiRequestService, httpClientFactory, httpContextAccessor, cancellationToken);
-
-            case HygrothermalData data:
-                return await DataApi.CreateQueryAndGetResponse<HygrothermalDataResponse>(data.Id, DataApi.HygrothermalDataFileNames, appSettings, apiRequestService, httpClientFactory, httpContextAccessor, cancellationToken);
-
-            case PhotovoltaicData data:
-                return await DataApi.CreateQueryAndGetResponse<PhotovoltaicDataResponse>(data.Id, DataApi.PhotovoltaicDataFileNames, appSettings, apiRequestService, httpClientFactory, httpContextAccessor, cancellationToken);
-
-            case OpticalData data:
-                return await DataApi.CreateQueryAndGetResponse<OpticalDataResponse>(data.Id, DataApi.OpticalDataFileNames, appSettings, apiRequestService, httpClientFactory, httpContextAccessor, cancellationToken);
-
-            default:
-                throw new NotImplementedException("Unknown IData object.");
-        }
+            GeometricData data => await DataApi.CreateQueryAndGetResponse<GeometricDataResponse>(data.Id, DataApi.GeometricDataFileNames, appSettings, apiRequestService, httpClientFactory, httpContextAccessor, cancellationToken),
+            CalorimetricData data => await DataApi.CreateQueryAndGetResponse<CalorimetricDataResponse>(data.Id, DataApi.CalorimetricDataFileNames, appSettings, apiRequestService, httpClientFactory, httpContextAccessor, cancellationToken),
+            HygrothermalData data => await DataApi.CreateQueryAndGetResponse<HygrothermalDataResponse>(data.Id, DataApi.HygrothermalDataFileNames, appSettings, apiRequestService, httpClientFactory, httpContextAccessor, cancellationToken),
+            PhotovoltaicData data => await DataApi.CreateQueryAndGetResponse<PhotovoltaicDataResponse>(data.Id, DataApi.PhotovoltaicDataFileNames, appSettings, apiRequestService, httpClientFactory, httpContextAccessor, cancellationToken),
+            OpticalData data => await DataApi.CreateQueryAndGetResponse<OpticalDataResponse>(data.Id, DataApi.OpticalDataFileNames, appSettings, apiRequestService, httpClientFactory, httpContextAccessor, cancellationToken),
+            _ => throw new NotImplementedException("Unknown IData object."),
+        };
     }
 }

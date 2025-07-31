@@ -75,16 +75,15 @@ public sealed class MethodAsServiceQueries
             );
         }
 
-        DatabaseDto database;
+        DatabaseDto? database;
         try
         {
-            database = await DatabaseApi.RequestDatabaseById(
+            database = await DatabaseApi.RequestDatabase(
                 input.DatabaseId,
                 appSettings,
                 apiRequestService,
                 httpClientFactory,
                 httpContextAccessor,
-                resolverContext,
                 cancellationToken);
         }
         catch (HttpRequestException e)

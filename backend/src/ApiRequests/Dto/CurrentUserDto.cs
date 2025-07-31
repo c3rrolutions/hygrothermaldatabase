@@ -18,7 +18,6 @@ public enum DataSigningPermission
 }
 
 public sealed record CurrentUserDto(
-    Guid Id,
     Guid Uuid,
     UserRepresentedInstitutionConnection RepresentedInstitutions
 );

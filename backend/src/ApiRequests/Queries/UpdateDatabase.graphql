@@ -9,6 +9,11 @@ mutation UpdateDatabase(
             locator
             verificationState
             verificationCode
+            operator {
+                node {
+                    uuid
+                }
+            }
             canCurrentUserUpdateNode
             canCurrentUserVerifyNode
         }

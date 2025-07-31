@@ -47,8 +47,7 @@ public sealed class DataAccessRightsMutations
 
         if (!CommonAuthorization.IsCurrentUserAtLeastAssistantManagerOfVerifiedInstitution(
             currentUser,
-            data.CreatorId,
-            cancellationToken
+            data.CreatorId
             )
         )
         {
@@ -91,8 +90,7 @@ public sealed class DataAccessRightsMutations
 
         if (!CommonAuthorization.IsCurrentUserAtLeastAssistantManagerOfVerifiedInstitution(
             currentUser,
-            input.InstitutionId,
-            cancellationToken
+            input.InstitutionId
             )
         )
         {
@@ -150,8 +148,7 @@ public sealed class DataAccessRightsMutations
 
         if (!CommonAuthorization.IsCurrentUserAtLeastAssistantManagerOfVerifiedInstitution(
             currentUser,
-            input.InstitutionId,
-            cancellationToken
+            input.InstitutionId
             )
         )
         {

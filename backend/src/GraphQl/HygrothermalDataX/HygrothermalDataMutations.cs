@@ -38,8 +38,7 @@ public sealed class HygrothermalDataMutations
         }
         if (!HygrothermalDataAuthorization.IsAuthorizedToCreateHygrothermalDataForInstitution(
             currentUser,
-            input.CreatorId,
-            cancellationToken
+            input.CreatorId
             )
         )
         {
@@ -130,7 +129,7 @@ public sealed class HygrothermalDataMutations
             hygrothermalData.Approval = await responseApprovalService.CreateResponseApproval(hygrothermalData, cancellationToken).ConfigureAwait(false);
             await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         }
-        catch (Exception ex)
+        catch (Exception exception)
         {
             context.Remove(hygrothermalData);
             await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
@@ -138,8 +137,8 @@ public sealed class HygrothermalDataMutations
             return new CreateHygrothermalDataPayload(
                 hygrothermalData,
                 new CreateHygrothermalDataError(
-                    CreateHygrothermalDataErrorCode.SIGNING_FAILED,
-                    $"Signing failed with message: {ex.Message}",
+                    CreateHygrothermalDataErrorCode.CREATING_RESPONSE_APPROVAL_FAILED,
+                    $"Signing failed with message: {exception.Message}",
                     []
                 )
             );

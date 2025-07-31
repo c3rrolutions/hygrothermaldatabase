@@ -137,9 +137,10 @@ public sealed class FileUploadController(
             return BadRequest(ModelState);
         }
         if (!FileUploadDataAuthorization.IsAuthorizedToUploadFilesForInstitution(
-            currentUser,
-            getHttpsResource.Data.CreatorId,
-            cancellationToken))
+                currentUser,
+                getHttpsResource.Data.CreatorId
+            )
+        )
         {
             return Unauthorized();
         }

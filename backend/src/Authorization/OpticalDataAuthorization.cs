@@ -8,10 +8,9 @@ public static class OpticalDataAuthorization
 {
     public static bool IsAuthorizedToCreateOpticalDataForInstitution(
         CurrentUserDto currentUser,
-        Guid institutionId,
-        CancellationToken cancellationToken
+        Guid institutionId
     )
     {
-        return CommonAuthorization.IsCurrentUserAtLeastAssistantManagerOfVerifiedInstitution(currentUser, institutionId, cancellationToken);
+        return CommonAuthorization.IsCurrentUserAtLeastAssistantManagerOfVerifiedInstitution(currentUser, institutionId);
     }
 }

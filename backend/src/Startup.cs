@@ -69,6 +69,7 @@ public sealed class Startup(
         services.AddScoped<MethodCalculationService>();
         services.AddScoped<ResponseApprovalService>();
         services.AddScoped<UserService>();
+        services.AddScoped<DatabaseService>();
     }
 
     private static void ConfigureRequestResponseServices(IServiceCollection services)

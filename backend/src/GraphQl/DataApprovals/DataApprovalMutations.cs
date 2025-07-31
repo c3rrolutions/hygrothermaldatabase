@@ -35,18 +35,29 @@ public sealed class DataApprovalMutations
             );
         }
 
+        var data = await dataService.GetDataAsync(input.DataId, context, cancellationToken).ConfigureAwait(false);
+        if (data is null)
+        {
+            return new AddDataApprovalPayload(
+                new AddDataApprovalError(
+                    AddDataApprovalErrorCode.UNKNOWN_DATA,
+                    $"Unknown data.",
+                    [nameof(input), nameof(input.DataId).FirstCharToLower()]
+                )
+            );
+        }
+
         if (!CommonAuthorization.IsAuthorizedToAddDataApprovalForInstitution(
             currentUser,
-            input.CreatorId,
-            cancellationToken
+            input.CreatorId
             )
         )
         {
             return new AddDataApprovalPayload(
                 new AddDataApprovalError(
                     AddDataApprovalErrorCode.UNAUTHORIZED,
-                    $"The current user is not authorized to approval for the institution.",
-                    []
+                    $"The current user is not authorized to add approvals for the institution.",
+                    [nameof(input), nameof(input.CreatorId).FirstCharToLower()]
                 )
             );
         }
@@ -75,25 +86,13 @@ public sealed class DataApprovalMutations
             );
         }
 
-        var data = await dataService.GetDataAsync(input.DataId, context, cancellationToken).ConfigureAwait(false);
-        if (data is null)
-        {
-            return new AddDataApprovalPayload(
-                new AddDataApprovalError(
-                    AddDataApprovalErrorCode.UNKNOWN_DATA,
-                    $"Unknown data.",
-                    []
-                )
-            );
-        }
-
         var approval = new DataApproval(
-            DateTime.Now,
+            input.Timestamp,
             input.Signature,
             input.KeyFingerprint,
             input.Query,
             input.Response,
-            currentUser.Id,
+            input.ApproverId,
             ReferenceType.FromInput(input.Statement)
         );
 
@@ -105,7 +104,7 @@ public sealed class DataApprovalMutations
             data.Approval = await responseApprovalService.CreateResponseApproval(data, cancellationToken).ConfigureAwait(false);
             await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         }
-        catch (Exception ex)
+        catch (Exception exception)
         {
             context.Remove(data);
             await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
@@ -113,8 +112,8 @@ public sealed class DataApprovalMutations
             return new AddDataApprovalPayload(
                 approval,
                 new AddDataApprovalError(
-                    AddDataApprovalErrorCode.SIGNING_FAILED,
-                    $"Signing failed with message: {ex.Message}",
+                    AddDataApprovalErrorCode.CREATING_RESPONSE_APPROVAL_FAILED,
+                    $"Signing failed with message: {exception.Message}",
                     []
                 )
             );

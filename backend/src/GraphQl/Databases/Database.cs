@@ -1,4 +1,5 @@
 using System;
+using Database.ApiRequests.Dto;
 
 namespace Database.GraphQl.Databases;
 

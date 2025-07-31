@@ -8,10 +8,9 @@ public static class PhotovoltaicDataAuthorization
 {
     public static bool IsAuthorizedToCreatePhotovoltaicDataForInstitution(
         CurrentUserDto currentUser,
-        Guid institutionId,
-        CancellationToken cancellationToken
+        Guid institutionId
     )
     {
-        return CommonAuthorization.IsCurrentUserAtLeastAssistantManagerOfVerifiedInstitution(currentUser, institutionId, cancellationToken);
+        return CommonAuthorization.IsCurrentUserAtLeastAssistantManagerOfVerifiedInstitution(currentUser, institutionId);
     }
 }

@@ -24,5 +24,6 @@ public sealed class PublicationType
         IObjectTypeDescriptor<Publication> descriptor
     )
     {
+        descriptor.Field(p => p.Exists).Ignore();
     }
 }

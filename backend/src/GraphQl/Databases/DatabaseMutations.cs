@@ -21,24 +21,29 @@ public sealed class DatabaseMutations
         CancellationToken cancellationToken
     )
     {
-        var database = await DatabaseApi.UpdateDatabase(
+        var databasePayload = await DatabaseApi.UpdateDatabase(
             input,
             appSettings,
             apiRequestService,
             httpClientFactory,
             httpContextAccessor,
             cancellationToken).ConfigureAwait(false);
-        return database is not null ? new UpdateDatabasePayload(
-            Database.FromDto(database),
-            null) : new UpdateDatabasePayload(
-                   null,
-                   [
-                       new UpdateDatabaseError(
-                           UpdateDatabaseErrorCode.UNKNOWN,
-                           "Unknown error.",
-                           Array.Empty<string>()
-                       )
-                   ]
-               );
+        if (databasePayload is null || databasePayload.Database is null)
+        {
+           return new UpdateDatabasePayload(
+                null,
+                [
+                    new UpdateDatabaseError(
+                    UpdateDatabaseErrorCode.UNKNOWN,
+                    "Unknown error.",
+                    []
+                )
+                ]
+           );
+        }
+        return new UpdateDatabasePayload(
+            Database.FromDto(databasePayload.Database),
+            null
+        );
     }
 }

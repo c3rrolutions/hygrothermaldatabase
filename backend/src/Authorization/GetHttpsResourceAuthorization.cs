@@ -8,10 +8,9 @@ public static class GetHttpsResourceAuthorization
 {
     public static bool IsAuthorizedToCreateGetHttpsResourceForInstitution(
         CurrentUserDto currentUser,
-        Guid institutionId,
-        CancellationToken cancellationToken
+        Guid institutionId
     )
     {
-        return CommonAuthorization.IsCurrentUserAtLeastAssistantManagerOfVerifiedInstitution(currentUser, institutionId, cancellationToken);
+        return CommonAuthorization.IsCurrentUserAtLeastAssistantManagerOfVerifiedInstitution(currentUser, institutionId);
     }
 }

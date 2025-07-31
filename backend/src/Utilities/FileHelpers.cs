@@ -138,11 +138,11 @@ public static class FileHelpers
                 return memoryStream.ToArray();
             }
         }
-        catch (Exception ex)
+        catch (Exception exception)
         {
             modelState.AddModelError(formFile.Name,
                 $"{fieldDisplayName}({trustedFileNameForDisplay}) upload failed. " +
-                $"Please contact the Help Desk for support. Error: {ex.HResult}");
+                $"Please contact the Help Desk for support. Error: {exception.HResult}");
             // Log the exception
         }
 
@@ -182,11 +182,11 @@ public static class FileHelpers
                 return memoryStream.ToArray();
             }
         }
-        catch (Exception ex)
+        catch (Exception exception)
         {
             modelState.AddModelError("File",
                 "The upload failed. Please contact the Help Desk " +
-                $" for support. Error: {ex.HResult}");
+                $" for support. Error: {exception.HResult}");
             // Log the exception
         }
 

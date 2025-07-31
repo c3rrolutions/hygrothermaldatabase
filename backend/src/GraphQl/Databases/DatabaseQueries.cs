@@ -28,12 +28,21 @@ public sealed class DatabaseQueries
         try
         {
             var database = await DatabaseApi.RequestDatabase(
+                appSettings.DatabaseId,
                 appSettings,
                 apiRequestService,
                 httpClientFactory,
                 httpContextAccessor,
-                resolverContext,
                 cancellationToken);
+            if (database is null)
+            {
+                throw new GraphQLException(
+                    ErrorBuilder.New()
+                        .SetPath(resolverContext.Path)
+                        .SetMessage($"Failed to fetch database from the metabase GraphQl endpoint.")
+                        .Build()
+                );
+            }
             return Database.FromDto(database);
         }
         catch (HttpRequestException e)

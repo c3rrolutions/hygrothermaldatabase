@@ -1,7 +1,16 @@
 using System;
 using System.Collections.Generic;
+using Database.GraphQl.Databases;
 
-namespace Database.GraphQl.Databases;
+namespace Database.ApiRequests.Dto;
+
+public sealed record Institution(
+     Guid Uuid
+);
+
+public sealed record DatabaseOperatorEdge(
+     Institution Node
+);
 
 public sealed record DatabaseDto(
 
@@ -11,16 +20,20 @@ public sealed record DatabaseDto(
      Uri Locator,
      DatabaseVerificationState VerificationState,
      string VerificationCode,
+     DatabaseOperatorEdge Operator,
 
      // public Institution? Operator { get; set; }
      bool CanCurrentUserUpdateNode,
      bool CanCurrentUserVerifyNode
 );
 
-public sealed record DatabasesConnectionDto
-(
-    IReadOnlyList<DatabaseEdge>? Edges
+public sealed record ErrorDto(
+     string Code,
+     string Message,
+     IReadOnlyList<string> Path
 );
-public sealed record DatabaseEdge(
-     DatabaseDto Node
+
+public sealed record DatabasePayloadDto(
+     DatabaseDto? Database,
+     IReadOnlyList<ErrorDto>? Errors
 );

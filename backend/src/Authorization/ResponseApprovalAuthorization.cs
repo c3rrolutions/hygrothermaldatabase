@@ -1,12 +1,11 @@
 using System;
-using System.Threading;
 using Database.ApiRequests.Dto;
 
 namespace Database.Authorization;
 
-public static class FileUploadDataAuthorization
+public static class ResponseApprovalAuthorization
 {
-    public static bool IsAuthorizedToUploadFilesForInstitution(
+    public static bool IsAuthorizedToManageResponseApprovals(
         CurrentUserDto currentUser,
         Guid institutionId
     )

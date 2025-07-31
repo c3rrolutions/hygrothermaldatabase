@@ -22,8 +22,7 @@ public sealed class OpticalDataMutations
         CancellationToken cancellationToken
     )
     {
-        var currentUser = await userService.GetCurrentUser(
-            cancellationToken).ConfigureAwait(false);
+        var currentUser = await userService.GetCurrentUser(cancellationToken);
         if (currentUser is null)
         {
             return new CreateOpticalDataPayload(
@@ -36,8 +35,7 @@ public sealed class OpticalDataMutations
         }
         if (!OpticalDataAuthorization.IsAuthorizedToCreateOpticalDataForInstitution(
             currentUser,
-            input.CreatorId,
-            cancellationToken
+            input.CreatorId
             )
         )
         {
@@ -144,7 +142,7 @@ public sealed class OpticalDataMutations
             opticalData.Approval = await responseApprovalService.CreateResponseApproval(opticalData, cancellationToken).ConfigureAwait(false);
             await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         }
-        catch (Exception ex)
+        catch (Exception exception)
         {
             context.Remove(opticalData);
             await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
@@ -152,8 +150,8 @@ public sealed class OpticalDataMutations
             return new CreateOpticalDataPayload(
                 opticalData,
                 new CreateOpticalDataError(
-                    CreateOpticalDataErrorCode.SIGNING_FAILED,
-                    $"Signing failed with message: {ex.Message}",
+                    CreateOpticalDataErrorCode.CREATING_RESPONSE_APPROVAL_FAILED,
+                    $"Creating response approval failed with message: {exception.Message}",
                     []
                 )
             );

@@ -37,8 +37,7 @@ public sealed class CalorimetricDataMutations
 
         if (!CalorimetricDataAuthorization.IsAuthorizedToCreateCalorimetricDataForInstitution(
             currentUser,
-            input.CreatorId,
-            cancellationToken
+            input.CreatorId
             )
         )
         {
@@ -131,7 +130,7 @@ public sealed class CalorimetricDataMutations
             calorimetricData.Approval = await responseApprovalService.CreateResponseApproval(calorimetricData, cancellationToken).ConfigureAwait(false);
             await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         }
-        catch (Exception ex)
+        catch (Exception exception)
         {
             context.Remove(calorimetricData);
             await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
@@ -139,8 +138,8 @@ public sealed class CalorimetricDataMutations
             return new CreateCalorimetricDataPayload(
                 calorimetricData,
                 new CreateCalorimetricDataError(
-                    CreateCalorimetricDataErrorCode.SIGNING_FAILED,
-                    $"Signing failed with message: {ex.Message}",
+                    CreateCalorimetricDataErrorCode.CREATING_RESPONSE_APPROVAL_FAILED,
+                    $"Signing failed with message: {exception.Message}",
                     []
                 )
             );

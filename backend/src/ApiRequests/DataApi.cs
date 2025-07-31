@@ -117,7 +117,6 @@ public sealed class DataApi
     /// Throws exception, when query could not be constructed or no response.
     /// </exception>
     /// <returns> Query and response for data. </returns>
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2201:Keine reservierten Ausnahmetypen auslösen", Justification = "<Ausstehend>")]
     public static async Task<GraphQLResponse<TGraphQlResponse>> GetDataFromDatabase<TGraphQlResponse>(
         Uri databaseUri,
         Guid dataId,
@@ -135,20 +134,13 @@ public sealed class DataApi
             new { uuid = dataId },
             ""
         );
-        if (request.Query is null)
-        {
-            throw new Exception("Failed to construct GraphQL query.");
-        }
-
-        var responseObject = await apiRequestService.Database().QueryGraphQlFromUrl<TGraphQlResponse>(
+        return await apiRequestService.Database().QueryGraphQlFromUrl<TGraphQlResponse>(
             appSettings,
             databaseUri,
             request,
             httpClientFactory,
             httpContextAccessor,
             cancellationToken
-        ).ConfigureAwait(false);
-
-        return responseObject;
+        );
     }
 }

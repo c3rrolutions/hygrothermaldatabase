@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Database.ApiRequests.Dto;
 using Database.Data;
 using Database.Logging;
-using Database.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -39,8 +38,13 @@ public sealed class AccessRightsService(
         var institutions = new List<Guid>();
         var accessRights = new List<InstitutionAccessRights>();
 
-        var applicationId = userService.GetApplicationIdFromUser() ?? throw new InvalidOperationException("Application identifier could not be acquired.");
-        var currentUser = await userService.GetCurrentUser(cancellationToken).ConfigureAwait(false) ?? throw new InvalidOperationException("Could not get current user!");
+        var currentUser = await userService.GetCurrentUser(cancellationToken).ConfigureAwait(false);
+        var applicationId = userService.GetApplicationIdFromUser();
+        if (currentUser is null || applicationId is null)
+        {
+            logger.UnknownUserOrApplication(currentUser?.Uuid, applicationId);
+            return Enumerable.Empty<T>().AsQueryable();
+        }
 
         var alreadyAccessedCount = cacheService.GetAccessCountForUser(currentUser.Uuid);
         foreach (var institution in currentUser.RepresentedInstitutions.Edges)

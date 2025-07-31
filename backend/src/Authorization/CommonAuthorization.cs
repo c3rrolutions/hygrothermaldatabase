@@ -33,7 +33,6 @@ public static class CommonAuthorization
     {
         return currentUser.RepresentedInstitutions.Edges.Any(
             t => t.Node.Uuid == institutionId
-            && t.DataSigningPermission is DataSigningPermission.GRANTED
         );
     }
 }

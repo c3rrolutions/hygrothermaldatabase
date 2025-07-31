@@ -19,6 +19,7 @@ public sealed class DataApprovalMutations
         ApplicationDbContext context,
         UserService userService,
         DataService dataService,
+        DatabaseService databaseService,
         ResponseApprovalService responseApprovalService,
         CancellationToken cancellationToken
     )
@@ -34,6 +35,31 @@ public sealed class DataApprovalMutations
                 )
             );
         }
+        var database = await databaseService.QueryDatabase(cancellationToken);
+        if (database is null)
+        {
+            return new AddDataApprovalPayload(
+                new AddDataApprovalError(
+                    AddDataApprovalErrorCode.UNKNOWN_DATABASE,
+                    $"The database could not be identified.",
+                    []
+                )
+            );
+        }
+        if (!CommonAuthorization.IsAuthorizedToAddDataApprovalForInstitution(
+            currentUser,
+            database.Operator.Node.Uuid
+            )
+        )
+        {
+            return new AddDataApprovalPayload(
+                new AddDataApprovalError(
+                    AddDataApprovalErrorCode.UNAUTHORIZED,
+                    $"The current user is not authorized to add data approvals for the database.",
+                    [nameof(input), nameof(input.ApproverId).FirstCharToLower()]
+                )
+            );
+        }
 
         var data = await dataService.GetDataAsync(input.DataId, context, cancellationToken).ConfigureAwait(false);
         if (data is null)
@@ -43,21 +69,6 @@ public sealed class DataApprovalMutations
                     AddDataApprovalErrorCode.UNKNOWN_DATA,
                     $"Unknown data.",
                     [nameof(input), nameof(input.DataId).FirstCharToLower()]
-                )
-            );
-        }
-
-        if (!CommonAuthorization.IsAuthorizedToAddDataApprovalForInstitution(
-            currentUser,
-            input.CreatorId
-            )
-        )
-        {
-            return new AddDataApprovalPayload(
-                new AddDataApprovalError(
-                    AddDataApprovalErrorCode.UNAUTHORIZED,
-                    $"The current user is not authorized to add approvals for the institution.",
-                    [nameof(input), nameof(input.CreatorId).FirstCharToLower()]
                 )
             );
         }

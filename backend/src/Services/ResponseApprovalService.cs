@@ -1,5 +1,6 @@
 using System;
 using System.Net.Http;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Database.ApiRequests;
@@ -11,22 +12,14 @@ using Microsoft.Extensions.Logging;
 
 namespace Database.Services;
 
-/// <summary>
-/// Service to create response approval
-/// </summary>
-/// <param name="appSettings">         <see cref="AppSettings"/> </param>
-/// <param name="signingService">      <see cref="SigningService"/> </param>
-/// <param name="apiRequestService">   <see cref="ApiRequestService"/> </param>
-/// <param name="httpClientFactory">   <see cref="IHttpClientFactory"/> </param>
-/// <param name="httpContextAccessor"> <see cref="IHttpContextAccessor"/> </param>
-/// <param name="logger">              <see cref="ILogger"/> </param>
 public sealed class ResponseApprovalService(
     AppSettings appSettings,
     SigningService signingService,
     ApiRequestService apiRequestService,
     IHttpClientFactory httpClientFactory,
     IHttpContextAccessor httpContextAccessor,
-    ILogger<ResponseApprovalService> logger)
+    ILogger<ResponseApprovalService> logger
+)
 {
     private sealed record CalorimetricDataResponse(CalorimetricDataDto CalorimetricData);
     private sealed record GeometricDataResponse(GeometricDataDto GeometricData);
@@ -44,31 +37,27 @@ public sealed class ResponseApprovalService(
     public async Task<ResponseApproval> CreateResponseApproval(IData dataObject, CancellationToken cancellationToken)
     {
         // Get dataset
-        logger.GetQueryAndResponse(dataObject.GetType().Name);
-        var queryAdnResponse = await GetQueryAndResponse(dataObject, cancellationToken).ConfigureAwait(false);
-
-        logger.QueryAndResponce(queryAdnResponse.Query, queryAdnResponse.Response);
-
-        var signatureResult = await signingService.SignData(queryAdnResponse.Response).ConfigureAwait(false);
-
+        logger.QueryAllMetaData(dataObject.GetType().Name, dataObject.Id);
+        var (query, variables, response) = await QueryAllMetaData(dataObject, cancellationToken).ConfigureAwait(false);
+        logger.QueryAndVariablesAndResponce(query, variables, response);
+        var signatureResult = await signingService.SignData(response).ConfigureAwait(false);
         if (!signatureResult.Success)
         {
             throw new InvalidOperationException($"Signing of data failed! {signatureResult.Output}");
         }
-
-        return new ResponseApproval(DateTime.UtcNow, signatureResult.Output, await signingService.GetFingerprint(), queryAdnResponse.Query, queryAdnResponse.Response);
+        return new ResponseApproval(DateTime.UtcNow, signatureResult.Output, await signingService.GetFingerprint(), query, variables, response);
     }
 
-    private async Task<(string Query, string Response)> GetQueryAndResponse(IData dataObject, CancellationToken cancellationToken)
+    private async Task<(string Query, JsonElement Variables, string Response)> QueryAllMetaData(IData dataObject, CancellationToken cancellationToken)
     {
         return dataObject switch
         {
-            GeometricData data => await DataApi.CreateQueryAndGetResponse<GeometricDataResponse>(data.Id, DataApi.GeometricDataFileNames, appSettings, apiRequestService, httpClientFactory, httpContextAccessor, cancellationToken),
-            CalorimetricData data => await DataApi.CreateQueryAndGetResponse<CalorimetricDataResponse>(data.Id, DataApi.CalorimetricDataFileNames, appSettings, apiRequestService, httpClientFactory, httpContextAccessor, cancellationToken),
-            HygrothermalData data => await DataApi.CreateQueryAndGetResponse<HygrothermalDataResponse>(data.Id, DataApi.HygrothermalDataFileNames, appSettings, apiRequestService, httpClientFactory, httpContextAccessor, cancellationToken),
-            PhotovoltaicData data => await DataApi.CreateQueryAndGetResponse<PhotovoltaicDataResponse>(data.Id, DataApi.PhotovoltaicDataFileNames, appSettings, apiRequestService, httpClientFactory, httpContextAccessor, cancellationToken),
-            OpticalData data => await DataApi.CreateQueryAndGetResponse<OpticalDataResponse>(data.Id, DataApi.OpticalDataFileNames, appSettings, apiRequestService, httpClientFactory, httpContextAccessor, cancellationToken),
-            _ => throw new NotImplementedException("Unknown IData object."),
+            GeometricData data => await DataApi.QueryAllMetaData<GeometricDataResponse>(data.Id, DataApi.GeometricDataFileNames, appSettings, apiRequestService, httpClientFactory, httpContextAccessor, cancellationToken),
+            CalorimetricData data => await DataApi.QueryAllMetaData<CalorimetricDataResponse>(data.Id, DataApi.CalorimetricDataFileNames, appSettings, apiRequestService, httpClientFactory, httpContextAccessor, cancellationToken),
+            HygrothermalData data => await DataApi.QueryAllMetaData<HygrothermalDataResponse>(data.Id, DataApi.HygrothermalDataFileNames, appSettings, apiRequestService, httpClientFactory, httpContextAccessor, cancellationToken),
+            PhotovoltaicData data => await DataApi.QueryAllMetaData<PhotovoltaicDataResponse>(data.Id, DataApi.PhotovoltaicDataFileNames, appSettings, apiRequestService, httpClientFactory, httpContextAccessor, cancellationToken),
+            OpticalData data => await DataApi.QueryAllMetaData<OpticalDataResponse>(data.Id, DataApi.OpticalDataFileNames, appSettings, apiRequestService, httpClientFactory, httpContextAccessor, cancellationToken),
+            _ => throw new NotImplementedException($"Unsupported data type {typeof(IData)}"),
         };
     }
 }

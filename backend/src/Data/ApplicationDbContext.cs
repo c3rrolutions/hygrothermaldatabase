@@ -75,6 +75,45 @@ public sealed class ApplicationDbContext
         return builder;
     }
 
+    private static
+        EntityTypeBuilder<TData>
+        ConfigureData<TData>(
+            EntityTypeBuilder<TData> builder
+        )
+        where TData : class, IData
+    {
+        builder
+            .OwnsOne(
+                data => data.AppliedMethod,
+                method =>
+                {
+                    method.OwnsMany(m => m.Arguments);
+                    method.OwnsMany(m => m.Sources);
+                }
+            );
+        builder
+            .OwnsOne(
+                x => x.Approval,
+                approval =>
+                {
+                    approval
+                        .Property(a => a.Variables)
+                        .HasDefaultValueSql("'{}'");
+                }
+            );
+        builder
+            .OwnsMany(
+                x => x.Approvals,
+                approvals =>
+                {
+                    approvals
+                        .Property(a => a.Variables)
+                        .HasDefaultValueSql("'{}'");
+                }
+            );
+        return builder;
+    }
+
     private static void ConfigureIdentityEntities(
         ModelBuilder builder
     )
@@ -86,46 +125,32 @@ public sealed class ApplicationDbContext
     {
         base.OnModelCreating(modelBuilder);
         modelBuilder.HasDefaultSchema(_schemaName);
-        modelBuilder.HasPostgresExtension(
-            "pgcrypto"); // https://www.npgsql.org/efcore/modeling/generated-properties.html#guiduuid-generation
+        modelBuilder.HasPostgresExtension("pgcrypto"); // https://www.npgsql.org/efcore/modeling/generated-properties.html#guiduuid-generation
         CreateEnumerations(modelBuilder, _schemaName);
         ConfigureIdentityEntities(modelBuilder);
         ConfigureEntity(
                 modelBuilder.Entity<GetHttpsResource>()
             )
             .ToTable("get_https_resource");
-        ConfigureEntity(
-                modelBuilder.Entity<CalorimetricData>()
-            )
-            .OwnsOne(
-                data => data.AppliedMethod,
-                method =>
-                {
-                    method.OwnsMany(m => m.Arguments);
-                    method.OwnsMany(m => m.Sources);
-                }
-            )
-            .ToTable("calorimetric_data");
-        ConfigureEntity(
-                modelBuilder.Entity<HygrothermalData>()
-            )
-            .ToTable("hygrothermal_data");
-        ConfigureEntity(
-                modelBuilder.Entity<OpticalData>()
-            )
-            .ToTable("optical_data");
-        ConfigureEntity(
-                modelBuilder.Entity<PhotovoltaicData>()
-            )
-            .ToTable("photovoltaic_data");
+        ConfigureData(
+            ConfigureEntity(modelBuilder.Entity<CalorimetricData>())
+        ).ToTable("calorimetric_data");
+        ConfigureData(
+            ConfigureEntity(modelBuilder.Entity<GeometricData>())
+        ).ToTable("geometric_data");
+        ConfigureData(
+            ConfigureEntity(modelBuilder.Entity<HygrothermalData>())
+        ).ToTable("hygrothermal_data");
+        ConfigureData(
+            ConfigureEntity(modelBuilder.Entity<OpticalData>())
+        ).ToTable("optical_data");
+        ConfigureData(
+            ConfigureEntity(modelBuilder.Entity<PhotovoltaicData>())
+        ).ToTable("photovoltaic_data");
         ConfigureEntity(
                 modelBuilder.Entity<User>()
             )
             .ToTable("user");
-        ConfigureEntity(
-                modelBuilder.Entity<GeometricData>()
-            )
-            .ToTable("geometric_data");
         ConfigureEntity(
                 modelBuilder.Entity<InstitutionAccessRights>()
             )

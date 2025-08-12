@@ -102,6 +102,7 @@ public sealed class DataApprovalMutations
             input.Signature,
             input.KeyFingerprint,
             input.Query,
+            input.Variables,
             input.Response,
             input.ApproverId,
             ReferenceType.FromInput(input.Statement)

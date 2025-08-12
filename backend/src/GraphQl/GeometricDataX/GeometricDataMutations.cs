@@ -63,7 +63,7 @@ public sealed class GeometricDataMutations
                 input.AppliedMethod.Arguments
                     .Select(a => new NamedMethodArgument(
                         a.Name,
-                        JsonDocument.Parse(@"""TODO""")
+                        a.Value
                     ))
                     .ToList(),
                 input.AppliedMethod.Sources
@@ -98,7 +98,7 @@ public sealed class GeometricDataMutations
                     input.RootResource.AppliedConversionMethod.Arguments.Select(a =>
                         new NamedMethodArgument(
                             a.Name,
-                            JsonDocument.Parse(@"""TODO""")
+                            a.Value
                         )
                     ).ToList(),
                     input.RootResource.AppliedConversionMethod.SourceName

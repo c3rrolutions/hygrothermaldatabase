@@ -1,4 +1,5 @@
 using System;
+using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 
 namespace Database.Data;
@@ -9,6 +10,7 @@ public sealed class DataApproval(
     string signature,
     string keyFingerprint,
     string query,
+    JsonElement variables,
     string response,
     Guid approverId,
     Reference statement
@@ -21,6 +23,7 @@ public sealed class DataApproval(
         string signature,
         string keyFingerprint,
         string query,
+        JsonElement variables,
         string response,
         Guid approverId
     )
@@ -29,6 +32,7 @@ public sealed class DataApproval(
         signature,
         keyFingerprint,
         query,
+        variables,
         response,
         approverId,
         null! // EF Core will set this owned navigation property after construction.
@@ -41,6 +45,7 @@ public sealed class DataApproval(
     public string Signature { get; private set; } = signature;
     public string KeyFingerprint { get; private set; } = keyFingerprint;
     public string Query { get; private set; } = query;
+    public JsonElement Variables { get; private set; } = variables;
     public string Response { get; private set; } = response;
     public Reference Statement { get; private set; } = statement;
 }

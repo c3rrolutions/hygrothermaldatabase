@@ -10,15 +10,5 @@ public sealed class NamedMethodArgumentType
         IObjectTypeDescriptor<NamedMethodArgument> descriptor
     )
     {
-        // Note that in the GraphQL configuration we map the scalar "Any"
-        // to `JsonType`.
-        descriptor
-            .Field(x => x.Value)
-            .Type<NonNullType<JsonType>>()
-            .Resolve(context =>
-                context.Parent<NamedMethodArgument>()
-                    .Value
-                    .RootElement
-            );
     }
 }

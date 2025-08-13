@@ -43,7 +43,7 @@ public sealed class SigningService(
         return fingerprint;
     }
 
-    private async Task<(bool Success, string Output, string Error)> ExecuteGnuCommand(
+    private async Task<(bool Success, string Output, string Diagnostics)> ExecuteGnuCommand(
         string command,
         string? input = null
     )

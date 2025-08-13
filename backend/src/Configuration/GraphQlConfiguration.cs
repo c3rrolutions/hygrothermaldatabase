@@ -351,7 +351,7 @@ public static class FilterConventionDescriptorExtensions
         descriptor.Operation(DefaultFilterOperations.Or).Name("or");
         descriptor.Operation(DefaultFilterOperations.Data).Name("data");
         descriptor.Operation(AdditionalFilterOperations.Not).Name("not");
-        // TODO `inClosedInterval`
+        // `inClosedInterval`
         return descriptor;
     }
 

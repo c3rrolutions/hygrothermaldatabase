@@ -31,18 +31,28 @@ public sealed class HygrothermalDataQueries
         CancellationToken cancellationToken
     )
     {
-        // TODO Use `locale`.
         sorting.StabilizeOrder<HygrothermalData>();
-        var filteredData = context.HygrothermalData.Sort(resolverContext).Filter(resolverContext);
-
-        // Check if there is restricted data
-        if (!filteredData.Any(x => x.DataAccessRights.HasRestrictions))
+        var filteredData = context.HygrothermalData
+            .Sort(resolverContext)
+            .Filter(resolverContext);
+        if (!await filteredData.AnyAsync(x => x.DataAccessRights.HasRestrictions, cancellationToken))
         {
             return filteredData;
         }
-
-        // Apply acces rights on data
         return await accessRightsService.ApplyAccessRightsOnData(filteredData, cancellationToken);
+    }
+
+    [UseFiltering(typeof(HygrothermalData))]
+    public Task<bool> GetHasHygrothermalData(
+        [GraphQLType<LocaleType>] string? locale,
+        ApplicationDbContext context,
+        IResolverContext resolverContext,
+        CancellationToken cancellationToken
+    )
+    {
+        return context.HygrothermalData
+            .Filter(resolverContext)
+            .AnyAsync(cancellationToken);
     }
 
     public async Task<HygrothermalData?> GetHygrothermalDataAsync(
@@ -53,17 +63,18 @@ public sealed class HygrothermalDataQueries
         CancellationToken cancellationToken
     )
     {
-        // TODO Use `locale`.
         var hygrothermalData = await byId.LoadAsync(
             id,
             cancellationToken
         );
-
         if (hygrothermalData is null)
+        {
+            return null;
+        }
+        if (!hygrothermalData.DataAccessRights.HasRestrictions)
         {
             return hygrothermalData;
         }
-
         return await accessRightsService.ApplyAccessRightsOnData(hygrothermalData, cancellationToken);
     }
 }

@@ -218,9 +218,9 @@ type DataAccessRights {
   allowedInstitutions: [Uuid!]
   allowedUserAndQuantity: [KeyValuePairOfGuidAndNullableOfUInt32!]
   hasRestrictions: Boolean!
-  isRestrictedByApplication: Boolean!
-  isRestrictedByInstitution: Boolean!
-  isRestrictedByUser: Boolean!
+  hasRestrictionsByApplication: Boolean!
+  hasRestrictionsByInstitution: Boolean!
+  hasRestrictionsByUser: Boolean!
 }
 
 type DataApproval {
@@ -231,6 +231,7 @@ type DataApproval {
   signature: String!
   statement: Reference @cost(weight: "10")
   timestamp: DateTime!
+  variables: Any!
 }
 
 type DataConnection {
@@ -414,6 +415,9 @@ type Incidence {
 type InstitutionAccessRights {
   allowedDatasetsPerTime: NonNegativeInt
   allowedUserCount: NonNegativeInt
+  hasRestrictions: Boolean!
+  hasRestrictionsByTime: Boolean!
+  hasRestrictionsByUser: Boolean!
   id: Uuid!
   institutionId: Uuid!
   period: TimeSpan!
@@ -469,7 +473,7 @@ type Mutation {
 
 type NamedMethodArgument {
   name: String!
-  value: Any! @cost(weight: "10")
+  value: Any!
 }
 
 type NamedMethodSource {
@@ -622,6 +626,11 @@ type Query {
   geometricData(id: Uuid! locale: Locale): GeometricData @cost(weight: "10")
   getHttpsResource(id: Uuid!): GetHttpsResource @cost(weight: "10")
   getHttpsResources("Returns the elements in the list that come after the specified cursor." after: String "Returns the elements in the list that come before the specified cursor." before: String "Returns the first _n_ elements from the list." first: Int "Returns the last _n_ elements from the list." last: Int order: [GetHttpsResourceSortInput!] @cost(weight: "10") where: GetHttpsResourcePropositionInput @cost(weight: "10")): GetHttpsResourceConnection @listSize(assumedSize: 100, slicingArguments: [ "first", "last" ], slicingArgumentDefaultValue: 100, sizedFields: [ "edges", "nodes" ], requireOneSlicingArgument: false) @cost(weight: "10")
+  hasCalorimetricData(locale: Locale where: CalorimetricDataPropositionInput @cost(weight: "10")): Boolean! @cost(weight: "10")
+  hasGeometricData(locale: Locale where: GeometricDataPropositionInput @cost(weight: "10")): Boolean! @cost(weight: "10")
+  hasHygrothermalData(locale: Locale where: HygrothermalDataPropositionInput @cost(weight: "10")): Boolean! @cost(weight: "10")
+  hasOpticalData(locale: Locale where: OpticalDataPropositionInput @cost(weight: "10")): Boolean! @cost(weight: "10")
+  hasPhotovoltaicData(locale: Locale where: PhotovoltaicDataPropositionInput @cost(weight: "10")): Boolean! @cost(weight: "10")
   hygrothermalData(id: Uuid! locale: Locale): HygrothermalData @cost(weight: "10")
   methodAsService(input: MethodAsServiceInput!): MethodAsServicePayload! @cost(weight: "10")
   methodAsServiceWithFile(input: MethodAsServiceWithFileInput!): MethodAsServicePayload! @cost(weight: "10")
@@ -640,6 +649,7 @@ type ResponseApproval {
   response: String!
   signature: String!
   timestamp: DateTime!
+  variables: Any!
 }
 
 type Results {
@@ -923,6 +933,7 @@ input DataApprovalInput {
   signature: String!
   statement: ReferenceInput!
   timestamp: DateTime!
+  variables: Any!
 }
 
 input DataApprovalPropositionInput {
@@ -933,6 +944,7 @@ input DataApprovalPropositionInput {
   signature: StringPropositionInput
   keyFingerprint: StringPropositionInput
   query: StringPropositionInput
+  variables: JsonElementPropositionInput
   response: StringPropositionInput
   statement: ReferencePropositionInput
 }
@@ -1116,6 +1128,19 @@ input Int32PropositionInput {
   notLessThan: Int @cost(weight: "10")
   lessThanOrEqualTo: Int @cost(weight: "10")
   notLessThanOrEqualTo: Int @cost(weight: "10")
+}
+
+input JsonElementPropositionInput {
+  and: [JsonElementPropositionInput!]
+  or: [JsonElementPropositionInput!]
+  valueKind: JsonValueKindPropositionInput
+}
+
+input JsonValueKindPropositionInput {
+  equalTo: JsonValueKind @cost(weight: "10")
+  notEqualTo: JsonValueKind @cost(weight: "10")
+  in: [JsonValueKind!] @cost(weight: "10")
+  notIn: [JsonValueKind!] @cost(weight: "10")
 }
 
 input KeyValuePairOfGuidAndNullableOfUInt32Input {
@@ -1589,6 +1614,17 @@ enum InstitutionAccessRightsErrorCode {
   UNAUTHORIZED
   ALREADY_EXISTS
   UNKNOWN_ACCESS_RIGHTS
+}
+
+enum JsonValueKind {
+  UNDEFINED
+  OBJECT
+  ARRAY
+  STRING
+  NUMBER
+  TRUE
+  FALSE
+  NULL
 }
 
 enum MethodAsServiceErrorCode {

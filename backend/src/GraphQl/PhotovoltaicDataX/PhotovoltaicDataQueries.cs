@@ -31,18 +31,28 @@ public sealed class PhotovoltaicDataQueries
         CancellationToken cancellationToken
     )
     {
-        // TODO Use `locale`.
         sorting.StabilizeOrder<PhotovoltaicData>();
-        var filteredData = context.PhotovoltaicData.Sort(resolverContext).Filter(resolverContext);
-
-        // Check if there is restricted data
-        if (!filteredData.Any(x => x.DataAccessRights.HasRestrictions))
+        var filteredData = context.PhotovoltaicData
+            .Sort(resolverContext)
+            .Filter(resolverContext);
+        if (!await filteredData.AnyAsync(x => x.DataAccessRights.HasRestrictions, cancellationToken))
         {
             return filteredData;
         }
-
-        // Apply acces rights on data
         return await accessRightsService.ApplyAccessRightsOnData(filteredData, cancellationToken);
+    }
+
+    [UseFiltering(typeof(PhotovoltaicData))]
+    public Task<bool> GetHasPhotovoltaicData(
+        [GraphQLType<LocaleType>] string? locale,
+        ApplicationDbContext context,
+        IResolverContext resolverContext,
+        CancellationToken cancellationToken
+    )
+    {
+        return context.PhotovoltaicData
+            .Filter(resolverContext)
+            .AnyAsync(cancellationToken);
     }
 
     public async Task<PhotovoltaicData?> GetPhotovoltaicDataAsync(
@@ -53,17 +63,18 @@ public sealed class PhotovoltaicDataQueries
         CancellationToken cancellationToken
     )
     {
-        // TODO Use `locale`.
         var photovoltaicData = await byId.LoadAsync(
             id,
             cancellationToken
         );
-
         if (photovoltaicData is null)
+        {
+            return null;
+        }
+        if (!photovoltaicData.DataAccessRights.HasRestrictions)
         {
             return photovoltaicData;
         }
-
         return await accessRightsService.ApplyAccessRightsOnData(photovoltaicData, cancellationToken);
     }
 }

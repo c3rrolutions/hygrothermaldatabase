@@ -31,18 +31,28 @@ public sealed class CalorimetricDataQueries
         CancellationToken cancellationToken
     )
     {
-        // TODO Use `locale`.
         sorting.StabilizeOrder<CalorimetricData>();
-        var filteredData = context.CalorimetricData.Sort(resolverContext).Filter(resolverContext);
-
-        // Check if there is restricted data
-        if (!filteredData.Any(x => x.DataAccessRights.HasRestrictions))
+        var filteredData = context.CalorimetricData
+            .Sort(resolverContext)
+            .Filter(resolverContext);
+        if (!await filteredData.AnyAsync(x => x.DataAccessRights.HasRestrictions, cancellationToken))
         {
             return filteredData;
         }
-
-        // Apply acces rights on data
         return await accessRightsService.ApplyAccessRightsOnData(filteredData, cancellationToken);
+    }
+
+    [UseFiltering(typeof(CalorimetricData))]
+    public Task<bool> GetHasCalorimetricData(
+        [GraphQLType<LocaleType>] string? locale,
+        ApplicationDbContext context,
+        IResolverContext resolverContext,
+        CancellationToken cancellationToken
+    )
+    {
+        return context.CalorimetricData
+            .Filter(resolverContext)
+            .AnyAsync(cancellationToken);
     }
 
     public async Task<CalorimetricData?> GetCalorimetricDataAsync(
@@ -53,16 +63,18 @@ public sealed class CalorimetricDataQueries
         CancellationToken cancellationToken
     )
     {
-        // TODO Use `locale`.
         var calorimetricData = await byId.LoadAsync(
             id,
             cancellationToken
         );
         if (calorimetricData is null)
         {
+            return null;
+        }
+        if (!calorimetricData.DataAccessRights.HasRestrictions)
+        {
             return calorimetricData;
         }
-
         return await accessRightsService.ApplyAccessRightsOnData(calorimetricData, cancellationToken);
     }
 }

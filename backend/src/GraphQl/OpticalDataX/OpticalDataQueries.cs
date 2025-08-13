@@ -22,7 +22,7 @@ public sealed class OpticalDataQueries
     // same `id` and when also requesting `uuid`, the latter was always the empty UUID `000...`.
     [UseFiltering]
     [UseSorting]
-    public Task<IQueryable<OpticalData>> GetAllOpticalData(
+    public async Task<IQueryable<OpticalData>> GetAllOpticalData(
         [GraphQLType<LocaleType>] string? locale,
         ApplicationDbContext context,
         AccessRightsService accessRightsService,
@@ -31,16 +31,28 @@ public sealed class OpticalDataQueries
         CancellationToken cancellationToken
     )
     {
-        // TODO Use `locale`.
         sorting.StabilizeOrder<OpticalData>();
-        var filteredData = context.OpticalData.Sort(resolverContext).Filter(resolverContext);
-        // Check if there is restricted data
-        if (!filteredData.Any(x => x.DataAccessRights.HasRestrictions))
+        var filteredData = context.OpticalData
+            .Sort(resolverContext)
+            .Filter(resolverContext);
+        if (!await filteredData.AnyAsync(x => x.DataAccessRights.HasRestrictions, cancellationToken))
         {
-            return Task.FromResult(filteredData);
+            return filteredData;
         }
-        // Apply acces rights on data
-        return accessRightsService.ApplyAccessRightsOnData(filteredData, cancellationToken);
+        return await accessRightsService.ApplyAccessRightsOnData(filteredData, cancellationToken);
+    }
+
+    [UseFiltering(typeof(OpticalData))]
+    public Task<bool> GetHasOpticalData(
+        [GraphQLType<LocaleType>] string? locale,
+        ApplicationDbContext context,
+        IResolverContext resolverContext,
+        CancellationToken cancellationToken
+    )
+    {
+        return context.OpticalData
+            .Filter(resolverContext)
+            .AnyAsync(cancellationToken);
     }
 
     public async Task<OpticalData?> GetOpticalDataAsync(
@@ -51,7 +63,6 @@ public sealed class OpticalDataQueries
         CancellationToken cancellationToken
     )
     {
-        // TODO Use `locale`.
         var opticalData = await byId.LoadAsync(
             id,
             cancellationToken

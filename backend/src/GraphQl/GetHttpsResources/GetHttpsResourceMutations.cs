@@ -26,11 +26,11 @@ public sealed class GetHttpsResourceMutations
     {
         IData? data = input.DataKind switch
         {
-            DataKind.CALORIMETRIC_DATA => await context.CalorimetricData.AsQueryable().SingleOrDefaultAsync(d => d.Id == input.DataId, cancellationToken).ConfigureAwait(false),
-            DataKind.GEOMETRIC_DATA => await context.GeometricData.AsQueryable().SingleOrDefaultAsync(d => d.Id == input.DataId, cancellationToken).ConfigureAwait(false),
-            DataKind.HYGROTHERMAL_DATA => await context.HygrothermalData.AsQueryable().SingleOrDefaultAsync(d => d.Id == input.DataId, cancellationToken).ConfigureAwait(false),
-            DataKind.OPTICAL_DATA => await context.OpticalData.AsQueryable().SingleOrDefaultAsync(d => d.Id == input.DataId, cancellationToken).ConfigureAwait(false),
-            DataKind.PHOTOVOLTAIC_DATA => await context.PhotovoltaicData.AsQueryable().SingleOrDefaultAsync(d => d.Id == input.DataId, cancellationToken).ConfigureAwait(false),
+            DataKind.CALORIMETRIC_DATA => await context.CalorimetricData.AsQueryable().SingleOrDefaultAsync(d => d.Id == input.DataId, cancellationToken),
+            DataKind.GEOMETRIC_DATA => await context.GeometricData.AsQueryable().SingleOrDefaultAsync(d => d.Id == input.DataId, cancellationToken),
+            DataKind.HYGROTHERMAL_DATA => await context.HygrothermalData.AsQueryable().SingleOrDefaultAsync(d => d.Id == input.DataId, cancellationToken),
+            DataKind.OPTICAL_DATA => await context.OpticalData.AsQueryable().SingleOrDefaultAsync(d => d.Id == input.DataId, cancellationToken),
+            DataKind.PHOTOVOLTAIC_DATA => await context.PhotovoltaicData.AsQueryable().SingleOrDefaultAsync(d => d.Id == input.DataId, cancellationToken),
             _ => throw new ArgumentException($"The data kind {input.DataKind} is not supported.")
         };
         if (data is null)
@@ -45,7 +45,7 @@ public sealed class GetHttpsResourceMutations
         }
 
         var currentUser = await userService.GetCurrentUser(
-            cancellationToken).ConfigureAwait(false);
+            cancellationToken);
         if (currentUser is null)
         {
             return new CreateGetHttpsResourcePayload(
@@ -101,7 +101,7 @@ public sealed class GetHttpsResourceMutations
                 )
         );
         context.GetHttpsResources.Add(getHttpsResource);
-        await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        await context.SaveChangesAsync(cancellationToken);
         return new CreateGetHttpsResourcePayload(getHttpsResource);
     }
 }

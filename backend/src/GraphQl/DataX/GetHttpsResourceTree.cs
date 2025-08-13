@@ -17,7 +17,7 @@ public sealed class GetHttpsResourceTree(
     )
     {
         return new GetHttpsResourceTreeRoot(
-            (await byId.LoadAsync(_data.Id, cancellationToken).ConfigureAwait(false) ?? []).Single()
+            (await byId.LoadAsync(_data.Id, cancellationToken) ?? []).Single()
         );
     }
 
@@ -26,7 +26,7 @@ public sealed class GetHttpsResourceTree(
         CancellationToken cancellationToken
     )
     {
-        return (await byId.LoadAsync(_data.Id, cancellationToken).ConfigureAwait(false) ?? [])
+        return (await byId.LoadAsync(_data.Id, cancellationToken) ?? [])
             .Select(v =>
                 new GetHttpsResourceTreeNonRootVertex(v)
             )

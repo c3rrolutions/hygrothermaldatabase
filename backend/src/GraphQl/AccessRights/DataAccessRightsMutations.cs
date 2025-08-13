@@ -21,7 +21,7 @@ public sealed class DataAccessRightsMutations
     )
     {
         var currentUser = await userService.GetCurrentUser(
-            cancellationToken).ConfigureAwait(false);
+            cancellationToken);
         if (currentUser is null)
         {
             return new UpdateDataAccessRightsPayload(
@@ -33,7 +33,7 @@ public sealed class DataAccessRightsMutations
             );
         }
 
-        var data = await dataService.GetDataAsync(input.DataId, context, cancellationToken).ConfigureAwait(false);
+        var data = await dataService.GetDataAsync(input.DataId, context, cancellationToken);
         if (data is null)
         {
             return new UpdateDataAccessRightsPayload(
@@ -64,7 +64,7 @@ public sealed class DataAccessRightsMutations
         data.DataAccessRights.AllowedApplications = input.AllowedApplications;
         data.DataAccessRights.AllowedUserAndQuantity = input.AllowedUserAndQuantity;
 
-        await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        await context.SaveChangesAsync(cancellationToken);
         return new UpdateDataAccessRightsPayload(data.DataAccessRights);
     }
 
@@ -76,7 +76,7 @@ public sealed class DataAccessRightsMutations
     )
     {
         var currentUser = await userService.GetCurrentUser(
-            cancellationToken).ConfigureAwait(false);
+            cancellationToken);
         if (currentUser is null)
         {
             return new AddInstitutionAccessRightsPayload(
@@ -103,7 +103,7 @@ public sealed class DataAccessRightsMutations
             );
         }
 
-        var accessRights = await context.InstitutionAccessRights.FirstOrDefaultAsync(x => x.InstitutionId == input.InstitutionId, cancellationToken).ConfigureAwait(false);
+        var accessRights = await context.InstitutionAccessRights.FirstOrDefaultAsync(x => x.InstitutionId == input.InstitutionId, cancellationToken);
 
         if (accessRights is not null)
         {
@@ -122,7 +122,7 @@ public sealed class DataAccessRightsMutations
             input.AllowedDatasetsPerTimeSpan,
             TimeSpan.FromDays(input.PeriodInDays));
         context.InstitutionAccessRights.Add(accessRights);
-        await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        await context.SaveChangesAsync(cancellationToken);
         return new AddInstitutionAccessRightsPayload(accessRights);
     }
 
@@ -134,7 +134,7 @@ public sealed class DataAccessRightsMutations
     )
     {
         var currentUser = await userService.GetCurrentUser(
-            cancellationToken).ConfigureAwait(false);
+            cancellationToken);
         if (currentUser is null)
         {
             return new UpdateAccessRightsPayload(
@@ -161,7 +161,7 @@ public sealed class DataAccessRightsMutations
             );
         }
 
-        var accessRights = await context.InstitutionAccessRights.FirstOrDefaultAsync(x => x.InstitutionId == input.InstitutionId, cancellationToken).ConfigureAwait(false);
+        var accessRights = await context.InstitutionAccessRights.FirstOrDefaultAsync(x => x.InstitutionId == input.InstitutionId, cancellationToken);
 
         if (accessRights is null)
         {
@@ -177,7 +177,7 @@ public sealed class DataAccessRightsMutations
         accessRights.AllowedUserCount = input.AllowedUserCount;
         accessRights.AllowedDatasetsPerTime = input.AllowedDatasetsPerTimeSpan;
         accessRights.Period = TimeSpan.FromDays(input.PeriodInDays);
-        await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        await context.SaveChangesAsync(cancellationToken);
         return new UpdateAccessRightsPayload(accessRights);
     }
 }

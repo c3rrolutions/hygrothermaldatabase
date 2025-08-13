@@ -119,17 +119,17 @@ public sealed class OpticalDataMutations
         );
         opticalData.Resources.Add(resource);
         context.OpticalData.Add(opticalData);
-        await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        await context.SaveChangesAsync(cancellationToken);
 
         try
         {
-            opticalData.Approval = await responseApprovalService.CreateResponseApproval(opticalData, cancellationToken).ConfigureAwait(false);
-            await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+            opticalData.Approval = await responseApprovalService.CreateResponseApproval(opticalData, cancellationToken);
+            await context.SaveChangesAsync(cancellationToken);
         }
         catch (Exception exception)
         {
             context.Remove(opticalData);
-            await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+            await context.SaveChangesAsync(cancellationToken);
 
             return new CreateOpticalDataPayload(
                 opticalData,

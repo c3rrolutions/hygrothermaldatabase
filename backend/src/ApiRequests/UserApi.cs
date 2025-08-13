@@ -39,14 +39,14 @@ public sealed class UserApi
     {
         return (await apiRequestService.Metabase().QueryGraphQl<CurrentUserData>(
                    appSettings,
-                   new GraphQLRequest(await apiRequestService.ConstructGraphQlQuery(_currentUserFileNames).ConfigureAwait(false),
+                   new GraphQLRequest(await apiRequestService.ConstructGraphQlQuery(_currentUserFileNames),
                        new { },
                        "CurrentUser"
                    ),
                    httpClientFactory,
                    httpContextAccessor,
                    cancellationToken
-               ).ConfigureAwait(false))
+               ))
                ?.Data
                ?.CurrentUser
                ?? null;
@@ -75,6 +75,6 @@ public sealed class UserApi
             httpClientFactory,
             httpContextAccessor,
             cancellationToken
-        ).ConfigureAwait(false);
+        );
     }
 }

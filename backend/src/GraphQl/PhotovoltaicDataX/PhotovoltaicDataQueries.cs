@@ -42,7 +42,7 @@ public sealed class PhotovoltaicDataQueries
         }
 
         // Apply acces rights on data
-        return await accessRightsService.ApplyAccessRightsOnData(filteredData, cancellationToken).ConfigureAwait(false);
+        return await accessRightsService.ApplyAccessRightsOnData(filteredData, cancellationToken);
     }
 
     public async Task<PhotovoltaicData?> GetPhotovoltaicDataAsync(
@@ -64,6 +64,6 @@ public sealed class PhotovoltaicDataQueries
             return photovoltaicData;
         }
 
-        return await accessRightsService.ApplyAccessRightsOnData(photovoltaicData, cancellationToken).ConfigureAwait(false);
+        return await accessRightsService.ApplyAccessRightsOnData(photovoltaicData, cancellationToken);
     }
 }

@@ -45,19 +45,19 @@ public sealed class UserService(
     public async Task<CurrentUserDto?> GetCurrentUser(CancellationToken cancellationToken)
     {
         // Extract token
-        var token = await httpContextAccessor.ExtractBearerToken().ConfigureAwait(false);
+        var token = await httpContextAccessor.ExtractBearerToken();
         logger.ExtractedToken(token);
 
         if (token is null)
         {
-            return await GetCurrentUserFromMetabase(cancellationToken).ConfigureAwait(false);
+            return await GetCurrentUserFromMetabase(cancellationToken);
         }
 
         // Check if there is already a user for token
         if (!cacheService.TryGetUser(token, out var cacheUser))
         {
             // Get user from Metabase
-            cacheUser = await GetCurrentUserFromMetabase(cancellationToken).ConfigureAwait(false);
+            cacheUser = await GetCurrentUserFromMetabase(cancellationToken);
             // Store user in cache
             cacheService.SetUser(token, cacheUser);
         }

@@ -27,7 +27,7 @@ public sealed class PhotovoltaicDataMutations
     )
     {
         var currentUser = await userService.GetCurrentUser(
-            cancellationToken).ConfigureAwait(false);
+            cancellationToken);
         if (currentUser is null)
         {
             return new CreatePhotovoltaicDataPayload(
@@ -109,17 +109,17 @@ public sealed class PhotovoltaicDataMutations
         );
         photovoltaicData.Resources.Add(resource);
         context.PhotovoltaicData.Add(photovoltaicData);
-        await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        await context.SaveChangesAsync(cancellationToken);
 
         try
         {
-            photovoltaicData.Approval = await responseApprovalService.CreateResponseApproval(photovoltaicData, cancellationToken).ConfigureAwait(false);
-            await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+            photovoltaicData.Approval = await responseApprovalService.CreateResponseApproval(photovoltaicData, cancellationToken);
+            await context.SaveChangesAsync(cancellationToken);
         }
         catch (Exception exception)
         {
             context.Remove(photovoltaicData);
-            await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+            await context.SaveChangesAsync(cancellationToken);
 
             return new CreatePhotovoltaicDataPayload(
                 photovoltaicData,

@@ -35,7 +35,7 @@ public sealed class DatabaseApi
     {
         var response = await apiRequestService.Metabase().QueryGraphQl<DatabaseData>(
                     appSettings,
-                    new GraphQLRequest(await apiRequestService.ConstructGraphQlQuery(_databaseFileNames).ConfigureAwait(false),
+                    new GraphQLRequest(await apiRequestService.ConstructGraphQlQuery(_databaseFileNames),
                         new
                         {
                             uuid = databaseId
@@ -45,7 +45,7 @@ public sealed class DatabaseApi
                     httpClientFactory,
                     httpContextAccessor,
                     cancellationToken
-                ).ConfigureAwait(false);
+                );
         return response.Data?.Database;
     }
 
@@ -63,7 +63,7 @@ public sealed class DatabaseApi
             new GraphQLRequest(
                 await apiRequestService.ConstructGraphQlQuery(
                     _updateDatabaseFileNames
-                    ).ConfigureAwait(false),
+                    ),
                 new
                 {
                     input = updateDatabaseInput
@@ -73,6 +73,6 @@ public sealed class DatabaseApi
             httpClientFactory,
             httpContextAccessor,
             cancellationToken
-            ).ConfigureAwait(false))?.Data;
+            ))?.Data;
     }
 }

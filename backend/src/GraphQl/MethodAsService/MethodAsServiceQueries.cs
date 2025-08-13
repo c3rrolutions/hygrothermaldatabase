@@ -42,7 +42,7 @@ public sealed class MethodAsServiceQueries
             stream,
             JsonSerializerSettings.File,
             cancellationToken
-            ).ConfigureAwait(false) ?? throw new JsonException("Failed to deserialize the GraphQL response.");
+            ) ?? throw new JsonException("Failed to deserialize the GraphQL response.");
 
         var result = methodCalculationService.UseMethodToCalculate(input.MethodId, fileInput.Data.DataPoints);
 
@@ -120,11 +120,11 @@ public sealed class MethodAsServiceQueries
             );
         }
 
-        var data = await DataApi.GetDataFromDatabase<DataXResponse>(database.Locator, input.DataId, DataApi.DataXFileNames, appSettings, apiRequestService, httpClientFactory, httpContextAccessor, cancellationToken).ConfigureAwait(false);
+        var data = await DataApi.GetDataFromDatabase<DataXResponse>(database.Locator, input.DataId, DataApi.DataXFileNames, appSettings, apiRequestService, httpClientFactory, httpContextAccessor, cancellationToken);
 
         var locator = data.Data.DataX.ResourceTree.Root.Value.Locator;
 
-        var filedata = await apiRequestService.QueryRest<FileInputData>(new Uri(locator), httpClientFactory, httpContextAccessor, cancellationToken).ConfigureAwait(false);
+        var filedata = await apiRequestService.QueryRest<FileInputData>(new Uri(locator), httpClientFactory, httpContextAccessor, cancellationToken);
 
         var result = methodCalculationService.UseMethodToCalculate(input.MethodId, filedata.Data.DataPoints.ToList());
 

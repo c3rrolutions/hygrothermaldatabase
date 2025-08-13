@@ -22,10 +22,10 @@ public sealed class DataService
     /// <returns> Dataset with passed id or null. </returns>
     public async Task<IData?> GetDataAsync(Guid id, ApplicationDbContext context, CancellationToken cancellationToken)
     {
-        return await context.CalorimetricData.FirstOrDefaultAsync(x => x.Id == id, cancellationToken).ConfigureAwait(false) ??
-            await context.HygrothermalData.FirstOrDefaultAsync(x => x.Id == id, cancellationToken).ConfigureAwait(false) ??
-            await context.OpticalData.FirstOrDefaultAsync(x => x.Id == id, cancellationToken).ConfigureAwait(false) ??
-            await context.GeometricData.FirstOrDefaultAsync(x => x.Id == id, cancellationToken).ConfigureAwait(false) ??
-            await context.PhotovoltaicData.FirstOrDefaultAsync(x => x.Id == id, cancellationToken).ConfigureAwait(false) as IData;
+        return await context.CalorimetricData.FirstOrDefaultAsync(x => x.Id == id, cancellationToken) ??
+            await context.HygrothermalData.FirstOrDefaultAsync(x => x.Id == id, cancellationToken) ??
+            await context.OpticalData.FirstOrDefaultAsync(x => x.Id == id, cancellationToken) ??
+            await context.GeometricData.FirstOrDefaultAsync(x => x.Id == id, cancellationToken) ??
+            await context.PhotovoltaicData.FirstOrDefaultAsync(x => x.Id == id, cancellationToken) as IData;
     }
 }

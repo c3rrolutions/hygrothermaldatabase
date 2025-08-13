@@ -64,6 +64,6 @@ public sealed class OpticalDataQueries
         {
             return opticalData;
         }
-        return await accessRightsService.ApplyAccessRightsOnData(opticalData, cancellationToken).ConfigureAwait(false);
+        return await accessRightsService.ApplyAccessRightsOnData(opticalData, cancellationToken);
     }
 }

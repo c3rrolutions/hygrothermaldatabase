@@ -36,7 +36,7 @@ public sealed class UserQueries
                 .SingleOrDefaultAsync(
                     u => claimsPrincipal.GetClaims(ClaimTypes.NameIdentifier).Contains(u.Subject),
                     cancellationToken
-                ).ConfigureAwait(false);
+                );
     }
 
     public async Task<UserInfo?> GetCurrentUserInfoAsync(

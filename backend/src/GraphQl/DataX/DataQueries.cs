@@ -21,13 +21,13 @@ public sealed class DataQueries
     )
     {
         // TODO Use `locale`.
-        var data = await dataService.GetDataAsync(id, dbContext, cancellationToken).ConfigureAwait(false);
+        var data = await dataService.GetDataAsync(id, dbContext, cancellationToken);
 
         if (data is null)
         {
             return data;
         }
 
-        return await accessRightsService.ApplyAccessRightsOnData(data, cancellationToken).ConfigureAwait(false);
+        return await accessRightsService.ApplyAccessRightsOnData(data, cancellationToken);
     }
 }

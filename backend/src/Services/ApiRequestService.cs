@@ -67,7 +67,7 @@ public sealed class ApiRequestService
                 fileNames.Select(fileName =>
                     File.ReadAllTextAsync($"./ApiRequests/Queries/{fileName}")
                 )
-            ).ConfigureAwait(false)
+            )
         );
     }
 
@@ -180,7 +180,7 @@ public sealed class ApiRequestService
             s_useMetabase
             ? httpClientFactory.CreateClient(MetabaseHttpClient)
             : httpClientFactory.CreateClient(DatabaseHttpClient);
-        var bearerToken = await httpContextAccessor.ExtractBearerToken().ConfigureAwait(false);
+        var bearerToken = await httpContextAccessor.ExtractBearerToken();
         using var httpRequestMessage = new HttpRequestMessage(
             httpMethod,
             uri
@@ -191,7 +191,7 @@ public sealed class ApiRequestService
             httpRequestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", bearerToken);
         }
         using var httpResponseMessage =
-            await httpClient.SendAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
+            await httpClient.SendAsync(httpRequestMessage, cancellationToken);
         if (httpResponseMessage.StatusCode != HttpStatusCode.OK)
         {
             throw new HttpRequestException(
@@ -203,8 +203,7 @@ public sealed class ApiRequestService
         // `httpResponseMessage.Content.ReadFromJsonAsync<GraphQL.GraphQLResponse<TResponse>>` which
         // would make debugging more difficult though, https://docs.microsoft.com/en-us/dotnet/api/system.net.http.json.httpcontentjsonextensions.readfromjsonasync?view=net-5.0#System_Net_Http_Json_HttpContentJsonExtensions_ReadFromJsonAsync__1_System_Net_Http_HttpContent_System_Text_Json_JsonSerializerOptions_System_Threading_CancellationToken_
         using var responseStream = await httpResponseMessage.Content
-            .ReadAsStreamAsync(cancellationToken)
-            .ConfigureAwait(false);
+            .ReadAsStreamAsync(cancellationToken);
 
         // For debugging, the following lines of code write the response to standard output.
         // Console.WriteLine(new StreamReader(responseStream).ReadToEnd());
@@ -212,7 +211,7 @@ public sealed class ApiRequestService
             responseStream,
             serializerOptions,
             cancellationToken
-            ).ConfigureAwait(false) ?? throw new JsonException("Failed to deserialize the GraphQL response.");
+            ) ?? throw new JsonException("Failed to deserialize the GraphQL response.");
         return deserializedResponse;
     }
 

@@ -100,7 +100,7 @@ public sealed class FileUploadController(
     )
     {
         var currentUser = await userService.GetCurrentUser(
-            cancellationToken).ConfigureAwait(false);
+            cancellationToken);
         if (currentUser is null)
         {
             ModelState.AddModelError("CurrentUser",
@@ -122,8 +122,7 @@ public sealed class FileUploadController(
                 .Include(e => e.OpticalData)
                 .Include(e => e.PhotovoltaicData)
                 .Where(e => e.Id == getHttpsResourceUuid)
-                .SingleOrDefaultAsync(cancellationToken)
-                .ConfigureAwait(false);
+                .SingleOrDefaultAsync(cancellationToken);
         if (getHttpsResource is null)
         {
             ModelState.AddModelError("GetHttpsResourceUuid",
@@ -151,7 +150,7 @@ public sealed class FileUploadController(
             MediaTypeHeaderValue.Parse(Request.ContentType),
             s_defaultFormOptions.MultipartBoundaryLengthLimit);
         var reader = new MultipartReader(boundary, HttpContext.Request.Body);
-        var section = await reader.ReadNextSectionAsync(cancellationToken).ConfigureAwait(false);
+        var section = await reader.ReadNextSectionAsync(cancellationToken);
 
         while (section is not null)
         {
@@ -195,7 +194,7 @@ public sealed class FileUploadController(
                     ModelState,
                     _permittedExtensions,
                     FileSizeLimit
-                ).ConfigureAwait(false);
+                );
 
                 if (!ModelState.IsValid)
                 {
@@ -204,7 +203,7 @@ public sealed class FileUploadController(
 
                 using var targetStream = System.IO.File.Create(
                     Path.Combine(TargetDirectoryPath, trustedFileNameForFileStorage));
-                await targetStream.WriteAsync(streamedFileContent, cancellationToken).ConfigureAwait(false);
+                await targetStream.WriteAsync(streamedFileContent, cancellationToken);
 
                 _logger.SavedUploadedFile(trustedFileNameForDisplay, TargetDirectoryPath,
                     trustedFileNameForFileStorage);
@@ -212,7 +211,7 @@ public sealed class FileUploadController(
 
             // Drain any remaining section body that hasn't been consumed and
             // read the headers for the next section.
-            section = await reader.ReadNextSectionAsync(cancellationToken).ConfigureAwait(false);
+            section = await reader.ReadNextSectionAsync(cancellationToken);
         }
 
         return Created(nameof(FileUploadController), null);

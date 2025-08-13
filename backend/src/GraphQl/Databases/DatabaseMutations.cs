@@ -27,7 +27,7 @@ public sealed class DatabaseMutations
             apiRequestService,
             httpClientFactory,
             httpContextAccessor,
-            cancellationToken).ConfigureAwait(false);
+            cancellationToken);
         if (databasePayload is null || databasePayload.Database is null)
         {
            return new UpdateDatabasePayload(

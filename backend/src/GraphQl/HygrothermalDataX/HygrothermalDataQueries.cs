@@ -42,7 +42,7 @@ public sealed class HygrothermalDataQueries
         }
 
         // Apply acces rights on data
-        return await accessRightsService.ApplyAccessRightsOnData(filteredData, cancellationToken).ConfigureAwait(false);
+        return await accessRightsService.ApplyAccessRightsOnData(filteredData, cancellationToken);
     }
 
     public async Task<HygrothermalData?> GetHygrothermalDataAsync(
@@ -64,6 +64,6 @@ public sealed class HygrothermalDataQueries
             return hygrothermalData;
         }
 
-        return await accessRightsService.ApplyAccessRightsOnData(hygrothermalData, cancellationToken).ConfigureAwait(false);
+        return await accessRightsService.ApplyAccessRightsOnData(hygrothermalData, cancellationToken);
     }
 }

@@ -28,7 +28,7 @@ public sealed class GetHttpsResourceResolvers
             return await calorimetricDataById.LoadAsync(
                 getHttpsResource.CalorimetricDataId ?? throw new ArgumentException("Impossible!"),
                 cancellationToken
-            ).ConfigureAwait(false);
+            );
         }
 
         if (getHttpsResource.HygrothermalDataId is not null)
@@ -36,7 +36,7 @@ public sealed class GetHttpsResourceResolvers
             return await hygrothermalDataById.LoadAsync(
                 getHttpsResource.HygrothermalDataId ?? throw new ArgumentException("Impossible!"),
                 cancellationToken
-            ).ConfigureAwait(false);
+            );
         }
 
         if (getHttpsResource.OpticalDataId is not null)
@@ -44,7 +44,7 @@ public sealed class GetHttpsResourceResolvers
             return await opticalDataById.LoadAsync(
                 getHttpsResource.OpticalDataId ?? throw new ArgumentException("Impossible!"),
                 cancellationToken
-            ).ConfigureAwait(false);
+            );
         }
 
         if (getHttpsResource.PhotovoltaicDataId is not null)
@@ -52,7 +52,7 @@ public sealed class GetHttpsResourceResolvers
             return await photovoltaicDataById.LoadAsync(
                 getHttpsResource.PhotovoltaicDataId ?? throw new ArgumentException("Impossible!"),
                 cancellationToken
-            ).ConfigureAwait(false);
+            );
         }
 
         if (getHttpsResource.GeometricDataId is not null)
@@ -60,7 +60,7 @@ public sealed class GetHttpsResourceResolvers
             return await geometricDataById.LoadAsync(
                 getHttpsResource.GeometricDataId ?? throw new ArgumentException("Impossible!"),
                 cancellationToken
-            ).ConfigureAwait(false);
+            );
         }
 
         return null;

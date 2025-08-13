@@ -51,7 +51,7 @@ public sealed class AccessRightsService(
         var result = ProcessData(data, currentUser, openIdConnectClientId, representedInstitutionIds, institutionAccessRights, alreadyAccessedCount, cacheService);
 
         // Save InstitutionAccessRight changes
-        await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        await context.SaveChangesAsync(cancellationToken);
         return result.AsQueryable<T>();
     }
 

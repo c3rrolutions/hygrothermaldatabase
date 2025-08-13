@@ -25,7 +25,7 @@ public sealed class HygrothermalDataMutations
     )
     {
         var currentUser = await userService.GetCurrentUser(
-            cancellationToken).ConfigureAwait(false);
+            cancellationToken);
         if (currentUser is null)
         {
             return new CreateHygrothermalDataPayload(
@@ -106,17 +106,17 @@ public sealed class HygrothermalDataMutations
         );
         hygrothermalData.Resources.Add(resource);
         context.HygrothermalData.Add(hygrothermalData);
-        await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        await context.SaveChangesAsync(cancellationToken);
 
         try
         {
-            hygrothermalData.Approval = await responseApprovalService.CreateResponseApproval(hygrothermalData, cancellationToken).ConfigureAwait(false);
-            await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+            hygrothermalData.Approval = await responseApprovalService.CreateResponseApproval(hygrothermalData, cancellationToken);
+            await context.SaveChangesAsync(cancellationToken);
         }
         catch (Exception exception)
         {
             context.Remove(hygrothermalData);
-            await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+            await context.SaveChangesAsync(cancellationToken);
 
             return new CreateHygrothermalDataPayload(
                 hygrothermalData,

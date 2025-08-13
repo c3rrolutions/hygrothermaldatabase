@@ -23,7 +23,7 @@ public sealed class CalorimetricDataMutations
     )
     {
         var currentUser = await userService.GetCurrentUser(
-            cancellationToken).ConfigureAwait(false);
+            cancellationToken);
         if (currentUser is null)
         {
             return new CreateCalorimetricDataPayload(
@@ -107,17 +107,17 @@ public sealed class CalorimetricDataMutations
         );
         calorimetricData.Resources.Add(resource);
         context.CalorimetricData.Add(calorimetricData);
-        await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        await context.SaveChangesAsync(cancellationToken);
 
         try
         {
-            calorimetricData.Approval = await responseApprovalService.CreateResponseApproval(calorimetricData, cancellationToken).ConfigureAwait(false);
-            await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+            calorimetricData.Approval = await responseApprovalService.CreateResponseApproval(calorimetricData, cancellationToken);
+            await context.SaveChangesAsync(cancellationToken);
         }
         catch (Exception exception)
         {
             context.Remove(calorimetricData);
-            await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+            await context.SaveChangesAsync(cancellationToken);
 
             return new CreateCalorimetricDataPayload(
                 calorimetricData,

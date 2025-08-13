@@ -40,7 +40,7 @@ public sealed class GeometricDataQueries
         }
 
         // Apply acces rights on data
-        return await accessRightsService.ApplyAccessRightsOnData(filteredData, cancellationToken).ConfigureAwait(false);
+        return await accessRightsService.ApplyAccessRightsOnData(filteredData, cancellationToken);
     }
 
     public async Task<GeometricData?> GetGeometricDataAsync(
@@ -55,13 +55,13 @@ public sealed class GeometricDataQueries
         var geometricData = await byId.LoadAsync(
             id,
             cancellationToken
-        ).ConfigureAwait(false);
+        );
 
         if (geometricData is null)
         {
             return geometricData;
         }
 
-        return await accessRightsService.ApplyAccessRightsOnData(geometricData, cancellationToken).ConfigureAwait(false);
+        return await accessRightsService.ApplyAccessRightsOnData(geometricData, cancellationToken);
     }
 }

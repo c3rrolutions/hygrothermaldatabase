@@ -74,7 +74,7 @@ public sealed class DataApi
         where TGraphQlData : class
     {
         var variables = new { uuid = dataId };
-        var query = await apiRequestService.ConstructGraphQlQuery(filenames).ConfigureAwait(false);
+        var query = await apiRequestService.ConstructGraphQlQuery(filenames);
         var response = JsonSerializer.Serialize(
             await apiRequestService.Database().QueryGraphQl<TGraphQlData>(
                 appSettings,
@@ -114,7 +114,7 @@ public sealed class DataApi
         where TGraphQlData : class
     {
         var request = new GraphQLRequest(
-            await apiRequestService.ConstructGraphQlQuery(filenames).ConfigureAwait(false),
+            await apiRequestService.ConstructGraphQlQuery(filenames),
             new { uuid = dataId }
         );
         return await apiRequestService.Database().QueryGraphQlFromUrl<TGraphQlData>(

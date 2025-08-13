@@ -42,7 +42,7 @@ public sealed class CalorimetricDataQueries
         }
 
         // Apply acces rights on data
-        return await accessRightsService.ApplyAccessRightsOnData(filteredData, cancellationToken).ConfigureAwait(false);
+        return await accessRightsService.ApplyAccessRightsOnData(filteredData, cancellationToken);
     }
 
     public async Task<CalorimetricData?> GetCalorimetricDataAsync(
@@ -63,6 +63,6 @@ public sealed class CalorimetricDataQueries
             return calorimetricData;
         }
 
-        return await accessRightsService.ApplyAccessRightsOnData(calorimetricData, cancellationToken).ConfigureAwait(false);
+        return await accessRightsService.ApplyAccessRightsOnData(calorimetricData, cancellationToken);
     }
 }

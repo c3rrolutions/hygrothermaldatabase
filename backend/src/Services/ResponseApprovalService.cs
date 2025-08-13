@@ -40,12 +40,8 @@ public sealed class ResponseApprovalService(
         logger.QueryAllMetaData(dataObject.GetType().Name, dataObject.Id);
         var (query, variables, response) = await QueryAllMetaData(dataObject, cancellationToken).ConfigureAwait(false);
         logger.QueryAndVariablesAndResponce(query, variables, response);
-        var signatureResult = await signingService.SignData(response).ConfigureAwait(false);
-        if (!signatureResult.Success)
-        {
-            throw new InvalidOperationException($"Signing of data failed! {signatureResult.Output}");
-        }
-        return new ResponseApproval(DateTime.UtcNow, signatureResult.Output, await signingService.GetFingerprint(), query, variables, response);
+        var signature = await signingService.SignData(response).ConfigureAwait(false);
+        return new ResponseApproval(DateTime.UtcNow, signature, await signingService.ExtractFingerprint(), query, variables, response);
     }
 
     private async Task<(string Query, JsonElement Variables, string Response)> QueryAllMetaData(IData dataObject, CancellationToken cancellationToken)

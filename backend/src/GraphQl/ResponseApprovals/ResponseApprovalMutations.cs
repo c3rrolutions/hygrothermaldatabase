@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -58,34 +59,36 @@ public sealed class ResponseApprovalMutations
                 )
             );
         }
-        var dataSets = new List<IData>();
-        var errors = new List<CreateResponseApprovalsError>();
-        await foreach (
-            var data in context.CalorimetricData.AsQueryable<IData>().Where(d => d.Approval == null).ToAsyncEnumerable()
+        var dataSets = new ConcurrentBag<IData>();
+        var errors = new ConcurrentBag<CreateResponseApprovalsError>();
+        await Parallel.ForEachAsync(
+            context.CalorimetricData.AsQueryable<IData>().Where(d => d.Approval == null).ToAsyncEnumerable()
             .Union(context.GeometricData.AsQueryable<IData>().Where(d => d.Approval == null).ToAsyncEnumerable())
             .Union(context.HygrothermalData.AsQueryable<IData>().Where(d => d.Approval == null).ToAsyncEnumerable())
             .Union(context.OpticalData.AsQueryable<IData>().Where(d => d.Approval == null).ToAsyncEnumerable())
-            .Union(context.PhotovoltaicData.AsQueryable<IData>().Where(d => d.Approval == null).ToAsyncEnumerable())
-        )
-        {
-            try
+            .Union(context.PhotovoltaicData.AsQueryable<IData>().Where(d => d.Approval == null).ToAsyncEnumerable()),
+            cancellationToken,
+            async (data, cancellationToken) =>
             {
-                data.Approval = await responseApprovalService.CreateResponseApproval(data, cancellationToken);
-                dataSets.Add(data);
+                try
+                {
+                    data.Approval = await responseApprovalService.CreateResponseApproval(data, cancellationToken);
+                    dataSets.Add(data);
+                }
+                catch (Exception exception)
+                {
+                    errors.Add(
+                        new CreateResponseApprovalsError(
+                            CreateResponseApprovalsErrorCode.CREATING_RESPONSE_APPROVAL_FAILED,
+                            $"Creating response approval for data {data} failed with message: {exception.Message}",
+                            []
+                        )
+                    );
+                }
             }
-            catch (Exception exception)
-            {
-                errors.Add(
-                    new CreateResponseApprovalsError(
-                        CreateResponseApprovalsErrorCode.CREATING_RESPONSE_APPROVAL_FAILED,
-                        $"Creating response approval for data {data} failed with message: {exception.Message}",
-                        []
-                    )
-                );
-            }
-        }
+        );
         await context.SaveChangesAsync(cancellationToken);
-        if (errors.Count != 0)
+        if (!errors.IsEmpty)
         {
             return new CreateResponseApprovalsPayload(dataSets, errors);
         }
@@ -136,34 +139,36 @@ public sealed class ResponseApprovalMutations
                 )
             );
         }
-        var dataSets = new List<IData>();
-        var errors = new List<UpdateResponseApprovalsError>();
-        await foreach (
-            var data in context.CalorimetricData.AsQueryable<IData>().Where(d => d.Approval != null).ToAsyncEnumerable()
+        var dataSets = new ConcurrentBag<IData>();
+        var errors = new ConcurrentBag<UpdateResponseApprovalsError>();
+        await Parallel.ForEachAsync(
+            context.CalorimetricData.AsQueryable<IData>().Where(d => d.Approval != null).ToAsyncEnumerable()
             .Union(context.GeometricData.AsQueryable<IData>().Where(d => d.Approval != null).ToAsyncEnumerable())
             .Union(context.HygrothermalData.AsQueryable<IData>().Where(d => d.Approval != null).ToAsyncEnumerable())
             .Union(context.OpticalData.AsQueryable<IData>().Where(d => d.Approval != null).ToAsyncEnumerable())
-            .Union(context.PhotovoltaicData.AsQueryable<IData>().Where(d => d.Approval != null).ToAsyncEnumerable())
-        )
-        {
-            try
+            .Union(context.PhotovoltaicData.AsQueryable<IData>().Where(d => d.Approval != null).ToAsyncEnumerable()),
+            cancellationToken,
+            async (data, cancellationToken) =>
             {
-                data.Approval = await responseApprovalService.CreateResponseApproval(data, cancellationToken);
-                dataSets.Add(data);
+                try
+                {
+                    data.Approval = await responseApprovalService.CreateResponseApproval(data, cancellationToken);
+                    dataSets.Add(data);
+                }
+                catch (Exception exception)
+                {
+                    errors.Add(
+                        new UpdateResponseApprovalsError(
+                            UpdateResponseApprovalsErrorCode.UPDATING_RESPONSE_APPROVAL_FAILED,
+                            $"Updating response approval for data {data} failed with message: {exception.Message}",
+                            []
+                        )
+                    );
+                }
             }
-            catch (Exception exception)
-            {
-                errors.Add(
-                    new UpdateResponseApprovalsError(
-                        UpdateResponseApprovalsErrorCode.UPDATING_RESPONSE_APPROVAL_FAILED,
-                        $"Updating response approval for data {data} failed with message: {exception.Message}",
-                        []
-                    )
-                );
-            }
-        }
+        );
         await context.SaveChangesAsync(cancellationToken);
-        if (errors.Count != 0)
+        if (!errors.IsEmpty)
         {
             return new UpdateResponseApprovalsPayload(dataSets, errors);
         }

@@ -9,27 +9,21 @@ public enum InstitutionRepresentativeRole
     ASSISTANT
 }
 
-[System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1711")]
-public enum DataSigningPermission
-{
-    NEVER,
-    GRANTED,
-    REMOVED
-}
-
 public sealed record CurrentUserDto(
     Guid Uuid,
-    UserRepresentedInstitutionConnection RepresentedInstitutions
+    string Name,
+    UserRepresentedInstitutionConnection RepresentedInstitutions,
+    UserRepresentedInstitutionConnection DatabaseOperatingRepresentedInstitutions
 );
 
 public sealed record UserRepresentedInstitutionConnection(
-    IReadOnlyList<UserRepresentedInstitutionEdge> Edges
+    IReadOnlyList<UserRepresentedInstitutionEdge> Edges,
+    uint TotalCount
 );
 
 public sealed record UserRepresentedInstitutionEdge(
     UserRepresentedInstitutionNode Node,
-    InstitutionRepresentativeRole Role,
-    DataSigningPermission DataSigningPermission
+    InstitutionRepresentativeRole Role
 );
 
 public sealed record UserRepresentedInstitutionNode(
@@ -39,7 +33,8 @@ public sealed record UserRepresentedInstitutionNode(
 );
 
 public sealed record InstitutionManagedInstitutionConnection(
-    IReadOnlyList<InstitutionManagedInstitutionEdge> Edges
+    IReadOnlyList<InstitutionManagedInstitutionEdge> Edges,
+    uint TotalCount
 );
 
 public sealed record InstitutionManagedInstitutionEdge(

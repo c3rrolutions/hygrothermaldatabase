@@ -35,16 +35,12 @@ public sealed class GeometricDataMutations
             );
         }
 
-        if (!GeometricDataAuthorization.IsAuthorizedToCreateGeometricDataForInstitution(
-             currentUser,
-             input.CreatorId
-             )
-        )
+        if (!CommonAuthorization.IsCurrentUserAtLeastAssistantManagerOfDatabaseOperator(currentUser))
         {
             return new CreateGeometricDataPayload(
                 new CreateGeometricDataError(
                     CreateGeometricDataErrorCode.UNAUTHORIZED,
-                    $"The current user is not authorized to create geometric data for the institution.",
+                    $"The current user is not authorized to create geometric data in this database.",
                     []
                 )
             );

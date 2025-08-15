@@ -20,14 +20,24 @@ public sealed class DataAccessRightsMutations
         CancellationToken cancellationToken
     )
     {
-        var currentUser = await userService.GetCurrentUser(
-            cancellationToken);
+        var currentUser = await userService.GetCurrentUser(cancellationToken);
         if (currentUser is null)
         {
             return new UpdateDataAccessRightsPayload(
                 new UpdateDataAccessRightsError(
                     UpdateDataAccessRightsErrorCode.UNAUTHENTICATED,
                     $"The user is not authenticated.",
+                    []
+                )
+            );
+        }
+
+        if (!CommonAuthorization.IsCurrentUserAtLeastAssistantManagerOfDatabaseOperator(currentUser))
+        {
+            return new UpdateDataAccessRightsPayload(
+                new UpdateDataAccessRightsError(
+                    UpdateDataAccessRightsErrorCode.UNAUTHORIZED,
+                    $"The current user is not authorized to update access rights for the data.",
                     []
                 )
             );
@@ -40,21 +50,6 @@ public sealed class DataAccessRightsMutations
                 new UpdateDataAccessRightsError(
                     UpdateDataAccessRightsErrorCode.UNKNOWN_DATA,
                     $"Unknown data.",
-                    []
-                )
-            );
-        }
-
-        if (!CommonAuthorization.IsCurrentUserAtLeastAssistantManagerOfVerifiedInstitution(
-            currentUser,
-            data.CreatorId
-            )
-        )
-        {
-            return new UpdateDataAccessRightsPayload(
-                new UpdateDataAccessRightsError(
-                    UpdateDataAccessRightsErrorCode.UNAUTHORIZED,
-                    $"The current user is not authorized to update access rights for the data.",
                     []
                 )
             );
@@ -88,11 +83,7 @@ public sealed class DataAccessRightsMutations
             );
         }
 
-        if (!CommonAuthorization.IsCurrentUserAtLeastAssistantManagerOfVerifiedInstitution(
-            currentUser,
-            input.InstitutionId
-            )
-        )
+        if (!CommonAuthorization.IsCurrentUserAtLeastAssistantManagerOfDatabaseOperator(currentUser))
         {
             return new AddInstitutionAccessRightsPayload(
                 new InstitutionAccessRightsError(
@@ -103,7 +94,7 @@ public sealed class DataAccessRightsMutations
             );
         }
 
-        var accessRights = await context.InstitutionAccessRights.FirstOrDefaultAsync(x => x.InstitutionId == input.InstitutionId, cancellationToken);
+        var accessRights = await context.InstitutionAccessRights.SingleOrDefaultAsync(x => x.InstitutionId == input.InstitutionId, cancellationToken);
 
         if (accessRights is not null)
         {
@@ -146,11 +137,7 @@ public sealed class DataAccessRightsMutations
             );
         }
 
-        if (!CommonAuthorization.IsCurrentUserAtLeastAssistantManagerOfVerifiedInstitution(
-            currentUser,
-            input.InstitutionId
-            )
-        )
+        if (!CommonAuthorization.IsCurrentUserAtLeastAssistantManagerOfDatabaseOperator(currentUser))
         {
             return new UpdateAccessRightsPayload(
                 new InstitutionAccessRightsError(
@@ -161,7 +148,7 @@ public sealed class DataAccessRightsMutations
             );
         }
 
-        var accessRights = await context.InstitutionAccessRights.FirstOrDefaultAsync(x => x.InstitutionId == input.InstitutionId, cancellationToken);
+        var accessRights = await context.InstitutionAccessRights.SingleOrDefaultAsync(x => x.InstitutionId == input.InstitutionId, cancellationToken);
 
         if (accessRights is null)
         {

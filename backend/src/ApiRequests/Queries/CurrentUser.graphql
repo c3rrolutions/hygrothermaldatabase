@@ -1,6 +1,9 @@
-query CurrentUser {
+query CurrentUser(
+  $databaseId: Uuid!
+) {
   currentUser {
     uuid
+    name
     representedInstitutions {
       edges {
         node {
@@ -8,16 +11,66 @@ query CurrentUser {
           name
           managedInstitutions {
             edges {
-            node {
-              uuid
-              name
+              node {
+                uuid
+                name
+              }
             }
-            }
+            totalCount
           }
         }
         role
-        dataSigningPermission
       }
+      totalCount
+    }
+    databaseOperatingRepresentedInstitutions: representedInstitutions(
+      where: {
+        or: [
+          {
+            and: [
+              { role: { in: [ASSISTANT, OWNER] } }
+              {
+                institution: {
+                  operatedDatabases: {
+                    some: {
+                      uuid: { equalTo: $databaseId }
+                    }
+                  }
+                }
+              }
+            ]
+          }
+          {
+            and: [
+              { role: { in: [ASSISTANT, OWNER] } }
+              {
+                institution: {
+                  managedInstitutions: {
+                    some: {
+                      operatedDatabases: {
+                        some: {
+                          uuid: {
+                            equalTo: $databaseId
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ) {
+      edges {
+        node {
+          uuid
+          name
+        }
+        role
+      }
+      totalCount
     }
   }
 }

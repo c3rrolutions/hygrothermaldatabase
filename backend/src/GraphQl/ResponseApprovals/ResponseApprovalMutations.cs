@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -8,8 +7,24 @@ using Database.Authorization;
 using Database.Data;
 using Database.Services;
 using HotChocolate.Types;
+using Microsoft.Extensions.Logging;
 
 namespace Database.GraphQl.ResponseApprovals;
+
+public static partial class ResponseApprovalMutationsLogging
+{
+    [LoggerMessage(
+        Level = LogLevel.Warning,
+        Message = "Creating response approval for data of type {Type} with ID {Id} failed."
+    )]
+    public static partial void FailedCreatingResponseApproval(this ILogger<ResponseApprovalMutations> logger, Type type, Guid id, Exception exception);
+
+    [LoggerMessage(
+        Level = LogLevel.Warning,
+        Message = "Updating response approval for data of type {Type} with ID {Id} failed."
+    )]
+    public static partial void FailedUpdatingResponseApproval(this ILogger<ResponseApprovalMutations> logger, Type type, Guid id, Exception exception);
+}
 
 [ExtendObjectType(nameof(Mutation))]
 public sealed class ResponseApprovalMutations
@@ -20,6 +35,7 @@ public sealed class ResponseApprovalMutations
         UserService userService,
         DatabaseService databaseService,
         ResponseApprovalService responseApprovalService,
+        ILogger<ResponseApprovalMutations> logger,
         CancellationToken cancellationToken
     )
     {
@@ -45,16 +61,12 @@ public sealed class ResponseApprovalMutations
                 )
             );
         }
-        if (!ResponseApprovalAuthorization.IsAuthorizedToManageResponseApprovals(
-            currentUser,
-            database.Operator.Node.Uuid
-            )
-        )
+        if (!CommonAuthorization.IsCurrentUserAtLeastAssistantManagerOfDatabaseOperator(currentUser))
         {
             return new CreateResponseApprovalsPayload(
                 new CreateResponseApprovalsError(
                     CreateResponseApprovalsErrorCode.UNAUTHORIZED,
-                    $"The current user is not authorized to create response approvals for the database.",
+                    $"The current user is not authorized to create response approvals in this database.",
                     []
                 )
             );
@@ -77,10 +89,11 @@ public sealed class ResponseApprovalMutations
                 }
                 catch (Exception exception)
                 {
+                    logger.FailedCreatingResponseApproval(data.GetType(), data.Id, exception);
                     errors.Add(
                         new CreateResponseApprovalsError(
                             CreateResponseApprovalsErrorCode.CREATING_RESPONSE_APPROVAL_FAILED,
-                            $"Creating response approval for data {data} failed with message: {exception.Message}",
+                            $"Creating response approval for data `{data}` with ID {data.Id} failed with message: {exception.Message}",
                             []
                         )
                     );
@@ -100,6 +113,7 @@ public sealed class ResponseApprovalMutations
         UserService userService,
         DatabaseService databaseService,
         ResponseApprovalService responseApprovalService,
+        ILogger<ResponseApprovalMutations> logger,
         CancellationToken cancellationToken
     )
     {
@@ -125,16 +139,12 @@ public sealed class ResponseApprovalMutations
                 )
             );
         }
-        if (!ResponseApprovalAuthorization.IsAuthorizedToManageResponseApprovals(
-            currentUser,
-            database.Operator.Node.Uuid
-            )
-        )
+        if (!CommonAuthorization.IsCurrentUserAtLeastAssistantManagerOfDatabaseOperator(currentUser))
         {
             return new UpdateResponseApprovalsPayload(
                 new UpdateResponseApprovalsError(
                     UpdateResponseApprovalsErrorCode.UNAUTHORIZED,
-                    $"The current user is not authorized to create response approvals for the database.",
+                    $"The current user is not authorized to create response approvals in this database.",
                     []
                 )
             );
@@ -157,10 +167,11 @@ public sealed class ResponseApprovalMutations
                 }
                 catch (Exception exception)
                 {
+                    logger.FailedUpdatingResponseApproval(data.GetType(), data.Id, exception);
                     errors.Add(
                         new UpdateResponseApprovalsError(
                             UpdateResponseApprovalsErrorCode.UPDATING_RESPONSE_APPROVAL_FAILED,
-                            $"Updating response approval for data {data} failed with message: {exception.Message}",
+                            $"Updating response approval for data `{data}` with ID {data.Id} failed with message: {exception.Message}",
                             []
                         )
                     );

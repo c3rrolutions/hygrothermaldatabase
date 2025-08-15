@@ -56,16 +56,12 @@ public sealed class GetHttpsResourceMutations
                 )
             );
         }
-        if (!GetHttpsResourceAuthorization.IsAuthorizedToCreateGetHttpsResourceForInstitution(
-            currentUser,
-            data.CreatorId
-            )
-        )
+        if (!CommonAuthorization.IsCurrentUserAtLeastAssistantManagerOfDatabaseOperator(currentUser))
         {
             return new CreateGetHttpsResourcePayload(
                 new CreateGetHttpsResourceError(
                     CreateGetHttpsResourceErrorCode.UNAUTHORIZED,
-                    $"The current user is not authorized to create GET HTTPS resource for the institution.",
+                    $"The current user is not authorized to create GET HTTPS resource in this database.",
                     []
                 )
             );

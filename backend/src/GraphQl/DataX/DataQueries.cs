@@ -20,14 +20,11 @@ public sealed class DataQueries
         CancellationToken cancellationToken
     )
     {
-        // TODO Use `locale`.
         var data = await dataService.GetDataAsync(id, dbContext, cancellationToken);
-
         if (data is null)
         {
-            return data;
+            return null;
         }
-
         return await accessRightsService.ApplyAccessRightsOnData(data, cancellationToken);
     }
 }

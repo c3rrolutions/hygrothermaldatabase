@@ -9,7 +9,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Database.ApiRequests;
 using Database.Extensions;
-using Database.Services;
 using GraphQL;
 using Microsoft.AspNetCore.Http;
 

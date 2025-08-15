@@ -36,16 +36,12 @@ public sealed class HygrothermalDataMutations
                 )
             );
         }
-        if (!HygrothermalDataAuthorization.IsAuthorizedToCreateHygrothermalDataForInstitution(
-            currentUser,
-            input.CreatorId
-            )
-        )
+        if (!CommonAuthorization.IsCurrentUserAtLeastAssistantManagerOfDatabaseOperator(currentUser))
         {
             return new CreateHygrothermalDataPayload(
                 new CreateHygrothermalDataError(
                     CreateHygrothermalDataErrorCode.UNAUTHORIZED,
-                    $"The current user is not authorized to create hygrothermal data for the institution.",
+                    $"The current user is not authorized to create hygrothermal data in this database.",
                     []
                 )
             );

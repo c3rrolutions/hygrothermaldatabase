@@ -135,11 +135,7 @@ public sealed class FileUploadController(
                 $"There is no data set associated with the GET HTTPS resource with UUID {getHttpsResourceUuid:D}.");
             return BadRequest(ModelState);
         }
-        if (!FileUploadDataAuthorization.IsAuthorizedToUploadFilesForInstitution(
-                currentUser,
-                getHttpsResource.Data.CreatorId
-            )
-        )
+        if (!CommonAuthorization.IsCurrentUserAtLeastAssistantManagerOfDatabaseOperator(currentUser))
         {
             return Unauthorized();
         }

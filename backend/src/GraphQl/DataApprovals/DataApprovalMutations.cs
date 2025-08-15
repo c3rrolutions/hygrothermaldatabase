@@ -19,7 +19,6 @@ public sealed class DataApprovalMutations
         ApplicationDbContext context,
         UserService userService,
         DataService dataService,
-        DatabaseService databaseService,
         ResponseApprovalService responseApprovalService,
         CancellationToken cancellationToken
     )
@@ -35,28 +34,13 @@ public sealed class DataApprovalMutations
                 )
             );
         }
-        var database = await databaseService.QueryDatabase(cancellationToken);
-        if (database is null)
-        {
-            return new AddDataApprovalPayload(
-                new AddDataApprovalError(
-                    AddDataApprovalErrorCode.UNKNOWN_DATABASE,
-                    $"The database could not be identified.",
-                    []
-                )
-            );
-        }
-        if (!CommonAuthorization.IsAuthorizedToAddDataApprovalForInstitution(
-            currentUser,
-            database.Operator.Node.Uuid
-            )
-        )
+        if (!CommonAuthorization.IsCurrentUserAtLeastAssistantManagerOfDatabaseOperator(currentUser))
         {
             return new AddDataApprovalPayload(
                 new AddDataApprovalError(
                     AddDataApprovalErrorCode.UNAUTHORIZED,
-                    $"The current user is not authorized to add data approvals for the database.",
-                    [nameof(input), nameof(input.ApproverId).FirstCharToLower()]
+                    $"The current user is not authorized to add data approvals to this database.",
+                    []
                 )
             );
         }

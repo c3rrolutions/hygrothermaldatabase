@@ -14,7 +14,7 @@ namespace Database.ApiRequests;
 /// </summary>
 public sealed class UserApi
 {
-    private static readonly string[] _currentUserFileNames =
+    private static readonly string[] s_currentUserFileNames =
     [
         "CurrentUser.graphql"
     ];
@@ -39,8 +39,10 @@ public sealed class UserApi
     {
         return (await apiRequestService.Metabase().QueryGraphQl<CurrentUserData>(
                    appSettings,
-                   new GraphQLRequest(await apiRequestService.ConstructGraphQlQuery(_currentUserFileNames),
-                       new { },
+                   new GraphQLRequest(await apiRequestService.ConstructGraphQlQuery(s_currentUserFileNames),
+                       new {
+                        databaseId = appSettings.DatabaseId
+                       },
                        "CurrentUser"
                    ),
                    httpClientFactory,
@@ -61,17 +63,15 @@ public sealed class UserApi
     /// <param name="httpContextAccessor"> <see cref="IHttpContextAccessor"/> </param>
     /// <param name="cancellationToken">   <see cref="CancellationToken"/> </param>
     /// <returns> <see cref="UserInfoDto"/> if successful. </returns>
-    public static async Task<UserInfoDto?> RequestUserInfo(
+    public static Task<UserInfoDto> RequestUserInfo(
         AppSettings appSettings,
         ApiRequestService apiRequestService,
         IHttpClientFactory httpClientFactory,
         IHttpContextAccessor httpContextAccessor,
         CancellationToken cancellationToken)
     {
-        var uri = new Uri(new Uri(appSettings.MetabaseHost, UriKind.Absolute), "/connect/userinfo");
-
-        return await apiRequestService.Metabase().QueryRest<UserInfoDto>(
-            uri,
+        return apiRequestService.Metabase().QueryRest<UserInfoDto>(
+            new Uri(new Uri(appSettings.MetabaseHost, UriKind.Absolute), "/connect/userinfo"),
             httpClientFactory,
             httpContextAccessor,
             cancellationToken

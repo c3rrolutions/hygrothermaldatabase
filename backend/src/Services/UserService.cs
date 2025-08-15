@@ -47,12 +47,10 @@ public sealed class UserService(
         // Extract token
         var token = await httpContextAccessor.ExtractBearerToken();
         logger.ExtractedToken(token);
-
         if (token is null)
         {
             return await GetCurrentUserFromMetabase(cancellationToken);
         }
-
         // Check if there is already a user for token
         if (!cacheService.TryGetUser(token, out var cacheUser))
         {
@@ -61,7 +59,6 @@ public sealed class UserService(
             // Store user in cache
             cacheService.SetUser(token, cacheUser);
         }
-
         return cacheUser;
     }
 
@@ -72,6 +69,7 @@ public sealed class UserService(
             apiRequestService,
             httpClientFactory,
             httpContextAccessor,
-            cancellationToken);
+            cancellationToken
+        );
     }
 }

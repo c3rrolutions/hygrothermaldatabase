@@ -39,16 +39,12 @@ public sealed class PhotovoltaicDataMutations
             );
         }
 
-        if (!PhotovoltaicDataAuthorization.IsAuthorizedToCreatePhotovoltaicDataForInstitution(
-            currentUser,
-            input.CreatorId
-            )
-        )
+        if (!CommonAuthorization.IsCurrentUserAtLeastAssistantManagerOfDatabaseOperator(currentUser))
         {
             return new CreatePhotovoltaicDataPayload(
                 new CreatePhotovoltaicDataError(
                     CreatePhotovoltaicDataErrorCode.UNAUTHORIZED,
-                    $"The current user is not authorized to create photovoltaic data for the institution.",
+                    $"The current user is not authorized to create photovoltaic data in this database.",
                     []
                 )
             );

@@ -6,6 +6,13 @@ namespace Database.Authorization;
 
 public static class CommonAuthorization
 {
+    public static bool IsCurrentUserAtLeastAssistantManagerOfDatabaseOperator(
+        CurrentUserDto currentUser
+        )
+    {
+        return currentUser.DatabaseOperatingRepresentedInstitutions.TotalCount >= 1;
+    }
+
     public static bool IsCurrentUserAtLeastAssistantManagerOfVerifiedInstitution(
         CurrentUserDto currentUser,
         Guid institutionId
@@ -23,16 +30,6 @@ public static class CommonAuthorization
                     t.Node.Uuid == institutionId
                 )
             )
-        );
-    }
-
-    public static bool IsAuthorizedToAddDataApprovalForInstitution(
-        CurrentUserDto currentUser,
-        Guid institutionId
-        )
-    {
-        return currentUser.RepresentedInstitutions.Edges.Any(
-            t => t.Node.Uuid == institutionId
         );
     }
 }

@@ -33,16 +33,12 @@ public sealed class OpticalDataMutations
                 )
             );
         }
-        if (!OpticalDataAuthorization.IsAuthorizedToCreateOpticalDataForInstitution(
-            currentUser,
-            input.CreatorId
-            )
-        )
+        if (!CommonAuthorization.IsCurrentUserAtLeastAssistantManagerOfDatabaseOperator(currentUser))
         {
             return new CreateOpticalDataPayload(
                 new CreateOpticalDataError(
                     CreateOpticalDataErrorCode.UNAUTHORIZED,
-                    $"The current user is not authorized to create optical data for the institution.",
+                    $"The current user is not authorized to create optical data in this database.",
                     []
                 )
             );

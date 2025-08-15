@@ -35,16 +35,12 @@ public sealed class CalorimetricDataMutations
             );
         }
 
-        if (!CalorimetricDataAuthorization.IsAuthorizedToCreateCalorimetricDataForInstitution(
-            currentUser,
-            input.CreatorId
-            )
-        )
+        if (!CommonAuthorization.IsCurrentUserAtLeastAssistantManagerOfDatabaseOperator(currentUser))
         {
             return new CreateCalorimetricDataPayload(
                 new CreateCalorimetricDataError(
                     CreateCalorimetricDataErrorCode.UNAUTHORIZED,
-                    $"The current user is not authorized to create calorimetric data for the institution.",
+                    $"The current user is not authorized to create calorimetric data in this database.",
                     []
                 )
             );

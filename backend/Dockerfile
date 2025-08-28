@@ -146,10 +146,6 @@ COPY \
   ./test/Database.Tests.csproj \
   ./test/
 
-# Invoking GPG agent (https://www.gnupg.org/documentation/manuals/gnupg/Invoking-GPG_002dAGENT.html)
-RUN \
-  export GPG_TTY=$(tty)
-
 # https://github.com/dotnet/dotnet-docker/blob/master/samples/aspnetapp/Dockerfile.alpine-x64
 # https://github.com/dotnet/dotnet-docker/blob/master/samples/run-aspnetcore-https-development.md
 # https://docs.microsoft.com/en-us/aspnet/core/security/app-secrets?view=aspnetcore-2.2&tabs=linux

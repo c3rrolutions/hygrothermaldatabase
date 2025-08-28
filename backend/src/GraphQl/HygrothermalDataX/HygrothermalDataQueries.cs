@@ -32,7 +32,8 @@ public sealed class HygrothermalDataQueries
     )
     {
         sorting.StabilizeOrder<HygrothermalData>();
-        var filteredData = context.HygrothermalData
+        var filteredData =
+            context.HygrothermalData.AsNoTracking()
             .Sort(resolverContext)
             .Filter(resolverContext);
         if (!await filteredData.AnyAsync(x => x.DataAccessRights.HasRestrictions, cancellationToken))
@@ -50,7 +51,7 @@ public sealed class HygrothermalDataQueries
         CancellationToken cancellationToken
     )
     {
-        return context.HygrothermalData
+        return context.HygrothermalData.AsNoTracking()
             .Filter(resolverContext)
             .AnyAsync(cancellationToken);
     }

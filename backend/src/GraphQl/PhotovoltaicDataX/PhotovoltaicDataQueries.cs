@@ -32,7 +32,8 @@ public sealed class PhotovoltaicDataQueries
     )
     {
         sorting.StabilizeOrder<PhotovoltaicData>();
-        var filteredData = context.PhotovoltaicData
+        var filteredData =
+            context.PhotovoltaicData.AsNoTracking()
             .Sort(resolverContext)
             .Filter(resolverContext);
         if (!await filteredData.AnyAsync(x => x.DataAccessRights.HasRestrictions, cancellationToken))
@@ -50,7 +51,7 @@ public sealed class PhotovoltaicDataQueries
         CancellationToken cancellationToken
     )
     {
-        return context.PhotovoltaicData
+        return context.PhotovoltaicData.AsNoTracking()
             .Filter(resolverContext)
             .AnyAsync(cancellationToken);
     }

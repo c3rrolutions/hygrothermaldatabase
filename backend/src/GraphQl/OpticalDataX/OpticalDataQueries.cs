@@ -32,7 +32,8 @@ public sealed class OpticalDataQueries
     )
     {
         sorting.StabilizeOrder<OpticalData>();
-        var filteredData = context.OpticalData
+        var filteredData =
+            context.OpticalData.AsNoTracking()
             .Sort(resolverContext)
             .Filter(resolverContext);
         if (!await filteredData.AnyAsync(x => x.DataAccessRights.HasRestrictions, cancellationToken))
@@ -50,7 +51,7 @@ public sealed class OpticalDataQueries
         CancellationToken cancellationToken
     )
     {
-        return context.OpticalData
+        return context.OpticalData.AsNoTracking()
             .Filter(resolverContext)
             .AnyAsync(cancellationToken);
     }

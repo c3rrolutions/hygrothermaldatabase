@@ -32,7 +32,8 @@ public sealed class CalorimetricDataQueries
     )
     {
         sorting.StabilizeOrder<CalorimetricData>();
-        var filteredData = context.CalorimetricData
+        var filteredData =
+            context.CalorimetricData.AsNoTracking()
             .Sort(resolverContext)
             .Filter(resolverContext);
         if (!await filteredData.AnyAsync(x => x.DataAccessRights.HasRestrictions, cancellationToken))
@@ -50,7 +51,7 @@ public sealed class CalorimetricDataQueries
         CancellationToken cancellationToken
     )
     {
-        return context.CalorimetricData
+        return context.CalorimetricData.AsNoTracking()
             .Filter(resolverContext)
             .AnyAsync(cancellationToken);
     }

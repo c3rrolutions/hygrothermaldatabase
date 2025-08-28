@@ -12,7 +12,7 @@ using Microsoft.Extensions.Logging;
 namespace Database.Services;
 
 public sealed class AccessRightsService(
-    ApplicationDbContext context,
+    IDbContextFactory<ApplicationDbContext> dbContextFactory,
     UserService userService,
     CacheService cacheService,
     ILogger<AccessRightsService> logger)
@@ -31,6 +31,7 @@ public sealed class AccessRightsService(
     )
     where T : IData
     {
+        ApplicationDbContext? context = null;
         IReadOnlyList<Guid>? representedInstitutionIds = null;
         IReadOnlyList<InstitutionAccessRights>? institutionAccessRights = null;
         uint? alreadyAccessedCount = null;
@@ -40,6 +41,7 @@ public sealed class AccessRightsService(
 
         if (currentUser is not null)
         {
+            context = dbContextFactory.CreateDbContext();
             representedInstitutionIds = currentUser.RepresentedInstitutions.Edges.Select(e => e.Node.Uuid).ToList().AsReadOnly();
             institutionAccessRights = (await context.InstitutionAccessRights.AsQueryable()
                 .Where(x => representedInstitutionIds.Contains(x.InstitutionId))
@@ -50,8 +52,11 @@ public sealed class AccessRightsService(
 
         var result = ProcessData(data, currentUser, openIdConnectClientId, representedInstitutionIds, institutionAccessRights, alreadyAccessedCount, cacheService);
 
-        // Save InstitutionAccessRight changes
-        await context.SaveChangesAsync(cancellationToken);
+        if (context is not null)
+        {
+            // Save InstitutionAccessRight changes
+            await context.SaveChangesAsync(cancellationToken);
+        }
         return result.AsQueryable<T>();
     }
 

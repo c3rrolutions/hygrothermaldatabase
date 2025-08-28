@@ -1,6 +1,5 @@
 using System;
 using Database.ApiRequests.Dto;
-using Database.Services;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace Database.Services;

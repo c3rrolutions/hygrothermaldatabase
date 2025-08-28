@@ -30,7 +30,8 @@ public sealed class GeometricDataQueries
     )
     {
         sorting.StabilizeOrder<GeometricData>();
-        var filteredData = context.GeometricData
+        var filteredData =
+            context.GeometricData.AsNoTracking()
             .Sort(resolverContext)
             .Filter(resolverContext);
         if (!await filteredData.AnyAsync(x => x.DataAccessRights.HasRestrictions, cancellationToken))
@@ -48,7 +49,7 @@ public sealed class GeometricDataQueries
         CancellationToken cancellationToken
     )
     {
-        return context.GeometricData
+        return context.GeometricData.AsNoTracking()
             .Filter(resolverContext)
             .AnyAsync(cancellationToken);
     }

@@ -38,7 +38,7 @@ public sealed class DatabaseApi
                     new GraphQLRequest(await apiRequestService.ConstructGraphQlQuery(_databaseFileNames),
                         new
                         {
-                            uuid = databaseId
+                            id = databaseId
                         },
                         "Database"
                     ),

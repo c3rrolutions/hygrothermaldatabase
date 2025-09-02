@@ -11,7 +11,7 @@ public sealed class DataApproval(
     string keyFingerprint,
     string query,
     JsonElement variables,
-    string response,
+    string message,
     Guid approverId,
     Reference statement
     )
@@ -24,7 +24,7 @@ public sealed class DataApproval(
         string keyFingerprint,
         string query,
         JsonElement variables,
-        string response,
+        string message,
         Guid approverId
     )
     : this(
@@ -33,7 +33,7 @@ public sealed class DataApproval(
         keyFingerprint,
         query,
         variables,
-        response,
+        message,
         approverId,
         null! // EF Core will set this owned navigation property after construction.
         )
@@ -46,6 +46,6 @@ public sealed class DataApproval(
     public string KeyFingerprint { get; private set; } = keyFingerprint;
     public string Query { get; private set; } = query;
     public JsonElement Variables { get; private set; } = variables;
-    public string Response { get; private set; } = response;
+    public string Message { get; private set; } = message;
     public Reference Statement { get; private set; } = statement;
 }

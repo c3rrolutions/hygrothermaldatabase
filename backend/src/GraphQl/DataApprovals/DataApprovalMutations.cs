@@ -87,7 +87,7 @@ public sealed class DataApprovalMutations
             input.KeyFingerprint,
             input.Query,
             input.Variables,
-            input.Response,
+            input.Message,
             input.ApproverId,
             ReferenceType.FromInput(input.Statement)
         );

@@ -1,5 +1,5 @@
-query OpticalData($uuid: Uuid!) {
-  opticalData(id: $uuid) {
+query OpticalData($id: Uuid!) {
+  opticalData(id: $id) {
     ...OpticalDataFields
   }
 }

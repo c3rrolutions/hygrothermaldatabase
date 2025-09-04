@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
@@ -73,17 +74,15 @@ public sealed class DataApi
     )
         where TGraphQlData : class
     {
-        var variables = new { uuid = dataId };
+        var variables = new { id = dataId };
         var query = await apiRequestService.ConstructGraphQlQuery(filenames);
-        var response = JsonSerializer.Serialize(
-            await apiRequestService.Database().QueryGraphQl<TGraphQlData>(
-                appSettings,
-                new GraphQLRequest(query, variables),
-                httpClientFactory,
-                httpContextAccessor,
-                cancellationToken
-            )
-        ) ?? throw new JsonException("Failed to serialize the response.");
+        var response = await apiRequestService.Database().QueryGraphQl(
+            appSettings,
+            new GraphQLRequest(query, variables),
+            httpClientFactory,
+            httpContextAccessor,
+            cancellationToken
+        );
         return (query, JsonSerializer.SerializeToElement(variables), response);
     }
 
@@ -115,7 +114,7 @@ public sealed class DataApi
     {
         var request = new GraphQLRequest(
             await apiRequestService.ConstructGraphQlQuery(filenames),
-            new { uuid = dataId }
+            new { id = dataId }
         );
         return await apiRequestService.Database().QueryGraphQlFromUrl<TGraphQlData>(
             appSettings,

@@ -226,8 +226,8 @@ type DataAccessRights {
 type DataApproval {
   approverId: Uuid!
   keyFingerprint: String!
+  message: String!
   query: String!
-  response: String!
   signature: String!
   statement: Reference @cost(weight: "10")
   timestamp: DateTime!
@@ -645,8 +645,8 @@ type Query {
 
 type ResponseApproval {
   keyFingerprint: String!
+  message: String!
   query: String!
-  response: String!
   signature: String!
   timestamp: DateTime!
   variables: Any!
@@ -928,8 +928,8 @@ input DataApprovalInput {
   approverId: Uuid!
   dataId: Uuid!
   keyFingerprint: String!
+  message: String!
   query: String!
-  response: String!
   signature: String!
   statement: ReferenceInput!
   timestamp: DateTime!
@@ -945,7 +945,7 @@ input DataApprovalPropositionInput {
   keyFingerprint: StringPropositionInput
   query: StringPropositionInput
   variables: JsonElementPropositionInput
-  response: StringPropositionInput
+  message: StringPropositionInput
   statement: ReferencePropositionInput
 }
 

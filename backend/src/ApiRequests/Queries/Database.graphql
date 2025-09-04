@@ -1,7 +1,7 @@
 query Database(
-    $uuid: Uuid!
+    $id: Uuid!
 ) {
-    database(uuid: $uuid) {
+    database(id: $id) {
         uuid
         name
         description

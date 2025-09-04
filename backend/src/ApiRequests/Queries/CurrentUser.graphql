@@ -33,7 +33,7 @@ query CurrentUser(
                 institution: {
                   operatedDatabases: {
                     some: {
-                      uuid: { equalTo: $databaseId }
+                      id: { equalTo: $databaseId }
                     }
                   }
                 }
@@ -49,7 +49,7 @@ query CurrentUser(
                     some: {
                       operatedDatabases: {
                         some: {
-                          uuid: {
+                          id: {
                             equalTo: $databaseId
                           }
                         }

@@ -11,7 +11,7 @@ namespace Database.Data
         string keyFingerprint,
         string query,
         JsonElement variables,
-        string response
+        string message
         )
         : IApproval
     {
@@ -20,6 +20,6 @@ namespace Database.Data
         public string KeyFingerprint { get; private set; } = keyFingerprint;
         public string Query { get; private set; } = query;
         public JsonElement Variables { get; private set; } = variables;
-        public string Response { get; private set; } = response;
+        public string Message { get; private set; } = message;
     }
 }

@@ -12,7 +12,7 @@ public sealed record DataApprovalInput
     string KeyFingerprint,
     string Query,
     JsonElement Variables,
-    string Response,
+    string Message,
     Guid ApproverId,
     ReferenceInput Statement
 );

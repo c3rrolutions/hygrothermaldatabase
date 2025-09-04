@@ -1,5 +1,5 @@
-query HygrothermalData($uuid: Uuid!) {
-  hygrothermalData(id: $uuid) {
+query HygrothermalData($id: Uuid!) {
+  hygrothermalData(id: $id) {
     ...HygrothermalDataFields
   }
 }

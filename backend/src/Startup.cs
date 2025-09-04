@@ -61,15 +61,7 @@ public sealed class Startup(
         services.AddSingleton(_appSettings);
         services.AddSingleton(_environment);
         // services.AddDatabaseDeveloperPageExceptionFilter();
-        services.AddSingleton<SigningService>();
-        services.AddSingleton<CacheService>();
-        services.AddScoped<AccessRightsService>();
-        services.AddScoped<ApiRequestService>();
-        services.AddScoped<DataService>();
-        services.AddScoped<MethodCalculationService>();
-        services.AddScoped<ResponseApprovalService>();
-        services.AddScoped<UserService>();
-        services.AddScoped<DatabaseService>();
+        ConfigureCustomServices(services);
     }
 
     private static void ConfigureRequestResponseServices(IServiceCollection services)
@@ -239,6 +231,19 @@ public sealed class Startup(
                 }
             );
         }
+    }
+
+    public static void ConfigureCustomServices(IServiceCollection services)
+    {
+        services.AddSingleton<SigningService>();
+        services.AddSingleton<CacheService>();
+        services.AddScoped<AccessRightsService>();
+        services.AddScoped<ApiRequestService>();
+        services.AddScoped<DataService>();
+        services.AddScoped<MethodCalculationService>();
+        services.AddScoped<ResponseApprovalService>();
+        services.AddScoped<UserService>();
+        services.AddScoped<DatabaseService>();
     }
 
     public void Configure(WebApplication app)

@@ -37,7 +37,7 @@ public sealed class ResponseApprovalService(
     public async Task<ResponseApproval> CreateResponseApproval(IData dataObject, CancellationToken cancellationToken)
     {
         // Get dataset
-        logger.QueryAllMetaData(dataObject.GetType().Name, dataObject.Id);
+        logger.QueryAllMetaData(dataObject.GetType(), dataObject.Id);
         var (query, variables, response) = await QueryAllMetaData(dataObject, cancellationToken);
         logger.QueryAndVariablesAndResponce(query, variables, response);
         var signature = await signingService.SignData(response);

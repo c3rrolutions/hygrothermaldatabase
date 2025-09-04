@@ -1,5 +1,5 @@
-query CalorimetricData($uuid: Uuid!) {
-  calorimetricData(id: $uuid) {
+query CalorimetricData($id: Uuid!) {
+  calorimetricData(id: $id) {
     ...CalorimetricDataFields
   }
 }

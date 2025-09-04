@@ -36,6 +36,8 @@ namespace Database.Configuration;
 
 public static class GraphQlConfiguration
 {
+    internal const string TypeDiscriminatorPropertyName = "__typename";
+
     public static void ConfigureServices(
         IServiceCollection services,
         IWebHostEnvironment environment,

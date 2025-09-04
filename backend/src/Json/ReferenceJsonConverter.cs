@@ -5,6 +5,7 @@ using Database.Data;
 
 namespace Database.Json;
 
+// Inspired by https://learn.microsoft.com/en-us/dotnet/standard/serialization/system-text-json/converters-how-to
 public sealed class ReferenceJsonConverter
         : JsonConverter<Reference>
 {

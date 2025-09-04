@@ -10,7 +10,7 @@ public static partial class ResponseApprovalServiceLogging
     [LoggerMessage(
         Level = LogLevel.Debug,
         Message = "Querying all meta data for {DataType} with ID {Id}")]
-    public static partial void QueryAllMetaData(this ILogger<ResponseApprovalService> logger, string dataType, Guid id);
+    public static partial void QueryAllMetaData(this ILogger<ResponseApprovalService> logger, Type dataType, Guid id);
 
     [LoggerMessage(
         Level = LogLevel.Debug,

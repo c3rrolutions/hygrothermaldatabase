@@ -23,5 +23,4 @@ public sealed class TransmittanceSumMethod : IMethod
             new DataPoint(new Incidence(new Wavelengths(0), new Direction(0)), new Emergence(new Direction(0)), new Results(transmittanceSum))
         ];
     }
-
 }

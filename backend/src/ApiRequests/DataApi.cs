@@ -1,5 +1,4 @@
 using System;
-using System.IO;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
@@ -63,7 +62,7 @@ public sealed class DataApi
     /// Throws exception, when response could not be serialized.
     /// </exception>
     /// <returns> Query, variables, and response for data. </returns>
-    public static async Task<(string Query, JsonElement Variables, string Response)> QueryAllMetaData<TGraphQlData>(
+    public static async Task<(string Query, JsonElement Variables, string Response)> QueryAllMetaData(
         Guid dataId,
         string[] filenames,
         AppSettings appSettings,
@@ -72,7 +71,6 @@ public sealed class DataApi
         IHttpContextAccessor httpContextAccessor,
         CancellationToken cancellationToken
     )
-        where TGraphQlData : class
     {
         var variables = new { id = dataId };
         var query = await apiRequestService.ConstructGraphQlQuery(filenames);

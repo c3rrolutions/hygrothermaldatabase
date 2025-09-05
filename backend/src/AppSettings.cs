@@ -13,6 +13,7 @@ public sealed class AppSettings
         = "";
 
     public Guid DatabaseId { get; set; }
+    public Guid OperatorId { get; set; }
 
     public string VerificationCode { get; set; }
         = "";

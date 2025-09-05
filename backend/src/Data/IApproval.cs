@@ -13,4 +13,5 @@ public interface IApproval
     string Query { get; }
     JsonElement Variables { get; }
     string Message { get; }
+    public Guid ApproverId { get; }
 }

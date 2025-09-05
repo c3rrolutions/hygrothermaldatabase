@@ -34,26 +34,36 @@ public sealed class ResponseApprovalService(
     /// <param name="cancellationToken"> <see cref="CancellationToken"/> </param>
     /// <exception cref="Exception"> Thows exception, when singing of data failed. </exception>
     /// <returns> <see cref="ResponseApproval"/> </returns>
-    public async Task<ResponseApproval> CreateResponseApproval(IData dataObject, CancellationToken cancellationToken)
+    public async Task<ResponseApproval> CreateResponseApproval<T>(T dataObject, CancellationToken cancellationToken)
+        where T : IData
     {
         // Get dataset
         logger.QueryAllMetaData(dataObject.GetType(), dataObject.Id);
         var (query, variables, response) = await QueryAllMetaData(dataObject, cancellationToken);
         logger.QueryAndVariablesAndResponce(query, variables, response);
         var signature = await signingService.SignData(response);
-        return new ResponseApproval(DateTime.UtcNow, signature, await signingService.ExtractFingerprint(), query, variables, response);
+        return new ResponseApproval(
+            DateTime.UtcNow,
+            signature,
+            await signingService.ExtractFingerprint(),
+            query,
+            variables,
+            response,
+            appSettings.OperatorId
+        );
     }
 
-    private async Task<(string Query, JsonElement Variables, string Response)> QueryAllMetaData(IData dataObject, CancellationToken cancellationToken)
+    private async Task<(string Query, JsonElement Variables, string Response)> QueryAllMetaData<T>(T dataObject, CancellationToken cancellationToken)
+        where T : IData
     {
         return dataObject switch
         {
-            GeometricData data => await DataApi.QueryAllMetaData<GeometricDataResponse>(data.Id, DataApi.GeometricDataFileNames, appSettings, apiRequestService, httpClientFactory, httpContextAccessor, cancellationToken),
-            CalorimetricData data => await DataApi.QueryAllMetaData<CalorimetricDataResponse>(data.Id, DataApi.CalorimetricDataFileNames, appSettings, apiRequestService, httpClientFactory, httpContextAccessor, cancellationToken),
-            HygrothermalData data => await DataApi.QueryAllMetaData<HygrothermalDataResponse>(data.Id, DataApi.HygrothermalDataFileNames, appSettings, apiRequestService, httpClientFactory, httpContextAccessor, cancellationToken),
-            PhotovoltaicData data => await DataApi.QueryAllMetaData<PhotovoltaicDataResponse>(data.Id, DataApi.PhotovoltaicDataFileNames, appSettings, apiRequestService, httpClientFactory, httpContextAccessor, cancellationToken),
-            OpticalData data => await DataApi.QueryAllMetaData<OpticalDataResponse>(data.Id, DataApi.OpticalDataFileNames, appSettings, apiRequestService, httpClientFactory, httpContextAccessor, cancellationToken),
-            _ => throw new NotImplementedException($"Unsupported data type {typeof(IData)}"),
+            GeometricData data => await DataApi.QueryAllMetaData(data.Id, DataApi.GeometricDataFileNames, appSettings, apiRequestService, httpClientFactory, httpContextAccessor, cancellationToken),
+            CalorimetricData data => await DataApi.QueryAllMetaData(data.Id, DataApi.CalorimetricDataFileNames, appSettings, apiRequestService, httpClientFactory, httpContextAccessor, cancellationToken),
+            HygrothermalData data => await DataApi.QueryAllMetaData(data.Id, DataApi.HygrothermalDataFileNames, appSettings, apiRequestService, httpClientFactory, httpContextAccessor, cancellationToken),
+            PhotovoltaicData data => await DataApi.QueryAllMetaData(data.Id, DataApi.PhotovoltaicDataFileNames, appSettings, apiRequestService, httpClientFactory, httpContextAccessor, cancellationToken),
+            OpticalData data => await DataApi.QueryAllMetaData(data.Id, DataApi.OpticalDataFileNames, appSettings, apiRequestService, httpClientFactory, httpContextAccessor, cancellationToken),
+            _ => throw new NotImplementedException($"Unsupported data type {typeof(T)}"),
         };
     }
 }

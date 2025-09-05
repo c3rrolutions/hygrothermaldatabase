@@ -1,8 +1,16 @@
 using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
+using Database.Configuration;
 
 namespace Database.Data;
 
+[JsonPolymorphic(TypeDiscriminatorPropertyName = GraphQlConfiguration.TypeDiscriminatorPropertyName)]
+[JsonDerivedType(typeof(CalorimetricData), typeDiscriminator: nameof(CalorimetricData))]
+[JsonDerivedType(typeof(GeometricData), typeDiscriminator: nameof(GeometricData))]
+[JsonDerivedType(typeof(HygrothermalData), typeDiscriminator: nameof(HygrothermalData))]
+[JsonDerivedType(typeof(OpticalData), typeDiscriminator: nameof(OpticalData))]
+[JsonDerivedType(typeof(PhotovoltaicData), typeDiscriminator: nameof(PhotovoltaicData))]
 public interface IData : IEntity
 {
     Guid ComponentId { get; }

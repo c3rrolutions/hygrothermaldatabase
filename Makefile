@@ -326,8 +326,8 @@ gpg : ## Generate GnuPG key with the passphrase `${GNUPG_PRIVATEKEY_PASSPHRASE}`
 		"${NAME} (${COMMENT}) <${EMAIL}>" \
 		ed25519 \
 		sign \
-		never
-	fingerprint=gpg \
+		never; \
+	fingerprint=$$(gpg \
 		--list-secret-keys \
 		--with-colons \
 		--keyid-format=long \
@@ -335,9 +335,10 @@ gpg : ## Generate GnuPG key with the passphrase `${GNUPG_PRIVATEKEY_PASSPHRASE}`
 	| grep \
 		--before=3 \
 		"${NAME} (${COMMENT}) <${EMAIL}>" \
-	| awk -F: '$$1=="fpr" {printf $$10; exit}'
+	| awk -F: '$$1=="fpr" {printf $$10; exit}'); \
+	echo $$fingerprint; \
 	mkdir --parents \
-		./backend/src/gpg-keys
+		./backend/src/gpg-keys; \
 	gpg \
 		--armor \
 		--export-secret-keys $$fingerprint \

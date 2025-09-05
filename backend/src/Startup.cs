@@ -235,15 +235,14 @@ public sealed class Startup(
 
     public static void ConfigureCustomServices(IServiceCollection services)
     {
-        services.AddSingleton<SigningService>();
-        services.AddSingleton<CacheService>();
         services.AddScoped<AccessRightsService>();
         services.AddScoped<ApiRequestService>();
         services.AddScoped<DataService>();
-        services.AddScoped<MethodCalculationService>();
         services.AddScoped<ResponseApprovalService>();
         services.AddScoped<UserService>();
-        services.AddScoped<DatabaseService>();
+        services.AddSingleton<CacheService>();
+        services.AddSingleton<MethodCalculationService>();
+        services.AddSingleton<SigningService>();
     }
 
     public void Configure(WebApplication app)

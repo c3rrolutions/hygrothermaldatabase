@@ -33,7 +33,6 @@ public sealed class ResponseApprovalMutations
     public async Task<CreateResponseApprovalsPayload> CreateResponseApprovalsAsync(
         ApplicationDbContext context,
         UserService userService,
-        DatabaseService databaseService,
         ResponseApprovalService responseApprovalService,
         ILogger<ResponseApprovalMutations> logger,
         CancellationToken cancellationToken
@@ -46,17 +45,6 @@ public sealed class ResponseApprovalMutations
                 new CreateResponseApprovalsError(
                     CreateResponseApprovalsErrorCode.UNAUTHENTICATED,
                     $"The user is not authenticated.",
-                    []
-                )
-            );
-        }
-        var database = await databaseService.QueryDatabase(cancellationToken);
-        if (database is null)
-        {
-            return new CreateResponseApprovalsPayload(
-                new CreateResponseApprovalsError(
-                    CreateResponseApprovalsErrorCode.UNKNOWN_DATABASE,
-                    $"The database could not be identified.",
                     []
                 )
             );
@@ -111,7 +99,6 @@ public sealed class ResponseApprovalMutations
     public async Task<UpdateResponseApprovalsPayload> UpdateResponseApprovalsAsync(
         ApplicationDbContext context,
         UserService userService,
-        DatabaseService databaseService,
         ResponseApprovalService responseApprovalService,
         ILogger<ResponseApprovalMutations> logger,
         CancellationToken cancellationToken
@@ -124,17 +111,6 @@ public sealed class ResponseApprovalMutations
                 new UpdateResponseApprovalsError(
                     UpdateResponseApprovalsErrorCode.UNAUTHENTICATED,
                     $"The user is not authenticated.",
-                    []
-                )
-            );
-        }
-        var database = await databaseService.QueryDatabase(cancellationToken);
-        if (database is null)
-        {
-            return new UpdateResponseApprovalsPayload(
-                new UpdateResponseApprovalsError(
-                    UpdateResponseApprovalsErrorCode.UNKNOWN_DATABASE,
-                    $"The database could not be identified.",
                     []
                 )
             );

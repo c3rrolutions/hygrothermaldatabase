@@ -37,16 +37,13 @@ public sealed class MethodAsServiceQueries
                 )
             );
         }
-
         await using var stream = input.File.OpenReadStream();
         var fileInput = await JsonSerializer.DeserializeAsync<FileInputData>(
             stream,
             JsonSerializerSettings.File,
             cancellationToken
             ) ?? throw new JsonException("Failed to deserialize the GraphQL response.");
-
         var result = method.Calculate(fileInput.Data.DataPoints);
-
         return new MethodAsServicePayload(result);
     }
 
@@ -72,7 +69,6 @@ public sealed class MethodAsServiceQueries
                 )
             );
         }
-
         DatabaseDto? database;
         try
         {
@@ -100,7 +96,7 @@ public sealed class MethodAsServiceQueries
             throw new GraphQLException(
                 ErrorBuilder.New()
                     .SetCode("JSON_DESERIALIZATION_FAILED")
-                    .SetPath(resolverContext.Path.ToList().Concat(e.Path?.Split('.') ?? Array.Empty<string>())
+                    .SetPath(resolverContext.Path.ToList().Concat(e.Path?.Split('.') ?? [])
                         .ToList()) // TODO Splitting the path at '.' is wrong in general.
                     .SetMessage(
                         $"Failed to deserialize GraphQL response of request to the metabase GraphQl endpoint. The details given are: Zero-based number of bytes read within the current line before the exception are {e.BytePositionInLine}, zero-based number of lines read before the exception are {e.LineNumber}, message that describes the current exception is '{e.Message}', path within the JSON where the exception was encountered is {e.Path}.")

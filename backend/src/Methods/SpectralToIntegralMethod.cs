@@ -2,8 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using Database.Extensions;
 using Database.GraphQl.MethodAsService;
-using Database.Methods;
 
 namespace Database.Methods;
 
@@ -221,12 +221,11 @@ public sealed class SpectralToIntegralMethod : IMethod
 
     public List<DataPoint> Calculate(IReadOnlyList<DataPoint> dataPoints)
     {
-        var standards = Enum.GetValues<CalculationStandard>();
         var resultsForAllStandards = new List<DataPoint>();
-        for (var i = 0; i < standards.Length; i++)
+        foreach (var (standard, wavelength) in Enum.GetValues<CalculationStandard>().WithIndex())
         {
-            var resultsForOneStandard = CalculateOneStandard(dataPoints, standards[i]);
-            resultsForAllStandards.AddRange([new DataPoint(new Incidence(new Wavelengths(i), new Direction(0)), new Emergence(new Direction(0)), new Results(resultsForOneStandard[0].Results.Transmittance))]);
+            var resultsForOneStandard = CalculateOneStandard(dataPoints, standard);
+            resultsForAllStandards.AddRange([new DataPoint(new Incidence(new Wavelengths(wavelength), new Direction(0)), new Emergence(new Direction(0)), new Results(resultsForOneStandard[0].Results.Transmittance))]);
         }
         return resultsForAllStandards;
     }

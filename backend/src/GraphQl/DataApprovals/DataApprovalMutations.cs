@@ -6,6 +6,7 @@ using Database.Data;
 using Database.Extensions;
 using Database.GraphQl.References;
 using Database.Services;
+using GraphQL.Client.Abstractions.Utilities;
 using HotChocolate.Types;
 
 namespace Database.GraphQl.DataApprovals;

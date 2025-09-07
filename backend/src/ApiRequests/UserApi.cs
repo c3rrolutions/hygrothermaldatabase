@@ -70,7 +70,7 @@ public sealed class UserApi
         IHttpContextAccessor httpContextAccessor,
         CancellationToken cancellationToken)
     {
-        return apiRequestService.Metabase().QueryRest<UserInfoDto>(
+        return apiRequestService.Metabase().PerformHttpGetRequest<UserInfoDto>(
             new Uri(new Uri(appSettings.MetabaseHost, UriKind.Absolute), "/connect/userinfo"),
             httpClientFactory,
             httpContextAccessor,

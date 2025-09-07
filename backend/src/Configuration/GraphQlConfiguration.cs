@@ -29,7 +29,7 @@ using Microsoft.Extensions.Logging;
 using IServiceCollection = Microsoft.Extensions.DependencyInjection.IServiceCollection;
 using Database.GraphQl.DataApprovals;
 using Database.GraphQl.AccessRights;
-using Database.GraphQl.MethodAsService;
+using Database.GraphQl.Methods;
 using Database.GraphQl.ResponseApprovals;
 
 namespace Database.Configuration;
@@ -159,7 +159,7 @@ public static class GraphQlConfiguration
             .AddType<UserQueries>()
             .AddType<VerificationCodeQueries>()
             .AddType<GeometricDataQueries>()
-            .AddType<MethodAsServiceQueries>()
+            .AddType<MethodQueries>()
             .AddType<DataQueries>()
             // Mutation Types
             .AddMutationType(d => d.Name(nameof(Mutation)))

@@ -1,6 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 
-namespace Database.Methods;
+namespace Database.Methods.SpectralToIntegral;
 
 [SuppressMessage("Naming", "CA1707")]
 public enum CalculationStandard

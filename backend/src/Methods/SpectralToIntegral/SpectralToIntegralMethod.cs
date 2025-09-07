@@ -1,18 +1,16 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
+using System.Collections.Immutable;
 using System.Linq;
-using Database.Extensions;
-using Database.GraphQl.MethodAsService;
 
-namespace Database.Methods;
+namespace Database.Methods.SpectralToIntegral;
 
-public sealed class SpectralToIntegralMethod : IMethod
+public sealed class SpectralToIntegralMethod
+    : MethodBase<SpectralToIntegralInput, SpectralToIntegralOutput>
 {
     public static readonly Guid Id = Guid.Parse("285d172c-9bcf-4c57-9be0-ee95651ba7db");
-    public const string Name = "SpectralToIntegral";
 
-    private List<(int wavelength, double weight, double deltaWavelength)> en410VisibleWavelengthsWeightsList = new List<(int, double, double)> {
+    public ImmutableArray<(int wavelength, double weight, double deltaWavelength)> En410VisibleWavelengthsWeights => [
             (380, 0, 5),
             (390, 0.0005, 10),
             (400, 0.003, 10),
@@ -54,8 +52,9 @@ public sealed class SpectralToIntegralMethod : IMethod
             (760, 0.0001, 10),
             (770, 0, 10),
             (780, 0, 5)
-        };
-    private List<(int wavelength, double weight, double deltaWavelength)> en410SolarWavelengthsWeightsList = new List<(int, double, double)> {
+        ];
+
+    public ImmutableArray<(int wavelength, double weight, double deltaWavelength)> En410SolarWavelengthsWeights => [
             (300, 0.0005, 10),
             (320, 0.0069, 20),
             (340, 0.0122, 20),
@@ -112,8 +111,9 @@ public sealed class SpectralToIntegralMethod : IMethod
             (2300, 0.006, 100),
             (2400, 0.0041, 100),
             (2500, 0.0006, 50)
-        };
-    private List<(int wavelength, double weight, double deltaWavelength)> iso9050SolarWavelengthsWeightsList = new List<(int, double, double)> {
+        ];
+
+    public ImmutableArray<(int wavelength, double weight, double deltaWavelength)> Iso9050SolarWavelengthsWeights => [
             (300, 0, 5),
             (305, 0.000057, 5),
             (310, 0.000236, 5),
@@ -208,96 +208,72 @@ public sealed class SpectralToIntegralMethod : IMethod
             (2350, 0.003163, 50),
             (2400, 0.002233, 50),
             (2450, 0.001202, 50)
-        };
-    public IReadOnlyList<(int wavelength, double weight, double deltaWavelength)> en410VisibleWavelengthsWeights { get; }
-    public IReadOnlyList<(int wavelength, double weight, double deltaWavelength)> en410SolarWavelengthsWeights { get; }
-    public IReadOnlyList<(int wavelength, double weight, double deltaWavelength)> iso9050SolarWavelengthsWeights { get; }
+        ];
 
-    public SpectralToIntegralMethod()
+    public override SpectralToIntegralOutput Calculate(SpectralToIntegralInput input)
     {
-        en410VisibleWavelengthsWeights = new ReadOnlyCollection<(int, double, double)>(en410VisibleWavelengthsWeightsList);
-        en410SolarWavelengthsWeights = new ReadOnlyCollection<(int, double, double)>(en410SolarWavelengthsWeightsList);
-        iso9050SolarWavelengthsWeights = new ReadOnlyCollection<(int, double, double)>(iso9050SolarWavelengthsWeightsList);
+        return new SpectralToIntegralOutput(
+            En410Visible: Calculate(input.Data.DataPoints, En410VisibleWavelengthsWeights),
+            En410Solar: Calculate(input.Data.DataPoints, En410SolarWavelengthsWeights),
+            Iso9050Solar: Calculate(input.Data.DataPoints, Iso9050SolarWavelengthsWeights)
+        );
     }
 
-    public List<DataPoint> Calculate(IReadOnlyList<DataPoint> dataPoints)
+    public double Calculate(
+        IReadOnlyList<DataPoint> spectralDataPoints,
+        ImmutableArray<(int wavelength, double weight, double deltaWavelength)> wavelengthsWeights
+    )
     {
-        var resultsForAllStandards = new List<DataPoint>();
-        foreach (var (standard, wavelength) in Enum.GetValues<CalculationStandard>().WithIndex())
+        var sortedSpectralDataPoints =
+            spectralDataPoints
+            .Where(dataPoint => !WavelengthOutOfBounds(dataPoint))
+            .OrderBy(dataPoint => dataPoint.Incidence.Wavelengths.Wavelength)
+            .ToList()
+            .AsReadOnly();
+        var numerator = 0.0D;
+        var denominator = 0.0D;
+        foreach (var wavelengthsWeight in wavelengthsWeights)
         {
-            var resultsForOneStandard = CalculateOneStandard(dataPoints, standard);
-            resultsForAllStandards.AddRange([
-                new DataPoint(
-                    new Incidence(
-                        new Wavelengths(wavelength),
-                        new Direction(0)
-                    ),
-                    new Emergence(new Direction(0)
-                ),
-                new Results(resultsForOneStandard[0].Results.Transmittance))
-            ]);
-        }
-        return resultsForAllStandards;
-    }
-
-    public List<DataPoint> CalculateOneStandard(IReadOnlyList<DataPoint> spectralDataPoints, CalculationStandard standard)
-    {
-        // Turn IReadOnlyLists into more flexible Lists
-        var spectralDataPointsToFilter = new List<DataPoint>(spectralDataPoints);
-        List<(int wavelength, double weight, double deltaWavelength)> wavelengthsWeights = new List<(int, double, double)> { (0, 0, 0) };
-        switch (standard)
-        {
-            case CalculationStandard.EN_410_VISIBLE:
-                wavelengthsWeights = en410VisibleWavelengthsWeights.ToList();
-                break;
-            case CalculationStandard.EN_410_SOLAR:
-                wavelengthsWeights = en410SolarWavelengthsWeights.ToList();
-                break;
-            case CalculationStandard.ISO_9050_SOLAR:
-                wavelengthsWeights = iso9050SolarWavelengthsWeights.ToList();
-                break;
-        }
-        // Filter data points which have a wavelength which is out of bounds.
-        var spectralDataPointsFiltered = spectralDataPointsToFilter.Where(dataPoint => !WavelengthOutOfBounds(dataPoint)).ToList();
-        // Sort the dataPoints
-        var spectralDataPointsSorted = spectralDataPointsFiltered.OrderBy(dataPoint => dataPoint.Incidence.Wavelengths.Wavelength).ToList();
-        double wavelengthWeighting = 0.0D, deltaWavelength = 0.0D, averageValue = 0.0D, numerator = 0.0D, denominator = 0.0D, integralValue = 0.0D;
-
-        for (var i = 0; i < wavelengthsWeights.Count; i++)
-        // for (int i = 0; i < 3; i++)
-        {
-            wavelengthWeighting = wavelengthsWeights[i].wavelength;
-            var spectralDataPointWavelengthBelow = new DataPoint(new Incidence(new Wavelengths(0), new Direction(8)), new Emergence(new Direction(8)), new Results(99));
-            var spectralDataPointWavelengthAbove = new DataPoint(new Incidence(new Wavelengths(1000000), new Direction(8)), new Emergence(new Direction(8)), new Results(99));
-            for (var j = 0; j < spectralDataPointsSorted.Count; j++)
+            var spectralDataPointWavelengthBelow = new DataPoint(
+                new Incidence(new Wavelengths(0)),
+                new Results(99)
+            );
+            var spectralDataPointWavelengthAbove = new DataPoint(
+                new Incidence(new Wavelengths(1000000)),
+                new Results(99)
+            );
+            foreach (var spectralDataPoint in sortedSpectralDataPoints)
             {
                 // Find the spectralDataPoints with the wavelengths which are the closest to the wavelength of the weightingDataPoint
-                if ((spectralDataPointsSorted[j].Incidence.Wavelengths.Wavelength <= wavelengthWeighting) && (spectralDataPointsSorted[j].Incidence.Wavelengths.Wavelength > spectralDataPointWavelengthBelow.Incidence.Wavelengths.Wavelength))
-                { spectralDataPointWavelengthBelow = spectralDataPointsSorted[j]; }
-                if ((spectralDataPointsSorted[j].Incidence.Wavelengths.Wavelength > wavelengthWeighting) && (spectralDataPointsSorted[j].Incidence.Wavelengths.Wavelength < spectralDataPointWavelengthAbove.Incidence.Wavelengths.Wavelength))
-                { spectralDataPointWavelengthAbove = spectralDataPointsSorted[j]; }
+                if (spectralDataPoint.Incidence.Wavelengths.Wavelength <= wavelengthsWeight.wavelength
+                    && spectralDataPoint.Incidence.Wavelengths.Wavelength > spectralDataPointWavelengthBelow.Incidence.Wavelengths.Wavelength
+                )
+                {
+                    spectralDataPointWavelengthBelow = spectralDataPoint;
+                }
+                if (spectralDataPoint.Incidence.Wavelengths.Wavelength > wavelengthsWeight.wavelength
+                    && spectralDataPoint.Incidence.Wavelengths.Wavelength < spectralDataPointWavelengthAbove.Incidence.Wavelengths.Wavelength
+                )
+                {
+                    spectralDataPointWavelengthAbove = spectralDataPoint;
+                }
             }
             // Trapezoidal rule to calculate an integral
-            deltaWavelength = wavelengthsWeights[i].deltaWavelength;
-            averageValue = (spectralDataPointWavelengthBelow.Results.Transmittance + spectralDataPointWavelengthAbove.Results.Transmittance) / 2;
-            numerator += averageValue * deltaWavelength * wavelengthsWeights[i].weight;
-            denominator += deltaWavelength * wavelengthsWeights[i].weight;
+            var averageValue = (
+                spectralDataPointWavelengthBelow.Results.Transmittance
+                + spectralDataPointWavelengthAbove.Results.Transmittance
+            ) / 2;
+            numerator += averageValue * wavelengthsWeight.deltaWavelength * wavelengthsWeight.weight;
+            denominator += wavelengthsWeight.deltaWavelength * wavelengthsWeight.weight;
         }
-        integralValue = numerator / denominator;
-        return [new DataPoint(new Incidence(new Wavelengths(0), new Direction(0)), new Emergence(new Direction(0)), new Results(integralValue))];
+        return numerator / denominator;
     }
-
-
 
     // Search predicate returns true if the wavelength is smaller than 0 nm or larger than 3000 nm.
     private static bool WavelengthOutOfBounds(DataPoint dataPoint)
     {
-        return (dataPoint.Incidence.Wavelengths.Wavelength <= 0) || (dataPoint.Incidence.Wavelengths.Wavelength >= 3000);
+        return 
+            dataPoint.Incidence.Wavelengths.Wavelength <= 0
+            || dataPoint.Incidence.Wavelengths.Wavelength >= 3000;
     }
-
-    // public List<DataPoint> Calculate(IReadOnlyList<DataPoint> dataPoints)
-    // {
-    //     throw new InvalidOperationException("The SpectralToIntegralMethod needs two lists of dataPoints as input.");
-    // }
-
 }

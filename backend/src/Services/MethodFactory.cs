@@ -1,5 +1,7 @@
 using System;
 using Database.Methods;
+using Database.Methods.SpectralToIntegral;
+using Database.Methods.TransmittanceSum;
 
 namespace Database.Services;
 
@@ -12,6 +14,6 @@ public sealed class MethodFactory
             var _ when methodId == TransmittanceSumMethod.Id => new TransmittanceSumMethod(),
             var _ when methodId == SpectralToIntegralMethod.Id => new SpectralToIntegralMethod(),
             _ => null,
-        }
+        };
     }
 }

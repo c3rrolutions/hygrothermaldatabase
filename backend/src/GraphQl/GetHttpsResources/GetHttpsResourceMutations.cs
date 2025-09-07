@@ -10,6 +10,7 @@ using Database.Extensions;
 using HotChocolate.Types;
 using Microsoft.EntityFrameworkCore;
 using Database.Services;
+using GraphQL.Client.Abstractions.Utilities;
 
 namespace Database.GraphQl.GetHttpsResources;
 

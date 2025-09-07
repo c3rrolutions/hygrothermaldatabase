@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Net.Http.Json;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -28,6 +29,13 @@ public sealed class ApiRequestService
     /// Name of Database http client.
     /// </summary>
     public const string DatabaseHttpClient = "Database";
+
+    public static JsonDocumentOptions JsonDocumentOptions => new()
+    {
+        AllowTrailingCommas = true,
+        CommentHandling = JsonCommentHandling.Skip,
+        MaxDepth = 0
+    };
 
     private static bool s_useMetabase = true;
 
@@ -84,7 +92,7 @@ public sealed class ApiRequestService
             // using `Uri` as below see the comments to https://stackoverflow.com/questions/372865/path-combine-for-urls/1527643#1527643
             new Uri(new Uri(s_useMetabase ? appSettings.MetabaseHost : appSettings.Host, UriKind.Absolute), "/graphql/"),
             httpResponseContent => httpResponseContent.ReadAsStringAsync(cancellationToken),
-            MakeJsonHttpContent(request),
+            MakeGraphQlJsonHttpContent(request),
             httpClientFactory,
             httpContextAccessor,
             cancellationToken
@@ -115,7 +123,7 @@ public sealed class ApiRequestService
             // TODO Consider using [Flurl](https://flurl.dev) to construct URIs. For the pitfalls of
             // using `Uri` as below see the comments to https://stackoverflow.com/questions/372865/path-combine-for-urls/1527643#1527643
             new Uri(new Uri(s_useMetabase ? appSettings.MetabaseHost : appSettings.Host, UriKind.Absolute), "/graphql/"),
-            MakeJsonHttpContent(request),
+            MakeGraphQlJsonHttpContent(request),
             JsonSerializerSettings.GraphQL,
             httpClientFactory,
             httpContextAccessor,
@@ -134,7 +142,7 @@ public sealed class ApiRequestService
     /// <param name="httpContextAccessor"> <see cref="IHttpContextAccessor"/> </param>
     /// <param name="cancellationToken">   <see cref="CancellationToken"/> </param>
     /// <returns> <see cref="GraphQLResponse{T}"/> of expected type. </returns>
-    public Task<GraphQLResponse<TGraphQlResponse>> QueryGraphQlFromUrl<TGraphQlResponse>(
+    public Task<GraphQLResponse<TGraphQlResponse>> QueryGraphQl<TGraphQlResponse>(
         AppSettings appSettings,
         Uri uri,
         GraphQLRequest request,
@@ -148,8 +156,8 @@ public sealed class ApiRequestService
             HttpMethod.Post,
             // TODO Consider using [Flurl](https://flurl.dev) to construct URIs. For the pitfalls of
             // using `Uri` as below see the comments to https://stackoverflow.com/questions/372865/path-combine-for-urls/1527643#1527643
-            new Uri(uri, "/graphql/"),
-            MakeJsonHttpContent(request),
+            uri,
+            MakeGraphQlJsonHttpContent(request),
             JsonSerializerSettings.GraphQL,
             httpClientFactory,
             httpContextAccessor,
@@ -157,16 +165,29 @@ public sealed class ApiRequestService
         );
     }
 
-    /// <summary>
-    /// Send REST request to API and return response.
-    /// </summary>
-    /// <typeparam name="TResponse"> Expected response type. </typeparam>
-    /// <param name="uri">                 <see cref="Uri"/> to send request to. </param>
-    /// <param name="httpClientFactory">   <see cref="IHttpClientFactory"/> </param>
-    /// <param name="httpContextAccessor"> <see cref="IHttpContextAccessor"/> </param>
-    /// <param name="cancellationToken">   <see cref="CancellationToken"/> </param>
-    /// <returns> </returns>
-    public Task<TResponse> QueryRest<TResponse>(
+    public Task<JsonDocument> PerformHttpGetRequest(
+        Uri uri,
+        IHttpClientFactory httpClientFactory,
+        IHttpContextAccessor httpContextAccessor,
+        CancellationToken cancellationToken
+    )
+    {
+        return Query(
+            HttpMethod.Get,
+            uri,
+            async httpResponseContent =>
+                await JsonDocument.ParseAsync(
+                    await httpResponseContent.ReadAsStreamAsync(),
+                    JsonDocumentOptions
+                ),
+            null,
+            httpClientFactory,
+            httpContextAccessor,
+            cancellationToken
+        );
+    }
+
+    public Task<TResponse> PerformHttpGetRequest<TResponse>(
         Uri uri,
         IHttpClientFactory httpClientFactory,
         IHttpContextAccessor httpContextAccessor,
@@ -179,6 +200,41 @@ public sealed class ApiRequestService
             uri,
             null,
             JsonSerializerSettings.Rest,
+            httpClientFactory,
+            httpContextAccessor,
+            cancellationToken
+        );
+    }
+
+    private static async Task<TResponse> Query<TResponse>(
+        HttpMethod httpMethod,
+        Uri uri,
+        HttpContent? httpRequestContent,
+        JsonSerializerOptions serializerOptions,
+        IHttpClientFactory httpClientFactory,
+        IHttpContextAccessor httpContextAccessor,
+        CancellationToken cancellationToken
+    )
+        where TResponse : class
+    {
+        // We could use
+        // `httpResponseContent.ReadFromJsonAsync<GraphQL.GraphQLResponse<TResponse>>` which
+        // would make debugging more difficult though, https://docs.microsoft.com/en-us/dotnet/api/system.net.http.json.httpcontentjsonextensions.readfromjsonasync?view=net-5.0#System_Net_Http_Json_HttpContentJsonExtensions_ReadFromJsonAsync__1_System_Net_Http_HttpContent_System_Text_Json_JsonSerializerOptions_System_Threading_CancellationToken_
+        return await Query(
+            httpMethod,
+            uri,
+            async httpResponseContent => {
+                var responseStream = await httpResponseContent.ReadAsStreamAsync();
+                // For debugging, the following line of code writes the response to standard output.
+                // Console.WriteLine(new StreamReader(responseStream).ReadToEnd());
+                return await JsonSerializer.DeserializeAsync<TResponse>(
+                    responseStream,
+                    serializerOptions,
+                    cancellationToken
+                    ) ?? throw new JsonException("Failed to deserialize the GraphQL response.");
+                
+            },
+            httpRequestContent,
             httpClientFactory,
             httpContextAccessor,
             cancellationToken
@@ -220,42 +276,7 @@ public sealed class ApiRequestService
         return await read(httpResponseMessage.Content);
     }
 
-    private static async Task<TResponse> Query<TResponse>(
-        HttpMethod httpMethod,
-        Uri uri,
-        HttpContent? httpRequestContent,
-        JsonSerializerOptions serializerOptions,
-        IHttpClientFactory httpClientFactory,
-        IHttpContextAccessor httpContextAccessor,
-        CancellationToken cancellationToken
-    )
-        where TResponse : class
-    {
-        // We could use
-        // `httpResponseContent.ReadFromJsonAsync<GraphQL.GraphQLResponse<TResponse>>` which
-        // would make debugging more difficult though, https://docs.microsoft.com/en-us/dotnet/api/system.net.http.json.httpcontentjsonextensions.readfromjsonasync?view=net-5.0#System_Net_Http_Json_HttpContentJsonExtensions_ReadFromJsonAsync__1_System_Net_Http_HttpContent_System_Text_Json_JsonSerializerOptions_System_Threading_CancellationToken_
-        return await Query(
-            httpMethod,
-            uri,
-            async httpResponseContent => {
-                var responseStream = await httpResponseContent.ReadAsStreamAsync();
-                // For debugging, the following line of code writes the response to standard output.
-                // Console.WriteLine(new StreamReader(responseStream).ReadToEnd());
-                return await JsonSerializer.DeserializeAsync<TResponse>(
-                    responseStream,
-                    serializerOptions,
-                    cancellationToken
-                    ) ?? throw new JsonException("Failed to deserialize the GraphQL response.");
-                
-            },
-            httpRequestContent,
-            httpClientFactory,
-            httpContextAccessor,
-            cancellationToken
-        );
-    }
-
-    private static ByteArrayContent MakeJsonHttpContent<TContent>(
+    private static ByteArrayContent MakeGraphQlJsonHttpContent<TContent>(
         TContent content
     )
     {

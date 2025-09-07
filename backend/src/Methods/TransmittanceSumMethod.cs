@@ -6,9 +6,8 @@ namespace Database.Methods;
 
 public sealed class TransmittanceSumMethod : IMethod
 {
-    public string Name => "TransmittanceSum";
-
-    public Guid Id => Guid.Parse("8a7684c7-aaca-4057-8a30-1cb951c2c6a0");
+    public static readonly Guid Id = Guid.Parse("8a7684c7-aaca-4057-8a30-1cb951c2c6a0");
+    public const string Name = "TransmittanceSum";
 
     public List<DataPoint> Calculate(IReadOnlyList<DataPoint> dataPoints)
     {
@@ -17,10 +16,13 @@ public sealed class TransmittanceSumMethod : IMethod
         {
             transmittanceSum += dataPoint.Results.Transmittance;
         }
-
         return
         [
-            new DataPoint(new Incidence(new Wavelengths(0), new Direction(0)), new Emergence(new Direction(0)), new Results(transmittanceSum))
+            new DataPoint(
+                new Incidence(new Wavelengths(0), new Direction(0)),
+                new Emergence(new Direction(0)),
+                new Results(transmittanceSum)
+            )
         ];
     }
 }

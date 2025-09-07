@@ -6,8 +6,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Database.ApiRequests;
 using Database.ApiRequests.Dto;
-using Database.Data;
 using Database.Services;
+using GraphQL.Client.Abstractions.Utilities;
 using HotChocolate;
 using HotChocolate.Resolvers;
 using HotChocolate.Types;
@@ -22,17 +22,18 @@ public sealed class MethodAsServiceQueries
 
     public async Task<MethodAsServicePayload> MethodAsServiceWithFileAsync(
         MethodAsServiceWithFileInput input,
-        MethodCalculationService methodCalculationService,
+        MethodFactory methodFactory,
         CancellationToken cancellationToken
     )
     {
-        if (!methodCalculationService.MethodExists(input.MethodId))
+        var method = methodFactory.GetMethod(input.MethodId);
+        if (method is null)
         {
             return new MethodAsServicePayload(
                 new MethodAsServiceError(
                     MethodAsServiceErrorCode.UNKNOWN_METHOD,
                     $"The method is unknown.",
-                    []
+                    [nameof(input), nameof(input.MethodId).ToLowerFirst()]
                 )
             );
         }
@@ -44,7 +45,7 @@ public sealed class MethodAsServiceQueries
             cancellationToken
             ) ?? throw new JsonException("Failed to deserialize the GraphQL response.");
 
-        var result = methodCalculationService.UseMethodToCalculate(input.MethodId, fileInput.Data.DataPoints);
+        var result = method.Calculate(fileInput.Data.DataPoints);
 
         return new MethodAsServicePayload(result);
     }
@@ -52,9 +53,7 @@ public sealed class MethodAsServiceQueries
     public async Task<MethodAsServicePayload> MethodAsServiceAsync(
         AppSettings appSettings,
         MethodAsServiceInput input,
-        ApplicationDbContext context,
-        UserService userService,
-        MethodCalculationService methodCalculationService,
+        MethodFactory methodFactory,
         ApiRequestService apiRequestService,
         IHttpClientFactory httpClientFactory,
         IHttpContextAccessor httpContextAccessor,
@@ -62,13 +61,14 @@ public sealed class MethodAsServiceQueries
         CancellationToken cancellationToken
     )
     {
-        if (!methodCalculationService.MethodExists(input.MethodId))
+        var method = methodFactory.GetMethod(input.MethodId);
+        if (method is null)
         {
             return new MethodAsServicePayload(
                 new MethodAsServiceError(
                     MethodAsServiceErrorCode.UNKNOWN_METHOD,
                     $"The method is unknown.",
-                    []
+                    [nameof(input), nameof(input.MethodId).ToLowerFirst()]
                 )
             );
         }
@@ -126,7 +126,7 @@ public sealed class MethodAsServiceQueries
 
         var filedata = await apiRequestService.QueryRest<FileInputData>(new Uri(locator), httpClientFactory, httpContextAccessor, cancellationToken);
 
-        var result = methodCalculationService.UseMethodToCalculate(input.MethodId, filedata.Data.DataPoints.ToList());
+        var result = methodFactory.Calculate(filedata.Data.DataPoints.ToList());
 
         return new MethodAsServicePayload(result);
     }

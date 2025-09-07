@@ -242,7 +242,7 @@ public sealed class Startup(
         services.AddScoped<ResponseApprovalService>();
         services.AddScoped<UserService>();
         services.AddSingleton<CacheService>();
-        services.AddSingleton<MethodCalculationService>();
+        services.AddSingleton<MethodFactory>();
         services.AddSingleton<SigningService>();
     }
 

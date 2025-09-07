@@ -111,7 +111,7 @@ public sealed class MethodAsServiceQueries
                 new MethodAsServiceError(
                     MethodAsServiceErrorCode.UNKNOWN_DATABASE,
                     $"The database is unknown.",
-                    []
+                    [nameof(input), nameof(input.DatabaseId).ToLowerFirst()]
                 )
             );
         }

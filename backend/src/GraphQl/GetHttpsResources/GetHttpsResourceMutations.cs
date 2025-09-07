@@ -39,7 +39,7 @@ public sealed class GetHttpsResourceMutations
                 new CreateGetHttpsResourceError(
                     CreateGetHttpsResourceErrorCode.UNKNOWN_DATA,
                     $"There is no data of kind {input.DataKind} with identifier {input.DataId}.",
-                    [nameof(input), nameof(input.DataId).FirstCharToLower()]
+                    [nameof(input), nameof(input.DataId).ToLowerFirst()]
                 )
             );
         }

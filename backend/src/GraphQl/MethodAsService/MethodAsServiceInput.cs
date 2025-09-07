@@ -6,4 +6,4 @@ public sealed record MethodAsServiceInput(
     Guid DataId,
     Guid DatabaseId,
     Guid MethodId
-    );
+);

@@ -222,11 +222,10 @@ public sealed class SpectralToIntegralMethod : IMethod
     public List<DataPoint> Calculate(IReadOnlyList<DataPoint> dataPoints)
     {
         var standards = Enum.GetValues<CalculationStandard>();
-        var resultsForOneStandard = new List<DataPoint>();
         var resultsForAllStandards = new List<DataPoint>();
         for (var i = 0; i < standards.Length; i++)
         {
-            resultsForOneStandard = CalculateOneStandard(dataPoints, standards[i]);
+            var resultsForOneStandard = CalculateOneStandard(dataPoints, standards[i]);
             resultsForAllStandards.AddRange([new DataPoint(new Incidence(new Wavelengths(i), new Direction(0)), new Emergence(new Direction(0)), new Results(resultsForOneStandard[0].Results.Transmittance))]);
         }
         return resultsForAllStandards;

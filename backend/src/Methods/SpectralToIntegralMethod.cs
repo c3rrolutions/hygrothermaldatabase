@@ -221,10 +221,10 @@ public sealed class SpectralToIntegralMethod : IMethod
 
     public List<DataPoint> Calculate(IReadOnlyList<DataPoint> dataPoints)
     {
-        IMethod.StandardType[] standards = Enum.GetValues<IMethod.StandardType>();
-        List<DataPoint> resultsForOneStandard = new List<DataPoint>();
-        List<DataPoint> resultsForAllStandards = new List<DataPoint>();
-        for (int i = 0; i < standards.Length; i++)
+        var standards = Enum.GetValues<IMethod.StandardType>();
+        var resultsForOneStandard = new List<DataPoint>();
+        var resultsForAllStandards = new List<DataPoint>();
+        for (var i = 0; i < standards.Length; i++)
         {
             resultsForOneStandard = CalculateOneStandard(dataPoints, standards[i]);
             resultsForAllStandards.AddRange([new DataPoint(new Incidence(new Wavelengths(i), new Direction(0)), new Emergence(new Direction(0)), new Results(resultsForOneStandard[0].Results.Transmittance))]);
@@ -235,7 +235,7 @@ public sealed class SpectralToIntegralMethod : IMethod
     public List<DataPoint> CalculateOneStandard(IReadOnlyList<DataPoint> spectralDataPoints, IMethod.StandardType standard)
     {
         // Turn IReadOnlyLists into more flexible Lists
-        List<DataPoint> spectralDataPointsToFilter = new List<DataPoint>(spectralDataPoints);
+        var spectralDataPointsToFilter = new List<DataPoint>(spectralDataPoints);
         List<(int wavelength, double weight, double deltaWavelength)> wavelengthsWeights = new List<(int, double, double)> { (0, 0, 0) };
         switch (standard)
         {
@@ -250,18 +250,18 @@ public sealed class SpectralToIntegralMethod : IMethod
                 break;
         }
         // Filter data points which have a wavelength which is out of bounds.
-        List<DataPoint> spectralDataPointsFiltered = spectralDataPointsToFilter.Where(dataPoint => !WavelengthOutOfBounds(dataPoint)).ToList();
+        var spectralDataPointsFiltered = spectralDataPointsToFilter.Where(dataPoint => !WavelengthOutOfBounds(dataPoint)).ToList();
         // Sort the dataPoints
-        List<DataPoint> spectralDataPointsSorted = spectralDataPointsFiltered.OrderBy(dataPoint => dataPoint.Incidence.Wavelengths.Wavelength).ToList();
+        var spectralDataPointsSorted = spectralDataPointsFiltered.OrderBy(dataPoint => dataPoint.Incidence.Wavelengths.Wavelength).ToList();
         double wavelengthWeighting = 0.0D, deltaWavelength = 0.0D, averageValue = 0.0D, numerator = 0.0D, denominator = 0.0D, integralValue = 0.0D;
 
-        for (int i = 0; i < wavelengthsWeights.Count; i++)
+        for (var i = 0; i < wavelengthsWeights.Count; i++)
         // for (int i = 0; i < 3; i++)
         {
             wavelengthWeighting = wavelengthsWeights[i].wavelength;
-            DataPoint spectralDataPointWavelengthBelow = new DataPoint(new Incidence(new Wavelengths(0), new Direction(8)), new Emergence(new Direction(8)), new Results(99));
-            DataPoint spectralDataPointWavelengthAbove = new DataPoint(new Incidence(new Wavelengths(1000000), new Direction(8)), new Emergence(new Direction(8)), new Results(99));
-            for (int j = 0; j < spectralDataPointsSorted.Count; j++)
+            var spectralDataPointWavelengthBelow = new DataPoint(new Incidence(new Wavelengths(0), new Direction(8)), new Emergence(new Direction(8)), new Results(99));
+            var spectralDataPointWavelengthAbove = new DataPoint(new Incidence(new Wavelengths(1000000), new Direction(8)), new Emergence(new Direction(8)), new Results(99));
+            for (var j = 0; j < spectralDataPointsSorted.Count; j++)
             {
                 // Find the spectralDataPoints with the wavelengths which are the closest to the wavelength of the weightingDataPoint
                 if ((spectralDataPointsSorted[j].Incidence.Wavelengths.Wavelength <= wavelengthWeighting) && (spectralDataPointsSorted[j].Incidence.Wavelengths.Wavelength > spectralDataPointWavelengthBelow.Incidence.Wavelengths.Wavelength))

@@ -6,8 +6,8 @@ namespace Database.Methods;
 
 public interface IMethod
 {
-    string Name { get; }
-    Guid Id { get; }
+    public string Name { get; }
+    public Guid Id { get; }
     public enum StandardType { en410Visible, en410Solar, iso9050Solar }
-    List<DataPoint> Calculate(IReadOnlyList<DataPoint> dataPoints);
+    public List<DataPoint> Calculate(IReadOnlyList<DataPoint> dataPoints);
 }

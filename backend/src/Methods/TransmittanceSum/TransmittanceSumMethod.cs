@@ -10,7 +10,8 @@ public sealed class TransmittanceSumMethod
     public override double Calculate(TransmittanceSumInput input)
     {
         double transmittanceSum = 0;
-        foreach (var dataPoint in input.Data.DataPoints)
+        // TODO What to do when there is more than 1 item?
+        foreach (var dataPoint in input.Data[0].DataPoints)
         {
             transmittanceSum += dataPoint.Results.Transmittance;
         }

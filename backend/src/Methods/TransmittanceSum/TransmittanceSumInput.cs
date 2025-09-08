@@ -3,10 +3,10 @@ using System.Collections.Generic;
 namespace Database.Methods.TransmittanceSum;
 
 public sealed record TransmittanceSumInput(
-    Data Data
+    IReadOnlyList<TransmittanceSumData> Data
 );
 
-public sealed record Data(
+public sealed record TransmittanceSumData(
     IReadOnlyList<DataPoint> DataPoints
 );
 

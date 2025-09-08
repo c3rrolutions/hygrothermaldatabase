@@ -212,10 +212,12 @@ public sealed class SpectralToIntegralMethod
 
     public override SpectralToIntegralOutput Calculate(SpectralToIntegralInput input)
     {
+        // TODO What to do when there is more than 1 item?
+        var firstDataItem = input.Data[0];
         return new SpectralToIntegralOutput(
-            En410Visible: Calculate(input.Data.DataPoints, En410VisibleWavelengthsWeights),
-            En410Solar: Calculate(input.Data.DataPoints, En410SolarWavelengthsWeights),
-            Iso9050Solar: Calculate(input.Data.DataPoints, Iso9050SolarWavelengthsWeights)
+            En410Visible: Calculate(firstDataItem.DataPoints, En410VisibleWavelengthsWeights),
+            En410Solar: Calculate(firstDataItem.DataPoints, En410SolarWavelengthsWeights),
+            Iso9050Solar: Calculate(firstDataItem.DataPoints, Iso9050SolarWavelengthsWeights)
         );
     }
 

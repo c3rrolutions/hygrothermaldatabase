@@ -9,14 +9,14 @@ public sealed class SpectralToIntegralMethodTests
     [Test]
     public void CalculateTest()
     {
-        var spectralDataPoints = new SpectralToIntegralInput(
+        var spectralDataPoints = new SpectralToIntegralInput([
             new SpectralToIntegralData([
                 new DataPoint(new Incidence(new Wavelengths(200)), new Results(1)),
                 new DataPoint(new Incidence(new Wavelengths(784)), new Results(1)),
                 new DataPoint(new Incidence(new Wavelengths(785)), new Results(0)),
                 new DataPoint(new Incidence(new Wavelengths(2600)), new Results(0))
             ])
-        );
+        ]);
         var method = new SpectralToIntegralMethod();
         var results = method.Calculate(spectralDataPoints);
         results.En410Visible.Should().BeApproximately(1.0F, 0.000000000000001F);

@@ -195,7 +195,8 @@ public sealed class MethodQueries
             );
         }
         var locator = response.Data.Data.ResourceTree.Root.Value.Locator;
-        // TODO The locator could also point to a non-JSON resource. Support those also.
+        // TODO The locator could also point to a non-JSON resource. Support those also: response.Data.Data.ResourceTree.Root.Value.DataFormatId
+        // TODO Check that the data has the hash value: response.Data.Data.ResourceTree.Root.Value.HashValue;
         var data = await apiRequestService.PerformHttpGetRequest(
             locator, httpClientFactory, httpContextAccessor, cancellationToken
         );

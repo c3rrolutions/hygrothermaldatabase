@@ -3,7 +3,7 @@ using System.Collections.Generic;
 namespace Database.Methods.SpectralToIntegral;
 
 public sealed record SpectralToIntegralInput(
-    SpectralToIntegralData Data
+    IReadOnlyList<SpectralToIntegralData> Data
 );
 
 public sealed record SpectralToIntegralData(

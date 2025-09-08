@@ -58,6 +58,17 @@ type AppliedMethod {
   sources: [NamedMethodSource!]!
 }
 
+type CalculateMethodError {
+  code: CalculateMethodErrorCode!
+  message: String!
+  path: [String!]!
+}
+
+type CalculateMethodPayload {
+  errors: [CalculateMethodError!]
+  result: Any
+}
+
 type CalorimetricData implements Node & Data {
   appliedMethod: AppliedMethod!
   approval: ResponseApproval
@@ -105,21 +116,6 @@ type CielabColor {
   aStar: Float!
   bStar: Float!
   lStar: Float!
-}
-
-type ColorReflectance {
-  cielabColors: [MethodAsServiceCielabColor!]!
-}
-
-type ColorRenderingIndex {
-  illuminant: String!
-  observer: String!
-  ra: Int!
-}
-
-type ColorTransmittance {
-  cielabColors: [MethodAsServiceCielabColor!]!
-  colorRenderingIndices: [ColorRenderingIndex!]!
 }
 
 type CreateCalorimetricDataError {
@@ -245,12 +241,6 @@ type DataEdge {
   node: Data!
 }
 
-type DataPoint {
-  emergence: Emergence!
-  incidence: Incidence!
-  results: Results!
-}
-
 type Database {
   canCurrentUserUpdateNode: Boolean!
   canCurrentUserVerifyNode: Boolean!
@@ -260,14 +250,6 @@ type Database {
   uuid: Uuid!
   verificationCode: String!
   verificationState: DatabaseVerificationState!
-}
-
-type Direction {
-  polar: Int!
-}
-
-type Emergence {
-  direction: Direction!
 }
 
 type FileMetaInformation {
@@ -407,11 +389,6 @@ type HygrothermalDataEdge {
   node: HygrothermalData!
 }
 
-type Incidence {
-  direction: Direction!
-  wavelengths: Wavelengths!
-}
-
 type InstitutionAccessRights {
   allowedDatasetsPerTime: NonNegativeInt
   allowedUserCount: NonNegativeInt
@@ -434,25 +411,6 @@ type InstitutionAccessRightsError {
 type KeyValuePairOfGuidAndNullableOfUInt32 {
   key: Uuid!
   value: NonNegativeInt
-}
-
-type MethodAsServiceCielabColor {
-  aStar: Float!
-  bStar: Float!
-  illuminant: String!
-  lStar: Int!
-  observer: String!
-}
-
-type MethodAsServiceError {
-  code: MethodAsServiceErrorCode!
-  message: String!
-  path: [String!]!
-}
-
-type MethodAsServicePayload {
-  calculationResult: [DataPoint!]
-  errors: [MethodAsServiceError!]
 }
 
 type Mutation {
@@ -618,6 +576,8 @@ type Query {
   allHygrothermalData("Returns the elements in the list that come after the specified cursor." after: String "Returns the elements in the list that come before the specified cursor." before: String "Returns the first _n_ elements from the list." first: Int "Returns the last _n_ elements from the list." last: Int locale: Locale order: [HygrothermalDataSortInput!] @cost(weight: "10") where: HygrothermalDataPropositionInput @cost(weight: "10")): HygrothermalDataConnection @listSize(assumedSize: 100, slicingArguments: [ "first", "last" ], slicingArgumentDefaultValue: 100, sizedFields: [ "edges", "nodes" ], requireOneSlicingArgument: false) @cost(weight: "10")
   allOpticalData("Returns the elements in the list that come after the specified cursor." after: String "Returns the elements in the list that come before the specified cursor." before: String "Returns the first _n_ elements from the list." first: Int "Returns the last _n_ elements from the list." last: Int locale: Locale order: [OpticalDataSortInput!] @cost(weight: "10") where: OpticalDataPropositionInput @cost(weight: "10")): OpticalDataConnection @listSize(assumedSize: 100, slicingArguments: [ "first", "last" ], slicingArgumentDefaultValue: 100, sizedFields: [ "edges", "nodes" ], requireOneSlicingArgument: false) @cost(weight: "10")
   allPhotovoltaicData("Returns the elements in the list that come after the specified cursor." after: String "Returns the elements in the list that come before the specified cursor." before: String "Returns the first _n_ elements from the list." first: Int "Returns the last _n_ elements from the list." last: Int locale: Locale order: [PhotovoltaicDataSortInput!] @cost(weight: "10") where: PhotovoltaicDataPropositionInput @cost(weight: "10")): PhotovoltaicDataConnection @listSize(assumedSize: 100, slicingArguments: [ "first", "last" ], slicingArgumentDefaultValue: 100, sizedFields: [ "edges", "nodes" ], requireOneSlicingArgument: false) @cost(weight: "10")
+  calculateMethod(dataReference: CrossDatabaseDataReferenceInput! methodId: Uuid!): CalculateMethodPayload! @cost(weight: "10")
+  calculateMethodWithDataUpload(data: Upload! methodId: Uuid!): CalculateMethodPayload! @cost(weight: "10")
   calorimetricData(id: Uuid! locale: Locale): CalorimetricData @cost(weight: "10")
   currentUser: User @cost(weight: "10")
   currentUserInfo: UserInfo @cost(weight: "10")
@@ -632,8 +592,6 @@ type Query {
   hasOpticalData(locale: Locale where: OpticalDataPropositionInput @cost(weight: "10")): Boolean! @cost(weight: "10")
   hasPhotovoltaicData(locale: Locale where: PhotovoltaicDataPropositionInput @cost(weight: "10")): Boolean! @cost(weight: "10")
   hygrothermalData(id: Uuid! locale: Locale): HygrothermalData @cost(weight: "10")
-  methodAsService(input: MethodAsServiceInput!): MethodAsServicePayload! @cost(weight: "10")
-  methodAsServiceWithFile(input: MethodAsServiceWithFileInput!): MethodAsServicePayload! @cost(weight: "10")
   "Fetches an object given its ID."
   node("ID of the object." id: ID!): Node @cost(weight: "10")
   "Lookup nodes by a list of IDs."
@@ -644,19 +602,13 @@ type Query {
 }
 
 type ResponseApproval {
+  approverId: Uuid!
   keyFingerprint: String!
   message: String!
   query: String!
   signature: String!
   timestamp: DateTime!
   variables: Any!
-}
-
-type Results {
-  colorReflectance: ColorReflectance
-  colorTransmittance: ColorTransmittance
-  reflectance: Float
-  transmittance: Float!
 }
 
 "`ISO 52022` is an example of the abbreviation of a standardizer and the main number of the identifier."
@@ -737,10 +689,6 @@ type UserInfo {
   roles: [String!]
   sub: String!
   website: String
-}
-
-type Wavelengths {
-  wavelength: Int!
 }
 
 union Reference = Publication | Standard
@@ -1197,17 +1145,6 @@ input ListStandardizerPropositionInput {
   any: Boolean @cost(weight: "10")
 }
 
-input MethodAsServiceInput {
-  databaseId: Uuid!
-  dataId: Uuid!
-  methodId: Uuid!
-}
-
-input MethodAsServiceWithFileInput {
-  file: Upload!
-  methodId: Uuid!
-}
-
 input NamedMethodArgumentInput {
   name: String!
   value: Any!
@@ -1537,6 +1474,12 @@ enum ApplyPolicy {
   VALIDATION
 }
 
+enum CalculateMethodErrorCode {
+  UNKNOWN_METHOD
+  UNKNOWN_DATABASE
+  DATA_QUERY_FAILED
+}
+
 enum CoatedSide {
   FRONT
   BACK
@@ -1624,11 +1567,6 @@ enum JsonValueKind {
   TRUE
   FALSE
   NULL
-}
-
-enum MethodAsServiceErrorCode {
-  UNKNOWN_METHOD
-  UNKNOWN_DATABASE
 }
 
 enum OpticalComponentSubtype {

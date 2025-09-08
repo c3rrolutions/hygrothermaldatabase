@@ -5,5 +5,5 @@ namespace Database.Methods;
 
 public interface IMethod
 {
-    public JsonDocument Calculate(JsonDocument input);
+    public JsonElement Calculate(JsonElement input);
 }

@@ -165,7 +165,7 @@ public sealed class ApiRequestService
         );
     }
 
-    public Task<JsonDocument> PerformHttpGetRequest(
+    public Task<JsonElement> PerformHttpGetRequest(
         Uri uri,
         IHttpClientFactory httpClientFactory,
         IHttpContextAccessor httpContextAccessor,
@@ -176,10 +176,13 @@ public sealed class ApiRequestService
             HttpMethod.Get,
             uri,
             async httpResponseContent =>
-                await JsonDocument.ParseAsync(
+            {
+                using var document = await JsonDocument.ParseAsync(
                     await httpResponseContent.ReadAsStreamAsync(),
                     JsonDocumentOptions
-                ),
+                );
+                return document.RootElement.Clone();
+            },
             null,
             httpClientFactory,
             httpContextAccessor,

@@ -61,12 +61,12 @@ public sealed class MethodQueries
             );
         }
         using var stream = data.OpenReadStream();
-        var jsonData = await JsonDocument.ParseAsync(
+        using var jsonData = await JsonDocument.ParseAsync(
             stream,
             ApiRequestService.JsonDocumentOptions,
             cancellationToken
         );
-        var result = method.Calculate(jsonData);
+        var result = method.Calculate(jsonData.RootElement);
         return new CalculateMethodPayload(result);
     }
 

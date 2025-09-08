@@ -7,7 +7,7 @@ public sealed class CalculateMethodPayload
     : Payload
 {
     public CalculateMethodPayload(
-        JsonDocument result
+        JsonElement result
     )
     {
         Result = result;
@@ -28,7 +28,7 @@ public sealed class CalculateMethodPayload
     }
 
     public CalculateMethodPayload(
-        JsonDocument result,
+        JsonElement result,
         IReadOnlyCollection<CalculateMethodError> errors
     )
     {
@@ -37,7 +37,7 @@ public sealed class CalculateMethodPayload
     }
 
     public CalculateMethodPayload(
-        JsonDocument result,
+        JsonElement result,
         CalculateMethodError error
     )
         : this(
@@ -47,6 +47,6 @@ public sealed class CalculateMethodPayload
     {
     }
 
-    public JsonDocument? Result { get; }
+    public JsonElement? Result { get; }
     public IReadOnlyCollection<CalculateMethodError>? Errors { get; }
 }

@@ -14,14 +14,15 @@ public abstract class MethodBase<TInput, TOutput>
         UnmappedMemberHandling = JsonUnmappedMemberHandling.Skip,
     };
 
-    public JsonDocument Calculate(JsonDocument input)
+    public JsonElement Calculate(JsonElement input)
     {
         var parsedInput = input.Deserialize<TInput>(s_jsonSerializerOptions)
             ?? throw new InvalidOperationException();
         var output = Calculate(parsedInput);
-        return JsonDocument.Parse(
+        using var document = JsonDocument.Parse(
             JsonSerializer.SerializeToUtf8Bytes(output)
         );
+        return document.RootElement.Clone();
     }
 
     public abstract TOutput Calculate(TInput input);

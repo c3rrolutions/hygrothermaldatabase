@@ -644,6 +644,7 @@ type Query {
 }
 
 type ResponseApproval {
+  approverId: Uuid!
   keyFingerprint: String!
   message: String!
   query: String!
@@ -1538,10 +1539,12 @@ enum ApplyPolicy {
 }
 
 enum CoatedSide {
-  FRONT
-  BACK
+  PRIME
+  NON_PRIME
   BOTH
   NEITHER
+  UNKNOWN
+  NOT_APPLICABLE
 }
 
 enum CreateCalorimetricDataErrorCode {

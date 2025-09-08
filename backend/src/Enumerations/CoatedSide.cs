@@ -5,8 +5,10 @@ namespace Database.Enumerations;
 [SuppressMessage("Naming", "CA1707")]
 public enum CoatedSide
 {
-    FRONT,
-    BACK,
+    PRIME,
+    NON_PRIME,
     BOTH,
-    NEITHER
+    NEITHER,
+    UNKNOWN,
+    NOT_APPLICABLE
 }

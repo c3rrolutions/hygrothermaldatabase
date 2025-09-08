@@ -1,13 +1,9 @@
 using System;
-using System.Collections.Generic;
-using Database.GraphQl.MethodAsService;
+using System.Text.Json;
 
 namespace Database.Methods;
 
 public interface IMethod
 {
-    string Name { get; }
-    Guid Id { get; }
-
-    List<DataPoint> Calculate(IReadOnlyList<DataPoint> dataPoints);
+    public JsonElement Calculate(JsonElement input);
 }

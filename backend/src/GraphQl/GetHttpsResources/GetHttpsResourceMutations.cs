@@ -10,6 +10,7 @@ using Database.Extensions;
 using HotChocolate.Types;
 using Microsoft.EntityFrameworkCore;
 using Database.Services;
+using GraphQL.Client.Abstractions.Utilities;
 
 namespace Database.GraphQl.GetHttpsResources;
 
@@ -39,7 +40,7 @@ public sealed class GetHttpsResourceMutations
                 new CreateGetHttpsResourceError(
                     CreateGetHttpsResourceErrorCode.UNKNOWN_DATA,
                     $"There is no data of kind {input.DataKind} with identifier {input.DataId}.",
-                    [nameof(input), nameof(input.DataId).FirstCharToLower()]
+                    [nameof(input), nameof(input.DataId).ToLowerFirst()]
                 )
             );
         }

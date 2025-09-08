@@ -98,7 +98,7 @@ public static class FileHelpers
             modelState.AddModelError(formFile.Name,
                 $"{fieldDisplayName}({trustedFileNameForDisplay}) is empty.");
 
-            return Array.Empty<byte>();
+            return [];
         }
 
         if (formFile.Length > sizeLimit)
@@ -108,7 +108,7 @@ public static class FileHelpers
                 $"{fieldDisplayName}({trustedFileNameForDisplay}) exceeds " +
                 $"{megabyteSizeLimit:N1} MB.");
 
-            return Array.Empty<byte>();
+            return [];
         }
 
         try
@@ -146,7 +146,7 @@ public static class FileHelpers
             // Log the exception
         }
 
-        return Array.Empty<byte>();
+        return [];
     }
 
     public static async Task<byte[]> ProcessStreamedFile(
@@ -190,7 +190,7 @@ public static class FileHelpers
             // Log the exception
         }
 
-        return Array.Empty<byte>();
+        return [];
     }
 
     private static bool IsValidFileExtensionAndSignature(string? fileName, Stream data, string[] permittedExtensions)

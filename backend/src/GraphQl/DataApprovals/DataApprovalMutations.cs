@@ -6,6 +6,7 @@ using Database.Data;
 using Database.Extensions;
 using Database.GraphQl.References;
 using Database.Services;
+using GraphQL.Client.Abstractions.Utilities;
 using HotChocolate.Types;
 
 namespace Database.GraphQl.DataApprovals;
@@ -52,7 +53,7 @@ public sealed class DataApprovalMutations
                 new AddDataApprovalError(
                     AddDataApprovalErrorCode.UNKNOWN_DATA,
                     $"Unknown data.",
-                    [nameof(input), nameof(input.DataId).FirstCharToLower()]
+                    [nameof(input), nameof(input.DataId).ToLowerFirst()]
                 )
             );
         }
@@ -64,7 +65,7 @@ public sealed class DataApprovalMutations
                 new AddDataApprovalError(
                     AddDataApprovalErrorCode.MISSING_STATEMENT,
                     "Both standard and publication are null.",
-                    [nameof(input), nameof(input.Statement).FirstCharToLower()]
+                    [nameof(input), nameof(input.Statement).ToLowerFirst()]
                 )
             );
         }
@@ -76,7 +77,7 @@ public sealed class DataApprovalMutations
                 new AddDataApprovalError(
                     AddDataApprovalErrorCode.AMBIGUOUS_STATEMENT,
                     "Both standard and publication are non-null.",
-                    [nameof(input), nameof(input.Statement).FirstCharToLower()]
+                    [nameof(input), nameof(input.Statement).ToLowerFirst()]
                 )
             );
         }

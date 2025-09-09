@@ -57,7 +57,8 @@ If you have a question for which you don't find the answer in this repository, p
    `./backend/src/gpg-keys/${GNUPG_PRIVATEKEY_FILE_NAME}`
    by running `make NAME=${name} COMMENT=${comment} EMAIL=${email} gpg` with
    your information filled in. For example: `make NAME=Anna" "Smith
-   COMMENT=first" "test EMAIL=anna.smith@fraunhofer.de gpg`
+   COMMENT=first" "test EMAIL=anna.smith@fraunhofer.de gpg`. The variable
+   `${GNUPG_PRIVATEKEY_PASSPHRASE}` is set in `.env.sample`.
 1. Start all services and follow their logs by running `make up logs`.
 1. To see the web frontend navigate to
    `https://local.solarbuildingenvelopes.com:5051` in your web browser, to see

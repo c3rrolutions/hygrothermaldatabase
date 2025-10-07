@@ -164,7 +164,7 @@ services:
     extra_hosts:
       - ${HOST}:host-gateway
     environment:
-      - NODE_ENV=production
+      - NODE_ENV=development
     depends_on:
       - backend
 

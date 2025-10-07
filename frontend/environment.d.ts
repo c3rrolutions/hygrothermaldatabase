@@ -4,7 +4,7 @@ declare global {
       NEXT_PUBLIC_DATABASE_URL: string;
       NEXT_PUBLIC_METABASE_URL: string;
       NEXT_WEBPACK_USEPOLLING: string;
-      NODE_ENV: "test" | "development" | "production";
+      NODE_ENV: "production";
     }
   }
 }

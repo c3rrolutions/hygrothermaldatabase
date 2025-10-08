@@ -9,8 +9,11 @@ using Microsoft.AspNetCore.Http;
 
 namespace Database.ApiRequests;
 
-public sealed class DataApi
+public sealed class QueryAllMetaData
 {
+    public static Uri GetGraphQlEndpoint(AppSettings appSettings) =>
+        ApiRequestService.DatabaseGraphQlEndpoint(appSettings);
+
     public static readonly string[] CalorimetricDataFileNames =
     [
         "DataFields.graphql",
@@ -46,7 +49,7 @@ public sealed class DataApi
         "OpticalData.graphql"
     ];
 
-    public static async Task<(string Query, JsonElement Variables, string Response)> QueryAllMetaData(
+    public static async Task<(string Query, JsonElement Variables, string Response)> Do(
         Guid dataId,
         string[] fileNames,
         AppSettings appSettings,
@@ -66,30 +69,5 @@ public sealed class DataApi
             cancellationToken
         );
         return (query, JsonSerializer.SerializeToElement(variables), response);
-    }
-
-    public static async Task<GraphQLResponse<TGraphQlData>> QueryDataFromDatabase<TGraphQlData>(
-        Uri databaseUrl,
-        Guid dataId,
-        string query,
-        AppSettings appSettings,
-        ApiRequestService apiRequestService,
-        IHttpClientFactory httpClientFactory,
-        IHttpContextAccessor httpContextAccessor,
-        CancellationToken cancellationToken)
-
-        where TGraphQlData : class
-    {
-        return await apiRequestService.Database().QueryGraphQl<TGraphQlData>(
-            appSettings,
-            databaseUrl,
-            new GraphQLRequest(
-                query,
-                new { id = dataId }
-            ),
-            httpClientFactory,
-            httpContextAccessor,
-            cancellationToken
-        );
     }
 }

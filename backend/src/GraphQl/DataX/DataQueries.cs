@@ -15,12 +15,11 @@ public sealed class DataQueries
         Guid id,
         [GraphQLType<LocaleType>] string? locale,
         ApplicationDbContext dbContext,
-        DataService dataService,
         AccessRightsService accessRightsService,
         CancellationToken cancellationToken
     )
     {
-        var data = await dataService.GetDataAsync(id, dbContext, cancellationToken);
+        var data = await dbContext.GetDataAsync(id, cancellationToken);
         if (data is null)
         {
             return null;

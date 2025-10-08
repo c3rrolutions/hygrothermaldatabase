@@ -1,3 +1,6 @@
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 using Database.Enumerations;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -42,6 +45,15 @@ public sealed class ApplicationDbContext
     public DbSet<DataProtectionKey> DataProtectionKeys { get; private set; } = default!;
     public DbSet<GeometricData> GeometricData { get; private set; } = default!;
     public DbSet<InstitutionAccessRights> InstitutionAccessRights { get; private set; } = default!;
+
+    public async Task<IData?> GetDataAsync(Guid id, CancellationToken cancellationToken)
+    {
+        return await CalorimetricData.SingleOrDefaultAsync(x => x.Id == id, cancellationToken) ??
+            await HygrothermalData.SingleOrDefaultAsync(x => x.Id == id, cancellationToken) ??
+            await OpticalData.SingleOrDefaultAsync(x => x.Id == id, cancellationToken) ??
+            await GeometricData.SingleOrDefaultAsync(x => x.Id == id, cancellationToken) ??
+            await PhotovoltaicData.SingleOrDefaultAsync(x => x.Id == id, cancellationToken) as IData;
+    }
 
     private static void CreateEnumerations(ModelBuilder builder, string schemaName)
     {

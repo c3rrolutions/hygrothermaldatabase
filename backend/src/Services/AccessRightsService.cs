@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Database.ApiRequests.Dto;
 using Database.Data;
 using Database.Logging;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using static Database.ApiRequests.QueryCurrentUser;
 
 namespace Database.Services;
 
@@ -62,7 +62,7 @@ public sealed class AccessRightsService(
 
     private IEnumerable<T> ProcessData<T>(
         IQueryable<T> data,
-        CurrentUserDto? currentUser,
+        CurrentUser? currentUser,
         string? openIdConnectClientId,
         IReadOnlyList<Guid>? representedInstitutionIds,
         IReadOnlyList<InstitutionAccessRights>? institutionAccessRights,

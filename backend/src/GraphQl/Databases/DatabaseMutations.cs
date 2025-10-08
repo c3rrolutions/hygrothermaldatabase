@@ -1,11 +1,12 @@
-using System;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Database.ApiRequests;
 using Database.Services;
+using HotChocolate.Resolvers;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
+using static Database.ApiRequests.UpdateDatabase;
 
 namespace Database.GraphQl.Databases;
 
@@ -18,32 +19,35 @@ public sealed class DatabaseMutations
         ApiRequestService apiRequestService,
         IHttpClientFactory httpClientFactory,
         IHttpContextAccessor httpContextAccessor,
+        IResolverContext resolverContext,
         CancellationToken cancellationToken
     )
     {
-        var databasePayload = await DatabaseApi.UpdateDatabase(
-            input,
-            appSettings,
-            apiRequestService,
-            httpClientFactory,
-            httpContextAccessor,
-            cancellationToken);
-        if (databasePayload is null || databasePayload.Database is null)
-        {
-           return new UpdateDatabasePayload(
-                null,
-                [
-                    new UpdateDatabaseError(
-                    UpdateDatabaseErrorCode.UNKNOWN,
-                    "Unknown error.",
-                    []
-                )
-                ]
-           );
-        }
-        return new UpdateDatabasePayload(
-            Database.FromDto(databasePayload.Database),
-            null
+        var databasePayload = await GraphQlRequestHelper.TransformExceptionsAsync(
+            () => UpdateDatabase.Do(
+                input,
+                appSettings,
+                apiRequestService,
+                httpClientFactory,
+                httpContextAccessor,
+                cancellationToken
+            ),
+            resolverContext,
+            UpdateDatabase.GetGraphQlEndpoint(appSettings)
         );
+        if (databasePayload is null)
+        {
+            return new UpdateDatabasePayload(
+                 null,
+                 [
+                     new UpdateDatabaseError(
+                        UpdateDatabaseErrorCode.UNKNOWN,
+                        "Unknown error.",
+                        []
+                    )
+                 ]
+            );
+        }
+        return databasePayload;
     }
 }

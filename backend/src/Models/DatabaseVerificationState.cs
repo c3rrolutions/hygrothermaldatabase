@@ -1,4 +1,4 @@
-namespace Database.GraphQl.Databases;
+namespace Database.Models;
 
 public enum DatabaseVerificationState
 {

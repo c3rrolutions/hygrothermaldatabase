@@ -1,9 +1,9 @@
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Database.Authorization;
 using Database.Data;
-using Database.Extensions;
 using Database.GraphQl.References;
 using Database.Services;
 using GraphQL.Client.Abstractions.Utilities;
@@ -19,7 +19,6 @@ public sealed class DataApprovalMutations
         DataApprovalInput input,
         ApplicationDbContext context,
         UserService userService,
-        DataService dataService,
         ResponseApprovalService responseApprovalService,
         CancellationToken cancellationToken
     )
@@ -46,7 +45,7 @@ public sealed class DataApprovalMutations
             );
         }
 
-        var data = await dataService.GetDataAsync(input.DataId, context, cancellationToken);
+        var data = await context.GetDataAsync(input.DataId, cancellationToken);
         if (data is null)
         {
             return new AddDataApprovalPayload(
@@ -84,9 +83,9 @@ public sealed class DataApprovalMutations
 
         var approval = new DataApproval(
             input.Timestamp,
-            input.Signature,
+            input.Signature.Trim(),
             input.KeyFingerprint,
-            input.Query,
+            input.Query.Trim(),
             input.Variables,
             input.Message,
             input.ApproverId,
@@ -103,7 +102,7 @@ public sealed class DataApprovalMutations
         }
         catch (Exception exception)
         {
-            context.Remove(data);
+            data.Approvals.Remove(approval);
             await context.SaveChangesAsync(cancellationToken);
 
             return new AddDataApprovalPayload(
@@ -116,5 +115,84 @@ public sealed class DataApprovalMutations
             );
         }
         return new AddDataApprovalPayload(approval);
+    }
+
+    public async Task<RemoveDataApprovalPayload> RemoveDataApprovalAsync(
+        DataApprovalInput input,
+        ApplicationDbContext context,
+        UserService userService,
+        ResponseApprovalService responseApprovalService,
+        CancellationToken cancellationToken
+    )
+    {
+        var currentUser = await userService.GetCurrentUser(cancellationToken);
+        if (currentUser is null)
+        {
+            return new RemoveDataApprovalPayload(
+                new RemoveDataApprovalError(
+                    RemoveDataApprovalErrorCode.UNAUTHENTICATED,
+                    $"The user is not authenticated.",
+                    []
+                )
+            );
+        }
+        if (!CommonAuthorization.IsCurrentUserAtLeastAssistantManagerOfDatabaseOperator(currentUser))
+        {
+            return new RemoveDataApprovalPayload(
+                new RemoveDataApprovalError(
+                    RemoveDataApprovalErrorCode.UNAUTHORIZED,
+                    $"The current user is not authorized to add data approvals to this database.",
+                    []
+                )
+            );
+        }
+
+        var data = await context.GetDataAsync(input.DataId, cancellationToken);
+        if (data is null)
+        {
+            return new RemoveDataApprovalPayload(
+                new RemoveDataApprovalError(
+                    RemoveDataApprovalErrorCode.UNKNOWN_DATA,
+                    $"Unknown data.",
+                    [nameof(input), nameof(input.DataId).ToLowerFirst()]
+                )
+            );
+        }
+
+        var approval = data.Approvals.Where(a => a.Signature.Trim() == input.Signature.Trim()).FirstOrDefault();
+        if (approval is null)
+        {
+            return new RemoveDataApprovalPayload(
+                new RemoveDataApprovalError(
+                    RemoveDataApprovalErrorCode.UNKNOWN_APPROVAL,
+                    $"Unknown data approval.",
+                    [nameof(input), nameof(input.Signature).ToLowerFirst()]
+                )
+            );
+        }
+
+        data.Approvals.Remove(approval);
+        await context.SaveChangesAsync(cancellationToken);
+
+        try
+        {
+            data.Approval = await responseApprovalService.CreateResponseApproval(data, cancellationToken);
+            await context.SaveChangesAsync(cancellationToken);
+        }
+        catch (Exception exception)
+        {
+            data.Approvals.Add(approval);
+            await context.SaveChangesAsync(cancellationToken);
+
+            return new RemoveDataApprovalPayload(
+                approval,
+                new RemoveDataApprovalError(
+                    RemoveDataApprovalErrorCode.CREATING_RESPONSE_APPROVAL_FAILED,
+                    $"Signing failed with message: {exception.Message}",
+                    []
+                )
+            );
+        }
+        return new RemoveDataApprovalPayload(approval);
     }
 }

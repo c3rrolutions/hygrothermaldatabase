@@ -4,7 +4,6 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Net.Http.Json;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -29,6 +28,21 @@ public sealed class ApiRequestService
     /// Name of Database http client.
     /// </summary>
     public const string DatabaseHttpClient = "Database";
+
+    private const string GraphQlPathSegment = "/graphql/";
+
+    // TODO Consider using [Flurl](https://flurl.dev) to construct URIs. For the pitfalls of
+    // using `Uri` as below see the comments to https://stackoverflow.com/questions/372865/path-combine-for-urls/1527643#1527643
+    public static Uri MetabaseGraphQlEndpoint(AppSettings appSettings) =>
+        new(new Uri(appSettings.MetabaseHost, UriKind.Absolute), GraphQlPathSegment);
+
+    public static Uri DatabaseGraphQlEndpoint(AppSettings appSettings) =>
+        new(new Uri(appSettings.Host, UriKind.Absolute), GraphQlPathSegment);
+
+    private static Uri GetGraphQlEndpoint(AppSettings appSettings)
+    {
+        return s_useMetabase ? MetabaseGraphQlEndpoint(appSettings) : DatabaseGraphQlEndpoint(appSettings);
+    }
 
     public static JsonDocumentOptions JsonDocumentOptions => new()
     {
@@ -88,9 +102,7 @@ public sealed class ApiRequestService
     {
         return Query(
             HttpMethod.Post,
-            // TODO Consider using [Flurl](https://flurl.dev) to construct URIs. For the pitfalls of
-            // using `Uri` as below see the comments to https://stackoverflow.com/questions/372865/path-combine-for-urls/1527643#1527643
-            new Uri(new Uri(s_useMetabase ? appSettings.MetabaseHost : appSettings.Host, UriKind.Absolute), "/graphql/"),
+            GetGraphQlEndpoint(appSettings),
             httpResponseContent => httpResponseContent.ReadAsStringAsync(cancellationToken),
             MakeGraphQlJsonHttpContent(request),
             httpClientFactory,
@@ -120,9 +132,7 @@ public sealed class ApiRequestService
     {
         return Query<GraphQLResponse<TGraphQlResponse>>(
             HttpMethod.Post,
-            // TODO Consider using [Flurl](https://flurl.dev) to construct URIs. For the pitfalls of
-            // using `Uri` as below see the comments to https://stackoverflow.com/questions/372865/path-combine-for-urls/1527643#1527643
-            new Uri(new Uri(s_useMetabase ? appSettings.MetabaseHost : appSettings.Host, UriKind.Absolute), "/graphql/"),
+            GetGraphQlEndpoint(appSettings),
             MakeGraphQlJsonHttpContent(request),
             JsonSerializerSettings.GraphQL,
             httpClientFactory,

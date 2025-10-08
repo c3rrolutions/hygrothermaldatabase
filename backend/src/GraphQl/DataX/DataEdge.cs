@@ -2,13 +2,13 @@ using Database.Data;
 
 namespace Database.GraphQl.DataX;
 
-public sealed class DataEdge(
-    string cursor,
-    IData node
+public sealed record DataEdge(
+    string Cursor,
+    IData Node
     )
         : DataEdgeBase<IData>(
-        cursor,
-        node
+        Cursor,
+        Node
         )
 {
 }

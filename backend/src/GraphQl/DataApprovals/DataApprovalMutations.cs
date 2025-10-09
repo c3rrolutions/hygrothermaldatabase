@@ -19,6 +19,7 @@ public sealed class DataApprovalMutations
         DataApprovalInput input,
         ApplicationDbContext context,
         UserService userService,
+        DataApprovalService dataApprovalService,
         ResponseApprovalService responseApprovalService,
         CancellationToken cancellationToken
     )
@@ -41,6 +42,21 @@ public sealed class DataApprovalMutations
                     AddDataApprovalErrorCode.UNAUTHORIZED,
                     $"The current user is not authorized to add data approvals to this database.",
                     []
+                )
+            );
+        }
+        if (!await dataApprovalService.IsGnuPgFingerprintValid(
+            input.KeyFingerprint,
+            input.ApproverId,
+            input.Timestamp,
+            cancellationToken
+        ))
+        {
+            return new AddDataApprovalPayload(
+                new AddDataApprovalError(
+                    AddDataApprovalErrorCode.INVALID_KEY_FINGERPRINT,
+                    $"The key fingerprint does not exist for the institution '{input.ApproverId}' or was not allowed before or was forbidden before the timestamp {input.Timestamp}.",
+                    [nameof(input), nameof(input.KeyFingerprint).ToLowerFirst()]
                 )
             );
         }

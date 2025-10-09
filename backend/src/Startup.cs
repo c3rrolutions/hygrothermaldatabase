@@ -242,6 +242,7 @@ public sealed class Startup(
     {
         services.AddScoped<AccessRightsService>();
         services.AddScoped<ApiRequestService>();
+        services.AddScoped<DataApprovalService>();
         services.AddScoped<ResponseApprovalService>();
         services.AddScoped<UserService>();
         services.AddSingleton<CacheService>();

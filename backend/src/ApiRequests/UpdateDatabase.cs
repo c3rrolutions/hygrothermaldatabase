@@ -23,7 +23,7 @@ public sealed class UpdateDatabase
     );
 
     public sealed record UpdateDatabasePayload(
-        Models.Database? Database,
+        QueryDatabase.Database? Database,
         IReadOnlyList<UpdateDatabaseError>? Errors
     );
 

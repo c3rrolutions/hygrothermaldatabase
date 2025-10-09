@@ -13,7 +13,7 @@ namespace Database.GraphQl.Databases;
 [ExtendObjectType(nameof(Query))]
 public sealed class DatabaseQueries
 {
-    public async Task<Models.Database> GetDatabaseAsync(
+    public async Task<QueryDatabase.Database> GetDatabaseAsync(
         AppSettings appSettings,
         ApiRequestService apiRequestService,
         IHttpClientFactory httpClientFactory,

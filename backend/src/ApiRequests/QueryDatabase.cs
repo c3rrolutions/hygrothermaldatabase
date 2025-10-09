@@ -13,14 +13,40 @@ public sealed class QueryDatabase
     public static Uri GetGraphQlEndpoint(AppSettings appSettings) =>
         ApiRequestService.MetabaseGraphQlEndpoint(appSettings);
 
-    private sealed record DatabaseData(Models.Database Database);
+    public sealed record Database(
+         Guid Uuid,
+         string Name,
+         string Description,
+         Uri Locator,
+         DatabaseVerificationState VerificationState,
+         string VerificationCode,
+         DatabaseOperatorEdge Operator,
+         bool CanCurrentUserUpdateNode,
+         bool CanCurrentUserVerifyNode
+    );
+
+    public enum DatabaseVerificationState
+    {
+        PENDING,
+        VERIFIED
+    }
+
+    public sealed record DatabaseOperatorEdge(
+        Institution Node
+    );
+
+    public sealed record Institution(
+         Guid Uuid
+    );
+
+    private sealed record DatabaseData(Database Database);
 
     private static readonly string[] s_queryDatabaseFileNames =
     [
         "Database.graphql"
     ];
 
-    public static async Task<Models.Database?> Do(
+    public static async Task<Database?> Do(
         Guid databaseId,
         AppSettings appSettings,
         ApiRequestService apiRequestService,

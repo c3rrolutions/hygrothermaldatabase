@@ -33,11 +33,11 @@ public sealed class ResponseApprovalService(
         logger.QueryAllMetaData(dataObject.GetType(), dataObject.Id);
         var (query, variables, response) = await QueryAllMetaData(dataObject, cancellationToken);
         logger.QueryAndVariablesAndResponce(query, variables, response);
-        var signature = await signingService.SignData(response);
+        var (signature, fingerprint) = await signingService.SignData(response);
         return new ResponseApproval(
             DateTime.UtcNow,
             signature,
-            await signingService.ExtractFingerprint(),
+            fingerprint,
             query,
             variables,
             response,

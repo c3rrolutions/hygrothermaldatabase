@@ -71,14 +71,15 @@ services:
       - XBASE_MetabaseHost=https://${METABASE_HOST}
       - XBASE_DatabaseId=${DATABASE_ID}
       - XBASE_OperatorId=${OPERATOR_ID}
+      - XBASE_OpenIdConnectClientSecret=${OPEN_ID_CONNECT_CLIENT_SECRET}
+      - XBASE_VerificationCode=${VERIFICATION_CODE}
       - XBASE_JsonWebToken__EncryptionCertificatePassword=${JSON_WEB_TOKEN_ENCRYPTION_CERTIFICATE_PASSWORD}
       - XBASE_JsonWebToken__SigningCertificatePassword=${JSON_WEB_TOKEN_SIGNING_CERTIFICATE_PASSWORD}
       - XBASE_Email__SmtpHost=${SMTP_HOST}
       - XBASE_Email__SmtpPort=${SMTP_PORT}
-      - XBASE_OpenIdConnectClientSecret=${OPEN_ID_CONNECT_CLIENT_SECRET}
-      - XBASE_VerificationCode=${VERIFICATION_CODE}
-      - XBASE_GnupgPrivateKeyFilename=${GNUPG_PRIVATEKEY_FILE_NAME}
-      - XBASE_GnupgPrivateKeyPassphrase=${GNUPG_PRIVATEKEY_PASSPHRASE}
+      - XBASE_GnupgSecretSigningKey__Filename=${GNUPG_SECRET_SIGNING_KEY_FILE_NAME}
+      - XBASE_GnupgSecretSigningKey__Passphrase=${GNUPG_SECRET_SIGNING_KEY_PASSPHRASE}
+      - XBASE_GnupgSecretSigningKey__Fingerprint=${GNUPG_SECRET_SIGNING_KEY_FINGERPRINT}
       # The value `/dev/pts/0` is the output of running `tty` within `shellb`
       # https://www.gnupg.org/documentation/manuals/gnupg/Invoking-GPG_002dAGENT.html
       - GPG_TTY=/dev/pts/0

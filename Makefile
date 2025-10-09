@@ -317,16 +317,16 @@ prepare-release : ## Prepare release
 .PHONY : prepare-release
 
 gpg : COMMENT =
-gpg : ## Generate GnuPG key with the passphrase `${GNUPG_PRIVATEKEY_PASSPHRASE}`, for example, `make NAME="Simon Wacker" COMMENT=solarbuildingenvelopes EMAIL=simon.wacker@ise.fraunhofer.de gpg`
-	gpg \
-		--quick-generate-key \
-		--pinentry-mode loopback \
-		--batch \
-		--passphrase ${GNUPG_PRIVATEKEY_PASSPHRASE} \
-		"${NAME} (${COMMENT}) <${EMAIL}>" \
-		ed25519 \
-		sign \
-		never; \
+gpg : ## Generate GnuPG key with the passphrase `${GNUPG_SECRET_SIGNING_KEY_PASSPHRASE}`, for example, `make NAME="Simon Wacker" COMMENT=solarbuildingenvelopes EMAIL=simon.wacker@ise.fraunhofer.de gpg`
+  gpg \
+    --quick-generate-key \
+    --pinentry-mode loopback \
+    --batch \
+    --passphrase ${GNUPG_SECRET_SIGNING_KEY_PASSPHRASE} \
+    "${NAME} (${COMMENT}) <${EMAIL}>" \
+    ed25519 \
+    sign \
+    never; \
 	fingerprint=$$(gpg \
 		--list-secret-keys \
 		--with-colons \
@@ -336,13 +336,13 @@ gpg : ## Generate GnuPG key with the passphrase `${GNUPG_PRIVATEKEY_PASSPHRASE}`
 		--before=3 \
 		"${NAME} (${COMMENT}) <${EMAIL}>" \
 	| awk -F: '$$1=="fpr" {printf $$10; exit}'); \
-	echo $$fingerprint; \
+	echo Fingerprint: $$fingerprint; \
 	mkdir --parents \
 		./backend/src/gpg-keys; \
 	gpg \
 		--armor \
 		--export-secret-keys $$fingerprint \
-	> ./backend/src/gpg-keys/${GNUPG_PRIVATEKEY_FILE_NAME}
+	> ./backend/src/gpg-keys/${GNUPG_SECRET_SIGNING_KEY_FILE_NAME}
 
 # --------------------- #
 # Generate Certificates #

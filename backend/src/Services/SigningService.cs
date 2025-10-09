@@ -3,7 +3,6 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using Database.Logging;
 using Microsoft.Extensions.Logging;
-using Quartz.Util;
 
 namespace Database.Services;
 
@@ -14,33 +13,26 @@ public sealed class SigningService(
     public async Task Initialize()
     {
         var (success, output, diagnostics) = await ExecuteCommand(
-            $"gpg --batch --passphrase '{appSettings.GnupgPrivateKeyPassphrase}' --import './gpg-keys/{appSettings.GnupgPrivateKeyFilename}'"
+            $"gpg --batch --passphrase '{appSettings.GnupgSecretSigningKey.Passphrase}' --import './gpg-keys/{appSettings.GnupgSecretSigningKey.FileName}'"
         );
+        if (!success)
+        {
+            throw new InvalidOperationException($"Failed to import GnuPG secret key for signing with passphrase '{appSettings.GnupgSecretSigningKey.Passphrase}' and file name '{appSettings.GnupgSecretSigningKey.FileName}'. The command gave the standard output '{output}' and the diagnostic information '{diagnostics}'.");
+        }
     }
 
-    public async Task<string> SignData(string data)
+    public async Task<(string Signature, string Fingerprint)> SignData(string data)
     {
         var (success, signature, diagnostics) = await ExecuteCommand(
-            $"gpg --pinentry-mode loopback --batch --passphrase {appSettings.GnupgPrivateKeyPassphrase} --detach-sig --armor --local-user {await ExtractFingerprint()}",
+            $"gpg --pinentry-mode loopback --batch --passphrase '{appSettings.GnupgSecretSigningKey.Passphrase}' --detach-sig --armor --local-user '{appSettings.GnupgSecretSigningKey.Fingerprint}'",
             data
         );
         if (!success)
         {
-            throw new InvalidOperationException($"Failed to create signature with standard output {signature} and diagnostic information {diagnostics}");
+            throw new InvalidOperationException($"Failed to create signature with standard output '{signature}' and diagnostic information '{diagnostics}'");
         }
         logger.CreatedSignature(signature);
-        return signature;
-    }
-
-    public async Task<string> ExtractFingerprint()
-    {
-        var (success, fingerprint, diagnostics) = await ExecuteCommand("gpg --list-secret-keys --with-colons --keyid-format=long | awk -F: '$1==\"fpr\" {printf $10; exit}'");
-        if (!success || fingerprint.IsNullOrWhiteSpace())
-        {
-            throw new InvalidOperationException($"Failed to extract fingerprint with standard output {fingerprint} and diagnostic information {diagnostics}");
-        }
-        logger.ExtractedFingerprint(fingerprint);
-        return fingerprint;
+        return (signature, appSettings.GnupgSecretSigningKey.Fingerprint);
     }
 
     private async Task<(bool Success, string Output, string Diagnostics)> ExecuteCommand(
@@ -62,7 +54,7 @@ public sealed class SigningService(
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
             }
-        ) ?? throw new InvalidOperationException($"The process for command '${command}' with the input '${input}' failed to start.");
+        ) ?? throw new InvalidOperationException($"The process for command '{command}' with the input '{input}' failed to start.");
         if (input is not null)
         {
             await process.StandardInput.WriteLineAsync(input);

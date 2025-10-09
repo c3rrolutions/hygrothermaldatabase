@@ -12,6 +12,8 @@ namespace Database.ApiRequests;
 
 public sealed class UpdateDatabase
 {
+    private const string UpdateDatabaseFileName = "UpdateDatabase.graphql";
+
     public static Uri GetGraphQlEndpoint(AppSettings appSettings) =>
         ApiRequestService.MetabaseGraphQlEndpoint(appSettings);
 
@@ -41,11 +43,6 @@ public sealed class UpdateDatabase
         IReadOnlyList<string> Path
     );
 
-    private static readonly string[] s_updateDatabaseFileNames =
-    [
-        "UpdateDatabase.graphql"
-    ];
-
     public static async Task<UpdateDatabasePayload?> Do(
         UpdateDatabaseInput updateDatabaseInput,
         AppSettings appSettings,
@@ -59,7 +56,7 @@ public sealed class UpdateDatabase
             appSettings,
             new GraphQLRequest(
                 await apiRequestService.ConstructGraphQlQuery(
-                    s_updateDatabaseFileNames
+                    UpdateDatabaseFileName
                     ),
                 new
                 {
@@ -70,6 +67,6 @@ public sealed class UpdateDatabase
             httpClientFactory,
             httpContextAccessor,
             cancellationToken
-            ))?.Data;
+        )).Data;
     }
 }

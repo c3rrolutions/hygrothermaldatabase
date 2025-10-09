@@ -73,6 +73,13 @@ public sealed class ApiRequestService
         return this;
     }
 
+    public Task<string> ConstructGraphQlQuery(
+        string fileName
+    )
+    {
+        return ConstructGraphQlQuery([fileName]);
+    }
+
     /// <summary>
     /// Construct query from passed files.
     /// </summary>

@@ -10,6 +10,8 @@ namespace Database.ApiRequests;
 
 public sealed class QueryDatabase
 {
+    private const string QueryFileName = "Database.graphql";
+
     public static Uri GetGraphQlEndpoint(AppSettings appSettings) =>
         ApiRequestService.MetabaseGraphQlEndpoint(appSettings);
 
@@ -39,12 +41,7 @@ public sealed class QueryDatabase
          Guid Uuid
     );
 
-    private sealed record DatabaseData(Database Database);
-
-    private static readonly string[] s_queryDatabaseFileNames =
-    [
-        "Database.graphql"
-    ];
+    private sealed record DatabaseData(Database? Database);
 
     public static async Task<Database?> Do(
         Guid databaseId,
@@ -54,19 +51,18 @@ public sealed class QueryDatabase
         IHttpContextAccessor httpContextAccessor,
         CancellationToken cancellationToken)
     {
-        var response = await apiRequestService.Metabase().QueryGraphQl<DatabaseData>(
-                    appSettings,
-                    new GraphQLRequest(await apiRequestService.ConstructGraphQlQuery(s_queryDatabaseFileNames),
-                        new
-                        {
-                            id = databaseId
-                        },
-                        "Database"
-                    ),
-                    httpClientFactory,
-                    httpContextAccessor,
-                    cancellationToken
-                );
-        return response.Data?.Database;
+        return (await apiRequestService.Metabase().QueryGraphQl<DatabaseData>(
+            appSettings,
+            new GraphQLRequest(await apiRequestService.ConstructGraphQlQuery(QueryFileName),
+                new
+                {
+                    id = databaseId
+                },
+                "Database"
+            ),
+            httpClientFactory,
+            httpContextAccessor,
+            cancellationToken
+        )).Data.Database;
     }
 }

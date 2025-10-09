@@ -14,6 +14,8 @@ namespace Database.ApiRequests;
 /// </summary>
 public sealed class QueryCurrentUser
 {
+    private const string CurrentUserFileName = "CurrentUser.graphql";
+
     public static Uri GetGraphQlEndpoint(AppSettings appSettings) =>
         ApiRequestService.MetabaseGraphQlEndpoint(appSettings);
 
@@ -23,49 +25,44 @@ public sealed class QueryCurrentUser
         UserRepresentedInstitutionConnection RepresentedInstitutions,
         UserRepresentedInstitutionConnection DatabaseOperatingRepresentedInstitutions
     );
-    
+
     public sealed record UserRepresentedInstitutionConnection(
         IReadOnlyList<UserRepresentedInstitutionEdge> Edges,
         uint TotalCount
     );
-    
+
     public enum InstitutionRepresentativeRole
     {
         OWNER,
         ASSISTANT
     }
-    
+
     public sealed record UserRepresentedInstitutionEdge(
         UserRepresentedInstitutionNode Node,
         InstitutionRepresentativeRole Role
     );
-    
+
     public sealed record UserRepresentedInstitutionNode(
         Guid Uuid,
         string Name,
         InstitutionManagedInstitutionConnection ManagedInstitutions
     );
-    
+
     public sealed record InstitutionManagedInstitutionConnection(
         IReadOnlyList<InstitutionManagedInstitutionEdge> Edges,
         uint TotalCount
     );
-    
+
     public sealed record InstitutionManagedInstitutionEdge(
         InstitutionManagedInstitutionNode Node
     );
-    
+
     public sealed record InstitutionManagedInstitutionNode(
         Guid Uuid,
         string Name
     );
 
-    private sealed record CurrentUserData(CurrentUser CurrentUser);
-
-    private static readonly string[] s_currentUserFileNames =
-    [
-        "CurrentUser.graphql"
-    ];
+    private sealed record CurrentUserData(CurrentUser? CurrentUser);
 
     /// <summary>
     /// Request current user from Metabase.
@@ -78,19 +75,20 @@ public sealed class QueryCurrentUser
         CancellationToken cancellationToken)
     {
         return (await apiRequestService.Metabase().QueryGraphQl<CurrentUserData>(
-                   appSettings,
-                   new GraphQLRequest(await apiRequestService.ConstructGraphQlQuery(s_currentUserFileNames),
-                       new {
-                        databaseId = appSettings.DatabaseId
-                       },
-                       "CurrentUser"
-                   ),
-                   httpClientFactory,
-                   httpContextAccessor,
-                   cancellationToken
-               ))
-               ?.Data
-               ?.CurrentUser
-               ?? null;
+            appSettings,
+            new GraphQLRequest(
+                await apiRequestService.ConstructGraphQlQuery(CurrentUserFileName),
+                new
+                {
+                    databaseId = appSettings.DatabaseId
+                },
+                "CurrentUser"
+            ),
+            httpClientFactory,
+            httpContextAccessor,
+            cancellationToken
+        ))
+        .Data
+        .CurrentUser;
     }
 }

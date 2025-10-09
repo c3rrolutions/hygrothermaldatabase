@@ -1,6 +1,6 @@
-query CheckGnuPgFingerprint(
-  $institutionId: Uuid!
+query IsGnuPgFingerprintValid(
   $fingerprint: String!
+  $institutionId: Uuid!
   $createdAt: DateTime!
 ) {
   validFingerprints: institutions(

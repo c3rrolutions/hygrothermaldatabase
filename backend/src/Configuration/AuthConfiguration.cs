@@ -17,7 +17,6 @@ namespace Database.Configuration;
 // https://github.com/openiddict/openiddict-samples/blob/855c31f91d6bf5cde735ef3f96fcc3c015b51d79/samples/Velusia/Velusia.Client/Startup.cs
 public abstract class AuthConfiguration
 {
-    public const string ClientId = "testlab-solar-facades";
     public const string ReadApiScope = "api:read";
     public const string WriteApiScope = "api:write";
 
@@ -145,14 +144,14 @@ public abstract class AuthConfiguration
                 // retrieve the issuer signing keys used to validate tokens.
                 _.SetIssuer(new Uri(appSettings.MetabaseHost, UriKind.Absolute));
                 // Configure the audience accepted by this resource server.
-                _.AddAudiences(ClientId);
+                _.AddAudiences(appSettings.OpenIdConnectClient.Id);
                 // Configure the validation handler to use introspection and
                 // register the client credentials used when communicating with
                 // the remote introspection endpoint.
                 // https://www.oauth.com/oauth2-servers/token-introspection-endpoint/
                 _.UseIntrospection()
-                    .SetClientId(ClientId)
-                    .SetClientSecret(appSettings.OpenIdConnectClientSecret);
+                    .SetClientId(appSettings.OpenIdConnectClient.Id)
+                    .SetClientSecret(appSettings.OpenIdConnectClient.Secret);
                 // Register the ASP.NET Core host.
                 _.UseAspNetCore();
                 // Register the System.Net.Http integration.
@@ -200,8 +199,8 @@ public abstract class AuthConfiguration
 
                         // Note: these settings must match the application details
                         // inserted in the database at the server level.
-                        ClientId = ClientId,
-                        ClientSecret = appSettings.OpenIdConnectClientSecret,
+                        ClientId = appSettings.OpenIdConnectClient.Id,
+                        ClientSecret = appSettings.OpenIdConnectClient.Secret,
 
                         // https://auth0.com/docs/get-started/apis/scopes/openid-connect-scopes#standard-claims
                         Scopes =

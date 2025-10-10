@@ -23,13 +23,13 @@ public sealed class AppSettings
     public Guid DatabaseId { get; private set; }
     public Guid OperatorId { get; private set; }
 
-    public string OpenIdConnectClientSecret { get; private set; }
-        = "";
-
     public string VerificationCode { get; private set; }
         = "";
 
+    public OpenIdConnectClientSettings OpenIdConnectClient { get; private set; } = new();
+
     public GnupgSecretSigningKeySettings GnupgSecretSigningKey { get; private set; } = new();
+
     public LoggingSettings Logging { get; private set; } = new();
 
     public JsonWebTokenSettings JsonWebToken { get; private set; } = new();
@@ -37,6 +37,12 @@ public sealed class AppSettings
     public EmailSettings Email { get; private set; } = new();
 
     public DatabaseSettings Database { get; private set; } = new();
+
+    public sealed class OpenIdConnectClientSettings
+    {
+        public string Id { get; private set; } = "";
+        public string Secret { get; private set; } = "";
+    }
 
     public sealed class GnupgSecretSigningKeySettings
     {

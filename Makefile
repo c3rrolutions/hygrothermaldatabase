@@ -318,15 +318,15 @@ prepare-release : ## Prepare release
 
 gpg : COMMENT =
 gpg : ## Generate GnuPG key with the passphrase `${GNUPG_SECRET_SIGNING_KEY_PASSPHRASE}`, for example, `make NAME="Simon Wacker" COMMENT=solarbuildingenvelopes EMAIL=simon.wacker@ise.fraunhofer.de gpg`
-  gpg \
-    --quick-generate-key \
-    --pinentry-mode loopback \
-    --batch \
-    --passphrase ${GNUPG_SECRET_SIGNING_KEY_PASSPHRASE} \
-    "${NAME} (${COMMENT}) <${EMAIL}>" \
-    ed25519 \
-    sign \
-    never; \
+	gpg \
+		--quick-generate-key \
+		--pinentry-mode loopback \
+		--batch \
+		--passphrase ${GNUPG_SECRET_SIGNING_KEY_PASSPHRASE} \
+		"${NAME} (${COMMENT}) <${EMAIL}>" \
+		ed25519 \
+		sign \
+		never; \
 	fingerprint=$$(gpg \
 		--list-secret-keys \
 		--with-colons \

@@ -1,16 +1,17 @@
 using System;
-using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Database.Services;
 using GraphQL;
-using Microsoft.AspNetCore.Http;
 
 namespace Database.ApiRequests;
 
-public sealed class DataApi
+public sealed class QueryAllMetaData
 {
+    public static Uri GetGraphQlEndpoint(AppSettings appSettings) =>
+        appSettings.DatabaseGraphQlEndpoint;
+
     public static readonly string[] CalorimetricDataFileNames =
     [
         "DataFields.graphql",
@@ -46,50 +47,24 @@ public sealed class DataApi
         "OpticalData.graphql"
     ];
 
-    public static async Task<(string Query, JsonElement Variables, string Response)> QueryAllMetaData(
+    public static async Task<(string Query, JsonElement Variables, string Response)> Do(
         Guid dataId,
         string[] fileNames,
         AppSettings appSettings,
         ApiRequestService apiRequestService,
-        IHttpClientFactory httpClientFactory,
-        IHttpContextAccessor httpContextAccessor,
         CancellationToken cancellationToken
     )
     {
         var variables = new { id = dataId };
         var query = await apiRequestService.ConstructGraphQlQuery(fileNames);
-        var response = await apiRequestService.Database().QueryGraphQl(
-            appSettings,
-            new GraphQLRequest(query, variables),
-            httpClientFactory,
-            httpContextAccessor,
+        var response = await apiRequestService.QueryGraphQlAsString(
+            GetGraphQlEndpoint(appSettings),
+            new GraphQLRequest(
+                query,
+                variables
+            ),
             cancellationToken
         );
         return (query, JsonSerializer.SerializeToElement(variables), response);
-    }
-
-    public static async Task<GraphQLResponse<TGraphQlData>> QueryDataFromDatabase<TGraphQlData>(
-        Uri databaseUrl,
-        Guid dataId,
-        string query,
-        AppSettings appSettings,
-        ApiRequestService apiRequestService,
-        IHttpClientFactory httpClientFactory,
-        IHttpContextAccessor httpContextAccessor,
-        CancellationToken cancellationToken)
-
-        where TGraphQlData : class
-    {
-        return await apiRequestService.Database().QueryGraphQl<TGraphQlData>(
-            appSettings,
-            databaseUrl,
-            new GraphQLRequest(
-                query,
-                new { id = dataId }
-            ),
-            httpClientFactory,
-            httpContextAccessor,
-            cancellationToken
-        );
     }
 }

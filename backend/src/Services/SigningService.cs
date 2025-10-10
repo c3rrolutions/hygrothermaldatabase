@@ -1,46 +1,137 @@
 using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Threading.Tasks;
-using Database.Logging;
 using Microsoft.Extensions.Logging;
-using Quartz.Util;
 
 namespace Database.Services;
+
+[SuppressMessage("Naming", "CA1707")]
+public enum SigantureVerificationResult
+{
+    FAILED_RECEIVING_KEY,
+    GOOD_SIGNATURE,
+    BAD_SIGNATURE
+}
+
+public static partial class SigningServiceLogging
+{
+    [LoggerMessage(
+        Level = LogLevel.Debug,
+        Message = "GNUPG Fingerprint: {Fingerprint}")]
+    public static partial void ExtractedFingerprint(this ILogger<SigningService> logger, string fingerprint);
+
+    [LoggerMessage(
+        Level = LogLevel.Debug,
+        Message = "GNUPG Signature: {Signature}")]
+    public static partial void CreatedSignature(this ILogger<SigningService> logger, string signature);
+
+    [LoggerMessage(
+        Level = LogLevel.Error,
+        Message = "Failed to receive the key '{Fingerprint}' from the keyserver '{KeyServerUrl}' with standard output '{Output}' and diagnostic information '{Diagnostics}'")]
+    public static partial void FailedToReceiveKey(this ILogger<SigningService> logger, string fingerprint, Uri keyServerUrl, string output, string diagnostics);
+
+    [LoggerMessage(
+        Level = LogLevel.Warning,
+        Message = "Failed to verify the signature '{Signature}' for the message '{Message}' and the fingerprint '{Fingerprint}' with standard output '{Output}' and diagnostic information '{Diagnostics}'")]
+    public static partial void FailedToVerifySignature(this ILogger<SigningService> logger, string fingerprint, string signature, string message, string output, string diagnostics);
+
+    [LoggerMessage(
+        Level = LogLevel.Debug,
+        Message = "GNUPG: Execute Command: {Command}")]
+    public static partial void ExecuteCommand(this ILogger<SigningService> logger, string command);
+
+    [LoggerMessage(
+        Level = LogLevel.Error,
+        Message = "GNUPG Execute Command: {Error}")]
+    public static partial void ExecuteCommandDiagnostics(this ILogger<SigningService> logger, string error);
+
+    [LoggerMessage(
+        Level = LogLevel.Debug,
+        Message = "GNUPG: Execute Command Output: {Output}")]
+    public static partial void ExecuteCommandOutput(this ILogger<SigningService> logger, string output);
+
+    [LoggerMessage(
+        Level = LogLevel.Debug,
+        Message = "GNUPG: Execute Command Result: {result}")]
+    public static partial void ExecuteCommandExitCode(this ILogger<SigningService> logger, int result);
+}
 
 public sealed class SigningService(
     AppSettings appSettings,
     ILogger<SigningService> logger)
 {
+    public static readonly Uri KeyServerUrl = new("hkps://keys.openpgp.org/", UriKind.Absolute);
+
     public async Task Initialize()
     {
         var (success, output, diagnostics) = await ExecuteCommand(
-            $"gpg --batch --passphrase '{appSettings.GnupgPrivateKeyPassphrase}' --import './gpg-keys/{appSettings.GnupgPrivateKeyFilename}'"
+            $"gpg --batch --passphrase '{appSettings.GnupgSecretSigningKey.Passphrase}' --import './gpg-keys/{appSettings.GnupgSecretSigningKey.FileName}'"
         );
+        if (!success)
+        {
+            throw new InvalidOperationException($"Failed to import GnuPG secret key for signing with passphrase '{appSettings.GnupgSecretSigningKey.Passphrase}' and file name '{appSettings.GnupgSecretSigningKey.FileName}'. The command gave the standard output '{output}' and the diagnostic information '{diagnostics}'.");
+        }
     }
 
-    public async Task<string> SignData(string data)
+    public async Task<(string Signature, string Fingerprint)> SignData(string data)
     {
         var (success, signature, diagnostics) = await ExecuteCommand(
-            $"gpg --pinentry-mode loopback --batch --passphrase {appSettings.GnupgPrivateKeyPassphrase} --detach-sig --armor --local-user {await ExtractFingerprint()}",
+            $"gpg --pinentry-mode loopback --batch --passphrase '{appSettings.GnupgSecretSigningKey.Passphrase}' --detach-sig --armor --local-user '{appSettings.GnupgSecretSigningKey.Fingerprint}'",
             data
         );
         if (!success)
         {
-            throw new InvalidOperationException($"Failed to create signature with standard output {signature} and diagnostic information {diagnostics}");
+            throw new InvalidOperationException($"Failed to create signature with standard output '{signature}' and diagnostic information '{diagnostics}'");
         }
         logger.CreatedSignature(signature);
-        return signature;
+        return (signature, appSettings.GnupgSecretSigningKey.Fingerprint);
     }
 
-    public async Task<string> ExtractFingerprint()
+    public async Task<SigantureVerificationResult> VerifySignature(
+        string message, string signature, string fingerprint
+    )
     {
-        var (success, fingerprint, diagnostics) = await ExecuteCommand("gpg --list-secret-keys --with-colons --keyid-format=long | awk -F: '$1==\"fpr\" {printf $10; exit}'");
-        if (!success || fingerprint.IsNullOrWhiteSpace())
+        if (!await ReceiveKey(fingerprint))
         {
-            throw new InvalidOperationException($"Failed to extract fingerprint with standard output {fingerprint} and diagnostic information {diagnostics}");
+            return SigantureVerificationResult.FAILED_RECEIVING_KEY;
         }
-        logger.ExtractedFingerprint(fingerprint);
-        return fingerprint;
+        var temporaryMessageFilePath = Path.GetTempFileName();
+        try
+        {
+            File.WriteAllText(temporaryMessageFilePath, message);
+            var (success, output, diagnostics) = await ExecuteCommand(
+                $"gpg --pinentry-mode loopback --batch --always-trust --assert-signer '{fingerprint}' --verify - '{temporaryMessageFilePath}'",
+                signature
+            );
+            if (!success)
+            {
+                logger.FailedToVerifySignature(fingerprint, signature, message, output, diagnostics);
+            }
+            return success
+                ? SigantureVerificationResult.GOOD_SIGNATURE
+                : SigantureVerificationResult.BAD_SIGNATURE;
+        }
+        finally
+        {
+            if (File.Exists(temporaryMessageFilePath))
+            {
+                File.Delete(temporaryMessageFilePath);
+            }
+        }
+    }
+
+    private async Task<bool> ReceiveKey(string fingerprint)
+    {
+        var (success, output, diagnostics) = await ExecuteCommand(
+            $"gpg --pinentry-mode loopback --batch --keyserver {KeyServerUrl.AbsoluteUri} --receive-keys {fingerprint}"
+        );
+        if (!success)
+        {
+            logger.FailedToReceiveKey(fingerprint, KeyServerUrl, output, diagnostics);
+        }
+        return success;
     }
 
     private async Task<(bool Success, string Output, string Diagnostics)> ExecuteCommand(
@@ -62,7 +153,7 @@ public sealed class SigningService(
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
             }
-        ) ?? throw new InvalidOperationException($"The process for command '${command}' with the input '${input}' failed to start.");
+        ) ?? throw new InvalidOperationException($"The process for command '{command}' with the input '{input}' failed to start.");
         if (input is not null)
         {
             await process.StandardInput.WriteLineAsync(input);

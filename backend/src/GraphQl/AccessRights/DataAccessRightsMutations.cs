@@ -16,7 +16,6 @@ public sealed class DataAccessRightsMutations
         DataAccessRightsInput input,
         ApplicationDbContext context,
         UserService userService,
-        DataService dataService,
         CancellationToken cancellationToken
     )
     {
@@ -43,7 +42,7 @@ public sealed class DataAccessRightsMutations
             );
         }
 
-        var data = await dataService.GetDataAsync(input.DataId, context, cancellationToken);
+        var data = await context.GetDataAsync(input.DataId, cancellationToken);
         if (data is null)
         {
             return new UpdateDataAccessRightsPayload(

@@ -1,20 +1,20 @@
 using System;
 using System.Linq;
-using Database.ApiRequests.Dto;
+using static Database.ApiRequests.QueryCurrentUser;
 
 namespace Database.Authorization;
 
 public static class CommonAuthorization
 {
     public static bool IsCurrentUserAtLeastAssistantManagerOfDatabaseOperator(
-        CurrentUserDto currentUser
+        CurrentUser currentUser
         )
     {
         return currentUser.DatabaseOperatingRepresentedInstitutions.TotalCount >= 1;
     }
 
     public static bool IsCurrentUserAtLeastAssistantManagerOfVerifiedInstitution(
-        CurrentUserDto currentUser,
+        CurrentUser currentUser,
         Guid institutionId
     )
     {

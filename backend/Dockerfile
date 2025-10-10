@@ -91,6 +91,21 @@ COPY \
 RUN \
   update-ca-certificates
 
+# Install the latest GnuPG from the official GnuPG repository
+RUN set -eux && \
+  curl --silent --show-error https://repos.gnupg.org/deb/gnupg/bookworm/gnupg-signing-key.gpg | gpg --dearmor > /usr/share/keyrings/gnupg-keyring.gpg && \
+  echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/gnupg-keyring.gpg] https://repos.gnupg.org/deb/gnupg/bookworm/ bookworm main" > /etc/apt/sources.list.d/gnupg.list && \
+  apt-get update && \
+  apt-get install \
+    --assume-yes \
+    --no-install-recommends \
+    dirmngr \
+    gnupg2 && \
+  rm \
+    --recursive \
+    --force \
+    /var/lib/apt/lists/*
+
 ENV HOME=/home/me
 RUN \
   mkdir --parents ${HOME}/app && \

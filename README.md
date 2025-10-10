@@ -52,13 +52,17 @@ If you have a question for which you don't find the answer in this repository, p
    generate-ssl-certificate`.
 1. Generate JSON Web Token (JWT) encryption and signing certificates by running
    `make jwt-certificates`.
-1. Generate and export a GnuPG key with the passphrase
-   `${GNUPG_PRIVATEKEY_PASSPHRASE}` to the file
-   `./backend/src/gpg-keys/${GNUPG_PRIVATEKEY_FILE_NAME}`
-   by running `make NAME=${name} COMMENT=${comment} EMAIL=${email} gpg` with
-   your information filled in. For example: `make NAME=Anna" "Smith
-   COMMENT=first" "test EMAIL=anna.smith@fraunhofer.de gpg`. The variable
-   `${GNUPG_PRIVATEKEY_PASSPHRASE}` is set in `.env.sample`.
+1. Set the values of the variables `GNUPG_SECRET_SIGNING_KEY_FILE_NAME` and
+   `GNUPG_SECRET_SIGNING_KEY_PASSPHRASE` in the `./.env` file. Generate and
+   export a GnuPG key with the passphrase
+   `${GNUPG_SECRET_SIGNING_KEY_PASSPHRASE}` to the file
+   `./backend/src/gpg-keys/${GNUPG_SECRET_SIGNING_KEY_FILE_NAME}` by running
+   `make NAME=${name} COMMENT=${comment} EMAIL=${email} gpg` with your
+   information filled in. For example
+   `make NAME="Anna Smith" COMMENT=first EMAIL=anna.smith@fraunhofer.de gpg`.
+   Copy the key's fingerprint which is output by the command and set it as the
+   value of the `GNUPG_SECRET_SIGNING_KEY_FINGERPRINT` variable in the `./.env`
+   file.
 1. Start all services and follow their logs by running `make up logs`.
 1. To see the web frontend navigate to
    `https://local.solarbuildingenvelopes.com:5051` in your web browser, to see
@@ -262,9 +266,11 @@ and the pages following it.
           this product-data database as a client of the metabase acting as
           identity provider (the client secret is given when registering an
           OpenId Connect client at the metabase);
-      - `GNUPG_PRIVATEKEY_FILE_NAME` and `GNUPG_PRIVATEKEY_PASSPHRASE` are the
-          file name of an exported GnuPG private key and its passphrase that
-          lives in the directory `./backend/src/gpg-keys/`;
+      - `GNUPG_SECRET_SIGNING_KEY_FILE_NAME`,
+          `GNUPG_SECRET_SIGNING_KEY_PASSPHRASE`, and
+          `GNUPG_SECRET_SIGNING_KEY_FINGERPRINT` are the file name of an
+          exported GnuPG secret key for signing, its passphrase, and its
+          fingerprint that lives in the directory `./backend/src/gpg-keys/`;
       - `JSON_WEB_TOKEN_ENCRYPTION_CERTIFICATE_PASSWORD` and
           `JSON_WEB_TOKEN_SIGNING_CERTIFICATE_PASSWORD` are passwords used to
           encrypt and sign JSON web tokens (JWT) used by OpenId Connect;

@@ -35,9 +35,13 @@ public sealed class Startup(
 {
     private const string GraphQlCorsPolicy = "GraphQlCorsPolicy";
     private const string AntiforgeryHeaderName = "X-XSRF-TOKEN";
-    private readonly AppSettings _appSettings = configuration.Get<AppSettings>() ??
-                       throw new InvalidOperationException(
-                           "Failed to get application settings from configuration.");
+    private readonly AppSettings _appSettings =
+        configuration.Get<AppSettings>(_ =>
+        {
+            _.BindNonPublicProperties = true;
+            _.ErrorOnUnknownConfiguration = false;
+        })
+        ?? throw new InvalidOperationException("Failed to get application settings from configuration.");
 
     private readonly IWebHostEnvironment _environment = environment;
 
@@ -212,20 +216,10 @@ public sealed class Startup(
     private static void ConfigureHttpClientServices(IServiceCollection services, IWebHostEnvironment environment)
     {
         services.AddHttpClient();
-        var metabaseHttpClientBuilder = services.AddHttpClient(ApiRequestService.MetabaseHttpClient);
+        var httpClientBuilder = services.AddHttpClient(ApiRequestService.CustomHttpClient);
         if (environment.IsDevelopment())
         {
-            metabaseHttpClientBuilder.ConfigurePrimaryHttpMessageHandler(_ =>
-                new HttpClientHandler
-                {
-                    ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
-                }
-            );
-        }
-        var databaseHttpClientBuilder = services.AddHttpClient(ApiRequestService.DatabaseHttpClient);
-        if (environment.IsDevelopment())
-        {
-            databaseHttpClientBuilder.ConfigurePrimaryHttpMessageHandler(_ =>
+            httpClientBuilder.ConfigurePrimaryHttpMessageHandler(_ =>
                 new HttpClientHandler
                 {
                     ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
@@ -238,7 +232,7 @@ public sealed class Startup(
     {
         services.AddScoped<AccessRightsService>();
         services.AddScoped<ApiRequestService>();
-        services.AddScoped<DataService>();
+        services.AddScoped<DataApprovalService>();
         services.AddScoped<ResponseApprovalService>();
         services.AddScoped<UserService>();
         services.AddSingleton<CacheService>();

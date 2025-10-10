@@ -1,6 +1,6 @@
 using System;
-using Database.ApiRequests.Dto;
 using Microsoft.Extensions.Caching.Memory;
+using static Database.ApiRequests.QueryCurrentUser;
 
 namespace Database.Services;
 
@@ -9,14 +9,14 @@ public sealed class CacheService(
     IMemoryCache accessCountCache,
     IMemoryCache timePeriodCountCache)
 {
-    public CurrentUserDto? SetUser(string token, CurrentUserDto? cacheUser)
+    public CurrentUser? SetUser(string token, CurrentUser? cacheUser)
     {
         var cacheEntryOptions = new MemoryCacheEntryOptions()
             .SetSlidingExpiration(TimeSpan.FromHours(1));
         return currentUserCache.Set(token, cacheUser, cacheEntryOptions);
     }
 
-    public bool TryGetUser(string token, out CurrentUserDto? cacheUser)
+    public bool TryGetUser(string token, out CurrentUser? cacheUser)
     {
         return currentUserCache.TryGetValue(token, out cacheUser);
     }

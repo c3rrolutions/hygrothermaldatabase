@@ -6,60 +6,73 @@ namespace Database;
 
 public sealed class AppSettings
 {
-    public string Host { get; set; }
+    private const string GraphQlPathSegment = "/graphql/";
+
+    // TODO Consider using [Flurl](https://flurl.dev) to construct URIs. For the pitfalls of
+    // using `Uri` as below see the comments to https://stackoverflow.com/questions/372865/path-combine-for-urls/1527643#1527643
+    public Uri DatabaseGraphQlEndpoint { get => new(new Uri(Host, UriKind.Absolute), GraphQlPathSegment); }
+
+    public Uri MetabaseGraphQlEndpoint { get => new(new Uri(MetabaseHost, UriKind.Absolute), GraphQlPathSegment); }
+
+    public string Host { get; private set; }
         = "";
 
-    public string MetabaseHost { get; set; }
+    public string MetabaseHost { get; private set; }
         = "";
 
-    public Guid DatabaseId { get; set; }
-    public Guid OperatorId { get; set; }
+    public Guid DatabaseId { get; private set; }
+    public Guid OperatorId { get; private set; }
 
-    public string VerificationCode { get; set; }
+    public string OpenIdConnectClientSecret { get; private set; }
         = "";
 
-    public string GnupgPrivateKeyFilename { get; set; } = "";
-    public string GnupgPrivateKeyPassphrase { get; set; } = "";
-
-    public LoggingSettings Logging { get; set; } = new();
-
-    public JsonWebTokenSettings JsonWebToken { get; set; } = new();
-
-    public EmailSettings Email { get; set; } = new();
-
-    public string OpenIdConnectClientSecret { get; set; }
+    public string VerificationCode { get; private set; }
         = "";
 
-    public DatabaseSettings Database { get; set; } = new();
+    public GnupgSecretSigningKeySettings GnupgSecretSigningKey { get; private set; } = new();
+    public LoggingSettings Logging { get; private set; } = new();
+
+    public JsonWebTokenSettings JsonWebToken { get; private set; } = new();
+
+    public EmailSettings Email { get; private set; } = new();
+
+    public DatabaseSettings Database { get; private set; } = new();
+
+    public sealed class GnupgSecretSigningKeySettings
+    {
+        public string FileName { get; private set; } = "";
+        public string Passphrase { get; private set; } = "";
+        public string Fingerprint { get; private set; } = "";
+    }
 
     public sealed class LoggingSettings
     {
-        public bool EnableSensitiveDataLogging { get; set; }
+        public bool EnableSensitiveDataLogging { get; private set; }
     }
 
     public sealed class JsonWebTokenSettings
     {
-        public string EncryptionCertificatePassword { get; set; }
+        public string EncryptionCertificatePassword { get; private set; }
             = "";
 
-        public string SigningCertificatePassword { get; set; }
+        public string SigningCertificatePassword { get; private set; }
             = "";
     }
 
     public sealed class EmailSettings
     {
-        public string SmtpHost { get; set; }
+        public string SmtpHost { get; private set; }
             = "";
 
-        public int SmtpPort { get; set; }
+        public int SmtpPort { get; private set; }
     }
 
     public sealed class DatabaseSettings
     {
-        public string ConnectionString { get; set; }
+        public string ConnectionString { get; private set; }
             = "";
 
-        public string SchemaName { get; set; }
+        public string SchemaName { get; private set; }
             = "";
     }
 }

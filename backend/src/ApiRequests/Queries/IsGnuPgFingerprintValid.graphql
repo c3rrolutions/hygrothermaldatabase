@@ -1,0 +1,22 @@
+query IsGnuPgFingerprintValid(
+  $fingerprint: String!
+  $institutionId: Uuid!
+  $createdAt: DateTime!
+) {
+  institution(id: $institutionId) {
+    hasGnuPgKeyFingerprint(
+      where: {
+        and: [
+          { fingerprint: { equalTo: $fingerprint } }
+          { allowedAt: { lessThanOrEqualTo: $createdAt } }
+          {
+            or: [
+              { forbiddenAt: { equalTo: null } }
+              { forbiddenAt: { greaterThan: $createdAt } }
+            ]
+          }
+        ]
+      }
+    )
+  }
+}

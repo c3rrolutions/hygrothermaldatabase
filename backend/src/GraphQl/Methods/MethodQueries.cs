@@ -1,5 +1,4 @@
 using System;
-using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,7 +10,6 @@ using GraphQL.Client.Abstractions.Utilities;
 using HotChocolate;
 using HotChocolate.Resolvers;
 using HotChocolate.Types;
-using Microsoft.AspNetCore.Http;
 
 namespace Database.GraphQl.Methods;
 
@@ -61,7 +59,7 @@ public sealed class MethodQueries
         using var stream = data.OpenReadStream();
         using var jsonData = await JsonDocument.ParseAsync(
             stream,
-            ApiRequestService.JsonDocumentOptions,
+            ApiRequestService.LaxJsonDocumentOptions,
             cancellationToken
         );
         var result = method.Calculate(jsonData.RootElement);
@@ -74,8 +72,6 @@ public sealed class MethodQueries
         AppSettings appSettings,
         MethodFactory methodFactory,
         ApiRequestService apiRequestService,
-        IHttpClientFactory httpClientFactory,
-        IHttpContextAccessor httpContextAccessor,
         IResolverContext resolverContext,
         CancellationToken cancellationToken
     )
@@ -96,8 +92,6 @@ public sealed class MethodQueries
                 dataReference.DatabaseId,
                 appSettings,
                 apiRequestService,
-                httpClientFactory,
-                httpContextAccessor,
                 cancellationToken
             ),
             resolverContext,
@@ -120,7 +114,8 @@ public sealed class MethodQueries
                 database.Locator,
                 dataReference.DataId,
                 query,
-                appSettings, apiRequestService, httpClientFactory, httpContextAccessor, cancellationToken
+                apiRequestService,
+                cancellationToken
             ),
             resolverContext,
             database.Locator
@@ -150,7 +145,7 @@ public sealed class MethodQueries
         // TODO The locator could also point to a non-JSON resource. Support those also: response.Data.Data.ResourceTree.Root.Value.DataFormatId
         // TODO Check that the data has the hash value: response.Data.Data.ResourceTree.Root.Value.HashValue;
         var data = await apiRequestService.PerformHttpGetRequest(
-            locator, httpClientFactory, httpContextAccessor, cancellationToken
+            locator, cancellationToken
         );
         var result = method.Calculate(data);
         return new CalculateMethodPayload(result);

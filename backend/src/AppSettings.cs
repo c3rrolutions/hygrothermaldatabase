@@ -6,6 +6,14 @@ namespace Database;
 
 public sealed class AppSettings
 {
+    private const string GraphQlPathSegment = "/graphql/";
+
+    // TODO Consider using [Flurl](https://flurl.dev) to construct URIs. For the pitfalls of
+    // using `Uri` as below see the comments to https://stackoverflow.com/questions/372865/path-combine-for-urls/1527643#1527643
+    public Uri DatabaseGraphQlEndpoint { get => new(new Uri(Host, UriKind.Absolute), GraphQlPathSegment); }
+
+    public Uri MetabaseGraphQlEndpoint { get => new(new Uri(MetabaseHost, UriKind.Absolute), GraphQlPathSegment); }
+
     public string Host { get; private set; }
         = "";
 

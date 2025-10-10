@@ -1,21 +1,29 @@
 using System;
-using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Database.Data;
-using Database.Logging;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using Database.Data;
 
 namespace Database.Services;
+
+public static partial class ResponseApprovalServiceLogging
+{
+    [LoggerMessage(
+        Level = LogLevel.Debug,
+        Message = "Querying all meta data for {DataType} with ID {Id}")]
+    public static partial void QueryAllMetaData(this ILogger<ResponseApprovalService> logger, Type dataType, Guid id);
+
+    [LoggerMessage(
+        Level = LogLevel.Debug,
+        Message = "Query, variables, and response: {Query}, {Variables}, and {Response}")]
+    public static partial void QueryAndVariablesAndResponce(this ILogger<ResponseApprovalService> logger, string query, JsonElement variables, string response);
+}
 
 public sealed class ResponseApprovalService(
     AppSettings appSettings,
     SigningService signingService,
     ApiRequestService apiRequestService,
-    IHttpClientFactory httpClientFactory,
-    IHttpContextAccessor httpContextAccessor,
     ILogger<ResponseApprovalService> logger
 )
 {
@@ -50,11 +58,11 @@ public sealed class ResponseApprovalService(
     {
         return dataObject switch
         {
-            GeometricData data => await ApiRequests.QueryAllMetaData.Do(data.Id, ApiRequests.QueryAllMetaData.GeometricDataFileNames, appSettings, apiRequestService, httpClientFactory, httpContextAccessor, cancellationToken),
-            CalorimetricData data => await ApiRequests.QueryAllMetaData.Do(data.Id, ApiRequests.QueryAllMetaData.CalorimetricDataFileNames, appSettings, apiRequestService, httpClientFactory, httpContextAccessor, cancellationToken),
-            HygrothermalData data => await ApiRequests.QueryAllMetaData.Do(data.Id, ApiRequests.QueryAllMetaData.HygrothermalDataFileNames, appSettings, apiRequestService, httpClientFactory, httpContextAccessor, cancellationToken),
-            PhotovoltaicData data => await ApiRequests.QueryAllMetaData.Do(data.Id, ApiRequests.QueryAllMetaData.PhotovoltaicDataFileNames, appSettings, apiRequestService, httpClientFactory, httpContextAccessor, cancellationToken),
-            OpticalData data => await ApiRequests.QueryAllMetaData.Do(data.Id, ApiRequests.QueryAllMetaData.OpticalDataFileNames, appSettings, apiRequestService, httpClientFactory, httpContextAccessor, cancellationToken),
+            GeometricData data => await ApiRequests.QueryAllMetaData.Do(data.Id, ApiRequests.QueryAllMetaData.GeometricDataFileNames, appSettings, apiRequestService, cancellationToken),
+            CalorimetricData data => await ApiRequests.QueryAllMetaData.Do(data.Id, ApiRequests.QueryAllMetaData.CalorimetricDataFileNames, appSettings, apiRequestService, cancellationToken),
+            HygrothermalData data => await ApiRequests.QueryAllMetaData.Do(data.Id, ApiRequests.QueryAllMetaData.HygrothermalDataFileNames, appSettings, apiRequestService, cancellationToken),
+            PhotovoltaicData data => await ApiRequests.QueryAllMetaData.Do(data.Id, ApiRequests.QueryAllMetaData.PhotovoltaicDataFileNames, appSettings, apiRequestService, cancellationToken),
+            OpticalData data => await ApiRequests.QueryAllMetaData.Do(data.Id, ApiRequests.QueryAllMetaData.OpticalDataFileNames, appSettings, apiRequestService, cancellationToken),
             _ => throw new NotImplementedException($"Unsupported data type {typeof(T)}"),
         };
     }

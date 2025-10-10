@@ -1,17 +1,12 @@
 using System;
-using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Database.Data;
 
 namespace Database.Services;
 
 public sealed class DataApprovalService(
     AppSettings appSettings,
-    ApiRequestService apiRequestService,
-    IHttpClientFactory httpClientFactory,
-    IHttpContextAccessor httpContextAccessor
+    ApiRequestService apiRequestService
 )
 {
     public Task<bool> IsGnuPgFingerprintValid(
@@ -27,8 +22,6 @@ public sealed class DataApprovalService(
             createdAt,
             appSettings,
             apiRequestService,
-            httpClientFactory,
-            httpContextAccessor,
             cancellationToken
         );
     }

@@ -1,11 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Database.Services;
 using GraphQL;
-using Microsoft.AspNetCore.Http;
 
 namespace Database.ApiRequests;
 
@@ -17,7 +15,7 @@ public sealed class QueryCurrentUser
     private const string CurrentUserFileName = "CurrentUser.graphql";
 
     public static Uri GetGraphQlEndpoint(AppSettings appSettings) =>
-        ApiRequestService.MetabaseGraphQlEndpoint(appSettings);
+        appSettings.MetabaseGraphQlEndpoint;
 
     public sealed record CurrentUser(
         Guid Uuid,
@@ -70,12 +68,11 @@ public sealed class QueryCurrentUser
     public static async Task<CurrentUser?> Do(
         AppSettings appSettings,
         ApiRequestService apiRequestService,
-        IHttpClientFactory httpClientFactory,
-        IHttpContextAccessor httpContextAccessor,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
-        return (await apiRequestService.Metabase().QueryGraphQl<CurrentUserData>(
-            appSettings,
+        return (await apiRequestService.QueryGraphQl<CurrentUserData>(
+            GetGraphQlEndpoint(appSettings),
             new GraphQLRequest(
                 await apiRequestService.ConstructGraphQlQuery(CurrentUserFileName),
                 new
@@ -84,8 +81,6 @@ public sealed class QueryCurrentUser
                 },
                 "CurrentUser"
             ),
-            httpClientFactory,
-            httpContextAccessor,
             cancellationToken
         ))
         .Data

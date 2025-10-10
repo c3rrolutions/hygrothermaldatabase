@@ -13,13 +13,13 @@ public sealed class IsGnuPgFingerprintValid
     private const string QueryFileName = "IsGnuPgFingerprintValid.graphql";
 
     public static Uri GetGraphQlEndpoint(AppSettings appSettings) =>
-        ApiRequestService.MetabaseGraphQlEndpoint(appSettings);
+        appSettings.MetabaseGraphQlEndpoint;
 
-    public sealed record ValidFingerprints(
-        uint TotalCount
+    public sealed record Institution(
+        bool HasGnuPgKeyFingerprint
     );
 
-    private sealed record Data(ValidFingerprints? ValidFingerprints);
+    private sealed record Data(Institution? Institution);
 
     public static async Task<bool> Do(
         string fingerprint,
@@ -27,13 +27,11 @@ public sealed class IsGnuPgFingerprintValid
         DateTime createdAt,
         AppSettings appSettings,
         ApiRequestService apiRequestService,
-        IHttpClientFactory httpClientFactory,
-        IHttpContextAccessor httpContextAccessor,
         CancellationToken cancellationToken
     )
     {
-        return (await apiRequestService.Metabase().QueryGraphQl<Data>(
-            appSettings,
+        return (await apiRequestService.QueryGraphQl<Data>(
+            GetGraphQlEndpoint(appSettings),
             new GraphQLRequest(
                 await apiRequestService.ConstructGraphQlQuery(QueryFileName),
                 new
@@ -44,9 +42,7 @@ public sealed class IsGnuPgFingerprintValid
                 },
                 "IsGnuPgFingerprintValid"
             ),
-            httpClientFactory,
-            httpContextAccessor,
             cancellationToken
-        )).Data.ValidFingerprints?.TotalCount == 1;
+        )).Data.Institution?.HasGnuPgKeyFingerprint ?? false;
     }
 }

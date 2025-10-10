@@ -15,7 +15,7 @@ public sealed class UpdateDatabase
     private const string UpdateDatabaseFileName = "UpdateDatabase.graphql";
 
     public static Uri GetGraphQlEndpoint(AppSettings appSettings) =>
-        ApiRequestService.MetabaseGraphQlEndpoint(appSettings);
+        appSettings.MetabaseGraphQlEndpoint;
 
     public sealed record UpdateDatabaseInput(
         Guid DatabaseId,
@@ -47,13 +47,11 @@ public sealed class UpdateDatabase
         UpdateDatabaseInput updateDatabaseInput,
         AppSettings appSettings,
         ApiRequestService apiRequestService,
-        IHttpClientFactory httpClientFactory,
-        IHttpContextAccessor httpContextAccessor,
         CancellationToken cancellationToken
         )
     {
-        return (await apiRequestService.Metabase().QueryGraphQl<UpdateDatabasePayload>(
-            appSettings,
+        return (await apiRequestService.QueryGraphQl<UpdateDatabasePayload>(
+            GetGraphQlEndpoint(appSettings),
             new GraphQLRequest(
                 await apiRequestService.ConstructGraphQlQuery(
                     UpdateDatabaseFileName
@@ -64,8 +62,6 @@ public sealed class UpdateDatabase
                 },
                 "UpdateDatabase"
                 ),
-            httpClientFactory,
-            httpContextAccessor,
             cancellationToken
         )).Data;
     }

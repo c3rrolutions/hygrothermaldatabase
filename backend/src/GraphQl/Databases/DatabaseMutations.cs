@@ -1,11 +1,9 @@
-using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Database.ApiRequests;
-using Database.Services;
 using HotChocolate.Resolvers;
 using HotChocolate.Types;
-using Microsoft.AspNetCore.Http;
+using Database.ApiRequests;
+using Database.Services;
 using static Database.ApiRequests.UpdateDatabase;
 
 namespace Database.GraphQl.Databases;
@@ -17,8 +15,6 @@ public sealed class DatabaseMutations
         UpdateDatabaseInput input,
         AppSettings appSettings,
         ApiRequestService apiRequestService,
-        IHttpClientFactory httpClientFactory,
-        IHttpContextAccessor httpContextAccessor,
         IResolverContext resolverContext,
         CancellationToken cancellationToken
     )
@@ -28,8 +24,6 @@ public sealed class DatabaseMutations
                 input,
                 appSettings,
                 apiRequestService,
-                httpClientFactory,
-                httpContextAccessor,
                 cancellationToken
             ),
             resolverContext,

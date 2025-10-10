@@ -1,18 +1,16 @@
 using System;
-using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Database.Services;
 using GraphQL;
-using Microsoft.AspNetCore.Http;
 
 namespace Database.ApiRequests;
 
 public sealed class QueryAllMetaData
 {
     public static Uri GetGraphQlEndpoint(AppSettings appSettings) =>
-        ApiRequestService.DatabaseGraphQlEndpoint(appSettings);
+        appSettings.DatabaseGraphQlEndpoint;
 
     public static readonly string[] CalorimetricDataFileNames =
     [
@@ -54,18 +52,17 @@ public sealed class QueryAllMetaData
         string[] fileNames,
         AppSettings appSettings,
         ApiRequestService apiRequestService,
-        IHttpClientFactory httpClientFactory,
-        IHttpContextAccessor httpContextAccessor,
         CancellationToken cancellationToken
     )
     {
         var variables = new { id = dataId };
         var query = await apiRequestService.ConstructGraphQlQuery(fileNames);
-        var response = await apiRequestService.Database().QueryGraphQl(
-            appSettings,
-            new GraphQLRequest(query, variables),
-            httpClientFactory,
-            httpContextAccessor,
+        var response = await apiRequestService.QueryGraphQlAsString(
+            GetGraphQlEndpoint(appSettings),
+            new GraphQLRequest(
+                query,
+                variables
+            ),
             cancellationToken
         );
         return (query, JsonSerializer.SerializeToElement(variables), response);

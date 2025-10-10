@@ -3,21 +3,20 @@ query IsGnuPgFingerprintValid(
   $institutionId: Uuid!
   $createdAt: DateTime!
 ) {
-  validFingerprints: institutions(
-    where: {
-      id: { equalTo: $institutionId }
-      gnuPgKeyFingerprints: {
-        some: {
-          fingerprint: { equalTo: $fingerprint }
-          allowedAt: { lessThanOrEqualTo: $createdAt }
-          or: [
-            { forbiddenAt: { equalTo: null } }
-            { forbiddenAt: { greaterThan: $createdAt } }
-          ]
-        }
+  institution(id: $institutionId) {
+    hasGnuPgKeyFingerprint(
+      where: {
+        and: [
+          { fingerprint: { equalTo: $fingerprint } }
+          { allowedAt: { lessThanOrEqualTo: $createdAt } }
+          {
+            or: [
+              { forbiddenAt: { equalTo: null } }
+              { forbiddenAt: { greaterThan: $createdAt } }
+            ]
+          }
+        ]
       }
-    }
-  ) {
-    totalCount
+    )
   }
 }

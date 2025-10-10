@@ -1,5 +1,4 @@
 using System.Linq;
-using System.Net.Http;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
@@ -8,7 +7,6 @@ using Database.Data;
 using Database.Services;
 using HotChocolate.Resolvers;
 using HotChocolate.Types;
-using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using OpenIddict.Abstractions;
 using static Database.ApiRequests.GetUserInfo;
@@ -39,8 +37,6 @@ public sealed class UserQueries
     public Task<UserInfo> GetCurrentUserInfoAsync(
         AppSettings appSettings,
         ApiRequestService apiRequestService,
-        IHttpClientFactory httpClientFactory,
-        IHttpContextAccessor httpContextAccessor,
         IResolverContext resolverContext,
         CancellationToken cancellationToken
     )
@@ -49,8 +45,6 @@ public sealed class UserQueries
             () => GetUserInfo.Do(
                 appSettings,
                 apiRequestService,
-                httpClientFactory,
-                httpContextAccessor,
                 cancellationToken
             ),
             resolverContext,

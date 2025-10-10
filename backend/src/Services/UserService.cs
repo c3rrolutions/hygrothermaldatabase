@@ -1,16 +1,23 @@
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Database.ApiRequests;
-using Database.Extensions;
-using Database.Logging;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using OpenIddict.Abstractions;
-using static Database.ApiRequests.QueryCurrentUser;
 using static OpenIddict.Abstractions.OpenIddictConstants;
+using Database.ApiRequests;
+using Database.Extensions;
+using static Database.ApiRequests.QueryCurrentUser;
 
 namespace Database.Services;
+
+public static partial class UserServiceLogging
+{
+    [LoggerMessage(
+        Level = LogLevel.Debug,
+        Message = "Extracted Bearer Token: {Token}")]
+    public static partial void ExtractedToken(this ILogger<UserService> logger, string? token);
+}
 
 /// <summary>
 /// Service to get current user from Metabase
@@ -24,7 +31,6 @@ public sealed class UserService(
     AppSettings appSettings,
     ApiRequestService apiRequestService,
     IHttpContextAccessor httpContextAccessor,
-    IHttpClientFactory httpClientFactory,
     CacheService cacheService,
     ILogger<UserService> logger)
 {
@@ -52,8 +58,6 @@ public sealed class UserService(
             return await QueryCurrentUser.Do(
                 appSettings,
                 apiRequestService,
-                httpClientFactory,
-                httpContextAccessor,
                 cancellationToken
             );
         }
@@ -61,11 +65,9 @@ public sealed class UserService(
         if (!cacheService.TryGetUser(token, out var cacheUser))
         {
             // Get user from Metabase
-            cacheUser =  await QueryCurrentUser.Do(
+            cacheUser = await QueryCurrentUser.Do(
                 appSettings,
                 apiRequestService,
-                httpClientFactory,
-                httpContextAccessor,
                 cancellationToken
             );
             // Store user in cache

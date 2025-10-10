@@ -35,14 +35,10 @@ public sealed class GetUserInfo
     public static Task<UserInfo> Do(
         AppSettings appSettings,
         ApiRequestService apiRequestService,
-        IHttpClientFactory httpClientFactory,
-        IHttpContextAccessor httpContextAccessor,
         CancellationToken cancellationToken)
     {
-        return apiRequestService.Metabase().PerformHttpGetRequest<UserInfo>(
+        return apiRequestService.PerformHttpGetRequest<UserInfo>(
             GetEndpoint(appSettings),
-            httpClientFactory,
-            httpContextAccessor,
             cancellationToken
         );
     }

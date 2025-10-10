@@ -13,7 +13,7 @@ public sealed class QueryDatabase
     private const string QueryFileName = "Database.graphql";
 
     public static Uri GetGraphQlEndpoint(AppSettings appSettings) =>
-        ApiRequestService.MetabaseGraphQlEndpoint(appSettings);
+        appSettings.MetabaseGraphQlEndpoint;
 
     public sealed record Database(
          Guid Uuid,
@@ -47,12 +47,11 @@ public sealed class QueryDatabase
         Guid databaseId,
         AppSettings appSettings,
         ApiRequestService apiRequestService,
-        IHttpClientFactory httpClientFactory,
-        IHttpContextAccessor httpContextAccessor,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
-        return (await apiRequestService.Metabase().QueryGraphQl<DatabaseData>(
-            appSettings,
+        return (await apiRequestService.QueryGraphQl<DatabaseData>(
+            GetGraphQlEndpoint(appSettings),
             new GraphQLRequest(await apiRequestService.ConstructGraphQlQuery(QueryFileName),
                 new
                 {
@@ -60,8 +59,6 @@ public sealed class QueryDatabase
                 },
                 "Database"
             ),
-            httpClientFactory,
-            httpContextAccessor,
             cancellationToken
         )).Data.Database;
     }

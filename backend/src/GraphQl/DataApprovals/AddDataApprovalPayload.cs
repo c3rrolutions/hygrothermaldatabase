@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Database.Data;
 
 namespace Database.GraphQl.DataApprovals;
@@ -16,6 +17,13 @@ public sealed class AddDataApprovalPayload
         AddDataApprovalError error
     )
         : base(error)
+    {
+    }
+
+    public AddDataApprovalPayload(
+        IReadOnlyCollection<AddDataApprovalError> errors
+    )
+        : base(errors)
     {
     }
 

@@ -262,10 +262,11 @@ and the pages following it.
           product-data database;
       - `VERIFICATION_CODE` is the verification code that was generated for
           this product-data database upon registering it at the metabase;
-      - `OPEN_ID_CONNECT_CLIENT_SECRET` is the OpenId Connect client secret of
-          this product-data database as a client of the metabase acting as
-          identity provider (the client secret is given when registering an
-          OpenId Connect client at the metabase);
+      - `OPEN_ID_CONNECT_CLIENT_ID` and `OPEN_ID_CONNECT_CLIENT_SECRET` are the
+          OpenId Connect client identifier and secret of this product-data
+          database as a client of the metabase acting as identity provider (the
+          client secret is given when registering an OpenId Connect client at
+          the metabase);
       - `GNUPG_SECRET_SIGNING_KEY_FILE_NAME`,
           `GNUPG_SECRET_SIGNING_KEY_PASSPHRASE`, and
           `GNUPG_SECRET_SIGNING_KEY_FINGERPRINT` are the file name of an

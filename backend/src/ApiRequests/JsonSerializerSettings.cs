@@ -12,7 +12,7 @@ public static class JsonSerializerSettings
     /// <summary>
     /// Settings for GraphQL Json requests.
     /// </summary>
-    public static readonly JsonSerializerOptions GraphQL =
+    public static readonly JsonSerializerOptions GraphQl =
         new()
         {
             Converters = { new JsonStringEnumConverter(new ConstantCaseJsonNamingPolicy(), false) },

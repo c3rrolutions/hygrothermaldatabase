@@ -91,16 +91,31 @@ COPY \
 RUN \
   update-ca-certificates
 
-# Install the latest GnuPG from the official GnuPG repository
+# Install up-to-date GnuPG from the official GnuPG repository
+# For available versions see https://repos.gnupg.org/deb/gnupg/
+ENV GNUPG_VERSION=2.4.8-2
 RUN set -eux && \
-  curl --silent --show-error https://repos.gnupg.org/deb/gnupg/bookworm/gnupg-signing-key.gpg | gpg --dearmor > /usr/share/keyrings/gnupg-keyring.gpg && \
-  echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/gnupg-keyring.gpg] https://repos.gnupg.org/deb/gnupg/bookworm/ bookworm main" > /etc/apt/sources.list.d/gnupg.list && \
+  version_codename=$(env --ignore-environment bash -c '. /etc/os-release; echo $VERSION_CODENAME') && \
+  apt-get update && \
+  apt-get install \
+    --assume-yes \
+    --no-install-recommends \
+    curl \
+    gnupg2 && \
+  curl \
+    --silent \
+    --show-error \
+    https://repos.gnupg.org/deb/gnupg/${version_codename}/gnupg-signing-key.gpg \
+    | gpg --dearmor \
+    > /usr/share/keyrings/gnupg-keyring.gpg && \
+  echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/gnupg-keyring.gpg] https://repos.gnupg.org/deb/gnupg/${version_codename}/ ${version_codename} main" \
+    > /etc/apt/sources.list.d/gnupg.list && \
   apt-get update && \
   apt-get install \
     --assume-yes \
     --no-install-recommends \
     dirmngr \
-    gnupg2 && \
+    gnupg2=${GNUPG_VERSION} && \
   rm \
     --recursive \
     --force \

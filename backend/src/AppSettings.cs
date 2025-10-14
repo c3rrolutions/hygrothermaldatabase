@@ -46,7 +46,6 @@ public sealed class AppSettings
 
     public sealed class GnupgSecretSigningKeySettings
     {
-        public string FileName { get; private set; } = "";
         public string Passphrase { get; private set; } = "";
         public string Fingerprint { get; private set; } = "";
     }

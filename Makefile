@@ -338,7 +338,7 @@ gpg : build-bootstrap ## Generate GnuPG key with the passphrase `${GNUPG_SECRET_
 		--user $(shell id --user):$(shell id --group) \
 		--mount type=bind,source="$(shell pwd)/backend",target=/app \
 		${NAME}_bootstrap \
-		bash -ceux " \
+		bash -ceuxo pipefail " \
 			gpg \
 				--quick-generate-key \
 				--batch \
@@ -347,26 +347,26 @@ gpg : build-bootstrap ## Generate GnuPG key with the passphrase `${GNUPG_SECRET_
 				'${PERSON} (${COMMENT}) <${EMAIL}>' \
 				ed25519 \
 				sign \
-				never; \
-			fingerprint=$$(gpg \
-				--list-secret-keys \
-				--with-colons \
-				--keyid-format=long \
-				${EMAIL} \
-			| grep \
-				--before=3 \
-				'${PERSON} (${COMMENT}) <${EMAIL}>' \
-			| awk -F: '$$1=="fpr" {printf $$10; exit}'); \
-			echo Fingerprint: $$fingerprint; \
+				never && \
+			fingerprint=\$$(gpg \
+					--list-secret-keys \
+					--with-colons \
+					--keyid-format=long \
+					${EMAIL} \
+				| grep \
+					--before=3 \
+					'${PERSON} (${COMMENT}) <${EMAIL}>' \
+				| awk -F: '\$$1==\"fpr\" {printf \$$10; exit}') && \
+			echo fingerprint=\$${fingerprint} && \
 			mkdir --parents \
-				./backend/src/gpg-keys; \
+				./backend/src/gpg-keys && \
 			gpg \
 				--batch \
 				--pinentry-mode loopback \
 				--passphrase ${GNUPG_SECRET_SIGNING_KEY_PASSPHRASE} \
 				--armor \
-				--export-secret-keys $$fingerprint \
-			> /app/src/gpg-keys/${GNUPG_SECRET_SIGNING_KEY_FILE_NAME} \
+				--export-secret-keys \$${fingerprint} \
+			> /app/src/gpg-keys/\$${fingerprint}.gpg \
 		"
 
 # --------------------- #

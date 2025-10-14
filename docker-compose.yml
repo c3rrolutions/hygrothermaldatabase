@@ -118,8 +118,8 @@ services:
       - XBASE_JsonWebToken__SigningCertificatePassword=${JSON_WEB_TOKEN_SIGNING_CERTIFICATE_PASSWORD}
       - XBASE_Email__SmtpHost=${SMTP_HOST}
       - XBASE_Email__SmtpPort=${SMTP_PORT}
-      - XBASE_GnupgSecretSigningKey__Passphrase=${GNUPG_SECRET_SIGNING_KEY_PASSPHRASE}
       - XBASE_GnupgSecretSigningKey__Fingerprint=${GNUPG_SECRET_SIGNING_KEY_FINGERPRINT}
+      - XBASE_GnupgSecretSigningKey__Passphrase=${GNUPG_SECRET_SIGNING_KEY_PASSPHRASE}
       # https://learn.microsoft.com/en-us/dotnet/core/tools/dotnet-watch#environment-variables
       - DOTNET_USE_POLLING_FILE_WATCHER=true
       # https://docs.microsoft.com/en-us/aspnet/core/security/docker-compose-https#starting-a-container-with-https-support-using-docker-compose

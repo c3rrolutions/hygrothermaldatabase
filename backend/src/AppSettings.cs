@@ -46,6 +46,9 @@ public sealed class AppSettings
 
     public sealed class GnupgSecretSigningKeySettings
     {
+        // Keep file name {FINGERPRINT}.gpg in sync with the one in the GNU
+        // Make target `gpg` in the `Makefile`
+        public string FileName { get => $"{Fingerprint}.gpg"; }
         public string Passphrase { get; private set; } = "";
         public string Fingerprint { get; private set; } = "";
     }

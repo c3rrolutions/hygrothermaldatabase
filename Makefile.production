@@ -331,6 +331,18 @@ end-maintenance : ## End maintenance
 	rm ./nginx/html/maintenance.html
 .PHONY : end-maintenance
 
+# To deploy `develop`, I usually just take all docker services down by running
+# `cd /app/machine; make down; cd /app/production; make --file=Makefile.production down; cd /app/staging; make --file=Makefile.production down;`
+# pull the latest code by running
+# `cd /app/machine; git pull -p; cd /app/production; git pull -p; cd /app/staging; git pull -p;`
+# redeploy the reverse proxy by running
+# `cd /app/machine; make deploy;`
+# backup, migrate, and deploy all services by running
+# `make --file=Makefile.production BACKUP_DIRECTORY=$(pwd)/backup down backup migrate deploy-services`
+# first in `cd /app/staging` and checking that everything works as expected,
+# and finally in `cd /app/production` and checking that everything works as
+# expected. Before trying it on staging, I usually play the database from
+# production into staging.
 deploy : BACKUP_DIRECTORY = $(shell pwd)/backup
 deploy : begin-maintenance store-commit backup fetch-all checkout-target migrate deploy-services run-tests end-maintenance ## Deploy tag, branch, or commit `${TARGET}`, for example, `make --file=Makefile.production TARGET=v1.0.0 deploy`
 .PHONY : deploy
@@ -385,9 +397,7 @@ sql : ## Run the SQL script in the file `${SQL}` in the database service, for ex
 		database
 .PHONY : migrate
 
-migrate : FROM = $(file < ./backend/src/Migrations/previous)
-migrate : TO = $(file < ./backend/src/Migrations/current)
-migrate : SQL = ./backend/src/Migrations/migrate_from_${FROM}_to_${TO}.sql
+migrate : SQL = ./backend/src/Migrations/migrate.sql
 migrate : sql ## Migrate database (down-ing and up-ing the database service before and after to prevent race conditions. In general, note that other PostgreSQL instances using the same data volume must not be used while migrating and need to be restarted afterwards to make migration results visible)
 .PHONY : migrate
 

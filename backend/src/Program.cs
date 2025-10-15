@@ -1,6 +1,7 @@
 using System;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Database.Data;
 using Database.Services;
@@ -23,8 +24,8 @@ public static partial class LoggerExtensions
     [LoggerMessage(
         EventId = 0,
         Level = LogLevel.Error,
-        Message = "An error occurred creating and seeding the database.")]
-    public static partial void FailedToCreateAndSeedDatabase(
+        Message = "An error occurred creating or seeding the database.")]
+    public static partial void FailedToCreateOrSeedDatabase(
         this ILogger logger,
         // The first exception is implicitly taken care of as detailed in
         // https://learn.microsoft.com/en-us/dotnet/core/extensions/logger-message-generator#log-method-anatomy
@@ -56,8 +57,9 @@ public sealed class Program
             startup.Configure(application);
             using (var scope = application.Services.CreateScope())
             {
+                EnsureDatabaseIsUpToDate(scope.ServiceProvider);
                 // Inspired by https://docs.microsoft.com/en-us/aspnet/core/data/ef-mvc/intro#initialize-db-with-test-data
-                await CreateAndSeedDb(scope.ServiceProvider);
+                await CreateAndSeedDatabase(scope.ServiceProvider);
                 await InitializeSigningService(scope.ServiceProvider);
             }
 
@@ -108,7 +110,21 @@ public sealed class Program
         }
     }
 
-    private static async Task CreateAndSeedDb(
+    private static void EnsureDatabaseIsUpToDate(
+        IServiceProvider services
+    )
+    {
+        using var dbContext =
+            services.GetRequiredService<IDbContextFactory<ApplicationDbContext>>()
+                .CreateDbContext();
+        var pendingMigrations = dbContext.Database.GetPendingMigrations();
+        if (pendingMigrations.Any())
+        {
+            throw new InvalidOperationException($"The database is not up to date. The pending migrations are: {string.Join(", ", pendingMigrations)}");
+        }
+    }
+
+    private static async Task CreateAndSeedDatabase(
         IServiceProvider services
     )
     {
@@ -123,7 +139,7 @@ public sealed class Program
         catch (Exception exception)
         {
             var logger = services.GetRequiredService<ILogger<Program>>();
-            logger.FailedToCreateAndSeedDatabase(exception);
+            logger.FailedToCreateOrSeedDatabase(exception);
         }
     }
 

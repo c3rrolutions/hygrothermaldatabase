@@ -324,13 +324,6 @@ end-maintenance : ## End maintenance
 	rm ./nginx/html/maintenance.html
 .PHONY : begin-maintenance
 
-prepare-release : ## Prepare release
-	${docker_compose} run \
-		--user $(shell id --user):$(shell id --group) \
-		backend \
-		make prepare-release
-.PHONY : prepare-release
-
 # Keep file name <FINGERPRINT>.gpg in sync with the one in `AppSettings.cs`
 gpg : COMMENT =
 gpg : build-bootstrap ## Generate GnuPG key with the passphrase `${GNUPG_SECRET_SIGNING_KEY_PASSPHRASE}`, for example, `make PERSON="Simon Wacker" COMMENT=solarbuildingenvelopes EMAIL=simon.wacker@ise.fraunhofer.de gpg`

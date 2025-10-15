@@ -180,7 +180,7 @@ migration : ## Add migration with name `${NAME}`, generate corresponding idempot
 	old=$$(find ./src/Migrations/ -type f -regex ".*/[^/.]*_[^/.]*\.cs" -exec basename --suffix=.cs {} \; | sort | tail --lines=1 ) && \
 	echo old=$$old && \
 	dotnet ef \
-		--project ./src/Metabase.csproj \
+		--project ./src/Database.csproj \
 		migrations \
 		add \
 		${NAME} && \
@@ -189,7 +189,7 @@ migration : ## Add migration with name `${NAME}`, generate corresponding idempot
 	migrate_path=./src/Migrations/migrate_from_$${old}_to_$${new}.sql && \
 	rollback_path=./src/Migrations/rollback_from_$${new}_to_$${old}.sql && \
 	dotnet ef \
-		--project ./src/Metabase.csproj \
+		--project ./src/Database.csproj \
 		migrations \
 		script \
 		--idempotent \
@@ -197,7 +197,7 @@ migration : ## Add migration with name `${NAME}`, generate corresponding idempot
 		$${new} \
 		--output $${migrate_path} && \
 	dotnet ef \
-		--project ./src/Metabase.csproj \
+		--project ./src/Database.csproj \
 		migrations \
 		script \
 		--idempotent \
@@ -212,7 +212,7 @@ migration : ## Add migration with name `${NAME}`, generate corresponding idempot
 # https://learn.microsoft.com/en-us/ef/core/managing-schemas/migrations/applying?tabs=dotnet-core-cli#command-line-tools
 # update-database : ## Update the database to the latest database schema
 # 	dotnet ef \
-# 		--project ./src/Metabase.csproj \
+# 		--project ./src/Database.csproj \
 # 		database \
 # 		update
 # .PHONY : update-database

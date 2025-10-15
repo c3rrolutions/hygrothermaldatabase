@@ -54,12 +54,33 @@ If you have a question for which you don't find the answer in this repository, p
    `make jwt-certificates`.
 1. Generate and export a GnuPG key with the passphrase
    `${GNUPG_SECRET_SIGNING_KEY_PASSPHRASE}` set in the `./.env` file to the
-   file `./backend/src/gpg-keys/<KEY_FINGERPRIN>.gpg` by running `make
-   NAME=${name} COMMENT=${comment} EMAIL=${email} gpg` with your information
-   filled in. For example `make NAME="Anna Smith" COMMENT=first
-   EMAIL=anna.smith@fraunhofer.de gpg`. Copy the key's fingerprint which is
-   output by the command and set it as the value of the
+   file `./backend/src/gpg-keys/<KEY_FINGERPRINT>.gpg` by running `make
+   PERSON=${name} COMMENT=${comment} EMAIL=${email} gpg` with your information
+   filled in, for example, `make NAME="Anna Smith" COMMENT=first
+   EMAIL=anna.smith@fraunhofer.de gpg`. Then copy the key's fingerprint which
+   is output by the command and set it as the value of the
    `GNUPG_SECRET_SIGNING_KEY_FINGERPRINT` variable in the `./.env` file.
+
+   Instead of using the GNU Make target `gpg`, you may
+   1. install [GnuPG](https://gnupg.org) as described on
+      [Download GnuPG](https://gnupg.org/download/index.html) or
+      [GnuPG Package Repositories](https://www.gnupg.org/blog/20250827-new-repository.html),
+   1. generate a GnuPG key by running `gpg --full-generate-key` and answering
+      the prompts,
+   1. list the keys for which you have both a public and secret key by running
+      `gpg --list-secret-keys --keyid-format=long`,
+   1. identify and copy the long form of the fingerprint of the key you have
+      just created,
+   1. remember the key in the variable `fingerprint` by running
+      `fingerprint=<KEY_FINGERPRINT>` with `<KEY_FINGERPRINT>` replaced by the
+      copied fingerprint,
+   1. create the directory to save the secret key to if it does not exist yet
+      by running `mkdir --parents ./backend/src/gpg-keys`,
+   1. export the armored secret key to the file
+      `./backend/src/gpg-keys/${fingerprint}.gpg` by running
+      `gpg --armor --export-secret-keys ${fingerprint} > ./backend/src/gpg-keys/${fingerprint}.gpg`,
+   1. Set the value of the variable `GNUPG_SECRET_SIGNING_KEY_FINGERPRINT` in
+      the `./.env` file to the remembered fingerprint in your favorite editor.
 1. Start all services and follow their logs by running `make up logs`.
 1. To see the web frontend navigate to
    `https://local.solarbuildingenvelopes.com:5051` in your web browser, to see

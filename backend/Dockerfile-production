@@ -23,7 +23,7 @@ FROM mcr.microsoft.com/dotnet/sdk:9.0-bookworm-slim-amd64 AS build
 #   apt-get install \
 #     --assume-yes \
 #     --no-install-recommends \
-#     gnupg && \
+#     gnupg2 && \
 #   rm \
 #     --recursive \
 #     --force \

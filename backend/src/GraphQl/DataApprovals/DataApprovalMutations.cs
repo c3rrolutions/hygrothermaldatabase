@@ -104,7 +104,7 @@ public sealed class DataApprovalMutations
                 errors.Add(
                     new AddDataApprovalError(
                         AddDataApprovalErrorCode.BAD_SIGNATURE,
-                        $"The signature '{input.Signature}' for the message '{input.Message}' with the fingerprint '{input.KeyFingerprint}' is bad.",
+                        $"The signature '{input.Signature}' for the message '{input.Message}' with the fingerprint '{input.KeyFingerprint}' is bad. Maybe the whitespace in the message differs from that in the original message file. For example, is there a newline at the end of the message and/or are the control characters for newlines identical? Note that in the WYSIWYG GraphQL interface, using triple double quotes for multiline strings changes the newline character at the very end of the string, which may not be how it was originally. Instead of using a multiline string, you may use a oneline string with escaped characters. To turn your message into such a JSON-escaped string, you may use the command-line tool `jq` as follows: `jq --raw-input --slurp '.' < ./message.json`",
                         [nameof(input), nameof(input.Signature).ToLowerFirst()]
                     )
                 );

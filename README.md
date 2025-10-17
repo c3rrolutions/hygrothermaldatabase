@@ -1,12 +1,44 @@
 # Database
 
-This repository presents the reference implementation of a product data server as part of the product data network [buildingenvelopedata.org](https://www.buildingenvelopedata.org/). Before deploying this repository, [machine](https://github.com/building-envelope-data/machine) can be used to set up the machine.
+This repository presents the reference implementation of a product data server
+as part of the product data network
+[buildingenvelopedata.org](https://www.buildingenvelopedata.org/). Before
+deploying this repository,
+[machine](https://github.com/building-envelope-data/machine) can be used to set
+up the machine.
 
-The [API specification of the product data servers](https://github.com/building-envelope-data/api/blob/develop/apis/database.graphql) is available in the repository [api](https://github.com/building-envelope-data/api). There is also a [visualization of the API of a product data server](https://graphql-kit.com/graphql-voyager/?url=https://www.solarbuildingenvelopes.com/graphql/).
+The [API specification of the product data
+servers](https://github.com/building-envelope-data/api/blob/develop/apis/database.graphql)
+is available in the repository
+[api](https://github.com/building-envelope-data/api). There is also
+a [visualization of the API of a product data
+server](https://graphql-kit.com/graphql-voyager/?url=https://www.solarbuildingenvelopes.com/graphql/).
 
-This repository is deployed as the [product data server of TestLab Solar Facades of Fraunhofer ISE](https://www.solarbuildingenvelopes.com).
+This repository is deployed as the [product data server of TestLab Solar
+Facades of Fraunhofer ISE](https://www.solarbuildingenvelopes.com).
 
-If you have a question for which you don't find the answer in this repository, please raise a [new issue](https://github.com/building-envelope-data/database/issues/new) and add the tag `question`! All ways to contribute are presented by [CONTRIBUTING.md](https://github.com/building-envelope-data/database/blob/develop/CONTRIBUTING.md). The basis for our collaboration is decribed by our [Code of Conduct](https://github.com/building-envelope-data/database/blob/develop/CODE_OF_CONDUCT.md).
+If you have a question for which you don't find the answer in this repository,
+please raise a [new
+issue](https://github.com/building-envelope-data/database/issues/new) and add
+the tag `question`! All ways to contribute are presented by
+[CONTRIBUTING.md](https://github.com/building-envelope-data/database/blob/develop/CONTRIBUTING.md).
+The basis for our collaboration is decribed by our [Code of
+Conduct](https://github.com/building-envelope-data/database/blob/develop/CODE_OF_CONDUCT.md).
+## Contents
+
+[Getting started](#getting-started)
+
+- [On your Linux machine](#on-your-linux-machine)
+- [Migrating the Database](#migrating-the-database)
+- [Developing with Visual Studio Code](#developing-with-visual-studio-code)
+- [Troubleshooting](#troubleshooting)
+
+[Deployment](#deployment)
+
+- [Setting up a Debian production machine](#setting-up-a-debian-production-machine)
+- [Creating a release](#creating-a-release)
+- [Deploying a release](#deploying-a-release)
+- [Troubleshooting](#troubleshooting-1)
 
 ## Getting started
 
@@ -296,20 +328,49 @@ and the pages following it.
           of the exported GnuPG secret key for signing in the file
           `./backend/src/gpg-keys/${GNUPG_SECRET_SIGNING_KEY_FINGERPRINT}.gpg`;
       - `JSON_WEB_TOKEN_ENCRYPTION_CERTIFICATE_PASSWORD` and
-          `JSON_WEB_TOKEN_SIGNING_CERTIFICATE_PASSWORD` are passwords used to
-          encrypt and sign JSON web tokens (JWT) used by OpenId Connect;
+        `JSON_WEB_TOKEN_SIGNING_CERTIFICATE_PASSWORD` are passwords used to
+        encrypt and sign JSON web tokens (JWT) used by OpenId Connect;
       - `SMTP_HOST` and `SMTP_PORT` are host and port of the message transfer
-          agent to be used to send emails through the Simple Mail Transfer
-          Protocol (SMTP);
+        agent to be used to send emails through the Simple Mail Transfer
+        Protocol (SMTP);
       - `RELAY_SMTP_HOST`, `RELAY_SMTP_PORT`, and `RELAY_ALLOWED_EMAILS` are
-          host and port of the message transfer agent and a list of allowed
-          email addresses to send emails to even in the staging environment.
+        host and port of the message transfer agent and a list of allowed
+        email addresses to send emails to even in the staging environment.
+   1. Generate JSON Web Token (JWT) encryption and signing certificates by running
+      `make --file=Makefile.production jwt-certificates`.
+   1. Generate and export a GnuPG key with the passphrase
+      `${GNUPG_SECRET_SIGNING_KEY_PASSPHRASE}` set in the `./.env` file to the
+      file `./backend/src/gpg-keys/<KEY_FINGERPRINT>.gpg` by running `make
+      PERSON=${name} COMMENT=${comment} EMAIL=${email} gpg` with your information
+      filled in, for example, `make NAME="Anna Smith" COMMENT=first
+      EMAIL=anna.smith@fraunhofer.de gpg`. Then copy the key's fingerprint which
+      is output by the command and set it as the value of the
+      `GNUPG_SECRET_SIGNING_KEY_FINGERPRINT` variable in the `./.env` file.
+
+      Instead of using the GNU Make target `gpg`, you may
+      1. install [GnuPG](https://gnupg.org) as described on
+         [Download GnuPG](https://gnupg.org/download/index.html) or
+         [GnuPG Package Repositories](https://www.gnupg.org/blog/20250827-new-repository.html),
+      1. generate a GnuPG key by running `gpg --full-generate-key` and answering
+         the prompts,
+      1. list the keys for which you have both a public and secret key by running
+         `gpg --list-secret-keys --keyid-format=long`,
+      1. identify and copy the long form of the fingerprint of the key you have
+         just created,
+      1. remember the key in the variable `fingerprint` by running
+         `fingerprint=<KEY_FINGERPRINT>` with `<KEY_FINGERPRINT>` replaced by the
+         copied fingerprint,
+      1. create the directory to save the secret key to if it does not exist yet
+         by running `mkdir --parents ./backend/src/gpg-keys`,
+      1. export the armored secret key to the file
+         `./backend/src/gpg-keys/${fingerprint}.gpg` by running
+         `gpg --armor --export-secret-keys ${fingerprint} > ./backend/src/gpg-keys/${fingerprint}.gpg`,
+      1. Set the value of the variable `GNUPG_SECRET_SIGNING_KEY_FINGERPRINT` in
+         the `./.env` file to the remembered fingerprint in your favorite editor.
    1. Prepare PostgreSQL by generating new password files by running
       `make --file=Makefile.production postgres_passwords`
       and creating the database by running
       `make --file=Makefile.production createdb`.
-   1. Generate JSON Web Token (JWT) encryption and signing certificates by running
-      `make --file=Makefile.production jwt-certificates`.
 
 ### Creating a release
 
@@ -326,11 +387,11 @@ and the pages following it.
    [Releases](https://github.com/building-envelope-data/database/releases).
 1. Fetch the release branch by running `git fetch` and check it out by running
    `git checkout release/v*.*.*`, where `*.*.*` is the version.
-1. Apply pending migrations with `make migrate`.
+1. Apply pending migrations with `make --file=Makefile.production migrate`.
 1. Make sure that all tests succeed and try out any new features manually.
 1. [Publish the new release](https://github.com/building-envelope-data/database/actions/workflows/publish-new-release.yml)
    by merging the release branch into `main` whereby a new pull request from
-   `main` into `develop` is created that you need to merge to finish off.
+   `main` into `develop` is created that you need to merge to finish of.
 
 ### Deploying a release
 
@@ -360,7 +421,7 @@ and the pages following it.
    addresses).
 1. Change to the production environment by running `cd /app/production`.
 1. Adapt the environment file `./.env` if necessary by comparing it with the
-   `./.env.staging.sample` file of the release to be deployed.
+   `./.env.production.sample` file of the release to be deployed.
 1. Deploy the new release in the production environment by running
    `make --file=Makefile.production TARGET=${TAG} deploy`, where `${TAG}` is
    the release tag to be deployed, for example, `v1.0.0`.
@@ -456,38 +517,3 @@ under /app/staging before doing it in `production` under /app/production.
    that you want to update.
 1. Update a single field by running `update database.optical_data set "Description" = '...' where "Id" = 'f07499ab-f119-471f-8aad-d3c016676bce';`.
 1. Delete a faulty record by running `delete from database.optical_data where "Id" = 'f07499ab-f119-471f-8aad-d3c016676bce';`.
-
-## Original Idea
-
-The product identifier service should provide the following endpoints:
-
-- Obtain a new product identifier possibly associating internal meta information with it, like a custom string or a JSON blob
-- Update the meta information of one of your product identifiers
-- Get meta information of one of your product identifiers
-- Get the owner of a product identifier (needed, for example, by the IGSDB to check that the user adding product data with a product identifier owns the identifier)
-- List all your product identifiers
-- Request the transferal of the ownership of one or all of your product identifiers to another (once the receiving user agrees, the transferal is made)
-- Respond to a transferal request
-
-How to obtain a unique product identifier and add product data to some database:
-
-1. Create an account at a central authentication service, that is, a domain specific and lightweight service like [Auth0](https://auth0.com) managed by us (the details of how users prove to be a certain manufacturer are still open)
-2. Authenticate yourself at the authentication service receiving a [JSON web token](https://jwt.io) (this could be a simple username/password authentication scheme)
-3. Obtain a new product identifier from the respective service passing your JSON web token as means of authentication
-4. Add product data to some database like IGSDB passing the product identifier and your JSON web token
-
-JSON web tokens are used for authentication across different requests, services, and domains.
-
-Product identifiers are randomly chosen and verified to be unique 32, 48, or 64 bit numbers, which can be communicated for easy human use as [proquints](https://arxiv.org/html/0901.4016) [there are implementations in various languages](https://github.com/dsw/proquint). We could alternatively use [version 4 universally-unique identifiers](https://tools.ietf.org/html/rfc4122); I consider this to be overkill as it comes with a performance penalty and our identifiers do not need to be universally unique. Either way, [those identifiers do _not_ replace primary keys](https://tomharrisonjr.com/uuid-or-guid-as-primary-keys-be-careful-7b2aa3dcb439).
-
-Randomness of identifiers ensures that
-
-- the product identifier does not encode any information regarding the product, like its manufacturer, which would, for example, be problematic when one manufacturer is bought by another
-- a user cannot run out of product identifiers, because there is no fixed range of possible identifiers per user
-- it's unlikely that flipping one bit or replacing one letter in the proquint representation by another results in a valid identifier owned by the same user
-
-We may add some error detection and correction capabilities by, for example, generating all but the last 4 bits randomly and using the last 4 bits as [some sort of checksum](https://en.wikipedia.org/wiki/Checksum).
-
-## Useful Resources
-
-- [Set up a GraphQL client with Apollo](https://hasura.io/learn/graphql/typescript-react-apollo/apollo-client/)

@@ -81,6 +81,8 @@ If you have a question for which you don't find the answer in this repository, p
       `gpg --armor --export-secret-keys ${fingerprint} > ./backend/src/gpg-keys/${fingerprint}.gpg`,
    1. Set the value of the variable `GNUPG_SECRET_SIGNING_KEY_FINGERPRINT` in
       the `./.env` file to the remembered fingerprint in your favorite editor.
+1. Create the PostgreSQL database and schema by running
+   `make createdb migrate`.
 1. Start all services and follow their logs by running `make up logs`.
 1. To see the web frontend navigate to
    `https://local.solarbuildingenvelopes.com:5051` in your web browser, to see
@@ -115,6 +117,16 @@ In another shell
 1. Drop out of the container by running `exit` or pressing `Ctrl-D`.
 
 The same works for frontend containers by running `make shellf`.
+
+### Migrating the Database
+
+After changing the domain model in `./backend/src/data`, you need to migrate
+the database by dropping into `make shellb`, adding a migration with `make
+NAME=${MIGRATION_NAME} migration`, verifying and if necessary adapting the new
+migration C# code and SQL scripts, exiting the container with `exit`, and
+applying the new migration to the PostgreSQL database with `make migrate`. See
+[Migrations Overview](https://docs.microsoft.com/en-us/ef/core/managing-schemas/migrations/)
+and the following pages for details.
 
 ### Developing with Visual Studio Code
 
@@ -203,12 +215,6 @@ may be necessary to restart the service `backend`, for example, by running
 by running `make down remove-data up`. Note that the latter will remove all
 data from PostgreSQL, recreate the database and its schema, and seed it
 freshly.
-
-After changing the domain model in `./backend/src/data`, you probably need to
-migrate the database by dropping into `make shellb`, adding a migration `make
-NAME=${MIGRATION_NAME} add-migration`, generating a migration script `make
-FROM=${PREVIOUS_MIGRATION} TO=${NEW_MIGRATION} generate-migration-script`, and
-executing it `make SQL=${SCRIPT_PATH} sql`.
 
 When your hard-disk starts to grow full, it may be the case that Docker does
 not clean-up anonymous volumes properly. You can do so manually by running
@@ -320,12 +326,8 @@ and the pages following it.
    [Releases](https://github.com/building-envelope-data/database/releases).
 1. Fetch the release branch by running `git fetch` and check it out by running
    `git checkout release/v*.*.*`, where `*.*.*` is the version.
-1. Prepare the release by running `make prepare-release` in your shell, review,
-   add, commit, and push the changes. In particular, migration and rollback SQL
-   files are created in `./backend/src/Migrations/` which need to be reviewed
-   --- see
-   [Migrations Overview](https://docs.microsoft.com/en-us/ef/core/managing-schemas/migrations/?tabs=dotnet-core-cli)
-   and following pages for details.
+1. Apply pending migrations with `make migrate`.
+1. Make sure that all tests succeed and try out any new features manually.
 1. [Publish the new release](https://github.com/building-envelope-data/database/actions/workflows/publish-new-release.yml)
    by merging the release branch into `main` whereby a new pull request from
    `main` into `develop` is created that you need to merge to finish off.

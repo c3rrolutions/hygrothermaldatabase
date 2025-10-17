@@ -10,6 +10,8 @@ docker_compose = \
 
 database_name = xbase
 
+dump_archive_name = postgresql_dumpall.gz
+
 # Taken from https://www.client9.com/self-documenting-makefiles/
 help : ## Print this help
 	@awk -F ':|##' '/^[^\t].+?:.*?##/ {\

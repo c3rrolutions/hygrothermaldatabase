@@ -133,7 +133,6 @@ public sealed class Program
             using var dbContext =
                 services.GetRequiredService<IDbContextFactory<ApplicationDbContext>>()
                     .CreateDbContext();
-            dbContext.Database.EnsureCreated();
             await DbSeeder.DoAsync(services);
         }
         catch (Exception exception)

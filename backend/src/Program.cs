@@ -3,8 +3,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Database.Data;
-using Database.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -16,6 +14,8 @@ using Serilog.Events;
 using Serilog.Formatting.Compact;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 using Log = Serilog.Log;
+using Database.Data;
+using Database.Services;
 
 namespace Database;
 
@@ -24,8 +24,8 @@ public static partial class LoggerExtensions
     [LoggerMessage(
         EventId = 0,
         Level = LogLevel.Error,
-        Message = "An error occurred creating or seeding the database.")]
-    public static partial void FailedToCreateOrSeedDatabase(
+        Message = "An error occurred seeding the database.")]
+    public static partial void FailedToSeedDatabase(
         this ILogger logger,
         // The first exception is implicitly taken care of as detailed in
         // https://learn.microsoft.com/en-us/dotnet/core/extensions/logger-message-generator#log-method-anatomy
@@ -59,7 +59,7 @@ public sealed class Program
             {
                 EnsureDatabaseIsUpToDate(scope.ServiceProvider);
                 // Inspired by https://docs.microsoft.com/en-us/aspnet/core/data/ef-mvc/intro#initialize-db-with-test-data
-                await CreateAndSeedDatabase(scope.ServiceProvider);
+                await SeedDatabase(scope.ServiceProvider);
                 await InitializeSigningService(scope.ServiceProvider);
             }
 
@@ -124,7 +124,7 @@ public sealed class Program
         }
     }
 
-    private static async Task CreateAndSeedDatabase(
+    private static async Task SeedDatabase(
         IServiceProvider services
     )
     {
@@ -138,7 +138,7 @@ public sealed class Program
         catch (Exception exception)
         {
             var logger = services.GetRequiredService<ILogger<Program>>();
-            logger.FailedToCreateOrSeedDatabase(exception);
+            logger.FailedToSeedDatabase(exception);
         }
     }
 
@@ -146,8 +146,9 @@ public sealed class Program
         IServiceProvider services
     )
     {
-        var signing = services.GetRequiredService<SigningService>();
-        await signing.Initialize();
+        await services
+            .GetRequiredService<SigningService>()
+            .Initialize();
     }
 
     // https://docs.microsoft.com/en-us/aspnet/core/fundamentals/host/generic-host

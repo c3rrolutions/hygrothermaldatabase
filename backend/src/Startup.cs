@@ -4,11 +4,6 @@ using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Database.Configuration;
-using Database.Data;
-using Database.Data.Extensions;
-using Database.Enumerations;
-using Database.Services;
 using HotChocolate.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection;
@@ -26,6 +21,11 @@ using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi;
 using Scalar.AspNetCore;
 using Serilog;
+using Database.Configuration;
+using Database.Data;
+using Database.Data.Extensions;
+using Database.Enumerations;
+using Database.Services;
 
 namespace Database;
 

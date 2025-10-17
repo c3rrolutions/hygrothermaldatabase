@@ -141,7 +141,11 @@ logs : ## Follow logs
 		--follow
 .PHONY : logs
 
-exec : up ## Execute the one-time command `${COMMAND}` against an existing `${CONTAINER}` container (after starting all containers if necessary)
+exec : ## Execute the one-time command `${COMMAND}` against the `${CONTAINER}` container
+	${docker_compose} up \
+		--remove-orphans \
+		--detach \
+		${CONTAINER}
 	${docker_compose} exec \
 		--user $(shell id --user):$(shell id --group) \
 		${CONTAINER} \
@@ -149,14 +153,14 @@ exec : up ## Execute the one-time command `${COMMAND}` against an existing `${CO
 .PHONY : exec
 
 execf : CONTAINER = frontend
-execf : exec ## Execute the one-time command `${COMMAND}` against an existing `frontend` container (after starting all containers if necessary)
+execf : exec ## Execute the one-time command `${COMMAND}` against the `frontend` container
 .PHONY : execf
 
 execb : CONTAINER = backend
-execb : exec ## Execute the one-time command `${COMMAND}` against an existing `backend` container (after starting all containers if necessary)
+execb : exec ## Execute the one-time command `${COMMAND}` against the `backend` container
 .PHONY : execb
 
-run : up ## Run the one-time command `${COMMAND}` against a fresh `${CONTAINER}` container (after starting all containers if necessary)
+run : ## Run the one-time command `${COMMAND}` against a fresh `${CONTAINER}` container
 	${docker_compose} run \
 		--rm \
 		--user $(shell id --user):$(shell id --group) \
@@ -165,27 +169,31 @@ run : up ## Run the one-time command `${COMMAND}` against a fresh `${CONTAINER}`
 .PHONY : run
 
 runf : CONTAINER = frontend
-runf : run ## Run the one-time command `${COMMAND}` against a fresh `frontend` container (after starting all containers if necessary)
+runf : run ## Run the one-time command `${COMMAND}` against a fresh `frontend` container
 .PHONY : runf
 
 runb : CONTAINER = backend
-runb : run ## runute the one-time command `${COMMAND}` against a fresh `backend` container (after starting all containers if necessary)
+runb : run ## runute the one-time command `${COMMAND}` against a fresh `backend` container
 .PHONY : runb
 
 shellf : COMMAND = bash
-shellf : execf ## Enter shell in an existing `frontend` container (after starting all containers if necessary)
+shellf : execf ## Enter shell in the `frontend` container
 .PHONY : shellf
 
 shellb : COMMAND = bash
-shellb : runb ## Enter shell in a fresh `backend` container (after starting all containers if necessary)
+shellb : runb ## Enter shell in a fresh `backend` container
 .PHONY : shellb
 
 shellb-examples : COMMAND = bash -c "cd ./examples && bash"
-shellb-examples : runb ## Enter Bourne-again shell, aka, bash, in an existing `backend` container (after starting all containers if necessary)
+shellb-examples : runb ## Enter Bourne-again shell, aka, bash, in the `backend` container
 .PHONY : shellb-examples
 
 # Executing with `--privileged` is necessary according to https://github.com/dotnet/diagnostics/blob/master/documentation/FAQ.md
 traceb : ## Trace backend container with identifier `${CONTAINER_ID}`, for example, `make CONTAINER_ID=c1b82eb6e03c trace-backend`
+	${docker_compose} up \
+		--remove-orphans \
+		--detach \
+		backend
 	${docker_compose} exec \
 			--privileged \
 			backend \
@@ -194,13 +202,21 @@ traceb : ## Trace backend container with identifier `${CONTAINER_ID}`, for examp
 				"
 .PHONY : traceb
 
-shelln : up ## Enter shell in an existing `nginx` container (after starting all containers if necessary)
+shelln : ## Enter shell in the `nginx` container
+	${docker_compose} up \
+		--remove-orphans \
+		--detach \
+		nginx
 	${docker_compose} exec \
 		nginx \
 		bash
 .PHONY : shelln
 
 psql : ## Enter PostgreSQL interactive terminal in the running `database` container
+	${docker_compose} up \
+		--remove-orphans \
+		--detach \
+		database
 	${docker_compose} exec \
 		database \
 		psql \
@@ -210,7 +226,7 @@ psql : ## Enter PostgreSQL interactive terminal in the running `database` contai
 
 shelld : CONTAINER = database
 shelld : COMMAND = bash
-shelld : exec ## Enter shell in an existing `database` container (after starting all containers if necessary)
+shelld : exec ## Enter shell in the `database` container
 .PHONY : shelld
 
 list : ## List all containers with health status
@@ -221,6 +237,10 @@ list : ## List all containers with health status
 
 createdb : DBNAME = ${database_name}
 createdb : ## Create database with name `${DBNAME}` defaulting to `xbase`
+	${docker_compose} up \
+		--remove-orphans \
+		--detach \
+		database
 	${docker_compose} exec \
 		database \
 		bash -c " \
@@ -230,6 +250,10 @@ createdb : ## Create database with name `${DBNAME}` defaulting to `xbase`
 
 dropdb : DBNAME = ${database_name}
 dropdb : ## Drop database with name `${DBNAME}` defaulting to `xbase`
+	${docker_compose} up \
+		--remove-orphans \
+		--detach \
+		database
 	${docker_compose} exec \
 		database \
 		bash -c " \
@@ -238,6 +262,10 @@ dropdb : ## Drop database with name `${DBNAME}` defaulting to `xbase`
 .PHONY : dropdb
 
 sql : ## Run the SQL script in the file `${SQL}` in the running `database` service, for example, `make SQL=./my.sql sql`
+	${docker_compose} up \
+		--remove-orphans \
+		--detach \
+		database
 	cat ${SQL} \
 	| ${docker_compose} exec \
 		--no-TTY \

@@ -247,9 +247,14 @@ type Database {
   description: String!
   locator: Url!
   name: String!
+  operator: DatabaseOperatorEdge!
   uuid: Uuid!
   verificationCode: String!
   verificationState: DatabaseVerificationState!
+}
+
+type DatabaseOperatorEdge {
+  node: Institution!
 }
 
 type FileMetaInformation {
@@ -389,6 +394,10 @@ type HygrothermalDataEdge {
   node: HygrothermalData!
 }
 
+type Institution {
+  uuid: Uuid!
+}
+
 type InstitutionAccessRights {
   allowedDatasetsPerTime: NonNegativeInt
   allowedUserCount: NonNegativeInt
@@ -423,6 +432,7 @@ type Mutation {
   createOpticalData(input: CreateOpticalDataInput!): CreateOpticalDataPayload! @cost(weight: "10")
   createPhotovoltaicData(input: CreatePhotovoltaicDataInput!): CreatePhotovoltaicDataPayload! @cost(weight: "10")
   createResponseApprovals: CreateResponseApprovalsPayload! @cost(weight: "10")
+  removeDataApproval(input: DataApprovalInput!): RemoveDataApprovalPayload! @cost(weight: "10")
   updateAccessRights(input: InstitutionAccessRightsInput!): UpdateAccessRightsPayload! @cost(weight: "10")
   updateDataAccessRights(input: DataAccessRightsInput!): UpdateDataAccessRightsPayload! @cost(weight: "10")
   updateDatabase(input: UpdateDatabaseInput!): UpdateDatabasePayload! @cost(weight: "10")
@@ -580,7 +590,7 @@ type Query {
   calculateMethodWithDataUpload(data: Upload! methodId: Uuid!): CalculateMethodPayload! @cost(weight: "10")
   calorimetricData(id: Uuid! locale: Locale): CalorimetricData @cost(weight: "10")
   currentUser: User @cost(weight: "10")
-  currentUserInfo: UserInfo @cost(weight: "10")
+  currentUserInfo: UserInfo! @cost(weight: "10")
   data(id: Uuid! locale: Locale): Data @cost(weight: "10")
   database: Database! @cost(weight: "10")
   geometricData(id: Uuid! locale: Locale): GeometricData @cost(weight: "10")
@@ -599,6 +609,18 @@ type Query {
   opticalData(id: Uuid! locale: Locale): OpticalData @cost(weight: "10")
   photovoltaicData(id: Uuid! locale: Locale): PhotovoltaicData @cost(weight: "10")
   verificationCode: String!
+}
+
+type RemoveDataApprovalError {
+  code: RemoveDataApprovalErrorCode!
+  message: String!
+  path: [String!]!
+}
+
+type RemoveDataApprovalPayload {
+  dataApproval: DataApproval
+  errors: [RemoveDataApprovalError!]
+  query: Query!
 }
 
 type ResponseApproval {
@@ -1462,6 +1484,14 @@ enum AddDataApprovalErrorCode {
   CREATING_RESPONSE_APPROVAL_FAILED
   AMBIGUOUS_STATEMENT
   MISSING_STATEMENT
+  INVALID_KEY_FINGERPRINT
+  FAILED_RECEIVING_KEY
+  BAD_SIGNATURE
+  FAILED_VERIFYING_SIGNATURE
+  FAILED_VERIFYING_RESPONSE
+  ILLEGAL_MESSAGE
+  WRONG_RESPONSE
+  WRONG_STATEMENT
 }
 
 "Defines when a policy shall be executed."
@@ -1599,6 +1629,15 @@ enum OpticalComponentSubtype {
 enum OpticalComponentType {
   GLAZING
   SHADING
+}
+
+enum RemoveDataApprovalErrorCode {
+  UNKNOWN
+  UNAUTHENTICATED
+  UNAUTHORIZED
+  UNKNOWN_DATA
+  UNKNOWN_APPROVAL
+  CREATING_RESPONSE_APPROVAL_FAILED
 }
 
 enum SortEnumType {

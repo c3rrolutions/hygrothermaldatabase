@@ -165,10 +165,13 @@ diagrams : ## Draw images from textual UML diagrams
 
 # See https://github.com/hasura/graphqurl#export-schema
 schema : ## Fetch GraphQL schema using `hasura/graphqurl`
-	gq http://backend:8080/graphql/ --introspect > ./schema.graphql
+	gq \
+		http://backend:8080/graphql/ \
+		--introspect \
+		> ./schema.graphql
 .PHONY : schema
 
-has-pending-model-changes : ## Check whether there have been any model changes made since the last migration
+has-pending-model-changes : ## Check whether there have been any model changes made since the last migration was added
 	dotnet ef \
 		--project ./src/Database.csproj \
 		migrations \

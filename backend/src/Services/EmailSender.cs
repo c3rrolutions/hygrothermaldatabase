@@ -25,6 +25,7 @@ public sealed class EmailSender(
     int smtpPort,
     ILogger<EmailSender> logger
     )
+: IEmailSender
 {
     private readonly ILogger<EmailSender> _logger = logger;
     private readonly string _smtpHost = smtpHost;

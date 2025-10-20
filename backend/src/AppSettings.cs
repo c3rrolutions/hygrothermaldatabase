@@ -77,7 +77,7 @@ public sealed class AppSettings
 
     public sealed class DatabaseSettings
     {
-        public string ConnectionString { get; private set; }
+        public string ConnectionString { get; set; }
             = "";
 
         public string SchemaName { get; private set; }

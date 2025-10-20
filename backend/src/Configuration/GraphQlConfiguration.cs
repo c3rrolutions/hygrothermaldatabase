@@ -31,52 +31,25 @@ using Database.GraphQl.DataApprovals;
 using Database.GraphQl.AccessRights;
 using Database.GraphQl.Methods;
 using Database.GraphQl.ResponseApprovals;
+using HotChocolate.Configuration;
+using HotChocolate.Execution;
 
 namespace Database.Configuration;
 
 public static class GraphQlConfiguration
 {
     internal const string TypeDiscriminatorPropertyName = "__typename";
+    public const string FilterInputSuffix = "FilterInput";
 
     public static void ConfigureServices(
         IServiceCollection services,
-        IWebHostEnvironment environment,
-        AppSettings appSettings
+        IWebHostEnvironment environment
     )
     {
-        // Stitching Services https://chillicream.com/docs/hotchocolate/v13/distributed-schema/schema-stitching
-        var httpMetabaseClientBuilder = services.AddHttpClient(
-            WellKnownSchemaNames.Metabase,
-            _ => _.BaseAddress = new Uri($"{appSettings.MetabaseHost}/graphql")
-        );
-        var httpDatabaseClientBuilder = services.AddHttpClient(
-            WellKnownSchemaNames.Database,
-            _ => _.BaseAddress = new Uri($"{appSettings.Host}/graphql")
-        );
-        if (!environment.IsProduction())
-        {
-            httpMetabaseClientBuilder.ConfigurePrimaryHttpMessageHandler(_ =>
-                new HttpClientHandler
-                {
-                    // ClientCertificateOptions = ClientCertificateOption.Manual,
-                    ServerCertificateCustomValidationCallback =
-                        HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
-                }
-            );
-        }
-
-        httpDatabaseClientBuilder.ConfigurePrimaryHttpMessageHandler(_ =>
-            new HttpClientHandler
-            {
-                // ClientCertificateOptions = ClientCertificateOption.Manual,
-                ServerCertificateCustomValidationCallback =
-                    HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
-            }
-        );
         // Automatic-Persisted-Queries Services
         services
             .AddMemoryCache()
-            .AddSha256DocumentHashProvider(HashFormat.Hex);
+            .AddSha256DocumentHashProvider(HashFormat.Hex); // https://chillicream.com/docs/hotchocolate/v15/security/#fips-compliance
         // GraphQL Server
         services
             .AddGraphQLServer()
@@ -88,6 +61,7 @@ public static class GraphQlConfiguration
             .AddProjections()
             .AddFiltering<CustomFilterConvention>()
             .AddSorting<CustomSortConvention>()
+            .AddQueryContext()
             .AddAuthorization()
             .AddGlobalObjectIdentification()
             .AddQueryFieldToMutationPayloads()
@@ -98,21 +72,37 @@ public static class GraphQlConfiguration
                     options.UseXmlDocumentation = false;
                     options.SortFieldsByName = true;
                     options.RemoveUnreachableTypes = false;
+                    options.RemoveUnusedTypeSystemDirectives = true;
                     options.DefaultBindingBehavior = BindingBehavior.Implicit;
-                    /* options.FieldMiddleware = ... */
+                    // options.DefaultFieldBindingFlags = FieldBindingFlags.InstanceAndStatic;
+                    options.EnableDirectiveIntrospection = true;
+                    options.DefaultDirectiveVisibility = DirectiveVisibility.Public;
+                    options.DefaultResolverStrategy = ExecutionStrategy.Parallel;
+                    options.ValidatePipelineOrder = true;
+                    options.StrictRuntimeTypeValidation = true;
+                    options.EnableOneOf = true;
+                    options.EnsureAllNodesCanBeResolved = true;
+                    options.EnableFlagEnums = false;
+                    options.EnableDefer = false;
+                    options.EnableStream = false;
+                    options.EnableSemanticNonNull = false;
+                    options.StripLeadingIFromInterface = false;
+                    options.EnableTag = true;
+                    options.PublishRootFieldPagesToPromiseCache = true;
                 }
             )
             .ModifyRequestOptions(options =>
                 {
                     // https://github.com/ChilliCream/hotchocolate/blob/main/src/HotChocolate/Core/src/Execution/Options/RequestExecutorOptions.cs
-                    /* options.ExecutionTimeout = ...; */
+                    options.ExecutionTimeout = TimeSpan.FromSeconds(120);
                     options.IncludeExceptionDetails = !environment.IsProduction(); // Default is `Debugger.IsAttached`.
                     /* options.QueryCacheSize = ...; */
                     /* options.UseComplexityMultipliers = ...; */
                 }
             )
-            // Configure `https://github.com/ChilliCream/hotchocolate/blob/main/src/HotChocolate/Core/src/Validation/Options/ValidationOptions.cs`. But how?
-            // Subscriptions
+            // Configure
+            // `https://github.com/ChilliCream/hotchocolate/blob/main/src/HotChocolate/Core/src/Validation/Options/ValidationOptions.cs`.
+            // But how? Subscriptions
             /* .AddInMemorySubscriptions() */
             // Persisted queries
             /* .AddFileSystemOperationDocumentStorage("./persisted_operations") */
@@ -140,12 +130,9 @@ public static class GraphQlConfiguration
                 )
             )
             // Scalar Types
-            .AddType(new UuidType("Uuid",
-                defaultFormat: 'D')) // https://chillicream.com/docs/hotchocolate/defining-a-schema/scalars#uuid-type
+            .AddType(new UuidType("Uuid", defaultFormat: 'D')) // https://chillicream.com/docs/hotchocolate/defining-a-schema/scalars#uuid-type
             .AddType(new UrlType("Url"))
-            .AddType(new JsonType("Any",
-                BindingBehavior
-                    .Implicit)) // https://chillicream.com/blog/2023/02/08/new-in-hot-chocolate-13#json-scalar
+            .AddType(new JsonType("Any", BindingBehavior.Implicit)) // https://chillicream.com/blog/2023/02/08/new-in-hot-chocolate-13#json-scalar
             .AddType(new LocaleType())
             // Query Types
             .AddQueryType(d => d.Name(nameof(Query)))
@@ -205,22 +192,9 @@ public static class GraphQlConfiguration
                     _.InferConnectionNameFromField = false;
                 }
             )
-            // Stitching
-            // .AddRemoteSchema(WellKnownSchemaNames.Metabase, ignoreRootTypes: true)
-            // .AddTypeExtensionsFromString(@"
-            //     extend type OpticalData {
-            //         component: Component @delegate(schema: 'Metabase', path: 'component(uuid: $fields:ComponentId)')
-            //     }
-            // ")
             // Automatic Peristed Queries
             .UseAutomaticPersistedOperationPipeline()
             .AddInMemoryOperationDocumentStorage(); // Needed by the automatic persisted operation pipeline
-    }
-
-    public static class WellKnownSchemaNames
-    {
-        public const string Metabase = "metabase";
-        public const string Database = "database";
     }
 }
 
@@ -319,7 +293,10 @@ public static class FilterConventionDescriptorExtensions
     public static IFilterConventionDescriptor AddDefaults(
         this IFilterConventionDescriptor descriptor)
     {
-        return descriptor.AddDefaultOperations().BindDefaultTypes().UseQueryableProvider();
+        return descriptor
+            .AddDefaultOperations()
+            .BindDefaultTypes()
+            .UseQueryableProvider();
     }
 
     // Inspired by FilterConventionDescriptorExtensions#AddDefaultOperations
@@ -329,14 +306,6 @@ public static class FilterConventionDescriptorExtensions
     {
         descriptor.Operation(DefaultFilterOperations.Equals).Name("equalTo");
         descriptor.Operation(DefaultFilterOperations.NotEquals).Name("notEqualTo");
-        descriptor.Operation(DefaultFilterOperations.GreaterThan).Name("greaterThan");
-        descriptor.Operation(DefaultFilterOperations.NotGreaterThan).Name("notGreaterThan");
-        descriptor.Operation(DefaultFilterOperations.GreaterThanOrEquals).Name("greaterThanOrEqualTo");
-        descriptor.Operation(DefaultFilterOperations.NotGreaterThanOrEquals).Name("notGreaterThanOrEqualTo");
-        descriptor.Operation(DefaultFilterOperations.LowerThan).Name("lessThan");
-        descriptor.Operation(DefaultFilterOperations.NotLowerThan).Name("notLessThan");
-        descriptor.Operation(DefaultFilterOperations.LowerThanOrEquals).Name("lessThanOrEqualTo");
-        descriptor.Operation(DefaultFilterOperations.NotLowerThanOrEquals).Name("notLessThanOrEqualTo");
         descriptor.Operation(DefaultFilterOperations.Contains).Name("contains");
         descriptor.Operation(DefaultFilterOperations.NotContains).Name("doesNotContain");
         descriptor.Operation(DefaultFilterOperations.In).Name("in");
@@ -345,14 +314,23 @@ public static class FilterConventionDescriptorExtensions
         descriptor.Operation(DefaultFilterOperations.NotStartsWith).Name("doesNotStartWith");
         descriptor.Operation(DefaultFilterOperations.EndsWith).Name("endsWith");
         descriptor.Operation(DefaultFilterOperations.NotEndsWith).Name("doesNotEndWith");
-        descriptor.Operation(DefaultFilterOperations.All).Name("all");
-        descriptor.Operation(DefaultFilterOperations.None).Name("none");
-        descriptor.Operation(DefaultFilterOperations.Some).Name("some");
-        descriptor.Operation(DefaultFilterOperations.Any).Name("any");
         descriptor.Operation(DefaultFilterOperations.And).Name("and");
         descriptor.Operation(DefaultFilterOperations.Or).Name("or");
+        descriptor.Operation(DefaultFilterOperations.GreaterThan).Name("greaterThan");
+        descriptor.Operation(DefaultFilterOperations.NotGreaterThan).Name("notGreaterThan");
+        descriptor.Operation(DefaultFilterOperations.GreaterThanOrEquals).Name("greaterThanOrEqualTo");
+        descriptor.Operation(DefaultFilterOperations.NotGreaterThanOrEquals).Name("notGreaterThanOrEqualTo");
+        descriptor.Operation(DefaultFilterOperations.LowerThan).Name("lessThan");
+        descriptor.Operation(DefaultFilterOperations.NotLowerThan).Name("notLessThan");
+        descriptor.Operation(DefaultFilterOperations.LowerThanOrEquals).Name("lessThanOrEqualTo");
+        descriptor.Operation(DefaultFilterOperations.NotLowerThanOrEquals).Name("notLessThanOrEqualTo");
+        descriptor.Operation(DefaultFilterOperations.Some).Name("some");
+        descriptor.Operation(DefaultFilterOperations.All).Name("all");
+        descriptor.Operation(DefaultFilterOperations.None).Name("none");
+        descriptor.Operation(DefaultFilterOperations.Any).Name("any");
+        descriptor.Operation(DefaultFilterOperations.Like).Name("like");
         descriptor.Operation(DefaultFilterOperations.Data).Name("data");
-        descriptor.Operation(AdditionalFilterOperations.Not).Name("not");
+        // TODO `descriptor.Operation(AdditionalFilterOperations.Not).Name("not");` as in the project `database`
         // `inClosedInterval`
         return descriptor;
     }
@@ -398,6 +376,8 @@ public static class FilterConventionDescriptorExtensions
         descriptor
             .BindRuntimeType<T, ComparableOperationFilterInputType<T>>()
             .BindRuntimeType<T?, ComparableOperationFilterInputType<T?>>();
+        // .BindRuntimeType<T, ExtendedComparableOperationFilterInputType<T>>()
+        // .BindRuntimeType<T?, ExtendedComparableOperationFilterInputType<T?>>();
         // TODO Why does this not work?
         // if (name is not null)
         // {
@@ -409,7 +389,7 @@ public static class FilterConventionDescriptorExtensions
     }
 }
 
-// See https://chillicream.com/docs/hotchocolate/fetching-data/sorting/#sort-conventions
+// See https://chillicream.com/docs/hotchocolate/fetching-data/sorting/#sorting-conventions
 public partial class CustomSortConvention : SortConvention
 {
     protected override void Configure(ISortConventionDescriptor descriptor)

@@ -54,7 +54,7 @@ public sealed class Startup(
     public void ConfigureServices(IServiceCollection services)
     {
         AuthConfiguration.ConfigureServices(services, _environment, _appSettings);
-        GraphQlConfiguration.ConfigureServices(services, _environment, _appSettings);
+        GraphQlConfiguration.ConfigureServices(services, _environment);
         ConfigureDatabaseServices(services);
         ConfigureMessageSenderServices(services);
         ConfigureRequestResponseServices(services);
@@ -133,7 +133,7 @@ public sealed class Startup(
 
     private void ConfigureMessageSenderServices(IServiceCollection services)
     {
-        services.AddTransient<EmailSender>(serviceProvider =>
+        services.AddTransient<IEmailSender>(serviceProvider =>
             new EmailSender(
                 _appSettings.Email.SmtpHost,
                 _appSettings.Email.SmtpPort,

@@ -295,6 +295,25 @@ and the pages following it.
 1. For each of the two environments staging and production referred to by
    `${environment}` below:
    1. Change into the clone `${environment}` by running `cd /app/${environment}`.
+   1. Open `https://www.buildingenvelopedata.org` in your favorite web browser,
+      log into your account, navigate to the institution operating this
+      database (which you should be a representative of), add an OpenId Connect
+      Application with
+      - client ID and display name of your choice;
+      - consent type: explicit;
+      - endpoints: authorization, pushed authorization, introspection,
+        end session, revocation, token;
+      - grant types: authorization code and refresh token;
+      - response types: code;
+      - scopes: address, email, phone, profile, roles, read:api, write:api;
+      - requirements: proof key for code exchange and pushed authorization
+        requests;
+      - post logout redirect URI: `https://${HOST}/connect/callback/logout/metabase`
+      - redirect URI: `https://${HOST}/connect/callback/login/metabase`
+        where `${HOST}` is the domain name with sub-domain of the deployment,
+        for example, `staging.solarbuildingenvelopes.com` or
+        `www.solarbuildingenvelopes.com` for the product-data database of the
+        TestLab Solar Facades.
    1. Prepare the environment by running `cp ./.env.${environment}.sample ./.env`,
       `cp ./frontend/.env.local.sample ./frontend/.env.local`, and by adjusting
       variable values in the copies to your needs, in particular, by setting

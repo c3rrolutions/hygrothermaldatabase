@@ -11,6 +11,7 @@ using Database.Services;
 using GraphQL.Client.Abstractions.Utilities;
 using System.Collections.Concurrent;
 using Microsoft.Extensions.Logging;
+using Database.Utilities;
 
 namespace Database.GraphQl.GetHttpsResources;
 
@@ -78,7 +79,7 @@ public sealed class GetHttpsResourceMutations
 
         var getHttpsResource = new GetHttpsResource(
             input.Description,
-            input.HashValue,
+            Sha256FileHasher.ComputeForString(""), // The correct hash value is computed when the file for this resource is being uploaded.
             input.DataFormatId,
             input.DataKind == DataKind.CALORIMETRIC_DATA ? input.DataId : null,
             input.DataKind == DataKind.GEOMETRIC_DATA ? input.DataId : null,

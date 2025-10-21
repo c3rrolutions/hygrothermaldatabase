@@ -2,10 +2,11 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using HotChocolate.Types;
 using Database.Authorization;
 using Database.Data;
 using Database.Services;
-using HotChocolate.Types;
+using Database.Utilities;
 
 namespace Database.GraphQl.CalorimetricDataX;
 
@@ -78,7 +79,7 @@ public sealed class CalorimetricDataMutations
         );
         var resource = new GetHttpsResource(
             input.RootResource.Description,
-            input.RootResource.HashValue,
+            Sha256FileHasher.ComputeForString(""), // The correct hash value is computed when the file for this resource is being uploaded.
             input.RootResource.DataFormatId,
             null,
             input.RootResource.ArchivedFilesMetaInformation.Select(i =>

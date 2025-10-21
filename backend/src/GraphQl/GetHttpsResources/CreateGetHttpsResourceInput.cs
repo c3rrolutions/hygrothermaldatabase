@@ -6,7 +6,6 @@ namespace Database.GraphQl.GetHttpsResources;
 
 public sealed record CreateGetHttpsResourceInput(
     string Description,
-    string HashValue,
     Guid DataFormatId,
     Guid DataId,
     DataKind DataKind,

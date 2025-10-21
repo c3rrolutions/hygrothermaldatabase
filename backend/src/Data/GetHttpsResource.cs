@@ -151,6 +151,6 @@ public sealed class GetHttpsResource(
 
     public async Task RecomputeHashValue(CancellationToken cancellationToken)
     {
-        HashValue = await Sha256FileHasher.Compute(FilePath, cancellationToken);
+        HashValue = await Sha256FileHasher.ComputeForFile(FilePath, cancellationToken);
     }
 }

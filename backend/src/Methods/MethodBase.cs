@@ -24,7 +24,6 @@ public abstract class MethodBase<TInput, TOutput>
 
     public JsonElement Calculate(JsonElement input)
     {
-        Console.WriteLine(JsonSerializer.Serialize(input));
         var parsedInput = input.Deserialize<TInput>(s_jsonSerializerOptions)
             ?? throw new InvalidOperationException();
         var output = Calculate(parsedInput);

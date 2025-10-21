@@ -30,7 +30,7 @@ public sealed class AuthenticationController(
     private readonly IdentityOptions _identityOptions = identityOptions.Value ??
                            throw new InvalidOperationException("There are no identity options.");
     private readonly ApplicationDbContext _context = context;
-    private readonly string _issuer = appSettings.MetabaseHost;
+    private readonly Uri _issuer = appSettings.MetabaseHostUri;
     private bool _disposed;
 
     protected override void Dispose(bool disposing)
@@ -60,7 +60,7 @@ public sealed class AuthenticationController(
                 {
                     // Note: when only one client is registered in the client options,
                     // setting the issuer property is not required and can be omitted.
-                    [OpenIddictClientAspNetCoreConstants.Properties.Issuer] = _issuer
+                    [OpenIddictClientAspNetCoreConstants.Properties.Issuer] = _issuer.AbsoluteUri
                 }
             )
             {
@@ -95,7 +95,7 @@ public sealed class AuthenticationController(
                 {
                     // Note: when only one client is registered in the client options,
                     // setting the issuer property is not required and can be omitted.
-                    [OpenIddictClientAspNetCoreConstants.Properties.Issuer] = _issuer,
+                    [OpenIddictClientAspNetCoreConstants.Properties.Issuer] = _issuer.AbsoluteUri,
                     // While not required, the specification encourages sending an id_token_hint
                     // parameter containing an identity token returned by the server for this user.
                     [OpenIddictClientAspNetCoreConstants.Properties.IdentityTokenHint] =

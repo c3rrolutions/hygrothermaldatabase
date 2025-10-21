@@ -71,7 +71,10 @@ public sealed class GetHttpsResourceResolvers
         AppSettings appSettings
     )
     {
-        return new Uri($"{appSettings.Host}/api/resources/{getHttpsResource.Id}");
+        return new UriBuilder(appSettings.HostUri)
+        {
+            Path = "/api/resources/{getHttpsResource.Id"
+        }.Uri;
     }
 
     public async Task<GetHttpsResource?> GetParent(

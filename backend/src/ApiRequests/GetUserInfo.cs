@@ -11,7 +11,7 @@ namespace Database.ApiRequests;
 public sealed class GetUserInfo
 {
     public static Uri GetEndpoint(AppSettings appSettings) =>
-        new(new Uri(appSettings.MetabaseHost, UriKind.Absolute), "/connect/userinfo");
+        new UriBuilder(appSettings.MetabaseHostUri) { Path = "/connect/userinfo" }.Uri;
 
     public sealed record UserInfo(
         Address? Address,

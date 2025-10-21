@@ -10,15 +10,21 @@ public sealed class AppSettings
 
     // TODO Consider using [Flurl](https://flurl.dev) to construct URIs. For the pitfalls of
     // using `Uri` as below see the comments to https://stackoverflow.com/questions/372865/path-combine-for-urls/1527643#1527643
-    public Uri DatabaseGraphQlEndpoint { get => new(new Uri(Host, UriKind.Absolute), GraphQlPathSegment); }
+    public Uri DatabaseGraphQlEndpoint
+    {
+        get => new UriBuilder(new Uri(Host, UriKind.Absolute)) { Path = GraphQlPathSegment }.Uri;
+    }
 
-    public Uri MetabaseGraphQlEndpoint { get => new(new Uri(MetabaseHost, UriKind.Absolute), GraphQlPathSegment); }
+    public Uri MetabaseGraphQlEndpoint
+    {
+        get => new UriBuilder(new Uri(MetabaseHost, UriKind.Absolute)) { Path = GraphQlPathSegment }.Uri;
+    }
 
-    public string Host { get; private set; }
-        = "";
+    public string Host { get; private set; } = "";
+    public Uri HostUri { get => new(Host, UriKind.Absolute); }
 
-    public string MetabaseHost { get; private set; }
-        = "";
+    public string MetabaseHost { get; private set; } = "";
+    public Uri MetabaseHostUri { get => new(MetabaseHost, UriKind.Absolute); }
 
     public Guid DatabaseId { get; private set; }
     public Guid OperatorId { get; private set; }

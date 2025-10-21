@@ -142,7 +142,7 @@ public abstract class AuthConfiguration
             {
                 // The validation handler uses OpenID Connect discovery to
                 // retrieve the issuer signing keys used to validate tokens.
-                _.SetIssuer(new Uri(appSettings.MetabaseHost, UriKind.Absolute));
+                _.SetIssuer(appSettings.MetabaseHostUri);
                 // Configure the audience accepted by this resource server.
                 _.AddAudiences(appSettings.OpenIdConnectClient.Id);
                 // Configure the validation handler to use introspection and
@@ -156,8 +156,10 @@ public abstract class AuthConfiguration
                 _.UseAspNetCore();
                 // Register the System.Net.Http integration.
                 _.UseSystemNetHttp()
-                    .ConfigureHttpClientHandler(handler => {
-                        if (environment.IsDevelopment()) {
+                    .ConfigureHttpClientHandler(handler =>
+                    {
+                        if (environment.IsDevelopment())
+                        {
                             // https://documentation.openiddict.com/integrations/system-net-http#register-a-custom-httpclienthandler-configuration-delegate
                             handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
                         }
@@ -184,8 +186,10 @@ public abstract class AuthConfiguration
                 // providers that use the user agent as a way to throttle requests (e.g Reddit).
                 _.UseSystemNetHttp()
                     .SetProductInformation(typeof(Startup).Assembly)
-                    .ConfigureHttpClientHandler(handler => {
-                        if (environment.IsDevelopment()) {
+                    .ConfigureHttpClientHandler(handler =>
+                    {
+                        if (environment.IsDevelopment())
+                        {
                             // https://documentation.openiddict.com/integrations/system-net-http#register-a-custom-httpclienthandler-configuration-delegate
                             handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
                         }
@@ -195,7 +199,7 @@ public abstract class AuthConfiguration
                 _.AddRegistration(
                     new OpenIddictClientRegistration
                     {
-                        Issuer = new Uri(appSettings.MetabaseHost, UriKind.Absolute),
+                        Issuer = appSettings.MetabaseHostUri,
 
                         // Note: these settings must match the application details
                         // inserted in the database at the server level.

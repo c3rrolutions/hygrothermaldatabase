@@ -1,7 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.IO;
+using System.Security.Cryptography;
+using System.Threading;
+using System.Threading.Tasks;
 using Database.Extensions;
+using Database.Utilities;
 
 namespace Database.Data;
 
@@ -13,6 +18,8 @@ public sealed class GetHttpsResource(
     )
         : Entity
 {
+    public const string FilesDirectoryPath = "./files/";
+
     public GetHttpsResource(
         string? description,
         string hashValue,
@@ -87,6 +94,7 @@ public sealed class GetHttpsResource(
         GeometricDataId = geometricDataId;
     }
 
+    public string FilePath { get => Path.Combine(FilesDirectoryPath, Id.ToString("D")); }
     public string? Description { get; private set; } = description;
     public string HashValue { get; private set; } = hashValue;
     public Guid DataFormatId { get; private set; } = dataFormatId;
@@ -139,5 +147,10 @@ public sealed class GetHttpsResource(
     public static string ConstructVertexId(Guid id)
     {
         return id.ToString("D").Base64Encode();
+    }
+
+    public async Task RecomputeHashValue(CancellationToken cancellationToken)
+    {
+        HashValue = await Sha256FileHasher.Compute(FilePath, cancellationToken);
     }
 }

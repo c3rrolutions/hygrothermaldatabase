@@ -4,6 +4,7 @@ using Database.Configuration;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Routing;
 
 namespace Database.Controllers;
 
@@ -22,6 +23,8 @@ public sealed class AntiforgeryController(IAntiforgery antiforgeryService) : Con
             SameSite = SameSiteMode.Strict
         };
 
+    [EndpointName("AntiforgeryToken")]
+    [EndpointDescription("Get an antiforgery token.")]
     [HttpGet("~/antiforgery/token")]
     public async Task<IActionResult> Token()
     {

@@ -7,7 +7,7 @@ namespace Database.Methods;
 public abstract class MethodBase<TInput, TOutput>
     : IMethod
 {
-    private static readonly JsonSerializerOptions s_jsonSerializerOptions = new()
+    public static readonly JsonSerializerOptions JsonSerializerOptions = new()
     {
         AllowTrailingCommas = true,
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
@@ -24,7 +24,7 @@ public abstract class MethodBase<TInput, TOutput>
 
     public JsonElement Calculate(JsonElement input)
     {
-        var parsedInput = input.Deserialize<TInput>(s_jsonSerializerOptions)
+        var parsedInput = input.Deserialize<TInput>(JsonSerializerOptions)
             ?? throw new InvalidOperationException();
         var output = Calculate(parsedInput);
         using var document = JsonDocument.Parse(

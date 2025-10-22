@@ -1,10 +1,8 @@
 using System;
-using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Database.Services;
 using GraphQL;
-using Microsoft.AspNetCore.Http;
+using Database.Services;
 
 namespace Database.ApiRequests;
 
@@ -52,7 +50,8 @@ public sealed class QueryDatabase
     {
         return (await apiRequestService.QueryGraphQl<DatabaseData>(
             GetGraphQlEndpoint(appSettings),
-            new GraphQLRequest(await apiRequestService.ConstructGraphQlQuery(QueryFileName),
+            new GraphQLRequest(
+                await apiRequestService.ConstructGraphQlQuery(QueryFileName),
                 new
                 {
                     id = databaseId

@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.IO;
-using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using Database.Extensions;
@@ -99,8 +98,7 @@ public sealed class GetHttpsResource(
     public string HashValue { get; private set; } = hashValue;
     public Guid DataFormatId { get; private set; } = dataFormatId;
 
-    public ICollection<FileMetaInformation> ArchivedFilesMetaInformation { get; private set; } =
-        [];
+    public ICollection<FileMetaInformation> ArchivedFilesMetaInformation { get; private set; } = [];
 
     // TODO Make sure that at least one ID is always present. In that case `Guid.Empty` should never be used!
     [NotMapped]

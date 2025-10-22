@@ -24,20 +24,6 @@ public sealed class ApiRequestService(
 {
     public const string CustomHttpClient = "Custom";
 
-    public static JsonDocumentOptions StrictJsonDocumentOptions => new()
-    {
-        AllowTrailingCommas = false,
-        CommentHandling = JsonCommentHandling.Disallow,
-        MaxDepth = 0
-    };
-
-    public static JsonDocumentOptions LaxJsonDocumentOptions => new()
-    {
-        AllowTrailingCommas = true,
-        CommentHandling = JsonCommentHandling.Skip,
-        MaxDepth = 0
-    };
-
     public Task<string> ConstructGraphQlQuery(
         string fileName
     )
@@ -77,7 +63,7 @@ public sealed class ApiRequestService(
             {
                 using var document = await JsonDocument.ParseAsync(
                     await httpResponseContent.ReadAsStreamAsync(),
-                    StrictJsonDocumentOptions
+                    JsonDocumentSettings.Strict
                 );
                 return document.RootElement.Clone();
             },
@@ -104,13 +90,6 @@ public sealed class ApiRequestService(
     /// <summary>
     /// Send GraphQL request to API and return response.
     /// </summary>
-    /// <typeparam name="TGraphQlResponse"> Expected response type. </typeparam>
-    /// <param name="appSettings">         <see cref="AppSettings"/> </param>
-    /// <param name="request">             <see cref="GraphQLRequest"/> </param>
-    /// <param name="httpClientFactory">   <see cref="IHttpClientFactory"/> </param>
-    /// <param name="httpContextAccessor"> <see cref="IHttpContextAccessor"/> </param>
-    /// <param name="cancellationToken">   <see cref="CancellationToken"/> </param>
-    /// <returns> <see cref="GraphQLResponse{T}"/> of expected type. </returns>
     public Task<GraphQLResponse<TGraphQlResponse>> QueryGraphQl<TGraphQlResponse>(
         Uri url,
         GraphQLRequest request,
@@ -139,7 +118,7 @@ public sealed class ApiRequestService(
             {
                 using var document = await JsonDocument.ParseAsync(
                     await httpResponseContent.ReadAsStreamAsync(),
-                    LaxJsonDocumentOptions
+                    JsonDocumentSettings.Lax
                 );
                 return document.RootElement.Clone();
             },

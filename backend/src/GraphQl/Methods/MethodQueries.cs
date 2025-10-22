@@ -59,7 +59,7 @@ public sealed class MethodQueries
         using var stream = data.OpenReadStream();
         using var jsonData = await JsonDocument.ParseAsync(
             stream,
-            ApiRequestService.LaxJsonDocumentOptions,
+            JsonDocumentSettings.Lax,
             cancellationToken
         );
         var result = method.Calculate(jsonData.RootElement);

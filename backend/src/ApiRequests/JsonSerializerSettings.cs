@@ -5,61 +5,33 @@ using GraphQL.Client.Serializer.SystemTextJson;
 namespace Database.ApiRequests;
 
 /// <summary>
-/// Settings for Json serialization.
+/// Options for JSON serialization.
 /// </summary>
 public static class JsonSerializerSettings
 {
-    /// <summary>
-    /// Settings for GraphQL Json requests.
-    /// </summary>
+    private static readonly JsonSerializerOptions s_common =
+        new()
+        {
+            AllowOutOfOrderMetadataProperties = true,
+            Converters = { new JsonStringEnumConverter(new ConstantCaseJsonNamingPolicy(), false) },
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+            IgnoreReadOnlyFields = true,
+            IgnoreReadOnlyProperties = false,
+            IncludeFields = false,
+            NumberHandling = JsonNumberHandling.Strict,
+            PropertyNameCaseInsensitive = false,
+            ReadCommentHandling = JsonCommentHandling.Disallow,
+        };
+
     public static readonly JsonSerializerOptions GraphQl =
-        new()
+        new(s_common)
         {
-            Converters = { new JsonStringEnumConverter(new ConstantCaseJsonNamingPolicy(), false) },
-            NumberHandling = JsonNumberHandling.Strict,
-            AllowOutOfOrderMetadataProperties = true,
-            PropertyNameCaseInsensitive = false,
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            ReadCommentHandling = JsonCommentHandling.Disallow,
-            IncludeFields = false,
-            IgnoreReadOnlyProperties = false,
-            IgnoreReadOnlyFields = true,
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-        }; //.SetupImmutableConverter();
+        };
 
-    /// <summary>
-    /// Settings for REST Json requests.
-    /// </summary>
     public static readonly JsonSerializerOptions Rest =
-        new()
+        new(s_common)
         {
-            Converters = { new JsonStringEnumConverter(new ConstantCaseJsonNamingPolicy(), false) },
-            NumberHandling = JsonNumberHandling.Strict,
-            AllowOutOfOrderMetadataProperties = true,
-            PropertyNameCaseInsensitive = false,
             PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
-            ReadCommentHandling = JsonCommentHandling.Disallow,
-            IncludeFields = false,
-            IgnoreReadOnlyProperties = false,
-            IgnoreReadOnlyFields = true,
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-        }; //.SetupImmutableConverter();
-
-    /// <summary>
-    /// Settings for file Json requests.
-    /// </summary>
-    public static readonly JsonSerializerOptions File =
-        new()
-        {
-            Converters = { new JsonStringEnumConverter(new ConstantCaseJsonNamingPolicy(), false) },
-            NumberHandling = JsonNumberHandling.Strict,
-            AllowOutOfOrderMetadataProperties = true,
-            PropertyNameCaseInsensitive = false,
-            PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
-            ReadCommentHandling = JsonCommentHandling.Disallow,
-            IncludeFields = false,
-            IgnoreReadOnlyProperties = false,
-            IgnoreReadOnlyFields = true,
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-        }; //.SetupImmutableConverter();
+        };
 }

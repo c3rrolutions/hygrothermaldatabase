@@ -66,17 +66,6 @@ public sealed class GetHttpsResourceResolvers
         return null;
     }
 
-    public Uri GetLocator(
-        [Parent] GetHttpsResource getHttpsResource,
-        AppSettings appSettings
-    )
-    {
-        return new UriBuilder(appSettings.HostUri)
-        {
-            Path = "/api/resources/{getHttpsResource.Id"
-        }.Uri;
-    }
-
     public async Task<GetHttpsResource?> GetParent(
         [Parent] GetHttpsResource getHttpsResource,
         GetHttpsResourceByIdDataLoader byId,

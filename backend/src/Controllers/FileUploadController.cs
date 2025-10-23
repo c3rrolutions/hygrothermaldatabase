@@ -187,6 +187,13 @@ public sealed class FileUploadController(
             // read the headers for the next section.
             section = await reader.ReadNextSectionAsync(cancellationToken);
         }
+        if (getHttpsResource.OpticalData is not null)
+        {
+            await getHttpsResource.OpticalData.ExtractAndSetMirroredValuesFromFile(
+                getHttpsResource.FilePath,
+                getHttpsResource.DataFormatId
+            );
+        }
         await getHttpsResource.RecomputeHashValue(cancellationToken);
         await context.SaveChangesAsync(cancellationToken);
         return Created(nameof(FileUploadController), null);

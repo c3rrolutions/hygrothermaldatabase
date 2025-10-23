@@ -1,4 +1,4 @@
-﻿schema {
+schema {
   query: Query
   mutation: Mutation
 }
@@ -21,6 +21,7 @@ interface Data {
   resources: [GetHttpsResource!]!
   resourceTree: GetHttpsResourceTree!
   timestamp: DateTime!
+  userId: Uuid!
   uuid: Uuid!
   warnings: [String!]!
 }
@@ -89,6 +90,7 @@ type CalorimetricData implements Node & Data {
   resources: [GetHttpsResource!]! @cost(weight: "10")
   resourceTree: GetHttpsResourceTree!
   timestamp: DateTime!
+  userId: Uuid!
   uuid: Uuid! @cost(weight: "10")
   uValues: [Float!]!
   warnings: [String!]!
@@ -282,6 +284,7 @@ type GeometricData implements Node & Data {
   resourceTree: GetHttpsResourceTree!
   thicknesses: [Float!]!
   timestamp: DateTime!
+  userId: Uuid!
   uuid: Uuid! @cost(weight: "10")
   warnings: [String!]!
 }
@@ -311,6 +314,7 @@ type GetHttpsResource implements Node {
   data: Data @cost(weight: "10")
   dataFormatId: Uuid!
   description: String
+  filePath: String!
   hashValue: String!
   id: ID!
   locator: Url!
@@ -372,6 +376,7 @@ type HygrothermalData implements Node & Data {
   resources: [GetHttpsResource!]! @cost(weight: "10")
   resourceTree: GetHttpsResourceTree!
   timestamp: DateTime!
+  userId: Uuid!
   uuid: Uuid! @cost(weight: "10")
   warnings: [String!]!
 }
@@ -432,6 +437,7 @@ type Mutation {
   createOpticalData(input: CreateOpticalDataInput!): CreateOpticalDataPayload! @cost(weight: "10")
   createPhotovoltaicData(input: CreatePhotovoltaicDataInput!): CreatePhotovoltaicDataPayload! @cost(weight: "10")
   createResponseApprovals: CreateResponseApprovalsPayload! @cost(weight: "10")
+  recomputeGetHttpsResourceHashValues: RecomputeGetHttpsResourceHashValuesPayload! @cost(weight: "10")
   removeDataApproval(input: DataApprovalInput!): RemoveDataApprovalPayload! @cost(weight: "10")
   updateAccessRights(input: InstitutionAccessRightsInput!): UpdateAccessRightsPayload! @cost(weight: "10")
   updateDataAccessRights(input: DataAccessRightsInput!): UpdateDataAccessRightsPayload! @cost(weight: "10")
@@ -489,6 +495,7 @@ type OpticalData implements Node & Data {
   subtype: OpticalComponentSubtype
   timestamp: DateTime!
   type: OpticalComponentType
+  userId: Uuid!
   uuid: Uuid! @cost(weight: "10")
   warnings: [String!]!
 }
@@ -542,6 +549,7 @@ type PhotovoltaicData implements Node & Data {
   resources: [GetHttpsResource!]! @cost(weight: "10")
   resourceTree: GetHttpsResourceTree!
   timestamp: DateTime!
+  userId: Uuid!
   uuid: Uuid! @cost(weight: "10")
   warnings: [String!]!
 }
@@ -609,6 +617,18 @@ type Query {
   opticalData(id: Uuid! locale: Locale): OpticalData @cost(weight: "10")
   photovoltaicData(id: Uuid! locale: Locale): PhotovoltaicData @cost(weight: "10")
   verificationCode: String!
+}
+
+type RecomputeGetHttpsResourceHashValuesError {
+  code: RecomputeGetHttpsResourceHashValuesErrorCode!
+  message: String!
+  path: [String!]!
+}
+
+type RecomputeGetHttpsResourceHashValuesPayload {
+  errors: [RecomputeGetHttpsResourceHashValuesError!]
+  getHttpsResources: [GetHttpsResource!]
+  query: Query!
 }
 
 type RemoveDataApprovalError {
@@ -815,7 +835,6 @@ input CreateGetHttpsResourceInput {
   dataId: Uuid!
   dataKind: DataKind!
   description: String!
-  hashValue: String!
   parentId: Uuid
 }
 
@@ -1344,7 +1363,6 @@ input RootGetHttpsResourceInput {
   archivedFilesMetaInformation: [FileMetaInformationInput!]!
   dataFormatId: Uuid!
   description: String!
-  hashValue: String!
 }
 
 input StandardInput {
@@ -1629,6 +1647,13 @@ enum OpticalComponentSubtype {
 enum OpticalComponentType {
   GLAZING
   SHADING
+}
+
+enum RecomputeGetHttpsResourceHashValuesErrorCode {
+  UNKNOWN
+  UNAUTHORIZED
+  UNAUTHENTICATED
+  FAILED
 }
 
 enum RemoveDataApprovalErrorCode {

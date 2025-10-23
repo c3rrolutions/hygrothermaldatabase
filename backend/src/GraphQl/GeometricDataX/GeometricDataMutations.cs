@@ -47,6 +47,7 @@ public sealed class GeometricDataMutations
         }
 
         var geometricData = new GeometricData(
+            currentUser.Uuid,
             input.Locale,
             input.ComponentId,
             input.Name,

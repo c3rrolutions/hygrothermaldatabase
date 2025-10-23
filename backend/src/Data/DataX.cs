@@ -5,6 +5,7 @@ using System.Linq;
 namespace Database.Data;
 
 public abstract class DataX(
+    Guid userId,
     string locale,
     Guid componentId,
     string? name,
@@ -12,10 +13,10 @@ public abstract class DataX(
     string[] warnings,
     Guid creatorId,
     DateTime createdAt
-    )
-        : Entity, IData
+) : Entity, IData
 {
     protected DataX(
+        Guid userId,
         string locale,
         Guid componentId,
         string? name,
@@ -26,6 +27,7 @@ public abstract class DataX(
         AppliedMethod appliedMethod
     )
         : this(
+            userId,
             locale,
             componentId,
             name,
@@ -38,6 +40,7 @@ public abstract class DataX(
         AppliedMethod = appliedMethod;
     }
 
+    public Guid UserId { get; private set; } = userId;
     public string Locale { get; private set; } = locale;
     public Guid ComponentId { get; private set; } = componentId;
     public string? Name { get; private set; } = name;

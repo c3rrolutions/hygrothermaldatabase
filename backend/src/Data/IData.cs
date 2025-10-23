@@ -13,6 +13,7 @@ namespace Database.Data;
 [JsonDerivedType(typeof(PhotovoltaicData), typeDiscriminator: nameof(PhotovoltaicData))]
 public interface IData : IEntity
 {
+    Guid UserId { get; }
     Guid ComponentId { get; }
     string? Name { get; }
     string? Description { get; }

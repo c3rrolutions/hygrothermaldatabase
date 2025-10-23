@@ -8,6 +8,7 @@ public sealed class HygrothermalData
     : DataX
 {
     public HygrothermalData(
+        Guid userId,
         string locale,
         Guid componentId,
         string? name,
@@ -17,6 +18,7 @@ public sealed class HygrothermalData
         DateTime createdAt,
         AppliedMethod appliedMethod
     ) : base(
+        userId,
         locale,
         componentId,
         name,
@@ -31,6 +33,7 @@ public sealed class HygrothermalData
 
     // `DbContext` needs this constructor without owned entities.
     public HygrothermalData(
+        Guid userId,
         string locale,
         Guid componentId,
         string? name,
@@ -39,6 +42,7 @@ public sealed class HygrothermalData
         Guid creatorId,
         DateTime createdAt
     ) : base(
+        userId,
         locale,
         componentId,
         name,

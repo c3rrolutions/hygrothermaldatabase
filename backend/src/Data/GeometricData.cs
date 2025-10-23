@@ -8,6 +8,7 @@ public sealed class GeometricData
     : DataX
 {
     public GeometricData(
+        Guid userId,
         string locale,
         Guid componentId,
         string? name,
@@ -18,6 +19,7 @@ public sealed class GeometricData
         AppliedMethod appliedMethod,
         double[] thicknesses
     ) : base(
+        userId,
         locale,
         componentId,
         name,
@@ -32,6 +34,7 @@ public sealed class GeometricData
     }
 
     public GeometricData(
+        Guid userId,
         string locale,
         Guid componentId,
         string? name,
@@ -41,6 +44,7 @@ public sealed class GeometricData
         DateTime createdAt,
         double[] thicknesses
     ) : base(
+        userId,
         locale,
         componentId,
         name,

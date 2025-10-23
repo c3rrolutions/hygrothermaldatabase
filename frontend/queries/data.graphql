@@ -23,6 +23,7 @@ fragment DataPartial on Data {
   resourceTree {
     root {
       value {
+        uuid
         description
         hashValue
         locator
@@ -99,6 +100,7 @@ fragment DataPartial on Data {
     dataFormatId
   }
   warnings
+  userId
 }
 
 fragment CalorimetricDataPartial on CalorimetricData {

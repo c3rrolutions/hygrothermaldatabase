@@ -1,11 +1,9 @@
 import { Scalars } from "../../../__generated__/__types__";
 import { useGeometricDataQuery } from "../../../queries/data.graphql";
-import { Skeleton, Result, Descriptions, Typography } from "antd";
-import { PageHeader } from "@ant-design/pro-layout";
+import { Skeleton, Result, Descriptions } from "antd";
 import { useEffect } from "react";
-import Link from "next/link";
-import paths from "../../../paths";
 import { messageApolloError } from "../../../lib/apollo";
+import DataPageHeader from "../DataPageHeader";
 
 export type GeometricDataProps = {
     geometricDataId: Scalars["Uuid"];
@@ -42,41 +40,18 @@ export default function GeometricData({ geometricDataId }: GeometricDataProps) {
     }
 
     return (
-        <PageHeader
-            title={geometricData.name}
-            subTitle={geometricData.description}
-
-            backIcon={false}
+        <DataPageHeader
+            data={geometricData}
+        // extra={[
+        //   <UpdateGeometricData
+        //     key="updateGeometricData"
+        //     geometricDataId={geometricData.uuid}
+        //   />,
+        // ]}
         >
-            <Descriptions size="small" column={1}>
-                <Descriptions.Item label="UUID">{geometricData.uuid}</Descriptions.Item>
-                <Descriptions.Item label="Component">
-                    <Typography.Link
-                        href={paths.metabase.component(geometricData.componentId)}
-                    >
-                        {geometricData.componentId}
-                    </Typography.Link>
-                </Descriptions.Item>
-                <Descriptions.Item label="Creator">
-                    <Link
-                        href={paths.metabase.institution(geometricData.creatorId)}
-                        legacyBehavior>
-                        {geometricData.creatorId}
-                    </Link>
-                </Descriptions.Item>
-                <Descriptions.Item label="Description">{geometricData.description}</Descriptions.Item>
-                <Descriptions.Item label="Created At">{geometricData.createdAt}</Descriptions.Item>
-                <Descriptions.Item label="Applied Method">
-                    <Typography.Link
-                        href={paths.metabase.method(geometricData.appliedMethod.methodId)}
-                    >
-                        {geometricData.appliedMethod.methodId}
-                    </Typography.Link>
-                </Descriptions.Item>
-                <Descriptions.Item key="thicknesses" label="Thicknesses">
-                    {geometricData.thicknesses.map((x) => x.toLocaleString("en")).join(", ")}
-                </Descriptions.Item>
-            </Descriptions>
-        </PageHeader>
+            <Descriptions.Item key="thicknesses" label="Thicknesses">
+                {geometricData.thicknesses.map((x) => x.toLocaleString("en")).join(", ")}
+            </Descriptions.Item>
+        </DataPageHeader>
     );
 }

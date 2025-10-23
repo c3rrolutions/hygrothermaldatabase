@@ -9,6 +9,7 @@ public sealed class OpticalData
     : DataX
 {
     public OpticalData(
+        Guid userId,
         string locale,
         Guid componentId,
         string? name,
@@ -28,6 +29,7 @@ public sealed class OpticalData
         double[] colorRenderingIndices,
         ICollection<CielabColor> cielabColors
     ) : base(
+        userId,
         locale,
         componentId,
         name,
@@ -52,6 +54,7 @@ public sealed class OpticalData
 
     // `DbContext` needs this constructor without owned entities.
     public OpticalData(
+        Guid userId,
         string locale,
         Guid componentId,
         string? name,
@@ -69,6 +72,7 @@ public sealed class OpticalData
         double[] infraredEmittances,
         double[] colorRenderingIndices
     ) : base(
+        userId,
         locale,
         componentId,
         name,

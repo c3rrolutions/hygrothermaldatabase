@@ -47,6 +47,7 @@ public sealed class PhotovoltaicDataMutations
         }
 
         var photovoltaicData = new PhotovoltaicData(
+            currentUser.Uuid,
             input.Locale,
             input.ComponentId,
             input.Name,

@@ -46,6 +46,7 @@ public sealed class HygrothermalDataMutations
         }
 
         var hygrothermalData = new HygrothermalData(
+            currentUser.Uuid,
             input.Locale,
             input.ComponentId,
             input.Name,

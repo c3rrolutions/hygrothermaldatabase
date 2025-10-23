@@ -45,6 +45,7 @@ public sealed class OpticalDataMutations
         }
 
         var opticalData = new OpticalData(
+            currentUser.Uuid,
             input.Locale,
             input.ComponentId,
             input.Name,

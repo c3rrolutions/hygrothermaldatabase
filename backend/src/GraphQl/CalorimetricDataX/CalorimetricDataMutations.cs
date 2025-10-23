@@ -47,6 +47,7 @@ public sealed class CalorimetricDataMutations
         }
 
         var calorimetricData = new CalorimetricData(
+            currentUser.Uuid,
             input.Locale,
             input.ComponentId,
             input.Name,

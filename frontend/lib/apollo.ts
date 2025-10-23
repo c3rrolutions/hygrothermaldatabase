@@ -64,8 +64,8 @@ function createIsomorphLink(context: ResolverContext = {}) {
         // `${process.env.NEXT_PUBLIC_DATABASE_URL}/graphql/` as on the client
         // side.
         typeof window === "undefined"
-          ? `${process.env.NEXT_PUBLIC_DATABASE_URL}/graphql/`
-          : `${process.env.NEXT_PUBLIC_DATABASE_URL}/graphql/`,
+          ? new URL("/graphql/", process.env.NEXT_PUBLIC_DATABASE_URL).href
+          : new URL("/graphql/", process.env.NEXT_PUBLIC_DATABASE_URL).href,
       useGETForQueries: false, // Use `POST` for queries to avoid "414 Request-URI Too Large" errors
       credentials: "same-origin",
       headers: headers,

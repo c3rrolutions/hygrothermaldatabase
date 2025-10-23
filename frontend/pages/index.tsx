@@ -20,7 +20,7 @@ function Page() {
             Fraunhofer Institute for Solar Energy Systems ISE
           </Typography.Link>
           . The product data server is part of the Product Data Network{" "}
-          <Typography.Link href={`${process.env.NEXT_PUBLIC_METABASE_URL}`}>
+          <Typography.Link href={paths.metabase.home}>
             buildingenvelopedata.org
           </Typography.Link>
           . The product data server is an instance of the{" "}
@@ -34,7 +34,7 @@ function Page() {
           is open-source with a permissive license, so that everyone can easily
           create their own product data server as part of the Product Data
           Network{" "}
-          <Typography.Link href={`${process.env.NEXT_PUBLIC_METABASE_URL}`}>
+          <Typography.Link href={paths.metabase.home}>
             buildingenvelopedata.org
           </Typography.Link>
           .
@@ -50,48 +50,48 @@ function Page() {
           <Link href={paths.calorimetricData}>calorimetric data</Link> and{" "}
           <Link href={paths.photovoltaicData}>photovoltaic data</Link>. If you
           would like to search the entire Product Data Network{" "}
-          <Typography.Link href={`${process.env.NEXT_PUBLIC_METABASE_URL}`}>
+          <Typography.Link href={paths.metabase.home}>
             buildingenvelopedata.org
           </Typography.Link>
           , you can search there for example for{" "}
           <Typography.Link
-            href={`${process.env.NEXT_PUBLIC_METABASE_URL}/data/optical`}
+            href={paths.metabase.allOpticalData}
           >
             optical data{" "}
           </Typography.Link>
           . You will find there also an overview about all building envelope{" "}
           <Typography.Link
-            href={`${process.env.NEXT_PUBLIC_METABASE_URL}/components`}
+            href={paths.metabase.components}
           >
             {" "}
             components
           </Typography.Link>
           ,{" "}
           <Typography.Link
-            href={`${process.env.NEXT_PUBLIC_METABASE_URL}/institutions`}
+            href={paths.metabase.institutions}
           >
             institutions
           </Typography.Link>
           ,{" "}
           <Typography.Link
-            href={`${process.env.NEXT_PUBLIC_METABASE_URL}/data-formats`}
+            href={paths.metabase.dataFormats}
           >
             data formats
           </Typography.Link>
           ,{" "}
           <Typography.Link
-            href={`${process.env.NEXT_PUBLIC_METABASE_URL}/methods`}
+            href={paths.metabase.methods}
           >
             methods
           </Typography.Link>{" "}
           and{" "}
           <Typography.Link
-            href={`${process.env.NEXT_PUBLIC_METABASE_URL}/databases`}
+            href={paths.metabase.databases}
           >
             databases
           </Typography.Link>{" "}
           of the Product Data Network{" "}
-          <Typography.Link href={`${process.env.NEXT_PUBLIC_METABASE_URL}`}>
+          <Typography.Link href={paths.metabase.home}>
             buildingenvelopedata.org
           </Typography.Link>
           .
@@ -99,14 +99,14 @@ function Page() {
         <Typography.Paragraph>
           This website is completely based on the
           <Typography.Link
-            href={`${process.env.NEXT_PUBLIC_DATABASE_URL}/graphql/`}
+            href={paths.graphQl}
           >
             {" "}
             GraphQL endpoint
           </Typography.Link>
           . The{" "}
           <Typography.Link
-            href={`${process.env.NEXT_PUBLIC_DATABASE_URL}/graphql/`}
+            href={paths.graphQl}
           >
             GraphQL endpoint
           </Typography.Link>{" "}
@@ -120,7 +120,7 @@ function Page() {
           which is especially helpful if you develop software to plan buildings.
           The{" "}
           <Typography.Link
-            href={`${process.env.NEXT_PUBLIC_METABASE_URL}/graphql/`}
+            href={paths.metabase.graphQl}
           >
             GraphQL endpoint of the metabase
           </Typography.Link>{" "}
@@ -130,7 +130,7 @@ function Page() {
         <Typography.Paragraph>
           The data format{" "}
           <Typography.Link
-            href={`${process.env.NEXT_PUBLIC_METABASE_URL}/data-formats/9ca9e8f5-94bf-4fdd-81e3-31a58d7ca708`}
+            href={paths.metabase.dataFormat("9ca9e8f5-94bf-4fdd-81e3-31a58d7ca708")}
           >
             BED-JSON
           </Typography.Link>{" "}
@@ -141,7 +141,7 @@ function Page() {
           </Typography.Link>
           . Other{" "}
           <Typography.Link
-            href={`${process.env.NEXT_PUBLIC_METABASE_URL}/data-formats`}
+            href={paths.metabase.dataFormats}
           >
             data formats
           </Typography.Link>{" "}

@@ -1,5 +1,6 @@
 import { Row, Col, Card, Typography } from "antd";
 import Layout from "../../components/Layout";
+import paths from "../../paths";
 
 function Page() {
   return (
@@ -10,7 +11,7 @@ function Page() {
             <Typography.Paragraph style={{ maxWidth: 768 }}>
               Create data by sending GraphQL mutations to the{" "}
               <Typography.Link
-                href={`${process.env.NEXT_PUBLIC_DATABASE_URL}/graphql/`}
+                href={paths.graphQl}
               >
                 GraphQL endpoint
               </Typography.Link>

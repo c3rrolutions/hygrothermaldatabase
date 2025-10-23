@@ -31,27 +31,22 @@ export default {
   logout: "/connect/logout",
   metabase: {
     component(uuid: string) {
-      return `${
-        process.env.NEXT_PUBLIC_METABASE_URL
-      }/components/${encodeURIComponent(uuid)}`;
+      return new URL(`/components/${encodeURIComponent(uuid)}`, process.env.NEXT_PUBLIC_METABASE_URL).href
     },
     database(uuid: string) {
-      return `/databases/${encodeURIComponent(uuid)}`;
+      return new URL(`/databases/${encodeURIComponent(uuid)}`, process.env.NEXT_PUBLIC_METABASE_URL).href
     },
     dataFormat(uuid: string) {
-      return `${
-        process.env.NEXT_PUBLIC_METABASE_URL
-      }/data-formats/${encodeURIComponent(uuid)}`;
+      return new URL(`/data-formats/${encodeURIComponent(uuid)}`, process.env.NEXT_PUBLIC_METABASE_URL).href
     },
     institution(uuid: string) {
-      return `${
-        process.env.NEXT_PUBLIC_METABASE_URL
-      }/institutions/${encodeURIComponent(uuid)}`;
+      return new URL(`/institutions/${encodeURIComponent(uuid)}`, process.env.NEXT_PUBLIC_METABASE_URL).href
     },
     method(uuid: string) {
-      return `${
-        process.env.NEXT_PUBLIC_METABASE_URL
-      }/methods/${encodeURIComponent(uuid)}`;
+      return new URL(`/methods/${encodeURIComponent(uuid)}`, process.env.NEXT_PUBLIC_METABASE_URL).href
+    },
+    user(uuid: string) {
+      return new URL(`/users/${encodeURIComponent(uuid)}`, process.env.NEXT_PUBLIC_METABASE_URL).href
     },
   },
 };

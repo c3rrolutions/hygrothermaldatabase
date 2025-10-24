@@ -1,13 +1,18 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Threading.Tasks;
 using Database.Enumerations;
+using Database.Enumerations.DataPoints;
+using Database.Extractors;
 
 namespace Database.Data;
 
 public sealed class OpticalData
     : DataX
 {
+    public static readonly Guid BedJsonDataFormatId = new("9ca9e8f5-94bf-4fdd-81e3-31a58d7ca708");
+
     public OpticalData(
         Guid userId,
         string locale,
@@ -106,4 +111,55 @@ public sealed class OpticalData
     public double[] InfraredEmittances { get; private set; }
     public double[] ColorRenderingIndices { get; private set; }
     public ICollection<CielabColor> CielabColors { get; private set; } = [];
+
+    public async Task ExtractAndSetMirroredValuesFromFile(
+        string filePath,
+        Guid dataFormatId
+    )
+    {
+        if (dataFormatId == BedJsonDataFormatId)
+        {
+            NearnormalHemisphericalVisibleTransmittances =
+                await new DoubleResultsJsonExtractor(
+                    IncidenceDirection.NEARNORMAL,
+                    WavelengthsIntegral.VISIBLE,
+                    EmergenceDirection.HEMISPHERICAL,
+                    DataPointResult.TRANSMITTANCE
+                ).Extract(filePath);
+            NearnormalHemisphericalVisibleReflectances =
+                await new DoubleResultsJsonExtractor(
+                    IncidenceDirection.NEARNORMAL,
+                    WavelengthsIntegral.VISIBLE,
+                    EmergenceDirection.HEMISPHERICAL,
+                    DataPointResult.REFLECTANCE
+                ).Extract(filePath);
+            NearnormalHemisphericalSolarTransmittances =
+                await new DoubleResultsJsonExtractor(
+                    IncidenceDirection.NEARNORMAL,
+                    WavelengthsIntegral.SOLAR,
+                    EmergenceDirection.HEMISPHERICAL,
+                    DataPointResult.TRANSMITTANCE
+                ).Extract(filePath);
+            NearnormalHemisphericalSolarReflectances =
+                await new DoubleResultsJsonExtractor(
+                    IncidenceDirection.NEARNORMAL,
+                    WavelengthsIntegral.SOLAR,
+                    EmergenceDirection.HEMISPHERICAL,
+                    DataPointResult.REFLECTANCE
+                ).Extract(filePath);
+            InfraredEmittances =
+                await new DoubleResultsJsonExtractor(
+                    IncidenceDirection.HEMISPHERICAL,
+                    WavelengthsIntegral.INFRARED,
+                    EmergenceDirection.HEMISPHERICAL,
+                    DataPointResult.ABSORPTANCE_EMITTANCE
+                ).Extract(filePath);
+            ColorRenderingIndices =
+                await new ColorRenderingIndexResultsJsonExtractor()
+                .Extract(filePath);
+            CielabColors =
+                await new CielabColorResultsJsonExtractor()
+                .Extract(filePath);
+        }
+    }
 }

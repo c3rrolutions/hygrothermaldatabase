@@ -137,7 +137,6 @@ public static class GraphQlConfiguration
             // Query Types
             .AddQueryType(d => d.Name(nameof(Query)))
             .AddType<CalorimetricDataQueries>()
-            .AddType<DataConnection>()
             .AddType<DatabaseQueries>()
             .AddType<GetHttpsResourceQueries>()
             .AddType<HygrothermalDataQueries>()
@@ -160,6 +159,7 @@ public static class GraphQlConfiguration
             .AddType<OpticalDataMutations>()
             .AddType<PhotovoltaicDataMutations>()
             .AddType<ResponseApprovalMutations>()
+            .AddType<DataMutations>()
             /* .AddSubscriptionType(d => d.Name(nameof(GraphQl.Subscription))) */
             /*     .AddType<ComponentSubscriptions>() */
             // Object Types

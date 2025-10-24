@@ -12,8 +12,7 @@ public static class JsonSerializerSettings
     private static readonly JsonSerializerOptions s_common =
         new()
         {
-            AllowOutOfOrderMetadataProperties = true,
-            Converters = { new JsonStringEnumConverter(new ConstantCaseJsonNamingPolicy(), false) },
+            AllowOutOfOrderMetadataProperties = false,
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
             IgnoreReadOnlyFields = true,
             IgnoreReadOnlyProperties = false,
@@ -26,6 +25,7 @@ public static class JsonSerializerSettings
     public static readonly JsonSerializerOptions GraphQl =
         new(s_common)
         {
+            Converters = { new JsonStringEnumConverter(new ConstantCaseJsonNamingPolicy(), false) },
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         };
 
@@ -33,5 +33,11 @@ public static class JsonSerializerSettings
         new(s_common)
         {
             PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
+        };
+
+    public static readonly JsonSerializerOptions BedJson =
+        new(s_common)
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         };
 }

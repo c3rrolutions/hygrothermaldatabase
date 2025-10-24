@@ -1,5 +1,6 @@
 using Json.Path;
 using Database.Enumerations.DataPoints;
+using System.Text.Json;
 
 namespace Database.Extractors;
 
@@ -16,14 +17,7 @@ public sealed class DoubleResultsJsonExtractor(
         $"@.emergence.direction=='{emergenceDirection.ToJsonEnum()}'" +
         $")].results.{result.ToJsonEnum()}"
     ),
-    node =>
-    {
-        if (node.TryGetValue<double>(out var value))
-        {
-            return value;
-        }
-        return null;
-    }
+    ExtractNumberWithUncertainty
 )
 {
 }

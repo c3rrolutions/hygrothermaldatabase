@@ -175,8 +175,10 @@ public sealed class Startup(
                 appSettings.Database.ConnectionString,
                 _ => _
                     .SetPostgresVersion(13, 13)
+                    .MapEnum<CalorimetricObserver>(ApplicationDbContext.CalorimetricObserverTypeName, appSettings.Database.SchemaName)
                     .MapEnum<CoatedSide>(ApplicationDbContext.CoatedSideTypeName, appSettings.Database.SchemaName)
                     .MapEnum<DataKind>(ApplicationDbContext.DataKindTypeName, appSettings.Database.SchemaName)
+                    .MapEnum<Illuminant>(ApplicationDbContext.IlluminantTypeName, appSettings.Database.SchemaName)
                     .MapEnum<OpticalComponentSubtype>(ApplicationDbContext.OpticalComponentSubtypeTypeName, appSettings.Database.SchemaName)
                     .MapEnum<OpticalComponentType>(ApplicationDbContext.OpticalComponentTypeTypeName, appSettings.Database.SchemaName)
                     .MapEnum<Standardizer>(ApplicationDbContext.StandardizerTypeName, appSettings.Database.SchemaName)

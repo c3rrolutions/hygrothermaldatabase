@@ -31,4 +31,17 @@ public class StructJsonPathExtractor<TOutput>(
             .ToArray();
     }
 
+    protected static double? ExtractNumberWithUncertainty(JsonNode node)
+    {
+        return node.GetValueKind() switch
+        {
+            JsonValueKind.Object =>
+                node.AsObject()
+                    .TryGetPropertyValue("uncertainValue", out var uncertainValueNode)
+                    ? (uncertainValueNode.TryGetValue<double>(out var uncertainValue) ? uncertainValue : null)
+                    : null,
+            JsonValueKind.Number => node.TryGetValue<double>(out var value) ? value : null,
+            _ => null,
+        };
+    }
 }

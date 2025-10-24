@@ -5,6 +5,7 @@ using Database.Enumerations;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Org.BouncyCastle.Math.EC.Rfc7748;
 using SchemaNameOptionsExtension = Database.Data.Extensions.SchemaNameOptionsExtension;
 
 namespace Database.Data;
@@ -18,8 +19,10 @@ public sealed class ApplicationDbContext
     private const string DefaultSchemaName = "database";
     private readonly string _schemaName;
 
+    internal const string CalorimetricObserverTypeName = "calorimetric_observer";
     internal const string CoatedSideTypeName = "coated_side";
     internal const string DataKindTypeName = "data_kind";
+    internal const string IlluminantTypeName = "illuminant";
     internal const string OpticalComponentSubtypeTypeName = "optical_component_subtype";
     internal const string OpticalComponentTypeTypeName = "optical_component_type";
     internal const string StandardizerTypeName = "standardizer";
@@ -126,6 +129,26 @@ public sealed class ApplicationDbContext
         return builder;
     }
 
+    private static
+        EntityTypeBuilder<OpticalData>
+        ConfigureOpticalData(
+            EntityTypeBuilder<OpticalData> builder
+        )
+    {
+        builder.OwnsMany(
+            data => data.CielabColors
+        ).ToTable(
+            color =>
+            {
+                color.HasCheckConstraint(
+                    $"CK_OpticalData_CielabColors_{nameof(CielabColor.LStar)}",
+                    $"\"{nameof(CielabColor.LStar)}\" >= 0.0 AND \"{nameof(CielabColor.LStar)}\" <= 100.0"
+                );
+            }
+        );
+        return builder;
+    }
+
     private static void ConfigureIdentityEntities(
         ModelBuilder builder
     )
@@ -153,7 +176,7 @@ public sealed class ApplicationDbContext
         ConfigureData(
             ConfigureEntity(modelBuilder.Entity<HygrothermalData>())
         ).ToTable("hygrothermal_data");
-        ConfigureData(
+        ConfigureOpticalData(
             ConfigureEntity(modelBuilder.Entity<OpticalData>())
         ).ToTable("optical_data");
         ConfigureData(

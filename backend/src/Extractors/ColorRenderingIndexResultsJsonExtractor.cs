@@ -10,14 +10,7 @@ public sealed class ColorRenderingIndexResultsJsonExtractor(
         $"@.incidence.wavelengths.integral=='{WavelengthsIntegral.VISIBLE.ToJsonEnum()}'" +
         $")].results.colorTransmittance.colorRenderingIndices[*]['ra','raOutIn']"
     ),
-    node =>
-    {
-        if (node.TryGetValue<double>(out var value))
-        {
-            return value;
-        }
-        return null;
-    }
+    ExtractNumberWithUncertainty
 )
 {
 }

@@ -6,6 +6,7 @@ using Database.Data;
 using Database.Enumerations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -14,9 +15,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Database.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251024124734_AddObserverAndIlluminantToCielabColor")]
+    partial class AddObserverAndIlluminantToCielabColor
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1858,10 +1861,6 @@ namespace Database.Migrations
 
                             b1.ToTable("CielabColor", "database", t =>
                                 {
-                                    t.HasCheckConstraint("CK_OpticalData_CielabColors_AStar", "\"AStar\" >= 0.0 AND \"AStar\" <= 100.0");
-
-                                    t.HasCheckConstraint("CK_OpticalData_CielabColors_BStar", "\"BStar\" >= 0.0 AND \"BStar\" <= 100.0");
-
                                     t.HasCheckConstraint("CK_OpticalData_CielabColors_LStar", "\"LStar\" >= 0.0 AND \"LStar\" <= 100.0");
                                 });
 

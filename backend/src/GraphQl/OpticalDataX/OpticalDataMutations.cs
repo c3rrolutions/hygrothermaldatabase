@@ -86,7 +86,9 @@ public sealed class OpticalDataMutations
                 new CielabColor(
                     c.LStar,
                     c.AStar,
-                    c.BStar
+                    c.BStar,
+                    c.Observer,
+                    c.Illuminant
                 )
             ).ToList()
         );

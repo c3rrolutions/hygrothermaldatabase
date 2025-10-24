@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Database.Json;
 using GraphQL.Client.Serializer.SystemTextJson;
 
 namespace Database.ApiRequests;
@@ -20,12 +21,14 @@ public static class JsonSerializerSettings
             NumberHandling = JsonNumberHandling.Strict,
             PropertyNameCaseInsensitive = false,
             ReadCommentHandling = JsonCommentHandling.Disallow,
+            RespectNullableAnnotations = true,
+            UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow,
         };
 
     public static readonly JsonSerializerOptions GraphQl =
         new(s_common)
         {
-            Converters = { new JsonStringEnumConverter(new ConstantCaseJsonNamingPolicy(), false) },
+            Converters = { new JsonStringEnumConverter(new ConstantCaseJsonNamingPolicy(), allowIntegerValues: false) },
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         };
 
@@ -38,6 +41,7 @@ public static class JsonSerializerSettings
     public static readonly JsonSerializerOptions BedJson =
         new(s_common)
         {
+            Converters = { new JsonStringEnumConverter(new ConstantToCamelCaseJsonNamingPolicy(), allowIntegerValues: false) },
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         };
 }

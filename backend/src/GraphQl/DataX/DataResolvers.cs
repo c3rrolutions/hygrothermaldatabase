@@ -24,7 +24,7 @@ public sealed class DataResolvers
         return await
             byId
             .With(queryContext)
-            .LoadRequiredAsync(data.Id, cancellationToken) ?? [];
+            .LoadRequiredAsync(data.Id, cancellationToken);
     }
 
     public GetHttpsResourceTree GetGetHttpsResourceTree(

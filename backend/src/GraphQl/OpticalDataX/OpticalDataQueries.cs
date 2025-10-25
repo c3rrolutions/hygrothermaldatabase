@@ -2,15 +2,15 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Database.Data;
-using Database.GraphQl.Extensions;
-using Database.Services;
+using Microsoft.EntityFrameworkCore;
 using HotChocolate;
 using HotChocolate.Data;
 using HotChocolate.Data.Sorting;
 using HotChocolate.Resolvers;
 using HotChocolate.Types;
-using Microsoft.EntityFrameworkCore;
+using Database.Data;
+using Database.GraphQl.Extensions;
+using Database.Services;
 
 namespace Database.GraphQl.OpticalDataX;
 

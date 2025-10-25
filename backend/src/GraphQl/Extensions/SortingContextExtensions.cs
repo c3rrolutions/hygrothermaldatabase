@@ -1,6 +1,7 @@
 using System.Linq;
 using HotChocolate.Data.Sorting;
 using Database.Data;
+using GreenDonut.Data;
 
 namespace Database.GraphQl.Extensions;
 
@@ -20,5 +21,10 @@ public static class SortingContextExtensions
                 }
                 return query.OrderBy(_ => _.Id);
             });
+    }
+
+    public static SortDefinition<T> StabilizeOrder<T>(this SortDefinition<T> sort) where T : IEntity
+    {
+        return sort.AddAscending(_ => _.Id);
     }
 }

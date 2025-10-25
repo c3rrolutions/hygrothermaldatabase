@@ -12,6 +12,10 @@ using GraphQL.Client.Abstractions.Utilities;
 using System.Collections.Concurrent;
 using Microsoft.Extensions.Logging;
 using Database.Utilities;
+using HotChocolate.Data;
+using GreenDonut.Data;
+using Microsoft.EntityFrameworkCore.Query;
+using Database.GraphQl.Extensions;
 
 namespace Database.GraphQl.GetHttpsResources;
 
@@ -111,8 +115,10 @@ public sealed class GetHttpsResourceMutations
         return new CreateGetHttpsResourcePayload(getHttpsResource);
     }
 
+    [UseFiltering<RecomputeGetHttpsResourceHashValuesFilterType>]
     public async Task<RecomputeGetHttpsResourceHashValuesPayload> RecomputeGetHttpsResourceHashValuesAsync(
         ApplicationDbContext context,
+        QueryContext<GetHttpsResource> queryContext,
         UserService userService,
         ILogger<GetHttpsResourceMutations> logger,
         CancellationToken cancellationToken
@@ -139,7 +145,10 @@ public sealed class GetHttpsResourceMutations
                 )
             );
         }
-        var resources = await context.GetHttpsResources.ToListAsync(cancellationToken);
+        var resources =
+            await context.GetHttpsResources
+            .With(queryContext, sort => sort.StabilizeOrder())
+            .ToListAsync(cancellationToken);
         var errors = new ConcurrentBag<RecomputeGetHttpsResourceHashValuesError>();
         await Parallel.ForEachAsync(
             resources,

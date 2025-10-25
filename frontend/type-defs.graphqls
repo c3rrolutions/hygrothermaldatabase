@@ -439,7 +439,7 @@ type Mutation {
   createOpticalData(input: CreateOpticalDataInput!): CreateOpticalDataPayload! @cost(weight: "10")
   createPhotovoltaicData(input: CreatePhotovoltaicDataInput!): CreatePhotovoltaicDataPayload! @cost(weight: "10")
   createResponseApprovals: CreateResponseApprovalsPayload! @cost(weight: "10")
-  recomputeGetHttpsResourceHashValues: RecomputeGetHttpsResourceHashValuesPayload! @cost(weight: "10")
+  recomputeGetHttpsResourceHashValues(where: RecomputeGetHttpsResourceHashValuesFilterInput @cost(weight: "10")): RecomputeGetHttpsResourceHashValuesPayload! @cost(weight: "10")
   removeDataApproval(input: DataApprovalInput!): RemoveDataApprovalPayload! @cost(weight: "10")
   updateAccessRights(input: InstitutionAccessRightsInput!): UpdateAccessRightsPayload! @cost(weight: "10")
   updateDataAccessRights(input: DataAccessRightsInput!): UpdateDataAccessRightsPayload! @cost(weight: "10")
@@ -944,6 +944,21 @@ input DataApprovalPropositionInput {
   statement: ReferencePropositionInput
 }
 
+input DataFilterInput {
+  and: [DataFilterInput!]
+  or: [DataFilterInput!]
+  locale: StringPropositionInput
+  name: StringPropositionInput
+  description: StringPropositionInput
+  componentId: UuidPropositionInput
+  creatorId: UuidPropositionInput
+  createdAt: DateTimePropositionInput
+  appliedMethod: AppliedMethodPropositionInput
+  approvals: ListFilterInputTypeOfDataApprovalPropositionInput
+  resources: ListGetHttpsResourceFilterTypePropositionInput
+  warnings: StringsPropositionInput
+}
+
 input DataKindPropositionInput {
   equalTo: DataKind @cost(weight: "10")
   notEqualTo: DataKind @cost(weight: "10")
@@ -1358,6 +1373,19 @@ input PublicationPropositionInput {
   abstract: StringPropositionInput
   "Referenced section"
   section: StringPropositionInput
+}
+
+input RecomputeGetHttpsResourceHashValuesFilterInput {
+  and: [RecomputeGetHttpsResourceHashValuesFilterInput!]
+  or: [RecomputeGetHttpsResourceHashValuesFilterInput!]
+  id: UuidPropositionInput
+  description: StringPropositionInput
+  hashValue: StringPropositionInput
+  dataFormatId: UuidPropositionInput
+  appliedConversionMethod: ToTreeVertexAppliedConversionMethodPropositionInput
+  archivedFilesMetaInformation: ListFilterInputTypeOfFileMetaInformationPropositionInput
+  parent: GetHttpsResourcePropositionInput
+  data: DataFilterInput
 }
 
 input ReferenceInput {

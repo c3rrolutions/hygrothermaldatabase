@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace Database.ApiRequests;
+namespace Database.Json;
 
 public static class JsonDocumentSettings
 {

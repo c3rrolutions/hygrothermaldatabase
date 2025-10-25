@@ -7,8 +7,8 @@ using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Database.ApiRequests;
 using Database.Extensions;
+using Database.Json;
 using GraphQL;
 using Microsoft.AspNetCore.Http;
 

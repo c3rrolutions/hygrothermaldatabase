@@ -3,7 +3,11 @@ using GraphQL.Client.Abstractions.Utilities;
 
 namespace Database.Json;
 
-public sealed class ConstantToCamelCaseJsonNamingPolicy
+/// <summary>
+/// Robust conversion to camel case that in particular converts constant case to
+/// camel case.
+/// </summary>
+public sealed class ToCamelCaseJsonNamingPolicy
  : JsonNamingPolicy
 {
     public override string ConvertName(string name) => name.ToCamelCase();

@@ -2,7 +2,7 @@ using Json.Path;
 using Database.Data;
 using Database.Enumerations.DataPoints;
 using System.Text.Json;
-using Database.ApiRequests;
+using Database.Json;
 
 namespace Database.Extractors;
 

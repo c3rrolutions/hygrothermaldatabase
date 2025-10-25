@@ -6,10 +6,10 @@ using System.Text.Json;
 using Database.Methods;
 using System.IO;
 using System;
-using Database.ApiRequests;
 using System.Reflection;
 using FluentAssertions.Execution;
 using System.Diagnostics.CodeAnalysis;
+using Database.Json;
 
 namespace Database.Tests.Methods;
 

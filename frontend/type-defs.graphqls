@@ -117,7 +117,9 @@ type CalorimetricDataEdge {
 type CielabColor {
   aStar: Float!
   bStar: Float!
+  illuminant: Illuminant
   lStar: Float!
+  observer: CalorimetricObserver
 }
 
 type CreateCalorimetricDataError {
@@ -230,17 +232,6 @@ type DataApproval {
   statement: Reference @cost(weight: "10")
   timestamp: DateTime!
   variables: Any!
-}
-
-type DataConnection {
-  edges: [DataEdge!]!
-  pageInfo: PageInfo!
-  totalCount: NonNegativeInt
-}
-
-type DataEdge {
-  cursor: String!
-  node: Data!
 }
 
 type Database {
@@ -790,7 +781,9 @@ input CalorimetricDataSortInput {
 input CielabColorInput {
   aStar: Float!
   bStar: Float!
+  illuminant: Illuminant
   lStar: Float!
+  observer: CalorimetricObserver
 }
 
 input CielabColorPropositionInput {
@@ -799,6 +792,8 @@ input CielabColorPropositionInput {
   lStar: FloatPropositionInput
   aStar: FloatPropositionInput
   bStar: FloatPropositionInput
+  observer: NullableOfCalorimetricObserverPropositionInput
+  illuminant: NullableOfIlluminantPropositionInput
 }
 
 input CreateCalorimetricDataInput {
@@ -1209,11 +1204,25 @@ input NamedMethodSourcePropositionInput {
   value: CrossDatabaseDataReferencePropositionInput
 }
 
+input NullableOfCalorimetricObserverPropositionInput {
+  equalTo: CalorimetricObserver @cost(weight: "10")
+  notEqualTo: CalorimetricObserver @cost(weight: "10")
+  in: [CalorimetricObserver] @cost(weight: "10")
+  notIn: [CalorimetricObserver] @cost(weight: "10")
+}
+
 input NullableOfCoatedSidePropositionInput {
   equalTo: CoatedSide @cost(weight: "10")
   notEqualTo: CoatedSide @cost(weight: "10")
   in: [CoatedSide] @cost(weight: "10")
   notIn: [CoatedSide] @cost(weight: "10")
+}
+
+input NullableOfIlluminantPropositionInput {
+  equalTo: Illuminant @cost(weight: "10")
+  notEqualTo: Illuminant @cost(weight: "10")
+  in: [Illuminant] @cost(weight: "10")
+  notIn: [Illuminant] @cost(weight: "10")
 }
 
 input NullableOfInt32PropositionInput {
@@ -1528,6 +1537,11 @@ enum CalculateMethodErrorCode {
   DATA_QUERY_FAILED
 }
 
+enum CalorimetricObserver {
+  TWO_DEGREES
+  TEN_DEGREES
+}
+
 enum CoatedSide {
   PRIME
   NON_PRIME
@@ -1598,6 +1612,11 @@ enum DataKind {
 enum DatabaseVerificationState {
   PENDING
   VERIFIED
+}
+
+enum Illuminant {
+  A
+  D65
 }
 
 enum InstitutionAccessRightsErrorCode {

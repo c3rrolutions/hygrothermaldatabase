@@ -63,7 +63,7 @@ public sealed class ResponseApprovalService(
             HygrothermalData data => await ApiRequests.QueryAllMetaData.Do(data.Id, ApiRequests.QueryAllMetaData.HygrothermalDataFileNames, appSettings, apiRequestService, cancellationToken),
             PhotovoltaicData data => await ApiRequests.QueryAllMetaData.Do(data.Id, ApiRequests.QueryAllMetaData.PhotovoltaicDataFileNames, appSettings, apiRequestService, cancellationToken),
             OpticalData data => await ApiRequests.QueryAllMetaData.Do(data.Id, ApiRequests.QueryAllMetaData.OpticalDataFileNames, appSettings, apiRequestService, cancellationToken),
-            _ => throw new NotImplementedException($"Unsupported data type {typeof(T)}"),
+            _ => throw new ArgumentOutOfRangeException($"Unsupported data type {typeof(T)}"),
         };
     }
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Database.Enumerations;
@@ -40,22 +41,33 @@ public sealed class ApplicationDbContext
 
     // https://docs.microsoft.com/en-us/ef/core/miscellaneous/nullable-reference-types#dbcontext-and-dbset
     public DbSet<GetHttpsResource> GetHttpsResources { get; private set; } = default!;
-    public DbSet<CalorimetricData> CalorimetricData { get; private set; } = default!;
-    public DbSet<HygrothermalData> HygrothermalData { get; private set; } = default!;
-    public DbSet<OpticalData> OpticalData { get; private set; } = default!;
-    public DbSet<PhotovoltaicData> PhotovoltaicData { get; private set; } = default!;
     public DbSet<User> Users { get; private set; } = default!;
     public DbSet<DataProtectionKey> DataProtectionKeys { get; private set; } = default!;
-    public DbSet<GeometricData> GeometricData { get; private set; } = default!;
     public DbSet<InstitutionAccessRights> InstitutionAccessRights { get; private set; } = default!;
 
-    public async Task<IData?> GetDataAsync(Guid id, CancellationToken cancellationToken)
+
+    public DbSet<CalorimetricData> CalorimetricData { get; private set; } = default!;
+    public DbSet<GeometricData> GeometricData { get; private set; } = default!;
+    public DbSet<HygrothermalData> HygrothermalData { get; private set; } = default!;
+    public DbSet<PhotovoltaicData> PhotovoltaicData { get; private set; } = default!;
+    public DbSet<OpticalData> OpticalData { get; private set; } = default!;
+
+    public IQueryable<IData> Data(DataKind dataKind)
     {
-        return await CalorimetricData.SingleOrDefaultAsync(x => x.Id == id, cancellationToken) ??
-            await HygrothermalData.SingleOrDefaultAsync(x => x.Id == id, cancellationToken) ??
-            await OpticalData.SingleOrDefaultAsync(x => x.Id == id, cancellationToken) ??
-            await GeometricData.SingleOrDefaultAsync(x => x.Id == id, cancellationToken) ??
-            await PhotovoltaicData.SingleOrDefaultAsync(x => x.Id == id, cancellationToken) as IData;
+        return dataKind switch
+        {
+            DataKind.CALORIMETRIC_DATA => CalorimetricData,
+            DataKind.GEOMETRIC_DATA => GeometricData,
+            DataKind.HYGROTHERMAL_DATA => HygrothermalData,
+            DataKind.OPTICAL_DATA => OpticalData,
+            DataKind.PHOTOVOLTAIC_DATA => PhotovoltaicData,
+            _ => throw new ArgumentOutOfRangeException(nameof(dataKind), $"Unsupported data kind {dataKind}."),
+        };
+    }
+
+    public Task<IData?> GetDataAsync(Guid id, DataKind dataKind, CancellationToken cancellationToken)
+    {
+        return Data(dataKind).SingleOrDefaultAsync(x => x.Id == id, cancellationToken);
     }
 
     private static void CreateEnumerations(ModelBuilder builder, string schemaName)

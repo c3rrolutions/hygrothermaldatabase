@@ -42,7 +42,7 @@ public sealed class DataAccessRightsMutations
             );
         }
 
-        var data = await context.GetDataAsync(input.DataId, cancellationToken);
+        var data = await context.GetDataAsync(input.DataId, input.DataKind, cancellationToken);
         if (data is null)
         {
             return new UpdateDataAccessRightsPayload(

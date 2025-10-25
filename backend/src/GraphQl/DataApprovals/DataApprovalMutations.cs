@@ -15,7 +15,6 @@ using Database.Services;
 using GraphQL;
 using GraphQL.Client.Abstractions.Utilities;
 using GreenDonut.Data;
-using HotChocolate.Resolvers;
 using HotChocolate.Types;
 using Microsoft.Extensions.Logging;
 
@@ -246,7 +245,7 @@ public sealed class DataApprovalMutations
             return new AddDataApprovalPayload(errors);
         }
 
-        var data = await context.GetDataAsync(input.DataId, cancellationToken);
+        var data = await context.GetDataAsync(input.DataId, input.DataKind, cancellationToken);
         if (data is null)
         {
             return new AddDataApprovalPayload(
@@ -324,7 +323,7 @@ public sealed class DataApprovalMutations
             );
         }
 
-        var data = await context.GetDataAsync(input.DataId, cancellationToken);
+        var data = await context.GetDataAsync(input.DataId, input.DataKind, cancellationToken);
         if (data is null)
         {
             return new RemoveDataApprovalPayload(

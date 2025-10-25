@@ -601,7 +601,7 @@ type Query {
   calorimetricData(id: Uuid! locale: Locale): CalorimetricData @cost(weight: "10")
   currentUser: User @cost(weight: "10")
   currentUserInfo: UserInfo! @cost(weight: "10")
-  data(id: Uuid! locale: Locale): Data @cost(weight: "10")
+  data(dataKind: DataKind! id: Uuid! locale: Locale): Data @cost(weight: "10")
   database: Database! @cost(weight: "10")
   geometricData(id: Uuid! locale: Locale): GeometricData @cost(weight: "10")
   getHttpsResource(id: Uuid!): GetHttpsResource @cost(weight: "10")
@@ -917,11 +917,13 @@ input DataAccessRightsInput {
   allowedInstitutions: [Uuid!]
   allowedUserAndQuantity: [KeyValuePairOfGuidAndNullableOfUInt32Input!]
   dataId: Uuid!
+  dataKind: DataKind!
 }
 
 input DataApprovalInput {
   approverId: Uuid!
   dataId: Uuid!
+  dataKind: DataKind!
   keyFingerprint: String!
   message: String!
   query: String!

@@ -20,7 +20,7 @@ public abstract class DataTypeBase<TData, TDataByIdDataLoader>
             .Type<NonNullType<LocaleType>>();
         descriptor
             .Field(x => x.Resources)
-            .ResolveWith<DataResolvers>(t => t.GetGetHttpsResources(default!, default!, default!));
+            .ResolveWith<DataResolvers>(t => t.GetGetHttpsResources(default!, default!, default!, default!));
         descriptor
             .Field(DataType.ResourceTreeFieldName)
             .ResolveWith<DataResolvers>(t => t.GetGetHttpsResourceTree(default!));

@@ -3,7 +3,7 @@ using HotChocolate.Data.Sorting;
 
 namespace Database.GraphQl.GetHttpsResources;
 
-public sealed class GetHttpsResourceSortType
+public class GetHttpsResourceSortType
     : SortInputType<GetHttpsResource>
 {
     protected override void Configure(
@@ -16,7 +16,6 @@ public sealed class GetHttpsResourceSortType
         descriptor.Field(x => x.HashValue);
         descriptor.Field(x => x.DataFormatId);
         descriptor.Field(x => x.AppliedConversionMethod);
-        descriptor.Field(x => x.Data);
         descriptor.Field(x => x.Parent);
     }
 }

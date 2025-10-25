@@ -160,6 +160,7 @@ public static class GraphQlConfiguration
             /* .AddSubscriptionType(d => d.Name(nameof(GraphQl.Subscription))) */
             /*     .AddType<ComponentSubscriptions>() */
             // Object Types
+            .AddType<DataConnection>()
             .AddType<OpenEndedDateTimeRangeType>()
             .AddType<CalorimetricDataType>()
             .AddType<DataApprovalType>()

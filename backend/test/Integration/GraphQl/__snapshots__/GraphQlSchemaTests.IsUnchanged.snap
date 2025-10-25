@@ -87,7 +87,7 @@ type CalorimetricData implements Node & Data {
   isRestrictedByUser(alreadyAccesedCount: NonNegativeInt! uuid: Uuid!): Boolean!
   locale: Locale!
   name: String
-  resources: [GetHttpsResource!]! @cost(weight: "10")
+  resources(order: [GetHttpsResourceSortInput!] @cost(weight: "10") where: GetHttpsResourcePropositionInput @cost(weight: "10")): [GetHttpsResource!]! @cost(weight: "10")
   resourceTree: GetHttpsResourceTree!
   timestamp: DateTime!
   userId: Uuid!
@@ -234,6 +234,17 @@ type DataApproval {
   variables: Any!
 }
 
+type DataConnection {
+  edges: [DataEdge!]!
+  pageInfo: PageInfo!
+  totalCount: NonNegativeInt
+}
+
+type DataEdge {
+  cursor: String!
+  node: Data!
+}
+
 type Database {
   canCurrentUserUpdateNode: Boolean!
   canCurrentUserVerifyNode: Boolean!
@@ -271,7 +282,7 @@ type GeometricData implements Node & Data {
   isRestrictedByUser(alreadyAccesedCount: NonNegativeInt! uuid: Uuid!): Boolean!
   locale: Locale!
   name: String
-  resources: [GetHttpsResource!]! @cost(weight: "10")
+  resources(order: [GetHttpsResourceSortInput!] @cost(weight: "10") where: GetHttpsResourcePropositionInput @cost(weight: "10")): [GetHttpsResource!]! @cost(weight: "10")
   resourceTree: GetHttpsResourceTree!
   thicknesses: [Float!]!
   timestamp: DateTime!
@@ -332,7 +343,7 @@ type GetHttpsResourceEdge {
 }
 
 type GetHttpsResourceTree {
-  nonRootVertices: [GetHttpsResourceTreeNonRootVertex!]! @cost(weight: "10")
+  nonRootVertices(order: [GetHttpsResourceTreeNonRootVertSortInput!] @cost(weight: "10") where: GetHttpsResourceTreeNonRootVertexFilterInput @cost(weight: "10")): [GetHttpsResourceTreeNonRootVertex!]! @cost(weight: "10")
   root: GetHttpsResourceTreeRoot! @cost(weight: "10")
 }
 
@@ -364,7 +375,7 @@ type HygrothermalData implements Node & Data {
   isRestrictedByUser(alreadyAccesedCount: NonNegativeInt! uuid: Uuid!): Boolean!
   locale: Locale!
   name: String
-  resources: [GetHttpsResource!]! @cost(weight: "10")
+  resources(order: [GetHttpsResourceSortInput!] @cost(weight: "10") where: GetHttpsResourcePropositionInput @cost(weight: "10")): [GetHttpsResource!]! @cost(weight: "10")
   resourceTree: GetHttpsResourceTree!
   timestamp: DateTime!
   userId: Uuid!
@@ -481,7 +492,7 @@ type OpticalData implements Node & Data {
   nearnormalHemisphericalSolarTransmittances: [Float!]!
   nearnormalHemisphericalVisibleReflectances: [Float!]!
   nearnormalHemisphericalVisibleTransmittances: [Float!]!
-  resources: [GetHttpsResource!]! @cost(weight: "10")
+  resources(order: [GetHttpsResourceSortInput!] @cost(weight: "10") where: GetHttpsResourcePropositionInput @cost(weight: "10")): [GetHttpsResource!]! @cost(weight: "10")
   resourceTree: GetHttpsResourceTree!
   subtype: OpticalComponentSubtype
   timestamp: DateTime!
@@ -537,7 +548,7 @@ type PhotovoltaicData implements Node & Data {
   isRestrictedByUser(alreadyAccesedCount: NonNegativeInt! uuid: Uuid!): Boolean!
   locale: Locale!
   name: String
-  resources: [GetHttpsResource!]! @cost(weight: "10")
+  resources(order: [GetHttpsResourceSortInput!] @cost(weight: "10") where: GetHttpsResourcePropositionInput @cost(weight: "10")): [GetHttpsResource!]! @cost(weight: "10")
   resourceTree: GetHttpsResourceTree!
   timestamp: DateTime!
   userId: Uuid!
@@ -940,21 +951,6 @@ input DataKindPropositionInput {
   notIn: [DataKind!] @cost(weight: "10")
 }
 
-input DataPropositionInput {
-  and: [DataPropositionInput!]
-  or: [DataPropositionInput!]
-  locale: StringPropositionInput
-  name: StringPropositionInput
-  description: StringPropositionInput
-  componentId: UuidPropositionInput
-  creatorId: UuidPropositionInput
-  createdAt: DateTimePropositionInput
-  appliedMethod: AppliedMethodPropositionInput
-  approvals: ListFilterInputTypeOfDataApprovalPropositionInput
-  resources: ListGetHttpsResourceFilterTypePropositionInput
-  warnings: StringsPropositionInput
-}
-
 input DateTimePropositionInput {
   equalTo: DateTime @cost(weight: "10")
   notEqualTo: DateTime @cost(weight: "10")
@@ -1041,7 +1037,6 @@ input GetHttpsResourcePropositionInput {
   dataFormatId: UuidPropositionInput
   appliedConversionMethod: ToTreeVertexAppliedConversionMethodPropositionInput
   archivedFilesMetaInformation: ListFilterInputTypeOfFileMetaInformationPropositionInput
-  data: DataPropositionInput
   parent: GetHttpsResourcePropositionInput
 }
 
@@ -1051,8 +1046,28 @@ input GetHttpsResourceSortInput {
   hashValue: SortEnumType @cost(weight: "10")
   dataFormatId: SortEnumType @cost(weight: "10")
   appliedConversionMethod: ToTreeVertexAppliedConversionMethodSortInput @cost(weight: "10")
-  data: IDataSortInput @cost(weight: "10")
   parent: GetHttpsResourceSortInput @cost(weight: "10")
+}
+
+input GetHttpsResourceTreeNonRootVertSortInput {
+  id: SortEnumType @cost(weight: "10")
+  description: SortEnumType @cost(weight: "10")
+  hashValue: SortEnumType @cost(weight: "10")
+  dataFormatId: SortEnumType @cost(weight: "10")
+  appliedConversionMethod: ToTreeVertexAppliedConversionMethodSortInput @cost(weight: "10")
+  parent: GetHttpsResourceSortInput @cost(weight: "10")
+}
+
+input GetHttpsResourceTreeNonRootVertexFilterInput {
+  and: [GetHttpsResourceTreeNonRootVertexFilterInput!]
+  or: [GetHttpsResourceTreeNonRootVertexFilterInput!]
+  id: UuidPropositionInput
+  description: StringPropositionInput
+  hashValue: StringPropositionInput
+  dataFormatId: UuidPropositionInput
+  appliedConversionMethod: ToTreeVertexAppliedConversionMethodPropositionInput
+  archivedFilesMetaInformation: ListFilterInputTypeOfFileMetaInformationPropositionInput
+  parent: GetHttpsResourcePropositionInput
 }
 
 input HygrothermalDataPropositionInput {
@@ -1080,16 +1095,6 @@ input HygrothermalDataSortInput {
   createdAt: SortEnumType @cost(weight: "10")
   appliedMethod: AppliedMethodSortInput @cost(weight: "10")
   id: SortEnumType @cost(weight: "10")
-}
-
-input IDataSortInput {
-  locale: SortEnumType @cost(weight: "10")
-  name: SortEnumType @cost(weight: "10")
-  description: SortEnumType @cost(weight: "10")
-  componentId: SortEnumType @cost(weight: "10")
-  creatorId: SortEnumType @cost(weight: "10")
-  createdAt: SortEnumType @cost(weight: "10")
-  appliedMethod: AppliedMethodSortInput @cost(weight: "10")
 }
 
 input InstitutionAccessRightsInput {

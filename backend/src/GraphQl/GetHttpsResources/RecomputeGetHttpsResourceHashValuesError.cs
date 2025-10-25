@@ -2,11 +2,9 @@ using System.Collections.Generic;
 
 namespace Database.GraphQl.GetHttpsResources;
 
-public sealed class RecomputeGetHttpsResourceHashValuesError(
-    RecomputeGetHttpsResourceHashValuesErrorCode code,
-    string message,
-    IReadOnlyList<string> path
-    )
-        : UserErrorBase<RecomputeGetHttpsResourceHashValuesErrorCode>(code, message, path)
-{
-}
+public sealed record RecomputeGetHttpsResourceHashValuesError(
+    RecomputeGetHttpsResourceHashValuesErrorCode Code,
+    string Message,
+    IReadOnlyList<string> Path
+)
+: UserErrorBase<RecomputeGetHttpsResourceHashValuesErrorCode>(Code, Message, Path);

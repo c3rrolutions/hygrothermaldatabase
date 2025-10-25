@@ -5,8 +5,34 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Database.Data;
 
 public sealed class GeometricData
-    : DataX
+    : DataX, ICreateData<GeometricData>
 {
+    public static GeometricData Create(
+        Guid userId,
+        string locale,
+        Guid componentId,
+        string? name,
+        string? description,
+        string[] warnings,
+        Guid creatorId,
+        DateTime createdAt,
+        AppliedMethod appliedMethod
+    )
+    {
+        return new GeometricData(
+            userId,
+            locale,
+            componentId,
+            name,
+            description,
+            warnings,
+            creatorId,
+            createdAt,
+            appliedMethod,
+            []
+        );
+    }
+
     public GeometricData(
         Guid userId,
         string locale,

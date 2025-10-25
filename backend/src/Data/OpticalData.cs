@@ -9,9 +9,44 @@ using Database.Extractors;
 namespace Database.Data;
 
 public sealed class OpticalData
-    : DataX
+    : DataX, ICreateData<OpticalData>
 {
     public static readonly Guid BedJsonDataFormatId = new("9ca9e8f5-94bf-4fdd-81e3-31a58d7ca708");
+
+    public static OpticalData Create(
+        Guid userId,
+        string locale,
+        Guid componentId,
+        string? name,
+        string? description,
+        string[] warnings,
+        Guid creatorId,
+        DateTime createdAt,
+        AppliedMethod appliedMethod
+    )
+    {
+        return new OpticalData(
+            userId,
+            locale,
+            componentId,
+            name,
+            description,
+            warnings,
+            creatorId,
+            createdAt,
+            null,
+            null,
+            null,
+            appliedMethod,
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+            []
+        );
+    }
 
     public OpticalData(
         Guid userId,

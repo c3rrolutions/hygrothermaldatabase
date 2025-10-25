@@ -2,11 +2,9 @@ using System.Collections.Generic;
 
 namespace Database.GraphQl.OpticalDataX;
 
-public sealed class CreateOpticalDataError(
-    CreateOpticalDataErrorCode code,
-    string message,
-    IReadOnlyList<string> path
-    )
-        : UserErrorBase<CreateOpticalDataErrorCode>(code, message, path)
-{
-}
+public sealed record CreateOpticalDataError(
+    CreateOpticalDataErrorCode Code,
+    string Message,
+    IReadOnlyList<string> Path
+)
+: UserErrorBase<CreateOpticalDataErrorCode>(Code, Message, Path);

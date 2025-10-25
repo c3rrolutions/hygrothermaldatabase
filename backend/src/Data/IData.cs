@@ -48,4 +48,14 @@ public interface IData : IEntity
     /// <param name="alreadyAccesedCount"> Count of already accessed datasets by user. </param>
     /// <returns> True, if dataset is rescricted. Otherwise false. </returns>
     bool IsRestrictedByUser(Guid uuid, uint alreadyAccesedCount);
+
+    void Update(
+        string locale,
+        Guid componentId,
+        string? name,
+        string? description,
+        string[] warnings,
+        DateTime createdAt,
+        Guid creatorId
+    );
 }

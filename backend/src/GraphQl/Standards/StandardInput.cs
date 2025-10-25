@@ -1,4 +1,5 @@
 using System;
+using Database.Data;
 using Database.Enumerations;
 using Database.GraphQl.Numerations;
 
@@ -12,4 +13,24 @@ public sealed record StandardInput(
     CreateNumerationInput Numeration,
     Standardizer[] Standardizers,
     Uri? Locator
-);
+)
+{
+    public Standard ToDomainModel()
+    {
+        return new Standard(
+            Title,
+            Abstract,
+            Section,
+            Year,
+            Standardizers,
+            Locator
+        )
+        {
+            Numeration = new Numeration(
+                Numeration.Prefix,
+                Numeration.MainNumber,
+                Numeration.Suffix
+            )
+        };
+    }
+};

@@ -2,11 +2,9 @@ using System.Collections.Generic;
 
 namespace Database.GraphQl.PhotovoltaicDataX;
 
-public sealed class CreatePhotovoltaicDataError(
-    CreatePhotovoltaicDataErrorCode code,
-    string message,
-    IReadOnlyList<string> path
-    )
-        : UserErrorBase<CreatePhotovoltaicDataErrorCode>(code, message, path)
-{
-}
+public sealed record CreatePhotovoltaicDataError(
+    CreatePhotovoltaicDataErrorCode Code,
+    string Message,
+    IReadOnlyList<string> Path
+)
+: UserErrorBase<CreatePhotovoltaicDataErrorCode>(Code, Message, Path);

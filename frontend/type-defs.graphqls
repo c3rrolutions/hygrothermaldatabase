@@ -261,6 +261,17 @@ type DatabaseOperatorEdge {
   node: Institution!
 }
 
+type DeleteDataError {
+  code: DeleteDataErrorCode!
+  message: String!
+  path: [String!]!
+}
+
+type DeleteDataPayload {
+  errors: [DeleteDataError!]
+  query: Query!
+}
+
 type FileMetaInformation {
   dataFormatId: Uuid!
   path: [String!]!
@@ -439,9 +450,11 @@ type Mutation {
   createOpticalData(input: CreateOpticalDataInput!): CreateOpticalDataPayload! @cost(weight: "10")
   createPhotovoltaicData(input: CreatePhotovoltaicDataInput!): CreatePhotovoltaicDataPayload! @cost(weight: "10")
   createResponseApprovals: CreateResponseApprovalsPayload! @cost(weight: "10")
+  deleteData(input: DeleteDataInput!): DeleteDataPayload! @cost(weight: "10")
   recomputeGetHttpsResourceHashValues(where: RecomputeGetHttpsResourceHashValuesFilterInput @cost(weight: "10")): RecomputeGetHttpsResourceHashValuesPayload! @cost(weight: "10")
   removeDataApproval(input: DataApprovalInput!): RemoveDataApprovalPayload! @cost(weight: "10")
   updateAccessRights(input: InstitutionAccessRightsInput!): UpdateAccessRightsPayload! @cost(weight: "10")
+  updateData(input: UpdateDataInput!): UpdateDataPayload! @cost(weight: "10")
   updateDataAccessRights(input: DataAccessRightsInput!): UpdateDataAccessRightsPayload! @cost(weight: "10")
   updateDatabase(input: UpdateDatabaseInput!): UpdateDatabasePayload! @cost(weight: "10")
   updateResponseApprovals: UpdateResponseApprovalsPayload! @cost(weight: "10")
@@ -689,6 +702,18 @@ type UpdateDataAccessRightsError {
 type UpdateDataAccessRightsPayload {
   dataAccessRights: DataAccessRights
   errors: [UpdateDataAccessRightsError!]
+  query: Query!
+}
+
+type UpdateDataError {
+  code: UpdateDataErrorCode!
+  message: String!
+  path: [String!]!
+}
+
+type UpdateDataPayload {
+  data: Data
+  errors: [UpdateDataError!]
   query: Query!
 }
 
@@ -981,6 +1006,11 @@ input DateTimePropositionInput {
   notLessThan: DateTime @cost(weight: "10")
   lessThanOrEqualTo: DateTime @cost(weight: "10")
   notLessThanOrEqualTo: DateTime @cost(weight: "10")
+}
+
+input DeleteDataInput {
+  dataId: Uuid!
+  dataKind: DataKind!
 }
 
 input FileMetaInformationInput {
@@ -1482,6 +1512,18 @@ input ToTreeVertexAppliedConversionMethodSortInput {
   sourceName: SortEnumType @cost(weight: "10")
 }
 
+input UpdateDataInput {
+  appliedMethod: AppliedMethodInput!
+  componentId: Uuid!
+  createdAt: DateTime!
+  creatorId: Uuid!
+  dataId: Uuid!
+  dataKind: DataKind!
+  description: String
+  name: String
+  warnings: [String!]!
+}
+
 input UpdateDatabaseInput {
   databaseId: Uuid!
   description: String!
@@ -1649,6 +1691,12 @@ enum DatabaseVerificationState {
   VERIFIED
 }
 
+enum DeleteDataErrorCode {
+  UNAUTHENTICATED
+  UNAUTHORIZED
+  UNKNOWN_DATA
+}
+
 enum Illuminant {
   A
   D65
@@ -1753,6 +1801,12 @@ enum Standardizer {
 
 enum UpdateDataAccessRightsErrorCode {
   UNKNOWN
+  UNAUTHENTICATED
+  UNAUTHORIZED
+  UNKNOWN_DATA
+}
+
+enum UpdateDataErrorCode {
   UNAUTHENTICATED
   UNAUTHORIZED
   UNKNOWN_DATA

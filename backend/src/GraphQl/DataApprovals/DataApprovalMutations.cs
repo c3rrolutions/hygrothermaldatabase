@@ -265,7 +265,7 @@ public sealed class DataApprovalMutations
             input.Variables,
             input.Message,
             input.ApproverId,
-            ReferenceType.FromInput(input.Statement)
+            input.Statement.ToDomainModel()
         );
 
         data.Approvals.Add(approval);

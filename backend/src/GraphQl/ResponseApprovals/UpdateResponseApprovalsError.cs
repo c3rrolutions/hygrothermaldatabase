@@ -2,11 +2,9 @@ using System.Collections.Generic;
 
 namespace Database.GraphQl.ResponseApprovals;
 
-public sealed class UpdateResponseApprovalsError(
-    UpdateResponseApprovalsErrorCode code,
-    string message,
-    IReadOnlyList<string> path
-    )
-        : UserErrorBase<UpdateResponseApprovalsErrorCode>(code, message, path)
-{
-}
+public sealed record UpdateResponseApprovalsError(
+    UpdateResponseApprovalsErrorCode Code,
+    string Message,
+    IReadOnlyList<string> Path
+)
+: UserErrorBase<UpdateResponseApprovalsErrorCode>(Code, Message, Path);

@@ -3,11 +3,9 @@ using System.Collections.Generic;
 
 namespace Database.GraphQl.DataApprovals;
 
-public sealed class AddDataApprovalError(
-    AddDataApprovalErrorCode code,
-    string message,
-    IReadOnlyList<string> path
-    )
-        : UserErrorBase<AddDataApprovalErrorCode>(code, message, path)
-{
-}
+public sealed record AddDataApprovalError(
+    AddDataApprovalErrorCode Code,
+    string Message,
+    IReadOnlyList<string> Path
+)
+: UserErrorBase<AddDataApprovalErrorCode>(Code, Message, Path);

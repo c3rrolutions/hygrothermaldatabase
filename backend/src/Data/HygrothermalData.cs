@@ -5,8 +5,33 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Database.Data;
 
 public sealed class HygrothermalData
-    : DataX
+    : DataX, ICreateData<HygrothermalData>
 {
+    public static HygrothermalData Create(
+        Guid userId,
+        string locale,
+        Guid componentId,
+        string? name,
+        string? description,
+        string[] warnings,
+        Guid creatorId,
+        DateTime createdAt,
+        AppliedMethod appliedMethod
+    )
+    {
+        return new HygrothermalData(
+            userId,
+            locale,
+            componentId,
+            name,
+            description,
+            warnings,
+            creatorId,
+            createdAt,
+            appliedMethod
+        );
+    }
+
     public HygrothermalData(
         Guid userId,
         string locale,

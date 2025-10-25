@@ -1,13 +1,13 @@
 using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Database.Configuration;
 using HotChocolate.Types;
+using Database.GraphQl;
 
 namespace Database.Data;
 
 [InterfaceType("Approval")]
-[JsonPolymorphic(TypeDiscriminatorPropertyName = GraphQlConfiguration.TypeDiscriminatorPropertyName)]
+[JsonPolymorphic(TypeDiscriminatorPropertyName = GraphQlConstants.TypeDiscriminatorPropertyName)]
 [JsonDerivedType(typeof(ResponseApproval), typeDiscriminator: nameof(ResponseApproval))]
 [JsonDerivedType(typeof(DataApproval), typeDiscriminator: nameof(DataApproval))]
 public interface IApproval

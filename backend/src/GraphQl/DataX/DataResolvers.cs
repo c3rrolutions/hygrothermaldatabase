@@ -1,28 +1,27 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Database.Data;
-using Database.GraphQl.DataX;
 using HotChocolate;
+using Database.Data;
 
-namespace Database.GraphQl.PhotovoltaicDataX;
+namespace Database.GraphQl.DataX;
 
-public sealed class PhotovoltaicDataResolvers
+public sealed class DataResolvers
 {
     public async Task<GetHttpsResource[]> GetGetHttpsResources(
-        [Parent] PhotovoltaicData photovoltaicData,
+        [Parent] IData data,
         GetHttpsResourcesByDataIdDataLoader byId,
         CancellationToken cancellationToken
     )
     {
-        return await byId.LoadAsync(photovoltaicData.Id, cancellationToken) ?? [];
+        return await byId.LoadAsync(data.Id, cancellationToken) ?? [];
     }
 
     public GetHttpsResourceTree GetGetHttpsResourceTree(
-        [Parent] PhotovoltaicData photovoltaicData
+        [Parent] IData data
     )
     {
-        return new GetHttpsResourceTree(photovoltaicData);
+        return new GetHttpsResourceTree(data);
     }
 
     public DateTime GetTimestamp()

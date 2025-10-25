@@ -38,9 +38,6 @@ namespace Database.Configuration;
 
 public static class GraphQlConfiguration
 {
-    internal const string TypeDiscriminatorPropertyName = "__typename";
-    public const string FilterInputSuffix = "FilterInput";
-
     public static void ConfigureServices(
         IServiceCollection services,
         IWebHostEnvironment environment

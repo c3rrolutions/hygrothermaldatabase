@@ -4,9 +4,11 @@ using Database.Data;
 namespace Database.GraphQl.DataX;
 
 public sealed class DataType(AppSettings appSettings)
-        : InterfaceType<IData>
+ : InterfaceType<IData>
 {
-    private readonly AppSettings _appSettings = appSettings;
+    public const string DatabaseIdFieldName = "databaseId";
+    public const string TimestampFieldName = "timestamp";
+    public const string ResourceTreeFieldName = "resourceTree";
 
     protected override void Configure(
         IInterfaceTypeDescriptor<IData> descriptor
@@ -15,17 +17,17 @@ public sealed class DataType(AppSettings appSettings)
         // `1..` is a range as introduced in https://docs.microsoft.com/en-us/dotnet/csharp/whats-new/csharp-8#indices-and-ranges
         descriptor.Name(nameof(IData)[1..]);
         descriptor
-            .Field("uuid")
+            .Field(GraphQlConstants.UuidFieldName)
             .Type<NonNullType<UuidType>>();
         descriptor
-            .Field("databaseId")
+            .Field(DatabaseIdFieldName)
             .Type<NonNullType<UuidType>>()
-            .Resolve(_ => _appSettings.DatabaseId);
+            .Resolve(_ => appSettings.DatabaseId);
         descriptor
-            .Field("timestamp")
+            .Field(TimestampFieldName)
             .Type<NonNullType<DateTimeType>>();
         descriptor
-            .Field("resourceTree")
+            .Field(ResourceTreeFieldName)
             .Type<NonNullType<ObjectType<GetHttpsResourceTree>>>();
         descriptor
             .Field(x => x.Locale)

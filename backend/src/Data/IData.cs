@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
-using Database.Configuration;
+using Database.GraphQl;
 
 namespace Database.Data;
 
-[JsonPolymorphic(TypeDiscriminatorPropertyName = GraphQlConfiguration.TypeDiscriminatorPropertyName)]
+[JsonPolymorphic(TypeDiscriminatorPropertyName = GraphQlConstants.TypeDiscriminatorPropertyName)]
 [JsonDerivedType(typeof(CalorimetricData), typeDiscriminator: nameof(CalorimetricData))]
 [JsonDerivedType(typeof(GeometricData), typeDiscriminator: nameof(GeometricData))]
 [JsonDerivedType(typeof(HygrothermalData), typeDiscriminator: nameof(HygrothermalData))]

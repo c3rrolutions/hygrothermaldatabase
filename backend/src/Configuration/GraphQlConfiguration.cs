@@ -1,38 +1,19 @@
 using System;
+using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using HotChocolate.Data;
 using HotChocolate.Data.Filters;
 using HotChocolate.Data.Sorting;
 using HotChocolate.Language;
 using HotChocolate.Types;
-using System.Net.Http;
-using System.Text.RegularExpressions;
-using Database.Data;
-using Database.GraphQl;
-using Database.GraphQl.CalorimetricDataX;
-using Database.GraphQl.Common;
-using Database.GraphQl.Databases;
-using Database.GraphQl.DataX;
-using Database.GraphQl.Filters;
-using Database.GraphQl.GetHttpsResources;
-using Database.GraphQl.HygrothermalDataX;
-using Database.GraphQl.OpticalDataX;
-using Database.GraphQl.PhotovoltaicDataX;
-using Database.GraphQl.Publications;
-using Database.GraphQl.References;
-using Database.GraphQl.Standards;
-using Database.GraphQl.GeometricDataX;
-using Database.GraphQl.Users;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using IServiceCollection = Microsoft.Extensions.DependencyInjection.IServiceCollection;
-using Database.GraphQl.DataApprovals;
-using Database.GraphQl.AccessRights;
-using Database.GraphQl.Methods;
-using Database.GraphQl.ResponseApprovals;
 using HotChocolate.Configuration;
 using HotChocolate.Execution;
+using Database.Data;
+using Database.GraphQl;
+using Database.GraphQl.DataX;
 
 namespace Database.Configuration;
 
@@ -50,6 +31,7 @@ public static class GraphQlConfiguration
         // GraphQL Server
         services
             .AddGraphQLServer()
+            .DisableIntrospection(false) // if the introspection result becomes too big we need to disable it in production
             .BindRuntimeType<uint, NonNegativeIntType>()
             // Services https://chillicream.com/docs/hotchocolate/v13/integrations/entity-framework#registerdbcontext
             .RegisterDbContextFactory<ApplicationDbContext>()
@@ -95,6 +77,7 @@ public static class GraphQlConfiguration
                     options.IncludeExceptionDetails = !environment.IsProduction(); // Default is `Debugger.IsAttached`.
                     /* options.QueryCacheSize = ...; */
                     /* options.UseComplexityMultipliers = ...; */
+                    options.EnableSchemaFileSupport = true;
                 }
             )
             // Configure
@@ -131,53 +114,14 @@ public static class GraphQlConfiguration
             .AddType(new UrlType("Url"))
             .AddType(new JsonType("Any", BindingBehavior.Implicit)) // https://chillicream.com/blog/2023/02/08/new-in-hot-chocolate-13#json-scalar
             .AddType(new LocaleType())
-            // Query Types
-            .AddQueryType(d => d.Name(nameof(Query)))
-            .AddType<CalorimetricDataQueries>()
-            .AddType<DatabaseQueries>()
-            .AddType<GetHttpsResourceQueries>()
-            .AddType<HygrothermalDataQueries>()
-            .AddType<OpticalDataQueries>()
-            .AddType<PhotovoltaicDataQueries>()
-            .AddType<UserQueries>()
-            .AddType<VerificationCodeQueries>()
-            .AddType<GeometricDataQueries>()
-            .AddType<MethodQueries>()
-            .AddType<DataQueries>()
-            // Mutation Types
-            .AddMutationType(d => d.Name(nameof(Mutation)))
-            .AddType<CalorimetricDataMutations>()
-            .AddType<DataAccessRightsMutations>()
-            .AddType<DataApprovalMutations>()
-            .AddType<DatabaseMutations>()
-            .AddType<GeometricDataMutations>()
-            .AddType<GetHttpsResourceMutations>()
-            .AddType<HygrothermalDataMutations>()
-            .AddType<OpticalDataMutations>()
-            .AddType<PhotovoltaicDataMutations>()
-            .AddType<ResponseApprovalMutations>()
-            .AddType<DataMutations>()
-            /* .AddSubscriptionType(d => d.Name(nameof(GraphQl.Subscription))) */
-            /*     .AddType<ComponentSubscriptions>() */
             // Object Types
             .AddType<DataConnection>()
-            .AddType<OpenEndedDateTimeRangeType>()
-            .AddType<CalorimetricDataType>()
-            .AddType<DataApprovalType>()
-            .AddType<DataType>()
-            .AddType<GetHttpsResourceType>()
-            .AddType<HygrothermalDataType>()
-            .AddType<NamedMethodArgumentType>()
-            .AddType<OpticalDataType>()
-            .AddType<PhotovoltaicDataType>()
-            .AddType<PublicationType>()
-            .AddType<ReferenceType>()
-            .AddType<StandardType>()
-            .AddType<GeometricDataType>()
-            .AddType<UserType>()
-            .AddType<UploadType>()
-            // Data Loaders
-            /* .AddDataLoader<GraphQl.Components.ComponentByIdDataLoader>() */
+            // Query, Mutation and Subscription Types
+            .AddQueryType(d => d.Name(nameof(Query)))
+            .AddMutationType(d => d.Name(nameof(Mutation)))
+            // .AddSubscriptionType(d => d.Name(nameof(Subscription)))
+            // auto-discover types using `HotChocolate.Types.Analyzers`
+            .AddTypes()
             // Paging
             .AddDbContextCursorPagingProvider()
             .ModifyPagingOptions(_ =>
@@ -207,17 +151,6 @@ public partial class CustomFilterConvention : FilterConvention
         // Allow conjunction and disjunction
         descriptor.AllowAnd();
         descriptor.AllowOr();
-        // Bind custom types
-        descriptor.BindRuntimeType<CalorimetricData, CalorimetricDataFilterType>();
-        descriptor.BindRuntimeType<GeometricData, GeometricDataFilterType>();
-        descriptor.BindRuntimeType<GetHttpsResource, GetHttpsResourceFilterType>();
-        descriptor.BindRuntimeType<HygrothermalData, HygrothermalDataFilterType>();
-        descriptor.BindRuntimeType<IData, DataFilterType>();
-        descriptor.BindRuntimeType<NamedMethodArgument, NamedMethodArgumentFilterType>();
-        descriptor.BindRuntimeType<OpticalData, OpticalDataFilterType>();
-        descriptor.BindRuntimeType<PhotovoltaicData, PhotovoltaicDataFilterType>();
-        descriptor.BindRuntimeType<Publication, PublicationFilterType>();
-        descriptor.BindRuntimeType<Reference, ReferenceFilterType>();
     }
 
     // TODO Overriding and changing type names in this way is _super_ error-prone. However, using `descriptor.Configure<...FilterInputType<T>>(x => x.Name(name))` does not work. Why?
@@ -393,16 +326,5 @@ public partial class CustomSortConvention : SortConvention
     protected override void Configure(ISortConventionDescriptor descriptor)
     {
         descriptor.AddDefaults();
-        // Bind custom types
-        descriptor.BindRuntimeType<CalorimetricData, CalorimetricDataSortType>();
-        descriptor.BindRuntimeType<GeometricData, GeometricDataSortType>();
-        descriptor.BindRuntimeType<GetHttpsResource, GetHttpsResourceSortType>();
-        descriptor.BindRuntimeType<HygrothermalData, HygrothermalDataSortType>();
-        descriptor.BindRuntimeType<IData, DataSortType>();
-        descriptor.BindRuntimeType<NamedMethodArgument, NamedMethodArgumentSortType>();
-        descriptor.BindRuntimeType<OpticalData, OpticalDataSortType>();
-        descriptor.BindRuntimeType<PhotovoltaicData, PhotovoltaicDataSortType>();
-        descriptor.BindRuntimeType<Publication, PublicationSortType>();
-        descriptor.BindRuntimeType<Reference, ReferenceSortType>();
     }
 }

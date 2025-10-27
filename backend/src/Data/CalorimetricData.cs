@@ -5,35 +5,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Database.Data;
 
 public sealed class CalorimetricData
-    : DataX, ICreateData<CalorimetricData>
+    : DataX
 {
-    public static CalorimetricData Create(
-        Guid userId,
-        string locale,
-        Guid componentId,
-        string? name,
-        string? description,
-        string[] warnings,
-        Guid creatorId,
-        DateTime createdAt,
-        AppliedMethod appliedMethod
-    )
-    {
-        return new CalorimetricData(
-            userId,
-            locale,
-            componentId,
-            name,
-            description,
-            warnings,
-            creatorId,
-            createdAt,
-            appliedMethod,
-            [],
-            []
-        );
-    }
-
     public CalorimetricData(
         Guid userId,
         string locale,

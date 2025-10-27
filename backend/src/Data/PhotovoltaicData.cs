@@ -5,33 +5,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Database.Data;
 
 public sealed class PhotovoltaicData
-    : DataX, ICreateData<PhotovoltaicData>
+    : DataX
 {
-    public static PhotovoltaicData Create(
-        Guid userId,
-        string locale,
-        Guid componentId,
-        string? name,
-        string? description,
-        string[] warnings,
-        Guid creatorId,
-        DateTime createdAt,
-        AppliedMethod appliedMethod
-    )
-    {
-        return new PhotovoltaicData(
-            userId,
-            locale,
-            componentId,
-            name,
-            description,
-            warnings,
-            creatorId,
-            createdAt,
-            appliedMethod
-        );
-    }
-
     public PhotovoltaicData(
         Guid userId,
         string locale,

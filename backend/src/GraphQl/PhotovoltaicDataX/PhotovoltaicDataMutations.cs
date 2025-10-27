@@ -46,62 +46,7 @@ public sealed class PhotovoltaicDataMutations
             );
         }
 
-        var photovoltaicData = new PhotovoltaicData(
-            currentUser.Uuid,
-            input.Locale,
-            input.ComponentId,
-            input.Name,
-            input.Description,
-            input.Warnings,
-            input.CreatorId,
-            input.CreatedAt,
-            new AppliedMethod(
-                input.AppliedMethod.MethodId,
-                input.AppliedMethod.Arguments
-                    .Select(a => new NamedMethodArgument(
-                        a.Name,
-                        a.Value
-                    ))
-                    .ToList(),
-                input.AppliedMethod.Sources
-                    .Select(s => new NamedMethodSource(
-                        s.Name,
-                        new CrossDatabaseDataReference(
-                            s.Value.DataId,
-                            s.Value.DataTimestamp,
-                            s.Value.DataKind,
-                            s.Value.DatabaseId
-                        )
-                    ))
-                    .ToList()
-            )
-        );
-        var resource = new GetHttpsResource(
-            input.RootResource.Description,
-            Sha256FileHasher.ComputeForString(""), // The correct hash value is computed when the file for this resource is being uploaded.
-            input.RootResource.DataFormatId,
-            null,
-            input.RootResource.ArchivedFilesMetaInformation.Select(i =>
-                new FileMetaInformation(
-                    i.Path,
-                    i.DataFormatId
-                )
-            ).ToList(),
-            input.RootResource.AppliedConversionMethod is null
-                ? null
-                : new ToTreeVertexAppliedConversionMethod(
-                    input.RootResource.AppliedConversionMethod.MethodId,
-                    input.RootResource.AppliedConversionMethod.Arguments.Select(a =>
-                        new NamedMethodArgument(
-                            a.Name,
-                            a.Value
-                        )
-                    ).ToList(),
-                    input.RootResource.AppliedConversionMethod.SourceName
-                )
-        );
-        photovoltaicData.Resources.Add(resource);
-        context.PhotovoltaicData.Add(photovoltaicData);
+        var photovoltaicData = input.ToDomainModel(currentUser.Uuid);
         await context.SaveChangesAsync(cancellationToken);
 
         try

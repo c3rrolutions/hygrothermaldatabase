@@ -45,28 +45,7 @@ public sealed class OpticalDataMutations
                 responseApprovalService,
                 act: async () =>
                 {
-                    var opticalData = new OpticalData(
-                        currentUser.Uuid,
-                        input.Locale,
-                        input.ComponentId,
-                        input.Name,
-                        input.Description,
-                        input.Warnings,
-                        input.CreatorId,
-                        input.CreatedAt,
-                        input.Type,
-                        input.Subtype,
-                        input.CoatedSide,
-                        input.AppliedMethod.ToDomainModel(),
-                        input.NearnormalHemisphericalVisibleTransmittances,
-                        input.NearnormalHemisphericalVisibleReflectances,
-                        input.NearnormalHemisphericalSolarTransmittances,
-                        input.NearnormalHemisphericalSolarReflectances,
-                        input.InfraredEmittances,
-                        input.ColorRenderingIndices,
-                        input.CielabColors.Select(c => c.ToDomainModel()).ToList()
-                        );
-                    opticalData.Resources.Add(input.RootResource.ToDomainModel());
+                    var opticalData = input.ToDomainModel(currentUser.Uuid);
                     context.OpticalData.Add(opticalData);
                     await context.SaveChangesAsync(cancellationToken);
                     return opticalData;

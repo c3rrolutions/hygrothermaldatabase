@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using Database.Authorization;
 using Database.Data;
 using Database.GraphQl.Publications;
-using Database.GraphQl.References;
 using Database.GraphQl.Standards;
 using Database.Json;
 using Database.Services;

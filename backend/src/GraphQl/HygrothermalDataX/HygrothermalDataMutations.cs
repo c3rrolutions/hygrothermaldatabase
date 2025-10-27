@@ -18,6 +18,7 @@ public sealed class HygrothermalDataMutations
         CreateHygrothermalDataInput input,
         ApplicationDbContext context,
         UserService userService,
+        CommonAuthorization authorization,
         ResponseApprovalService responseApprovalService,
         CancellationToken cancellationToken
     )
@@ -34,7 +35,7 @@ public sealed class HygrothermalDataMutations
                 )
             );
         }
-        if (!CommonAuthorization.IsCurrentUserAtLeastAssistantManagerOfDatabaseOperator(currentUser))
+        if (!authorization.IsCurrentUserAtLeastAssistantManagerOfDatabaseOperator(currentUser))
         {
             return new CreateHygrothermalDataPayload(
                 new CreateHygrothermalDataError(

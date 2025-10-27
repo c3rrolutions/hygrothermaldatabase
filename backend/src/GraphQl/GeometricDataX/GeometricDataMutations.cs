@@ -19,6 +19,7 @@ public sealed class GeometricDataMutations
         CreateGeometricDataInput input,
         ApplicationDbContext context,
         UserService userService,
+        CommonAuthorization authorization,
         ResponseApprovalService responseApprovalService,
         CancellationToken cancellationToken
     )
@@ -35,7 +36,7 @@ public sealed class GeometricDataMutations
             );
         }
 
-        if (!CommonAuthorization.IsCurrentUserAtLeastAssistantManagerOfDatabaseOperator(currentUser))
+        if (!authorization.IsCurrentUserAtLeastAssistantManagerOfDatabaseOperator(currentUser))
         {
             return new CreateGeometricDataPayload(
                 new CreateGeometricDataError(

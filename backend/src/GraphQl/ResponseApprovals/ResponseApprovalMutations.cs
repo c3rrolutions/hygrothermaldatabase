@@ -33,6 +33,7 @@ public sealed class ResponseApprovalMutations
     public async Task<CreateResponseApprovalsPayload> CreateResponseApprovalsAsync(
         ApplicationDbContext context,
         UserService userService,
+        CommonAuthorization authorization,
         ResponseApprovalService responseApprovalService,
         ILogger<ResponseApprovalMutations> logger,
         CancellationToken cancellationToken
@@ -49,7 +50,7 @@ public sealed class ResponseApprovalMutations
                 )
             );
         }
-        if (!CommonAuthorization.IsCurrentUserAtLeastAssistantManagerOfDatabaseOperator(currentUser))
+        if (!authorization.IsCurrentUserAtLeastAssistantManagerOfDatabaseOperator(currentUser))
         {
             return new CreateResponseApprovalsPayload(
                 new CreateResponseApprovalsError(
@@ -99,6 +100,7 @@ public sealed class ResponseApprovalMutations
     public async Task<UpdateResponseApprovalsPayload> UpdateResponseApprovalsAsync(
         ApplicationDbContext context,
         UserService userService,
+        CommonAuthorization authorization,
         ResponseApprovalService responseApprovalService,
         ILogger<ResponseApprovalMutations> logger,
         CancellationToken cancellationToken
@@ -115,7 +117,7 @@ public sealed class ResponseApprovalMutations
                 )
             );
         }
-        if (!CommonAuthorization.IsCurrentUserAtLeastAssistantManagerOfDatabaseOperator(currentUser))
+        if (!authorization.IsCurrentUserAtLeastAssistantManagerOfDatabaseOperator(currentUser))
         {
             return new UpdateResponseApprovalsPayload(
                 new UpdateResponseApprovalsError(

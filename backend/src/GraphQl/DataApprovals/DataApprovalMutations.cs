@@ -40,6 +40,7 @@ public sealed class DataApprovalMutations
         DataApprovalInput input,
         ApplicationDbContext context,
         UserService userService,
+        CommonAuthorization authorization,
         DataApprovalService dataApprovalService,
         ResponseApprovalService responseApprovalService,
         SigningService signingService,
@@ -60,7 +61,7 @@ public sealed class DataApprovalMutations
                 )
             );
         }
-        if (!CommonAuthorization.IsCurrentUserAtLeastAssistantManagerOfDatabaseOperator(currentUser))
+        if (!authorization.IsCurrentUserAtLeastAssistantManagerOfDatabaseOperator(currentUser))
         {
             return new AddDataApprovalPayload(
                 new AddDataApprovalError(
@@ -296,6 +297,7 @@ public sealed class DataApprovalMutations
         DataApprovalInput input,
         ApplicationDbContext context,
         UserService userService,
+        CommonAuthorization authorization,
         ResponseApprovalService responseApprovalService,
         CancellationToken cancellationToken
     )
@@ -311,7 +313,7 @@ public sealed class DataApprovalMutations
                 )
             );
         }
-        if (!CommonAuthorization.IsCurrentUserAtLeastAssistantManagerOfDatabaseOperator(currentUser))
+        if (!authorization.IsCurrentUserAtLeastAssistantManagerOfDatabaseOperator(currentUser))
         {
             return new RemoveDataApprovalPayload(
                 new RemoveDataApprovalError(

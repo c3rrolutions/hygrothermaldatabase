@@ -638,7 +638,7 @@ type Query {
   database: Database! @cost(weight: "10")
   geometricData(id: Uuid! locale: Locale): GeometricData @cost(weight: "10")
   getHttpsResource(id: Uuid!): GetHttpsResource @cost(weight: "10")
-  getHttpsResources("Returns the elements in the list that come after the specified cursor." after: String "Returns the elements in the list that come before the specified cursor." before: String "Returns the first _n_ elements from the list." first: Int "Returns the last _n_ elements from the list." last: Int order: [GetHttpsResourceSortInput!] @cost(weight: "10") where: GetHttpsResourcePropositionInput @cost(weight: "10")): GetHttpsResourceConnection @listSize(assumedSize: 100, slicingArguments: [ "first", "last" ], slicingArgumentDefaultValue: 100, sizedFields: [ "edges", "nodes" ], requireOneSlicingArgument: false) @cost(weight: "10")
+  getHttpsResources("Returns the elements in the list that come after the specified cursor." after: String "Returns the elements in the list that come before the specified cursor." before: String "Returns the first _n_ elements from the list." first: Int "Returns the last _n_ elements from the list." last: Int order: [GetHttpsResourceTreeNonRootVertSortInput!] @cost(weight: "10") where: GetHttpsResourceTreeNonRootVertexFilterInput @cost(weight: "10")): GetHttpsResourceConnection @listSize(assumedSize: 100, slicingArguments: [ "first", "last" ], slicingArgumentDefaultValue: 100, sizedFields: [ "edges", "nodes" ], requireOneSlicingArgument: false) @cost(weight: "10")
   hasCalorimetricData(locale: Locale where: CalorimetricDataPropositionInput @cost(weight: "10")): Boolean! @cost(weight: "10")
   hasGeometricData(locale: Locale where: GeometricDataPropositionInput @cost(weight: "10")): Boolean! @cost(weight: "10")
   hasHygrothermalData(locale: Locale where: HygrothermalDataPropositionInput @cost(weight: "10")): Boolean! @cost(weight: "10")
@@ -792,7 +792,7 @@ input AppliedMethodPropositionInput {
   and: [AppliedMethodPropositionInput!]
   or: [AppliedMethodPropositionInput!]
   methodId: UuidPropositionInput
-  arguments: ListNamedMethodArgumentFilterTypePropositionInput
+  arguments: ListFilterInputTypeOfNamedMethodArgumentPropositionInput
   sources: ListFilterInputTypeOfNamedMethodSourcePropositionInput
 }
 
@@ -816,7 +816,7 @@ input CalorimetricDataPropositionInput {
   createdAt: DateTimePropositionInput
   appliedMethod: AppliedMethodPropositionInput
   approvals: ListFilterInputTypeOfDataApprovalPropositionInput
-  resources: ListGetHttpsResourceFilterTypePropositionInput
+  resources: ListFilterInputTypeOfGetHttpsResourcePropositionInput
   warnings: StringsPropositionInput
   id: UuidPropositionInput
   gValues: FloatsPropositionInput
@@ -1002,7 +1002,7 @@ input DataFilterInput {
   createdAt: DateTimePropositionInput
   appliedMethod: AppliedMethodPropositionInput
   approvals: ListFilterInputTypeOfDataApprovalPropositionInput
-  resources: ListGetHttpsResourceFilterTypePropositionInput
+  resources: ListFilterInputTypeOfGetHttpsResourcePropositionInput
   warnings: StringsPropositionInput
 }
 
@@ -1088,7 +1088,7 @@ input GeometricDataPropositionInput {
   createdAt: DateTimePropositionInput
   appliedMethod: AppliedMethodPropositionInput
   approvals: ListFilterInputTypeOfDataApprovalPropositionInput
-  resources: ListGetHttpsResourceFilterTypePropositionInput
+  resources: ListFilterInputTypeOfGetHttpsResourcePropositionInput
   warnings: StringsPropositionInput
   id: UuidPropositionInput
   thicknesses: FloatsPropositionInput
@@ -1114,7 +1114,12 @@ input GetHttpsResourcePropositionInput {
   dataFormatId: UuidPropositionInput
   appliedConversionMethod: ToTreeVertexAppliedConversionMethodPropositionInput
   archivedFilesMetaInformation: ListFilterInputTypeOfFileMetaInformationPropositionInput
-  parent: GetHttpsResourcePropositionInput
+  parent: GetHttpsResourceTreeNonRootVertexFilterInput
+  calorimetricData: CalorimetricDataPropositionInput
+  geometricData: GeometricDataPropositionInput
+  hygrothermalData: HygrothermalDataPropositionInput
+  opticalData: OpticalDataPropositionInput
+  photovoltaicData: PhotovoltaicDataPropositionInput
 }
 
 input GetHttpsResourceSortInput {
@@ -1123,7 +1128,7 @@ input GetHttpsResourceSortInput {
   hashValue: SortEnumType @cost(weight: "10")
   dataFormatId: SortEnumType @cost(weight: "10")
   appliedConversionMethod: ToTreeVertexAppliedConversionMethodSortInput @cost(weight: "10")
-  parent: GetHttpsResourceSortInput @cost(weight: "10")
+  parent: GetHttpsResourceTreeNonRootVertSortInput @cost(weight: "10")
 }
 
 input GetHttpsResourceTreeNonRootVertSortInput {
@@ -1132,7 +1137,7 @@ input GetHttpsResourceTreeNonRootVertSortInput {
   hashValue: SortEnumType @cost(weight: "10")
   dataFormatId: SortEnumType @cost(weight: "10")
   appliedConversionMethod: ToTreeVertexAppliedConversionMethodSortInput @cost(weight: "10")
-  parent: GetHttpsResourceSortInput @cost(weight: "10")
+  parent: GetHttpsResourceTreeNonRootVertSortInput @cost(weight: "10")
 }
 
 input GetHttpsResourceTreeNonRootVertexFilterInput {
@@ -1144,7 +1149,7 @@ input GetHttpsResourceTreeNonRootVertexFilterInput {
   dataFormatId: UuidPropositionInput
   appliedConversionMethod: ToTreeVertexAppliedConversionMethodPropositionInput
   archivedFilesMetaInformation: ListFilterInputTypeOfFileMetaInformationPropositionInput
-  parent: GetHttpsResourcePropositionInput
+  parent: GetHttpsResourceTreeNonRootVertexFilterInput
 }
 
 input HygrothermalDataPropositionInput {
@@ -1158,7 +1163,7 @@ input HygrothermalDataPropositionInput {
   createdAt: DateTimePropositionInput
   appliedMethod: AppliedMethodPropositionInput
   approvals: ListFilterInputTypeOfDataApprovalPropositionInput
-  resources: ListGetHttpsResourceFilterTypePropositionInput
+  resources: ListFilterInputTypeOfGetHttpsResourcePropositionInput
   warnings: StringsPropositionInput
   id: UuidPropositionInput
 }
@@ -1235,24 +1240,24 @@ input ListFilterInputTypeOfFileMetaInformationPropositionInput {
   any: Boolean @cost(weight: "10")
 }
 
+input ListFilterInputTypeOfGetHttpsResourcePropositionInput {
+  all: GetHttpsResourceTreeNonRootVertexFilterInput @cost(weight: "10")
+  none: GetHttpsResourceTreeNonRootVertexFilterInput @cost(weight: "10")
+  some: GetHttpsResourceTreeNonRootVertexFilterInput @cost(weight: "10")
+  any: Boolean @cost(weight: "10")
+}
+
+input ListFilterInputTypeOfNamedMethodArgumentPropositionInput {
+  all: NamedMethodArgumentPropositionInput @cost(weight: "10")
+  none: NamedMethodArgumentPropositionInput @cost(weight: "10")
+  some: NamedMethodArgumentPropositionInput @cost(weight: "10")
+  any: Boolean @cost(weight: "10")
+}
+
 input ListFilterInputTypeOfNamedMethodSourcePropositionInput {
   all: NamedMethodSourcePropositionInput @cost(weight: "10")
   none: NamedMethodSourcePropositionInput @cost(weight: "10")
   some: NamedMethodSourcePropositionInput @cost(weight: "10")
-  any: Boolean @cost(weight: "10")
-}
-
-input ListGetHttpsResourceFilterTypePropositionInput {
-  all: GetHttpsResourcePropositionInput @cost(weight: "10")
-  none: GetHttpsResourcePropositionInput @cost(weight: "10")
-  some: GetHttpsResourcePropositionInput @cost(weight: "10")
-  any: Boolean @cost(weight: "10")
-}
-
-input ListNamedMethodArgumentFilterTypePropositionInput {
-  all: NamedMethodArgumentPropositionInput @cost(weight: "10")
-  none: NamedMethodArgumentPropositionInput @cost(weight: "10")
-  some: NamedMethodArgumentPropositionInput @cost(weight: "10")
   any: Boolean @cost(weight: "10")
 }
 
@@ -1365,7 +1370,7 @@ input OpticalDataPropositionInput {
   createdAt: DateTimePropositionInput
   appliedMethod: AppliedMethodPropositionInput
   approvals: ListFilterInputTypeOfDataApprovalPropositionInput
-  resources: ListGetHttpsResourceFilterTypePropositionInput
+  resources: ListFilterInputTypeOfGetHttpsResourcePropositionInput
   warnings: StringsPropositionInput
   id: UuidPropositionInput
   type: NullableOfOpticalComponentTypePropositionInput
@@ -1402,7 +1407,7 @@ input PhotovoltaicDataPropositionInput {
   createdAt: DateTimePropositionInput
   appliedMethod: AppliedMethodPropositionInput
   approvals: ListFilterInputTypeOfDataApprovalPropositionInput
-  resources: ListGetHttpsResourceFilterTypePropositionInput
+  resources: ListFilterInputTypeOfGetHttpsResourcePropositionInput
   warnings: StringsPropositionInput
   id: UuidPropositionInput
 }
@@ -1471,8 +1476,12 @@ input RecomputeGetHttpsResourceHashValuesFilterInput {
   dataFormatId: UuidPropositionInput
   appliedConversionMethod: ToTreeVertexAppliedConversionMethodPropositionInput
   archivedFilesMetaInformation: ListFilterInputTypeOfFileMetaInformationPropositionInput
-  parent: GetHttpsResourcePropositionInput
-  data: DataFilterInput
+  parent: GetHttpsResourceTreeNonRootVertexFilterInput
+  calorimetricData: CalorimetricDataPropositionInput
+  geometricData: GeometricDataPropositionInput
+  hygrothermalData: HygrothermalDataPropositionInput
+  opticalData: OpticalDataPropositionInput
+  photovoltaicData: PhotovoltaicDataPropositionInput
 }
 
 input ReferenceInput {
@@ -1575,7 +1584,7 @@ input ToTreeVertexAppliedConversionMethodPropositionInput {
   and: [ToTreeVertexAppliedConversionMethodPropositionInput!]
   or: [ToTreeVertexAppliedConversionMethodPropositionInput!]
   methodId: UuidPropositionInput
-  arguments: ListNamedMethodArgumentFilterTypePropositionInput
+  arguments: ListFilterInputTypeOfNamedMethodArgumentPropositionInput
   sourceName: StringPropositionInput
 }
 

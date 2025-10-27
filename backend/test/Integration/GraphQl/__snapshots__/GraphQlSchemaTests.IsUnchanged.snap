@@ -1115,6 +1115,11 @@ input GetHttpsResourcePropositionInput {
   appliedConversionMethod: ToTreeVertexAppliedConversionMethodPropositionInput
   archivedFilesMetaInformation: ListFilterInputTypeOfFileMetaInformationPropositionInput
   parent: GetHttpsResourceTreeNonRootVertexFilterInput
+  calorimetricData: CalorimetricDataPropositionInput
+  geometricData: GeometricDataPropositionInput
+  hygrothermalData: HygrothermalDataPropositionInput
+  opticalData: OpticalDataPropositionInput
+  photovoltaicData: PhotovoltaicDataPropositionInput
 }
 
 input GetHttpsResourceSortInput {
@@ -1472,7 +1477,11 @@ input RecomputeGetHttpsResourceHashValuesFilterInput {
   appliedConversionMethod: ToTreeVertexAppliedConversionMethodPropositionInput
   archivedFilesMetaInformation: ListFilterInputTypeOfFileMetaInformationPropositionInput
   parent: GetHttpsResourceTreeNonRootVertexFilterInput
-  data: DataFilterInput
+  calorimetricData: CalorimetricDataPropositionInput
+  geometricData: GeometricDataPropositionInput
+  hygrothermalData: HygrothermalDataPropositionInput
+  opticalData: OpticalDataPropositionInput
+  photovoltaicData: PhotovoltaicDataPropositionInput
 }
 
 input ReferenceInput {

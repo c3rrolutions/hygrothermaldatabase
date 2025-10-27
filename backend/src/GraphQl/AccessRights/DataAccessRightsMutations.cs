@@ -16,6 +16,7 @@ public sealed class DataAccessRightsMutations
         DataAccessRightsInput input,
         ApplicationDbContext context,
         UserService userService,
+        CommonAuthorization authorization,
         CancellationToken cancellationToken
     )
     {
@@ -31,7 +32,7 @@ public sealed class DataAccessRightsMutations
             );
         }
 
-        if (!CommonAuthorization.IsCurrentUserAtLeastAssistantManagerOfDatabaseOperator(currentUser))
+        if (!authorization.IsCurrentUserAtLeastAssistantManagerOfDatabaseOperator(currentUser))
         {
             return new UpdateDataAccessRightsPayload(
                 new UpdateDataAccessRightsError(
@@ -66,6 +67,7 @@ public sealed class DataAccessRightsMutations
         InstitutionAccessRightsInput input,
         ApplicationDbContext context,
         UserService userService,
+        CommonAuthorization authorization,
         CancellationToken cancellationToken
     )
     {
@@ -82,7 +84,7 @@ public sealed class DataAccessRightsMutations
             );
         }
 
-        if (!CommonAuthorization.IsCurrentUserAtLeastAssistantManagerOfDatabaseOperator(currentUser))
+        if (!authorization.IsCurrentUserAtLeastAssistantManagerOfDatabaseOperator(currentUser))
         {
             return new AddInstitutionAccessRightsPayload(
                 new InstitutionAccessRightsError(
@@ -120,6 +122,7 @@ public sealed class DataAccessRightsMutations
         InstitutionAccessRightsInput input,
         ApplicationDbContext context,
         UserService userService,
+        CommonAuthorization authorization,
         CancellationToken cancellationToken
     )
     {
@@ -136,7 +139,7 @@ public sealed class DataAccessRightsMutations
             );
         }
 
-        if (!CommonAuthorization.IsCurrentUserAtLeastAssistantManagerOfDatabaseOperator(currentUser))
+        if (!authorization.IsCurrentUserAtLeastAssistantManagerOfDatabaseOperator(currentUser))
         {
             return new UpdateAccessRightsPayload(
                 new InstitutionAccessRightsError(

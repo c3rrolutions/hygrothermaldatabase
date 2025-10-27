@@ -18,6 +18,7 @@ public sealed class PhotovoltaicDataMutations
         CreatePhotovoltaicDataInput input,
         ApplicationDbContext context,
         UserService userService,
+        CommonAuthorization authorization,
         ResponseApprovalService responseApprovalService,
         CancellationToken cancellationToken
     )
@@ -35,7 +36,7 @@ public sealed class PhotovoltaicDataMutations
             );
         }
 
-        if (!CommonAuthorization.IsCurrentUserAtLeastAssistantManagerOfDatabaseOperator(currentUser))
+        if (!authorization.IsCurrentUserAtLeastAssistantManagerOfDatabaseOperator(currentUser))
         {
             return new CreatePhotovoltaicDataPayload(
                 new CreatePhotovoltaicDataError(

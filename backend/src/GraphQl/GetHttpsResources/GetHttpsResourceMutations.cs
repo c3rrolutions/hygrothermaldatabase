@@ -36,6 +36,7 @@ public sealed class GetHttpsResourceMutations
         CreateGetHttpsResourceInput input,
         ApplicationDbContext context,
         UserService userService,
+        CommonAuthorization authorization,
         CancellationToken cancellationToken
     )
     {
@@ -50,7 +51,7 @@ public sealed class GetHttpsResourceMutations
                 )
             );
         }
-        if (!CommonAuthorization.IsCurrentUserAtLeastAssistantManagerOfDatabaseOperator(currentUser))
+        if (!authorization.IsCurrentUserAtLeastAssistantManagerOfDatabaseOperator(currentUser))
         {
             return new CreateGetHttpsResourcePayload(
                 new CreateGetHttpsResourceError(
@@ -120,6 +121,7 @@ public sealed class GetHttpsResourceMutations
         ApplicationDbContext context,
         QueryContext<GetHttpsResource> queryContext,
         UserService userService,
+        CommonAuthorization authorization,
         ILogger<GetHttpsResourceMutations> logger,
         CancellationToken cancellationToken
     )
@@ -135,7 +137,7 @@ public sealed class GetHttpsResourceMutations
                 )
             );
         }
-        if (!CommonAuthorization.IsCurrentUserAtLeastAssistantManagerOfDatabaseOperator(currentUser))
+        if (!authorization.IsCurrentUserAtLeastAssistantManagerOfDatabaseOperator(currentUser))
         {
             return new RecomputeGetHttpsResourceHashValuesPayload(
                 new RecomputeGetHttpsResourceHashValuesError(

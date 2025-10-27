@@ -10,6 +10,7 @@ using Microsoft.Extensions.Hosting;
 using OpenIddict.Abstractions;
 using OpenIddict.Client;
 using Quartz;
+using Database.Authorization;
 
 namespace Database.Configuration;
 
@@ -33,6 +34,14 @@ public abstract class AuthConfiguration
         ConfigureAuthenticationAndAuthorizationServices(services);
         ConfigureTaskScheduling(services, environment);
         ConfigureOpenIddictServices(services, environment, appSettings, encryptionCertificate, signingCertificate);
+        AddAuthorizationServices(services);
+    }
+
+    private static void AddAuthorizationServices(
+        IServiceCollection services
+    )
+    {
+        services.AddScoped<CommonAuthorization>();
     }
 
     private static X509Certificate2 LoadCertificate(

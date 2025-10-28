@@ -18,8 +18,8 @@ namespace Database.GraphQl.GeometricDataX;
 public sealed class GeometricDataQueries
 {
     [UsePaging]
-    [UseFiltering]
-    [UseSorting]
+    [UseFiltering<GeometricDataFilterType>]
+    [UseSorting<GeometricDataSortType>]
     public async Task<IQueryable<GeometricData>> GetAllGeometricData(
         [GraphQLType<LocaleType>] string? locale,
         ApplicationDbContext context,
@@ -41,7 +41,7 @@ public sealed class GeometricDataQueries
         return await accessRightsService.ApplyAccessRightsOnData(filteredData, cancellationToken);
     }
 
-    [UseFiltering(typeof(GeometricData))]
+    [UseFiltering<GeometricDataFilterType>]
     public Task<bool> GetHasGeometricData(
         [GraphQLType<LocaleType>] string? locale,
         ApplicationDbContext context,

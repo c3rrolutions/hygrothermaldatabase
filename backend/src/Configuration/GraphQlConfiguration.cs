@@ -116,11 +116,11 @@ public static class GraphQlConfiguration
             .AddType(new LocaleType())
             // Object Types
             .AddType<DataConnection>()
-            // Query, Mutation and Subscription Types
-            .AddQueryType(d => d.Name(nameof(Query)))
-            .AddMutationType(d => d.Name(nameof(Mutation)))
-            // .AddSubscriptionType(d => d.Name(nameof(Subscription)))
-            // auto-discover types using `HotChocolate.Types.Analyzers`
+            // Query, Mutation, Subscription, Object, and Input Types
+            .AddQueryType(_ => _.Name(nameof(Query)))
+            .AddMutationType(_ => _.Name(nameof(Mutation)))
+            // .AddSubscriptionType(_ => _.Name(nameof(Subscription)))
+            // auto-discover using `HotChocolate.Types.Analyzers`
             .AddTypes()
             // Paging
             .AddDbContextCursorPagingProvider()

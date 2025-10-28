@@ -20,8 +20,8 @@ public sealed class HygrothermalDataQueries
     [UsePaging]
     // [UseProjection] // We disabled projections because when requesting `id` all results had the
     // same `id` and when also requesting `uuid`, the latter was always the empty UUID `000...`.
-    [UseFiltering]
-    [UseSorting]
+    [UseFiltering<HygrothermalDataFilterType>]
+    [UseSorting<HygrothermalDataSortType>]
     public async Task<IQueryable<HygrothermalData>> GetAllHygrothermalData(
         [GraphQLType<LocaleType>] string? locale,
         ApplicationDbContext context,
@@ -43,7 +43,7 @@ public sealed class HygrothermalDataQueries
         return await accessRightsService.ApplyAccessRightsOnData(filteredData, cancellationToken);
     }
 
-    [UseFiltering(typeof(HygrothermalData))]
+    [UseFiltering<HygrothermalDataFilterType>]
     public Task<bool> GetHasHygrothermalData(
         [GraphQLType<LocaleType>] string? locale,
         ApplicationDbContext context,

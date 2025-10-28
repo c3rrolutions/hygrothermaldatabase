@@ -31,6 +31,7 @@ public sealed record DeleteDataError(
 ) : UserErrorBase<DeleteDataErrorCode>(Code, Message, Path);
 
 public sealed record DeleteDataPayload(
+    // [GraphQLType<ListType<ErrorType<DeleteDataErrorCode>>>]
     IReadOnlyCollection<DeleteDataError>? Errors
 );
 
@@ -49,6 +50,7 @@ public sealed class DeleteDataMutation
         IReadOnlyList<string> path
     ) => new(code, message, path);
 
+    // [GraphQLType<PayloadType<DeleteDataErrorCode>>]
     public async Task<DeleteDataPayload> DeleteDataAsync(
         DeleteDataInput input,
         CommonAuthorization authorization,

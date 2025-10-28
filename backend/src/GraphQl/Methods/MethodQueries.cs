@@ -11,8 +11,73 @@ using GraphQL.Client.Abstractions.Utilities;
 using HotChocolate;
 using HotChocolate.Resolvers;
 using HotChocolate.Types;
+using System.Diagnostics.CodeAnalysis;
+using System.Collections.Generic;
 
 namespace Database.GraphQl.Methods;
+
+[SuppressMessage("Naming", "CA1707")]
+public enum CalculateMethodErrorCode
+{
+    UNKNOWN_METHOD,
+    UNKNOWN_DATABASE,
+    DATA_QUERY_FAILED
+}
+
+public sealed record CalculateMethodError(
+    CalculateMethodErrorCode Code,
+    string Message,
+    IReadOnlyList<string> Path
+)
+: UserErrorBase<CalculateMethodErrorCode>(Code, Message, Path);
+
+public sealed class CalculateMethodPayload
+    : Payload
+{
+    public CalculateMethodPayload(
+        JsonElement result
+    )
+    {
+        Result = result;
+    }
+
+    public CalculateMethodPayload(
+        IReadOnlyCollection<CalculateMethodError> errors
+    )
+    {
+        Errors = errors;
+    }
+
+    public CalculateMethodPayload(
+        CalculateMethodError error
+    )
+        : this([error])
+    {
+    }
+
+    public CalculateMethodPayload(
+        JsonElement result,
+        IReadOnlyCollection<CalculateMethodError> errors
+    )
+    {
+        Result = result;
+        Errors = errors;
+    }
+
+    public CalculateMethodPayload(
+        JsonElement result,
+        CalculateMethodError error
+    )
+        : this(
+            result,
+            [error]
+        )
+    {
+    }
+
+    public JsonElement? Result { get; }
+    public IReadOnlyCollection<CalculateMethodError>? Errors { get; }
+}
 
 [ExtendObjectType(nameof(Query))]
 public sealed class MethodQueries

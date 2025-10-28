@@ -1,6 +1,6 @@
 namespace Database.GraphQl.Numerations;
 
-public sealed record CreateNumerationInput(
+public sealed record NumerationInput(
     string? Prefix,
     string MainNumber,
     string? Suffix

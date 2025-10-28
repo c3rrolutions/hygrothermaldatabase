@@ -16,20 +16,66 @@ using HotChocolate.Data;
 using GreenDonut.Data;
 using Microsoft.EntityFrameworkCore.Query;
 using Database.GraphQl.Extensions;
+using System.Diagnostics.CodeAnalysis;
+using System.Collections.Generic;
 
 namespace Database.GraphQl.GetHttpsResources;
 
-public static partial class GetHttpsResourceMutationsLogging
+public sealed record CreateGetHttpsResourceInput(
+    string Description,
+    Guid DataFormatId,
+    Guid DataId,
+    DataKind DataKind,
+    Guid? ParentId,
+    IReadOnlyList<FileMetaInformationInput> ArchivedFilesMetaInformation,
+    ToTreeVertexAppliedConversionMethodInput? AppliedConversionMethod
+);
+
+[SuppressMessage("Naming", "CA1707")]
+public enum CreateGetHttpsResourceErrorCode
+{
+    UNKNOWN,
+    UNKNOWN_DATA,
+    UNAUTHORIZED,
+    UNAUTHENTICATED,
+}
+
+public sealed record CreateGetHttpsResourceError(
+    CreateGetHttpsResourceErrorCode Code,
+    string Message,
+    IReadOnlyList<string> Path
+)
+: UserErrorBase<CreateGetHttpsResourceErrorCode>(Code, Message, Path);
+
+public sealed class CreateGetHttpsResourcePayload
+    : GetHttpsResourcePayload<CreateGetHttpsResourceError>
+{
+    public CreateGetHttpsResourcePayload(
+        GetHttpsResource getHttpsResource
+    )
+        : base(getHttpsResource)
+    {
+    }
+
+    public CreateGetHttpsResourcePayload(
+        CreateGetHttpsResourceError error
+    )
+        : base(error)
+    {
+    }
+}
+
+public static partial class CreateGetHttpsResourceMutationLogging
 {
     [LoggerMessage(
         Level = LogLevel.Warning,
         Message = "Recomputing the hash value of the GET HTTPS resource with ID {Id} failed."
     )]
-    public static partial void FailedRecomputingHashValue(this ILogger<GetHttpsResourceMutations> logger, Guid id, Exception exception);
+    public static partial void FailedRecomputingHashValue(this ILogger<CreateGetHttpsResourceMutation> logger, Guid id, Exception exception);
 }
 
 [ExtendObjectType(nameof(Mutation))]
-public sealed class GetHttpsResourceMutations
+public sealed class CreateGetHttpsResourceMutation
 {
     // [UseUserManager] [Authorize(Policy = Configuration.AuthConfiguration.WritePolicy)]
     public async Task<CreateGetHttpsResourcePayload> CreateGetHttpsResourceAsync(
@@ -114,72 +160,5 @@ public sealed class GetHttpsResourceMutations
         context.GetHttpsResources.Add(getHttpsResource);
         await context.SaveChangesAsync(cancellationToken);
         return new CreateGetHttpsResourcePayload(getHttpsResource);
-    }
-
-    [UseFiltering<RecomputeGetHttpsResourceHashValuesFilterType>]
-    public async Task<RecomputeGetHttpsResourceHashValuesPayload> RecomputeGetHttpsResourceHashValuesAsync(
-        ApplicationDbContext context,
-        QueryContext<GetHttpsResource> queryContext,
-        UserService userService,
-        CommonAuthorization authorization,
-        ILogger<GetHttpsResourceMutations> logger,
-        CancellationToken cancellationToken
-    )
-    {
-        var currentUser = await userService.GetCurrentUser(cancellationToken);
-        if (currentUser is null)
-        {
-            return new RecomputeGetHttpsResourceHashValuesPayload(
-                new RecomputeGetHttpsResourceHashValuesError(
-                    RecomputeGetHttpsResourceHashValuesErrorCode.UNAUTHENTICATED,
-                    $"The user is not authenticated.",
-                    []
-                )
-            );
-        }
-        if (!authorization.IsCurrentUserAtLeastAssistantManagerOfDatabaseOperator(currentUser))
-        {
-            return new RecomputeGetHttpsResourceHashValuesPayload(
-                new RecomputeGetHttpsResourceHashValuesError(
-                    RecomputeGetHttpsResourceHashValuesErrorCode.UNAUTHORIZED,
-                    $"The current user is not authorized to recompute GET HTTPS resource hash values in this database.",
-                    []
-                )
-            );
-        }
-        var resources =
-            await context.GetHttpsResources
-            .With(queryContext, sort => sort.StabilizeOrder())
-            .ToListAsync(cancellationToken);
-        var errors = new ConcurrentBag<RecomputeGetHttpsResourceHashValuesError>();
-        await Parallel.ForEachAsync(
-            resources,
-            cancellationToken,
-            async (resource, cancellationToken) =>
-            {
-                try
-                {
-                    await resource.RecomputeHashValue(cancellationToken);
-                }
-                catch (Exception exception)
-                {
-                    logger.FailedRecomputingHashValue(resource.Id, exception);
-                    errors.Add(
-                        new RecomputeGetHttpsResourceHashValuesError(
-                            RecomputeGetHttpsResourceHashValuesErrorCode.FAILED,
-                            $"Recomputing the hash value for the GET HTTPS resource with ID {resource.Id} failed with message: {exception.Message}",
-                            []
-                        )
-                    );
-                }
-
-            }
-        );
-        await context.SaveChangesAsync(cancellationToken);
-        if (!errors.IsEmpty)
-        {
-            return new RecomputeGetHttpsResourceHashValuesPayload(resources, errors);
-        }
-        return new RecomputeGetHttpsResourceHashValuesPayload(resources);
     }
 }

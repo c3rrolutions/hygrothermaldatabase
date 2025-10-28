@@ -7,11 +7,87 @@ using Database.Authorization;
 using Database.Data;
 using Database.Services;
 using Database.Utilities;
+using HotChocolate;
+using System.Diagnostics.CodeAnalysis;
+using System.Collections.Generic;
 
 namespace Database.GraphQl.PhotovoltaicDataX;
 
+public sealed record CreatePhotovoltaicDataInput(
+    // TODO Why does specifying the type with an attribute not work here?
+    [GraphQLType<NonNullType<LocaleType>>] string Locale,
+    Guid ComponentId,
+    string? Name,
+    string? Description,
+    string[] Warnings,
+    DateTime CreatedAt,
+    Guid CreatorId,
+    AppliedMethodInput AppliedMethod,
+    RootGetHttpsResourceInput RootResource
+)
+{
+    public PhotovoltaicData ToDomainModel(Guid userId)
+    {
+        var photovoltaicData = new PhotovoltaicData(
+            userId,
+            Locale,
+            ComponentId,
+            Name,
+            Description,
+            Warnings,
+            CreatorId,
+            CreatedAt,
+            AppliedMethod.ToDomainModel()
+        );
+        photovoltaicData.Resources.Add(RootResource.ToDomainModel());
+        return photovoltaicData;
+    }
+};
+
+[SuppressMessage("Naming", "CA1707")]
+public enum CreatePhotovoltaicDataErrorCode
+{
+    UNKNOWN,
+    UNAUTHORIZED,
+    UNAUTHENTICATED,
+    CREATING_RESPONSE_APPROVAL_FAILED
+}
+
+public sealed record CreatePhotovoltaicDataError(
+    CreatePhotovoltaicDataErrorCode Code,
+    string Message,
+    IReadOnlyList<string> Path
+)
+: UserErrorBase<CreatePhotovoltaicDataErrorCode>(Code, Message, Path);
+
+public sealed class CreatePhotovoltaicDataPayload
+    : PhotovoltaicDataPayload<CreatePhotovoltaicDataError>
+{
+    public CreatePhotovoltaicDataPayload(
+        PhotovoltaicData photovoltaicData
+    )
+        : base(photovoltaicData)
+    {
+    }
+
+    public CreatePhotovoltaicDataPayload(
+        CreatePhotovoltaicDataError error
+    )
+        : base(error)
+    {
+    }
+
+    public CreatePhotovoltaicDataPayload(
+        PhotovoltaicData photovoltaicData,
+        CreatePhotovoltaicDataError error
+    )
+        : base(photovoltaicData, error)
+    {
+    }
+}
+
 [ExtendObjectType(nameof(Mutation))]
-public sealed class PhotovoltaicDataMutations
+public sealed class CreatePhotovoltaicDataMutation
 {
     // [UseUserManager] [Authorize(Policy = Configuration.AuthConfiguration.WritePolicy)]
     public async Task<CreatePhotovoltaicDataPayload> CreatePhotovoltaicDataAsync(

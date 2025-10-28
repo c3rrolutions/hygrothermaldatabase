@@ -63,9 +63,15 @@ type AddDataApprovalPayload {
   query: Query!
 }
 
+type AddInstitutionAccessRightsError implements UserError {
+  code: AddInstitutionAccessRightsErrorCode!
+  message: String!
+  path: [String!]!
+}
+
 type AddInstitutionAccessRightsPayload {
   accessRights: InstitutionAccessRights
-  errors: [InstitutionAccessRightsError!]
+  errors: [AddInstitutionAccessRightsError!]
   query: Query!
 }
 
@@ -449,20 +455,14 @@ type InstitutionAccessRights {
   version: NonNegativeInt!
 }
 
-type InstitutionAccessRightsError implements UserError {
-  code: InstitutionAccessRightsErrorCode!
-  message: String!
-  path: [String!]!
-}
-
 type KeyValuePairOfGuidAndNullableOfUInt32 {
   key: Uuid!
   value: NonNegativeInt
 }
 
 type Mutation {
-  addAccessRights(input: InstitutionAccessRightsInput!): AddInstitutionAccessRightsPayload! @cost(weight: "10")
-  addDataApproval(input: DataApprovalInput!): AddDataApprovalPayload! @cost(weight: "10")
+  addDataApproval(input: AddDataApprovalInput!): AddDataApprovalPayload! @cost(weight: "10")
+  addInstitutionAccessRights(input: AddInstitutionAccessRightsInput!): AddInstitutionAccessRightsPayload! @cost(weight: "10")
   createCalorimetricData(input: CreateCalorimetricDataInput!): CreateCalorimetricDataPayload! @cost(weight: "10")
   createGeometricData(input: CreateGeometricDataInput!): CreateGeometricDataPayload! @cost(weight: "10")
   createGetHttpsResource(input: CreateGetHttpsResourceInput!): CreateGetHttpsResourcePayload! @cost(weight: "10")
@@ -472,11 +472,11 @@ type Mutation {
   createResponseApprovals: CreateResponseApprovalsPayload! @cost(weight: "10")
   deleteData(input: DeleteDataInput!): DeleteDataPayload! @cost(weight: "10")
   recomputeGetHttpsResourceHashValues(where: RecomputeGetHttpsResourceHashValuesFilterInput @cost(weight: "10")): RecomputeGetHttpsResourceHashValuesPayload! @cost(weight: "10")
-  removeDataApproval(input: DataApprovalInput!): RemoveDataApprovalPayload! @cost(weight: "10")
-  updateAccessRights(input: InstitutionAccessRightsInput!): UpdateAccessRightsPayload! @cost(weight: "10")
+  removeDataApproval(input: RemoveDataApprovalInput!): RemoveDataApprovalPayload! @cost(weight: "10")
   updateData(input: UpdateDataInput!): UpdateDataPayload! @cost(weight: "10")
-  updateDataAccessRights(input: DataAccessRightsInput!): UpdateDataAccessRightsPayload! @cost(weight: "10")
+  updateDataAccessRights(input: UpdateDataAccessRightsInput!): UpdateDataAccessRightsPayload! @cost(weight: "10")
   updateDatabase(input: UpdateDatabaseInput!): UpdateDatabasePayload! @cost(weight: "10")
+  updateInstitutionAccessRights(input: UpdateInstitutionAccessRightsInput!): UpdateInstitutionAccessRightsPayload! @cost(weight: "10")
   updateResponseApprovals: UpdateResponseApprovalsPayload! @cost(weight: "10")
 }
 
@@ -638,7 +638,7 @@ type Query {
   database: Database! @cost(weight: "10")
   geometricData(id: Uuid! locale: Locale): GeometricData @cost(weight: "10")
   getHttpsResource(id: Uuid!): GetHttpsResource @cost(weight: "10")
-  getHttpsResources("Returns the elements in the list that come after the specified cursor." after: String "Returns the elements in the list that come before the specified cursor." before: String "Returns the first _n_ elements from the list." first: Int "Returns the last _n_ elements from the list." last: Int order: [GetHttpsResourceTreeNonRootVertSortInput!] @cost(weight: "10") where: GetHttpsResourceTreeNonRootVertexFilterInput @cost(weight: "10")): GetHttpsResourceConnection @listSize(assumedSize: 100, slicingArguments: [ "first", "last" ], slicingArgumentDefaultValue: 100, sizedFields: [ "edges", "nodes" ], requireOneSlicingArgument: false) @cost(weight: "10")
+  getHttpsResources("Returns the elements in the list that come after the specified cursor." after: String "Returns the elements in the list that come before the specified cursor." before: String "Returns the first _n_ elements from the list." first: Int "Returns the last _n_ elements from the list." last: Int order: [GetHttpsResourceSortInput!] @cost(weight: "10") where: GetHttpsResourcePropositionInput @cost(weight: "10")): GetHttpsResourceConnection @listSize(assumedSize: 100, slicingArguments: [ "first", "last" ], slicingArgumentDefaultValue: 100, sizedFields: [ "edges", "nodes" ], requireOneSlicingArgument: false) @cost(weight: "10")
   hasCalorimetricData(locale: Locale where: CalorimetricDataPropositionInput @cost(weight: "10")): Boolean! @cost(weight: "10")
   hasGeometricData(locale: Locale where: GeometricDataPropositionInput @cost(weight: "10")): Boolean! @cost(weight: "10")
   hasHygrothermalData(locale: Locale where: HygrothermalDataPropositionInput @cost(weight: "10")): Boolean! @cost(weight: "10")
@@ -707,12 +707,6 @@ type ToTreeVertexAppliedConversionMethod {
   sourceName: String!
 }
 
-type UpdateAccessRightsPayload {
-  accessRights: InstitutionAccessRights
-  errors: [InstitutionAccessRightsError!]
-  query: Query!
-}
-
 type UpdateDataAccessRightsError implements UserError {
   code: UpdateDataAccessRightsErrorCode!
   message: String!
@@ -749,6 +743,18 @@ type UpdateDatabasePayload {
   query: Query!
 }
 
+type UpdateInstitutionAccessRightsError implements UserError {
+  code: UpdateInstitutionAccessRightsErrorCode!
+  message: String!
+  path: [String!]!
+}
+
+type UpdateInstitutionAccessRightsPayload {
+  accessRights: InstitutionAccessRights
+  errors: [UpdateInstitutionAccessRightsError!]
+  query: Query!
+}
+
 type UpdateResponseApprovalsError implements UserError {
   code: UpdateResponseApprovalsErrorCode!
   message: String!
@@ -781,6 +787,26 @@ type UserInfo {
 }
 
 union Reference = Publication | Standard
+
+input AddDataApprovalInput {
+  approverId: Uuid!
+  dataId: Uuid!
+  dataKind: DataKind!
+  keyFingerprint: String!
+  message: String!
+  query: String!
+  signature: String!
+  statement: ReferenceInput!
+  timestamp: DateTime!
+  variables: Any!
+}
+
+input AddInstitutionAccessRightsInput {
+  allowedDatasetsPerTimeSpan: NonNegativeInt
+  allowedUserCount: NonNegativeInt
+  institutionId: Uuid!
+  periodInDays: Int!
+}
 
 input AppliedMethodInput {
   arguments: [NamedMethodArgumentInput!]!
@@ -901,12 +927,6 @@ input CreateHygrothermalDataInput {
   warnings: [String!]!
 }
 
-input CreateNumerationInput {
-  mainNumber: String!
-  prefix: String
-  suffix: String
-}
-
 input CreateOpticalDataInput {
   appliedMethod: AppliedMethodInput!
   cielabColors: [CielabColorInput!]!
@@ -955,27 +975,6 @@ input CrossDatabaseDataReferencePropositionInput {
   dataTimestamp: DateTimePropositionInput
   dataKind: DataKindPropositionInput
   databaseId: UuidPropositionInput
-}
-
-input DataAccessRightsInput {
-  allowedApplications: [String!]
-  allowedInstitutions: [Uuid!]
-  allowedUserAndQuantity: [KeyValuePairOfGuidAndNullableOfUInt32Input!]
-  dataId: Uuid!
-  dataKind: DataKind!
-}
-
-input DataApprovalInput {
-  approverId: Uuid!
-  dataId: Uuid!
-  dataKind: DataKind!
-  keyFingerprint: String!
-  message: String!
-  query: String!
-  signature: String!
-  statement: ReferenceInput!
-  timestamp: DateTime!
-  variables: Any!
 }
 
 input DataApprovalPropositionInput {
@@ -1179,13 +1178,6 @@ input HygrothermalDataSortInput {
   id: SortEnumType @cost(weight: "10")
 }
 
-input InstitutionAccessRightsInput {
-  allowedDatasetsPerTimeSpan: NonNegativeInt
-  allowedUserCount: NonNegativeInt
-  institutionId: Uuid!
-  periodInDays: Int!
-}
-
 input Int32PropositionInput {
   equalTo: Int @cost(weight: "10")
   notEqualTo: Int @cost(weight: "10")
@@ -1345,6 +1337,12 @@ input NullableOfOpticalComponentTypePropositionInput {
   notIn: [OpticalComponentType] @cost(weight: "10")
 }
 
+input NumerationInput {
+  mainNumber: String!
+  prefix: String
+  suffix: String
+}
+
 input NumerationPropositionInput {
   and: [NumerationPropositionInput!]
   or: [NumerationPropositionInput!]
@@ -1501,6 +1499,12 @@ input ReferenceSortInput {
   publication: PublicationSortInput @cost(weight: "10")
 }
 
+input RemoveDataApprovalInput {
+  dataId: Uuid!
+  dataKind: DataKind!
+  signature: String!
+}
+
 input RootGetHttpsResourceInput {
   appliedConversionMethod: ToTreeVertexAppliedConversionMethodInput
   archivedFilesMetaInformation: [FileMetaInformationInput!]!
@@ -1511,7 +1515,7 @@ input RootGetHttpsResourceInput {
 input StandardInput {
   abstract: String
   locator: Url
-  numeration: CreateNumerationInput!
+  numeration: NumerationInput!
   section: String
   standardizers: [Standardizer!]!
   title: String
@@ -1593,6 +1597,14 @@ input ToTreeVertexAppliedConversionMethodSortInput {
   sourceName: SortEnumType @cost(weight: "10")
 }
 
+input UpdateDataAccessRightsInput {
+  allowedApplications: [String!]
+  allowedInstitutions: [Uuid!]
+  allowedUserAndQuantity: [KeyValuePairOfGuidAndNullableOfUInt32Input!]
+  dataId: Uuid!
+  dataKind: DataKind!
+}
+
 input UpdateDataInput {
   componentId: Uuid!
   createdAt: DateTime!
@@ -1610,6 +1622,13 @@ input UpdateDatabaseInput {
   description: String!
   locator: Url!
   name: String!
+}
+
+input UpdateInstitutionAccessRightsInput {
+  allowedDatasetsPerTimeSpan: NonNegativeInt
+  allowedUserCount: NonNegativeInt
+  institutionId: Uuid!
+  periodInDays: Int!
 }
 
 input UriHostNameTypePropositionInput {
@@ -1701,6 +1720,13 @@ enum AddDataApprovalErrorCode {
   ILLEGAL_MESSAGE
   WRONG_RESPONSE
   WRONG_STATEMENT
+}
+
+enum AddInstitutionAccessRightsErrorCode {
+  UNKNOWN
+  UNAUTHENTICATED
+  UNAUTHORIZED
+  ALREADY_EXISTS
 }
 
 "Defines when a policy shall be executed."
@@ -1805,14 +1831,6 @@ enum DeleteDataErrorCode {
 enum Illuminant {
   A
   D65
-}
-
-enum InstitutionAccessRightsErrorCode {
-  UNKNOWN
-  UNAUTHENTICATED
-  UNAUTHORIZED
-  ALREADY_EXISTS
-  UNKNOWN_ACCESS_RIGHTS
 }
 
 enum JsonValueKind {
@@ -1922,6 +1940,13 @@ enum UpdateDatabaseErrorCode {
   UNKNOWN
   UNAUTHORIZED
   UNKNOWN_DATABASE
+}
+
+enum UpdateInstitutionAccessRightsErrorCode {
+  UNKNOWN
+  UNAUTHENTICATED
+  UNAUTHORIZED
+  UNKNOWN_ACCESS_RIGHTS
 }
 
 enum UpdateResponseApprovalsErrorCode {

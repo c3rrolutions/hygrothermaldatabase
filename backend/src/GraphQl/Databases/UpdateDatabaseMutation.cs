@@ -9,7 +9,7 @@ using static Database.ApiRequests.UpdateDatabase;
 namespace Database.GraphQl.Databases;
 
 [ExtendObjectType(nameof(Mutation))]
-public sealed class DatabaseMutations
+public sealed class UpdateDatabaseMutation
 {
     public async Task<UpdateDatabasePayload> UpdateDatabaseAsync(
         UpdateDatabaseInput input,

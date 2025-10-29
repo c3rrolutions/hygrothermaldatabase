@@ -11,6 +11,7 @@ using GreenDonut.Data;
 using HotChocolate.Types;
 using System.Diagnostics.CodeAnalysis;
 using Database.Enumerations;
+using Database.Extensions;
 
 namespace Database.GraphQl.DataApprovals;
 
@@ -19,7 +20,7 @@ public sealed record RemoveDataApprovalInput
     Guid DataId,
     DataKind DataKind,
     string Signature
-);
+) : IIdentifyDataInput;
 
 [SuppressMessage("Naming", "CA1707")]
 public enum RemoveDataApprovalErrorCode
@@ -39,76 +40,56 @@ public sealed record RemoveDataApprovalError(
 )
 : UserErrorBase<RemoveDataApprovalErrorCode>(Code, Message, Path);
 
-public sealed class RemoveDataApprovalPayload
-    : DataApprovalPayload<RemoveDataApprovalError>
-{
-    public RemoveDataApprovalPayload(
-        DataApproval dataApproval
-    )
-        : base(dataApproval)
-    {
-    }
-
-    public RemoveDataApprovalPayload(
-        RemoveDataApprovalError error
-    )
-        : base(error)
-    {
-    }
-
-    public RemoveDataApprovalPayload(
-        DataApproval dataApproval,
-        RemoveDataApprovalError error
-    )
-        : base(dataApproval, error)
-    {
-    }
-}
+public sealed record RemoveDataApprovalPayload(
+    DataApproval? DataApproval,
+    IReadOnlyCollection<RemoveDataApprovalError>? Errors
+) : Payload;
 
 [ExtendObjectType(nameof(Mutation))]
 public sealed class RemoveDataApprovalMutation
+: DataMutationBase<DataApproval, RemoveDataApprovalPayload, RemoveDataApprovalError, RemoveDataApprovalErrorCode>
 {
+    protected override RemoveDataApprovalPayload NewPayload(
+        DataApproval? data,
+        IReadOnlyCollection<RemoveDataApprovalError>? errors
+    ) => new(data, errors);
+
+    protected override RemoveDataApprovalError NewError(
+        RemoveDataApprovalErrorCode code,
+        string message,
+        IReadOnlyList<string> path
+    ) => new(code, message, path);
+
     public async Task<RemoveDataApprovalPayload> RemoveDataApprovalAsync(
         RemoveDataApprovalInput input,
         ApplicationDbContext context,
-        UserService userService,
         CommonAuthorization authorization,
         ResponseApprovalService responseApprovalService,
         CancellationToken cancellationToken
     )
     {
-        var currentUser = await userService.GetCurrentUser(cancellationToken);
-        if (currentUser is null)
+        if ((await AuthorizeAsync(
+                RemoveDataApprovalErrorCode.UNAUTHENTICATED,
+                RemoveDataApprovalErrorCode.UNAUTHORIZED,
+                authorization,
+                cancellationToken
+            )
+            ).Failed(out var currentUser, out var authorizeErrorPayload)
+        )
         {
-            return new RemoveDataApprovalPayload(
-                new RemoveDataApprovalError(
-                    RemoveDataApprovalErrorCode.UNAUTHENTICATED,
-                    $"The user is not authenticated.",
-                    []
-                )
-            );
-        }
-        if (!authorization.IsCurrentUserAtLeastAssistantManagerOfDatabaseOperator(currentUser))
-        {
-            return new RemoveDataApprovalPayload(
-                new RemoveDataApprovalError(
-                    RemoveDataApprovalErrorCode.UNAUTHORIZED,
-                    $"The current user is not authorized to add data approvals to this database.",
-                    []
-                )
-            );
+            return authorizeErrorPayload;
         }
 
-        var data = await context.GetDataAsync(input.DataId, input.DataKind, cancellationToken);
-        if (data is null)
+        if ((await FetchDataAsync(
+                input,
+                RemoveDataApprovalErrorCode.UNKNOWN_DATA,
+                context,
+                cancellationToken
+            )
+            ).Failed(out var data, out var fetchDataErrorPayload)
+        )
         {
-            return new RemoveDataApprovalPayload(
-                new RemoveDataApprovalError(
-                    RemoveDataApprovalErrorCode.UNKNOWN_DATA,
-                    $"Unknown data.",
-                    [nameof(input), nameof(input.DataId).ToLowerFirst()]
-                )
-            );
+            return fetchDataErrorPayload;
         }
 
         var approval = data.Approvals
@@ -116,37 +97,34 @@ public sealed class RemoveDataApprovalMutation
             .SingleOrDefault();
         if (approval is null)
         {
-            return new RemoveDataApprovalPayload(
-                new RemoveDataApprovalError(
+            return NewPayload(
+                null,
+                [NewError(
                     RemoveDataApprovalErrorCode.UNKNOWN_APPROVAL,
                     $"Unknown data approval.",
                     [nameof(input), nameof(input.Signature).ToLowerFirst()]
-                )
+                )]
             );
         }
 
         data.Approvals.Remove(approval);
         await context.SaveChangesAsync(cancellationToken);
 
-        try
-        {
-            data.Approval = await responseApprovalService.CreateResponseApproval(data, cancellationToken);
-            await context.SaveChangesAsync(cancellationToken);
-        }
-        catch (Exception exception)
+        if ((await CreateResponseApprovalAsync(
+                data,
+                RemoveDataApprovalErrorCode.CREATING_RESPONSE_APPROVAL_FAILED,
+                responseApprovalService,
+                context,
+                cancellationToken
+            )
+            ).Failed(out var createResponseApprovalErrorPayload)
+        )
         {
             data.Approvals.Add(approval);
             await context.SaveChangesAsync(cancellationToken);
-
-            return new RemoveDataApprovalPayload(
-                approval,
-                new RemoveDataApprovalError(
-                    RemoveDataApprovalErrorCode.CREATING_RESPONSE_APPROVAL_FAILED,
-                    $"Signing failed with message: {exception.Message}",
-                    []
-                )
-            );
+            return createResponseApprovalErrorPayload;
         }
-        return new RemoveDataApprovalPayload(approval);
+
+        return NewPayload(approval, null);
     }
 }

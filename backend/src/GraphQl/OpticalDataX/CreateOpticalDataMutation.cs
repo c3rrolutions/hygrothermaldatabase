@@ -85,8 +85,7 @@ public sealed record CreateOpticalDataError(
 public sealed record CreateOpticalDataPayload(
     OpticalData? OpticalData,
     IReadOnlyCollection<CreateOpticalDataError>? Errors
-)
-: OpticalDataPayload<CreateOpticalDataError>(OpticalData, Errors);
+) : Payload;
 
 [ExtendObjectType(nameof(Mutation))]
 public sealed class CreateOpticalDataMutation

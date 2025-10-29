@@ -5,11 +5,17 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using GreenDonut.Data;
 using Database.Authorization;
 using Database.Data;
 using Database.Services;
+using HotChocolate;
+using HotChocolate.Data;
 using HotChocolate.Types;
+using HotChocolate.Data.Filters;
 using Microsoft.Extensions.Logging;
+using Database.GraphQl.Extensions;
+using Database.Extensions;
 
 namespace Database.GraphQl.ResponseApprovals;
 
@@ -34,108 +40,113 @@ public static partial class CreateResponseApprovalsMutationLogging
 {
     [LoggerMessage(
         Level = LogLevel.Warning,
-        Message = "Creating response approval for data of type {Type} with ID {Id} failed."
+        Message = "Creating response approval for data of type {Type} with ID {Id} failed with the errors {Errors}."
     )]
-    public static partial void FailedCreatingResponseApproval(this ILogger<CreateResponseApprovalsMutation> logger, Type type, Guid id, Exception exception);
+    public static partial void FailedCreatingResponseApproval(this ILogger<CreateResponseApprovalsMutation> logger, Type type, Guid id, IEnumerable<string>? errors);
 }
 
-public sealed class CreateResponseApprovalsPayload
-    : Payload
-{
-    public IReadOnlyCollection<IData>? Data { get; }
-    public IReadOnlyCollection<CreateResponseApprovalsError>? Errors { get; }
-
-    public CreateResponseApprovalsPayload(
-        IReadOnlyCollection<IData> data
-    )
-    {
-        Data = data;
-    }
-
-    public CreateResponseApprovalsPayload(
-        CreateResponseApprovalsError error
-    )
-    {
-        Errors = [error];
-    }
-
-    public CreateResponseApprovalsPayload(
-        IReadOnlyCollection<IData> data,
-        IReadOnlyCollection<CreateResponseApprovalsError> errors
-    ) : this(data)
-    {
-        Errors = errors;
-    }
-}
+public sealed record CreateResponseApprovalsPayload(
+    IReadOnlyCollection<IData>? Data,
+    IReadOnlyCollection<CreateResponseApprovalsError>? Errors
+) : Payload;
 
 [ExtendObjectType(nameof(Mutation))]
 public sealed class CreateResponseApprovalsMutation
+: DataMutationBase<IReadOnlyCollection<IData>, CreateResponseApprovalsPayload, CreateResponseApprovalsError, CreateResponseApprovalsErrorCode>
 {
     //[Authorize(Policy = Configuration.AuthConfiguration.WriteApiScope)]
+    protected override CreateResponseApprovalsPayload NewPayload(
+        IReadOnlyCollection<IData>? data,
+        IReadOnlyCollection<CreateResponseApprovalsError>? errors
+    ) => new(data, errors);
+
+    protected override CreateResponseApprovalsError NewError(
+        CreateResponseApprovalsErrorCode code,
+        string message,
+        IReadOnlyList<string> path
+    ) => new(code, message, path);
+
+    [UseFiltering<CreateResponseApprovalsFilterType>]
     public async Task<CreateResponseApprovalsPayload> CreateResponseApprovalsAsync(
+        QueryContext<IData> queryContext,
         ApplicationDbContext context,
-        UserService userService,
         CommonAuthorization authorization,
         ResponseApprovalService responseApprovalService,
         ILogger<CreateResponseApprovalsMutation> logger,
         CancellationToken cancellationToken
     )
     {
-        var currentUser = await userService.GetCurrentUser(cancellationToken);
-        if (currentUser is null)
+        if ((await AuthorizeAsync(
+                CreateResponseApprovalsErrorCode.UNAUTHENTICATED,
+                CreateResponseApprovalsErrorCode.UNAUTHORIZED,
+                authorization,
+                cancellationToken
+            )
+            ).Failed(out var currentUser, out var authorizeErrorPayload)
+        )
         {
-            return new CreateResponseApprovalsPayload(
-                new CreateResponseApprovalsError(
-                    CreateResponseApprovalsErrorCode.UNAUTHENTICATED,
-                    $"The user is not authenticated.",
-                    []
-                )
-            );
-        }
-        if (!authorization.IsCurrentUserAtLeastAssistantManagerOfDatabaseOperator(currentUser))
-        {
-            return new CreateResponseApprovalsPayload(
-                new CreateResponseApprovalsError(
-                    CreateResponseApprovalsErrorCode.UNAUTHORIZED,
-                    $"The current user is not authorized to create response approvals in this database.",
-                    []
-                )
-            );
+            return authorizeErrorPayload;
         }
         var dataSets = new ConcurrentBag<IData>();
         var errors = new ConcurrentBag<CreateResponseApprovalsError>();
         await Parallel.ForEachAsync(
-            context.CalorimetricData.AsQueryable<IData>().Where(d => d.Approval == null).ToAsyncEnumerable()
-            .Union(context.GeometricData.AsQueryable<IData>().Where(d => d.Approval == null).ToAsyncEnumerable())
-            .Union(context.HygrothermalData.AsQueryable<IData>().Where(d => d.Approval == null).ToAsyncEnumerable())
-            .Union(context.OpticalData.AsQueryable<IData>().Where(d => d.Approval == null).ToAsyncEnumerable())
-            .Union(context.PhotovoltaicData.AsQueryable<IData>().Where(d => d.Approval == null).ToAsyncEnumerable()),
+            (
+                context.CalorimetricData.AsQueryable<IData>()
+                .With(queryContext, sort => sort.StabilizeOrder())
+                .Where(d => d.Approval == null)
+                .ToAsyncEnumerable()
+            )
+            .Union(
+                context.GeometricData.AsQueryable<IData>()
+                .With(queryContext, sort => sort.StabilizeOrder())
+                .Where(d => d.Approval == null)
+                .ToAsyncEnumerable()
+            )
+            .Union(
+                context.HygrothermalData.AsQueryable<IData>()
+                .With(queryContext, sort => sort.StabilizeOrder())
+                .Where(d => d.Approval == null)
+                .ToAsyncEnumerable()
+            )
+            .Union(
+                context.OpticalData.AsQueryable<IData>()
+                .With(queryContext, sort => sort.StabilizeOrder())
+                .Where(d => d.Approval == null)
+                .ToAsyncEnumerable()
+            )
+            .Union(
+                context.PhotovoltaicData.AsQueryable<IData>()
+                .With(queryContext, sort => sort.StabilizeOrder())
+                .Where(d => d.Approval == null)
+                .ToAsyncEnumerable()
+            ),
             cancellationToken,
             async (data, cancellationToken) =>
             {
-                try
+                if ((await CreateResponseApprovalAsync(
+                        data,
+                        CreateResponseApprovalsErrorCode.CREATING_RESPONSE_APPROVAL_FAILED,
+                        responseApprovalService,
+                        context,
+                        cancellationToken
+                    )
+                    ).Failed(out var createResponseApprovalErrorPayload)
+                )
                 {
-                    data.Approval = await responseApprovalService.CreateResponseApproval(data, cancellationToken);
-                    dataSets.Add(data);
+                    logger.FailedCreatingResponseApproval(data.GetType(), data.Id, createResponseApprovalErrorPayload.Errors?.Select(_ => _.Message));
+                    errors.AddRange(createResponseApprovalErrorPayload.Errors);
                 }
-                catch (Exception exception)
+                else
                 {
-                    logger.FailedCreatingResponseApproval(data.GetType(), data.Id, exception);
-                    errors.Add(
-                        new CreateResponseApprovalsError(
-                            CreateResponseApprovalsErrorCode.CREATING_RESPONSE_APPROVAL_FAILED,
-                            $"Creating response approval for data `{data}` with ID {data.Id} failed with message: {exception.Message}",
-                            []
-                        )
-                    );
+                    dataSets.Add(data);
                 }
             }
         );
         await context.SaveChangesAsync(cancellationToken);
         if (!errors.IsEmpty)
         {
-            return new CreateResponseApprovalsPayload(dataSets, errors);
+            return NewPayload(dataSets, errors);
         }
-        return new CreateResponseApprovalsPayload(dataSets);
+        return NewPayload(dataSets, null);
     }
 }

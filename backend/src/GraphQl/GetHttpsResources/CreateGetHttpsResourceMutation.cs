@@ -18,6 +18,7 @@ using Microsoft.EntityFrameworkCore.Query;
 using Database.GraphQl.Extensions;
 using System.Diagnostics.CodeAnalysis;
 using System.Collections.Generic;
+using Database.Extensions;
 
 namespace Database.GraphQl.GetHttpsResources;
 
@@ -29,15 +30,16 @@ public sealed record CreateGetHttpsResourceInput(
     Guid? ParentId,
     IReadOnlyList<FileMetaInformationInput> ArchivedFilesMetaInformation,
     ToTreeVertexAppliedConversionMethodInput? AppliedConversionMethod
-);
+) : IIdentifyDataInput;
 
 [SuppressMessage("Naming", "CA1707")]
 public enum CreateGetHttpsResourceErrorCode
 {
     UNKNOWN,
-    UNKNOWN_DATA,
     UNAUTHORIZED,
     UNAUTHENTICATED,
+    UNKNOWN_DATA,
+    CREATING_RESPONSE_APPROVAL_FAILED
 }
 
 public sealed record CreateGetHttpsResourceError(
@@ -47,23 +49,10 @@ public sealed record CreateGetHttpsResourceError(
 )
 : UserErrorBase<CreateGetHttpsResourceErrorCode>(Code, Message, Path);
 
-public sealed class CreateGetHttpsResourcePayload
-    : GetHttpsResourcePayload<CreateGetHttpsResourceError>
-{
-    public CreateGetHttpsResourcePayload(
-        GetHttpsResource getHttpsResource
-    )
-        : base(getHttpsResource)
-    {
-    }
-
-    public CreateGetHttpsResourcePayload(
-        CreateGetHttpsResourceError error
-    )
-        : base(error)
-    {
-    }
-}
+public sealed record CreateGetHttpsResourcePayload(
+    GetHttpsResource? GetHttpsResource,
+    IReadOnlyCollection<CreateGetHttpsResourceError>? Errors
+) : Payload;
 
 public static partial class CreateGetHttpsResourceMutationLogging
 {
@@ -76,56 +65,50 @@ public static partial class CreateGetHttpsResourceMutationLogging
 
 [ExtendObjectType(nameof(Mutation))]
 public sealed class CreateGetHttpsResourceMutation
+: DataMutationBase<GetHttpsResource, CreateGetHttpsResourcePayload, CreateGetHttpsResourceError, CreateGetHttpsResourceErrorCode>
 {
     // [UseUserManager] [Authorize(Policy = Configuration.AuthConfiguration.WritePolicy)]
+    protected override CreateGetHttpsResourcePayload NewPayload(
+        GetHttpsResource? data,
+        IReadOnlyCollection<CreateGetHttpsResourceError>? errors
+    ) => new(data, errors);
+
+    protected override CreateGetHttpsResourceError NewError(
+        CreateGetHttpsResourceErrorCode code,
+        string message,
+        IReadOnlyList<string> path
+    ) => new(code, message, path);
+
     public async Task<CreateGetHttpsResourcePayload> CreateGetHttpsResourceAsync(
         CreateGetHttpsResourceInput input,
         ApplicationDbContext context,
-        UserService userService,
+        ResponseApprovalService responseApprovalService,
         CommonAuthorization authorization,
         CancellationToken cancellationToken
     )
     {
-        var currentUser = await userService.GetCurrentUser(cancellationToken);
-        if (currentUser is null)
+        if ((await AuthorizeAsync(
+                CreateGetHttpsResourceErrorCode.UNAUTHENTICATED,
+                CreateGetHttpsResourceErrorCode.UNAUTHORIZED,
+                authorization,
+                cancellationToken
+            )
+            ).Failed(out var currentUser, out var authorizeErrorPayload)
+        )
         {
-            return new CreateGetHttpsResourcePayload(
-                new CreateGetHttpsResourceError(
-                    CreateGetHttpsResourceErrorCode.UNAUTHENTICATED,
-                    $"The user is not authenticated.",
-                    []
-                )
-            );
-        }
-        if (!authorization.IsCurrentUserAtLeastAssistantManagerOfDatabaseOperator(currentUser))
-        {
-            return new CreateGetHttpsResourcePayload(
-                new CreateGetHttpsResourceError(
-                    CreateGetHttpsResourceErrorCode.UNAUTHORIZED,
-                    $"The current user is not authorized to create GET HTTPS resource in this database.",
-                    []
-                )
-            );
+            return authorizeErrorPayload;
         }
 
-        IData? data = input.DataKind switch
+        if ((await FetchDataAsync(
+                input,
+                CreateGetHttpsResourceErrorCode.UNKNOWN_DATA,
+                context,
+                cancellationToken
+            )
+            ).Failed(out var data, out var fetchDataErrorPayload)
+        )
         {
-            DataKind.CALORIMETRIC_DATA => await context.CalorimetricData.AsQueryable().SingleOrDefaultAsync(d => d.Id == input.DataId, cancellationToken),
-            DataKind.GEOMETRIC_DATA => await context.GeometricData.AsQueryable().SingleOrDefaultAsync(d => d.Id == input.DataId, cancellationToken),
-            DataKind.HYGROTHERMAL_DATA => await context.HygrothermalData.AsQueryable().SingleOrDefaultAsync(d => d.Id == input.DataId, cancellationToken),
-            DataKind.OPTICAL_DATA => await context.OpticalData.AsQueryable().SingleOrDefaultAsync(d => d.Id == input.DataId, cancellationToken),
-            DataKind.PHOTOVOLTAIC_DATA => await context.PhotovoltaicData.AsQueryable().SingleOrDefaultAsync(d => d.Id == input.DataId, cancellationToken),
-            _ => throw new ArgumentException($"The data kind {input.DataKind} is not supported.")
-        };
-        if (data is null)
-        {
-            return new CreateGetHttpsResourcePayload(
-                new CreateGetHttpsResourceError(
-                    CreateGetHttpsResourceErrorCode.UNKNOWN_DATA,
-                    $"There is no data of kind {input.DataKind} with identifier {input.DataId}.",
-                    [nameof(input), nameof(input.DataId).ToLowerFirst()]
-                )
-            );
+            return fetchDataErrorPayload;
         }
 
         var getHttpsResource = new GetHttpsResource(
@@ -138,27 +121,27 @@ public sealed class CreateGetHttpsResourceMutation
             input.DataKind == DataKind.OPTICAL_DATA ? input.DataId : null,
             input.DataKind == DataKind.PHOTOVOLTAIC_DATA ? input.DataId : null,
             input.ParentId,
-            input.ArchivedFilesMetaInformation.Select(i =>
-                new FileMetaInformation(
-                    i.Path,
-                    i.DataFormatId
-                )
-            ).ToList(),
-            input.AppliedConversionMethod is null
-                ? null
-                : new ToTreeVertexAppliedConversionMethod(
-                    input.AppliedConversionMethod.MethodId,
-                    input.AppliedConversionMethod.Arguments.Select(a =>
-                        new NamedMethodArgument(
-                            a.Name,
-                            a.Value
-                        )
-                    ).ToList(),
-                    input.AppliedConversionMethod.SourceName
-                )
+            input.ArchivedFilesMetaInformation.Select(i => i.ToDomainModel()).ToList(),
+            input?.AppliedConversionMethod.ToDomainModel()
         );
         context.GetHttpsResources.Add(getHttpsResource);
         await context.SaveChangesAsync(cancellationToken);
-        return new CreateGetHttpsResourcePayload(getHttpsResource);
+
+        if ((await CreateResponseApprovalAsync(
+                data,
+                CreateGetHttpsResourceErrorCode.CREATING_RESPONSE_APPROVAL_FAILED,
+                responseApprovalService,
+                context,
+                cancellationToken
+            )
+            ).Failed(out var createResponseApprovalErrorPayload)
+        )
+        {
+            context.Remove(getHttpsResource);
+            await context.SaveChangesAsync(cancellationToken);
+            return createResponseApprovalErrorPayload;
+        }
+
+        return NewPayload(getHttpsResource, null);
     }
 }

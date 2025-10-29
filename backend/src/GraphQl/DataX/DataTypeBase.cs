@@ -28,5 +28,8 @@ public abstract class DataTypeBase<TData, TDataByIdDataLoader>
             .Field(DataType.TimestampFieldName)
             .Type<NonNullType<DateTimeType>>()
             .ResolveWith<DataResolvers>(t => t.GetTimestamp());
+        descriptor
+            .Field(x => x.Approval)
+            .Type<NonNullType<ObjectType<ResponseApproval>>>();
     }
 }

@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace Database.GraphQl;
 
-public abstract class Payload
+public abstract record Payload
 {
 }
 

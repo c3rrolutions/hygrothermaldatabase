@@ -6,7 +6,7 @@ using Database.Data;
 using Database.Enumerations;
 using Database.Services;
 
-namespace Database.GraphQl.DataX;
+namespace Database.GraphQl;
 
 public interface IIdentifyDataInput
 {
@@ -16,7 +16,7 @@ public interface IIdentifyDataInput
 
 public abstract class DataMutationBase<TData, TPayload, TError, TErrorCode>
 : MutationBase<TData, TPayload, TError, TErrorCode>
-where TData : class, IData
+where TData : class
 where TPayload : class
 {
     protected async Task<Result<IData, TPayload>> FetchDataAsync(
@@ -43,7 +43,7 @@ where TPayload : class
     }
 
     protected async Task<Result<bool, TPayload>> CreateResponseApprovalAsync(
-        TData data,
+        IData data,
         TErrorCode creatingResponseApprovalFailedErrorCode,
         ResponseApprovalService responseApprovalService,
         ApplicationDbContext context,
@@ -59,10 +59,10 @@ where TPayload : class
         {
             return new Result<bool, TPayload>.Error(
                 NewPayload(
-                    data,
+                    null,
                     [NewError(
                         creatingResponseApprovalFailedErrorCode,
-                        $"Signing failed with message: {exception.Message}",
+                        $"Failed creating a response approval for the data set {data.Id} named '{data.Name}' with the error message: {exception.Message}",
                         []
                     )]
                 )

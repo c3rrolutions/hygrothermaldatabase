@@ -10,6 +10,7 @@ using Database.Utilities;
 using System.Diagnostics.CodeAnalysis;
 using HotChocolate;
 using System.Collections.Generic;
+using Database.Extensions;
 
 namespace Database.GraphQl.GeometricDataX;
 
@@ -61,93 +62,67 @@ public sealed record CreateGeometricDataError(
 )
 : UserErrorBase<CreateGeometricDataErrorCode>(Code, Message, Path);
 
-public sealed class CreateGeometricDataPayload
-    : GeometricDataPayload<CreateGeometricDataError>
-{
-    public CreateGeometricDataPayload(
-        GeometricData geometricData
-    )
-        : base(geometricData)
-    {
-    }
-
-    public CreateGeometricDataPayload(
-        CreateGeometricDataError error
-    )
-        : base(error)
-    {
-    }
-
-    public CreateGeometricDataPayload(
-        GeometricData geometricData,
-        CreateGeometricDataError error
-    )
-        : base(geometricData, error)
-    {
-    }
-}
+public sealed record CreateGeometricDataPayload(
+    GeometricData? GeometricData,
+    IReadOnlyCollection<CreateGeometricDataError>? Errors
+) : Payload;
 
 [ExtendObjectType(nameof(Mutation))]
 public sealed class CreateGeometricDataMutation
+: DataMutationBase<GeometricData, CreateGeometricDataPayload, CreateGeometricDataError, CreateGeometricDataErrorCode>
 {
     // [UseUserManager]
     //[Authorize(Policy = Configuration.AuthConfiguration.WriteApiScope)]
+    protected override CreateGeometricDataPayload NewPayload(
+        GeometricData? data,
+        IReadOnlyCollection<CreateGeometricDataError>? errors
+    ) => new(data, errors);
+
+    protected override CreateGeometricDataError NewError(
+        CreateGeometricDataErrorCode code,
+        string message,
+        IReadOnlyList<string> path
+    ) => new(code, message, path);
+
     public async Task<CreateGeometricDataPayload> CreateGeometricDataAsync(
         CreateGeometricDataInput input,
         ApplicationDbContext context,
-        UserService userService,
         CommonAuthorization authorization,
         ResponseApprovalService responseApprovalService,
         CancellationToken cancellationToken
     )
     {
-        var currentUser = await userService.GetCurrentUser(cancellationToken);
-        if (currentUser is null)
+        if ((await AuthorizeAsync(
+                CreateGeometricDataErrorCode.UNAUTHENTICATED,
+                CreateGeometricDataErrorCode.UNAUTHORIZED,
+                authorization,
+                cancellationToken
+            )
+            ).Failed(out var currentUser, out var authorizeErrorPayload)
+        )
         {
-            return new CreateGeometricDataPayload(
-                new CreateGeometricDataError(
-                    CreateGeometricDataErrorCode.UNAUTHENTICATED,
-                    $"The user is not authenticated.",
-                    []
-                )
-            );
-        }
-
-        if (!authorization.IsCurrentUserAtLeastAssistantManagerOfDatabaseOperator(currentUser))
-        {
-            return new CreateGeometricDataPayload(
-                new CreateGeometricDataError(
-                    CreateGeometricDataErrorCode.UNAUTHORIZED,
-                    $"The current user is not authorized to create geometric data in this database.",
-                    []
-                )
-            );
+            return authorizeErrorPayload;
         }
 
         var geometricData = input.ToDomainModel(currentUser.Uuid);
         context.GeometricData.Add(geometricData);
         await context.SaveChangesAsync(cancellationToken);
 
-        try
-        {
-            geometricData.Approval = await responseApprovalService.CreateResponseApproval(geometricData, cancellationToken);
-            await context.SaveChangesAsync(cancellationToken);
-        }
-        catch (Exception exception)
+        if ((await CreateResponseApprovalAsync(
+                geometricData,
+                CreateGeometricDataErrorCode.CREATING_RESPONSE_APPROVAL_FAILED,
+                responseApprovalService,
+                context,
+                cancellationToken
+            )
+            ).Failed(out var createResponseApprovalErrorPayload)
+        )
         {
             context.Remove(geometricData);
             await context.SaveChangesAsync(cancellationToken);
-
-            return new CreateGeometricDataPayload(
-                geometricData,
-                new CreateGeometricDataError(
-                    CreateGeometricDataErrorCode.CREATING_RESPONSE_APPROVAL_FAILED,
-                    $"Signing failed with message: {exception.Message}",
-                    []
-                )
-            );
+            return createResponseApprovalErrorPayload;
         }
 
-        return new CreateGeometricDataPayload(geometricData);
+        return NewPayload(geometricData, null);
     }
 }

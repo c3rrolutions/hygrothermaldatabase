@@ -10,6 +10,8 @@ using Database.Utilities;
 using HotChocolate;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using Database.Extensions;
+using Database.Extensions;
 
 namespace Database.GraphQl.CalorimetricDataX;
 
@@ -64,91 +66,65 @@ public sealed record CreateCalorimetricDataError(
 )
 : UserErrorBase<CreateCalorimetricDataErrorCode>(Code, Message, Path);
 
-public sealed class CreateCalorimetricDataPayload
-    : CalorimetricDataPayload<CreateCalorimetricDataError>
-{
-    public CreateCalorimetricDataPayload(
-        CalorimetricData calorimetricData
-    )
-        : base(calorimetricData)
-    {
-    }
-
-    public CreateCalorimetricDataPayload(
-        CreateCalorimetricDataError error
-    )
-        : base(error)
-    {
-    }
-
-    public CreateCalorimetricDataPayload(
-        CalorimetricData calorimetricData,
-        CreateCalorimetricDataError error
-    )
-        : base(calorimetricData, error)
-    {
-    }
-}
+public sealed record CreateCalorimetricDataPayload(
+    CalorimetricData? CalorimetricData,
+    IReadOnlyCollection<CreateCalorimetricDataError>? Errors
+) : Payload;
 
 [ExtendObjectType(nameof(Mutation))]
 public sealed class CreateCalorimetricDataMutation
+: DataMutationBase<CalorimetricData, CreateCalorimetricDataPayload, CreateCalorimetricDataError, CreateCalorimetricDataErrorCode>
 {
     // [UseUserManager] [Authorize(Policy = Configuration.AuthConfiguration.WritePolicy)]
+    protected override CreateCalorimetricDataPayload NewPayload(
+        CalorimetricData? data,
+        IReadOnlyCollection<CreateCalorimetricDataError>? errors
+    ) => new(data, errors);
+
+    protected override CreateCalorimetricDataError NewError(
+        CreateCalorimetricDataErrorCode code,
+        string message,
+        IReadOnlyList<string> path
+    ) => new(code, message, path);
+
     public async Task<CreateCalorimetricDataPayload> CreateCalorimetricDataAsync(
         CreateCalorimetricDataInput input,
         ApplicationDbContext context,
-        UserService userService,
         CommonAuthorization authorization,
         ResponseApprovalService responseApprovalService,
         CancellationToken cancellationToken
     )
     {
-        var currentUser = await userService.GetCurrentUser(
-            cancellationToken);
-        if (currentUser is null)
+        if ((await AuthorizeAsync(
+                CreateCalorimetricDataErrorCode.UNAUTHENTICATED,
+                CreateCalorimetricDataErrorCode.UNAUTHORIZED,
+                authorization,
+                cancellationToken
+            )
+            ).Failed(out var currentUser, out var authorizeErrorPayload)
+        )
         {
-            return new CreateCalorimetricDataPayload(
-                new CreateCalorimetricDataError(
-                    CreateCalorimetricDataErrorCode.UNAUTHENTICATED,
-                    $"The user is not authenticated.",
-                    []
-                )
-            );
-        }
-
-        if (!authorization.IsCurrentUserAtLeastAssistantManagerOfDatabaseOperator(currentUser))
-        {
-            return new CreateCalorimetricDataPayload(
-                new CreateCalorimetricDataError(
-                    CreateCalorimetricDataErrorCode.UNAUTHORIZED,
-                    $"The current user is not authorized to create calorimetric data in this database.",
-                    []
-                )
-            );
+            return authorizeErrorPayload;
         }
 
         var calorimetricData = input.ToDomainModel(currentUser.Uuid);
         await context.SaveChangesAsync(cancellationToken);
 
-        try
-        {
-            calorimetricData.Approval = await responseApprovalService.CreateResponseApproval(calorimetricData, cancellationToken);
-            await context.SaveChangesAsync(cancellationToken);
-        }
-        catch (Exception exception)
+        if ((await CreateResponseApprovalAsync(
+                calorimetricData,
+                CreateCalorimetricDataErrorCode.CREATING_RESPONSE_APPROVAL_FAILED,
+                responseApprovalService,
+                context,
+                cancellationToken
+            )
+            ).Failed(out var createResponseApprovalErrorPayload)
+        )
         {
             context.Remove(calorimetricData);
             await context.SaveChangesAsync(cancellationToken);
-
-            return new CreateCalorimetricDataPayload(
-                calorimetricData,
-                new CreateCalorimetricDataError(
-                    CreateCalorimetricDataErrorCode.CREATING_RESPONSE_APPROVAL_FAILED,
-                    $"Signing failed with message: {exception.Message}",
-                    []
-                )
-            );
+            return createResponseApprovalErrorPayload;
         }
-        return new CreateCalorimetricDataPayload(calorimetricData);
+
+        return NewPayload(calorimetricData, null);
     }
 }

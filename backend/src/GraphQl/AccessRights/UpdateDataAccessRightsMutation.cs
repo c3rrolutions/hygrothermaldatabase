@@ -7,6 +7,7 @@ using Database.Services;
 using HotChocolate.Types;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using Database.Extensions;
 
 using Database.Enumerations;
 
@@ -19,7 +20,7 @@ public sealed record UpdateDataAccessRightsInput
     IReadOnlyDictionary<Guid, uint?>? AllowedUserAndQuantity,
     IReadOnlyList<Guid>? AllowedInstitutions,
     IReadOnlyList<string>? AllowedApplications
-);
+) : IIdentifyDataInput;
 
 [SuppressMessage("Naming", "CA1707")]
 public enum UpdateDataAccessRightsErrorCode
@@ -37,68 +38,55 @@ public sealed record UpdateDataAccessRightsError(
 )
 : UserErrorBase<UpdateDataAccessRightsErrorCode>(Code, Message, Path);
 
-public sealed class UpdateDataAccessRightsPayload
-    : DataAccessRightsPayload<UpdateDataAccessRightsError>
-{
-    public UpdateDataAccessRightsPayload(
-        DataAccessRights dataAccessRights
-    )
-        : base(dataAccessRights)
-    {
-    }
-
-    public UpdateDataAccessRightsPayload(
-        UpdateDataAccessRightsError error
-    )
-        : base(error)
-    {
-    }
-}
+public sealed record UpdateDataAccessRightsPayload(
+    DataAccessRights? DataAccessRights,
+    IReadOnlyCollection<UpdateDataAccessRightsError>? Errors
+) : Payload;
 
 [ExtendObjectType(nameof(Mutation))]
 public sealed class UpdateDataAccessRightsMutation
+: DataMutationBase<DataAccessRights, UpdateDataAccessRightsPayload, UpdateDataAccessRightsError, UpdateDataAccessRightsErrorCode>
 {
+    protected override UpdateDataAccessRightsPayload NewPayload(
+        DataAccessRights? data,
+        IReadOnlyCollection<UpdateDataAccessRightsError>? errors
+    ) => new(data, errors);
+
+    protected override UpdateDataAccessRightsError NewError(
+        UpdateDataAccessRightsErrorCode code,
+        string message,
+        IReadOnlyList<string> path
+    ) => new(code, message, path);
+
     public async Task<UpdateDataAccessRightsPayload> UpdateDataAccessRightsAsync(
         UpdateDataAccessRightsInput input,
         ApplicationDbContext context,
-        UserService userService,
         CommonAuthorization authorization,
         CancellationToken cancellationToken
     )
     {
-        var currentUser = await userService.GetCurrentUser(cancellationToken);
-        if (currentUser is null)
+        if ((await AuthorizeAsync(
+                UpdateDataAccessRightsErrorCode.UNAUTHENTICATED,
+                UpdateDataAccessRightsErrorCode.UNAUTHORIZED,
+                authorization,
+                cancellationToken
+            )
+            ).Failed(out var currentUser, out var authorizeErrorPayload)
+        )
         {
-            return new UpdateDataAccessRightsPayload(
-                new UpdateDataAccessRightsError(
-                    UpdateDataAccessRightsErrorCode.UNAUTHENTICATED,
-                    $"The user is not authenticated.",
-                    []
-                )
-            );
+            return authorizeErrorPayload;
         }
 
-        if (!authorization.IsCurrentUserAtLeastAssistantManagerOfDatabaseOperator(currentUser))
+        if ((await FetchDataAsync(
+                input,
+                UpdateDataAccessRightsErrorCode.UNKNOWN_DATA,
+                context,
+                cancellationToken
+            )
+            ).Failed(out var data, out var fetchDataErrorPayload)
+        )
         {
-            return new UpdateDataAccessRightsPayload(
-                new UpdateDataAccessRightsError(
-                    UpdateDataAccessRightsErrorCode.UNAUTHORIZED,
-                    $"The current user is not authorized to update access rights for the data.",
-                    []
-                )
-            );
-        }
-
-        var data = await context.GetDataAsync(input.DataId, input.DataKind, cancellationToken);
-        if (data is null)
-        {
-            return new UpdateDataAccessRightsPayload(
-                new UpdateDataAccessRightsError(
-                    UpdateDataAccessRightsErrorCode.UNKNOWN_DATA,
-                    $"Unknown data.",
-                    []
-                )
-            );
+            return fetchDataErrorPayload;
         }
 
         data.DataAccessRights.AllowedInstitutions = input.AllowedInstitutions;
@@ -106,6 +94,6 @@ public sealed class UpdateDataAccessRightsMutation
         data.DataAccessRights.AllowedUserAndQuantity = input.AllowedUserAndQuantity;
 
         await context.SaveChangesAsync(cancellationToken);
-        return new UpdateDataAccessRightsPayload(data.DataAccessRights);
+        return NewPayload(data.DataAccessRights, null);
     }
 }

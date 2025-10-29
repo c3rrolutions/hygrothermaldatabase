@@ -43,7 +43,7 @@ public sealed record UpdateDataError(
 public sealed record UpdateDataPayload(
     IData? Data,
     IReadOnlyCollection<UpdateDataError>? Errors
-);
+) : Payload;
 
 [ExtendObjectType(nameof(Mutation))]
 public sealed class UpdateDataMutation

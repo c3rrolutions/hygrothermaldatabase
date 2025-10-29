@@ -8,6 +8,7 @@ using HotChocolate.Types;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics.CodeAnalysis;
 using System.Collections.Generic;
+using Database.Extensions;
 
 namespace Database.GraphQl.AccessRights;
 
@@ -38,69 +39,59 @@ public sealed record UpdateInstitutionAccessRightsError(
 )
 : UserErrorBase<UpdateInstitutionAccessRightsErrorCode>(Code, Message, Path);
 
-public sealed class UpdateInstitutionAccessRightsPayload
-    : InstitutionAccessRightsPayload<UpdateInstitutionAccessRightsError>
-{
-    public UpdateInstitutionAccessRightsPayload(
-        Data.InstitutionAccessRights accessRights
-    )
-        : base(accessRights)
-    {
-    }
-
-    public UpdateInstitutionAccessRightsPayload(
-        UpdateInstitutionAccessRightsError error
-    )
-        : base(error)
-    {
-    }
-}
+public sealed record UpdateInstitutionAccessRightsPayload(
+    Data.InstitutionAccessRights? InstitutionAccessRights,
+    IReadOnlyCollection<UpdateInstitutionAccessRightsError>? Errors
+) : Payload;
 
 [ExtendObjectType(nameof(Mutation))]
 public sealed class UpdateInstitutionAccessRightsMutation
+: MutationBase<Data.InstitutionAccessRights, UpdateInstitutionAccessRightsPayload, UpdateInstitutionAccessRightsError, UpdateInstitutionAccessRightsErrorCode>
 {
+    protected override UpdateInstitutionAccessRightsPayload NewPayload(
+        Data.InstitutionAccessRights? data,
+        IReadOnlyCollection<UpdateInstitutionAccessRightsError>? errors
+    ) => new(data, errors);
+
+    protected override UpdateInstitutionAccessRightsError NewError(
+        UpdateInstitutionAccessRightsErrorCode code,
+        string message,
+        IReadOnlyList<string> path
+    ) => new(code, message, path);
+
     public async Task<UpdateInstitutionAccessRightsPayload> UpdateInstitutionAccessRightsAsync(
         UpdateInstitutionAccessRightsInput input,
         ApplicationDbContext context,
-        UserService userService,
         CommonAuthorization authorization,
         CancellationToken cancellationToken
     )
     {
-        var currentUser = await userService.GetCurrentUser(
-            cancellationToken);
-        if (currentUser is null)
+        if ((await AuthorizeAsync(
+                UpdateInstitutionAccessRightsErrorCode.UNAUTHENTICATED,
+                UpdateInstitutionAccessRightsErrorCode.UNAUTHORIZED,
+                authorization,
+                cancellationToken
+            )
+            ).Failed(out var currentUser, out var authorizeErrorPayload)
+        )
         {
-            return new UpdateInstitutionAccessRightsPayload(
-                new UpdateInstitutionAccessRightsError(
-                    UpdateInstitutionAccessRightsErrorCode.UNAUTHENTICATED,
-                    $"The user is not authenticated.",
-                    []
-                )
-            );
+            return authorizeErrorPayload;
         }
 
-        if (!authorization.IsCurrentUserAtLeastAssistantManagerOfDatabaseOperator(currentUser))
-        {
-            return new UpdateInstitutionAccessRightsPayload(
-                new UpdateInstitutionAccessRightsError(
-                    UpdateInstitutionAccessRightsErrorCode.UNAUTHORIZED,
-                    $"The current user is not authorized to update access rights for the institution.",
-                    []
-                )
+        var accessRights = await context.InstitutionAccessRights
+            .SingleOrDefaultAsync(x =>
+                x.InstitutionId == input.InstitutionId,
+                cancellationToken
             );
-        }
-
-        var accessRights = await context.InstitutionAccessRights.SingleOrDefaultAsync(x => x.InstitutionId == input.InstitutionId, cancellationToken);
-
         if (accessRights is null)
         {
-            return new UpdateInstitutionAccessRightsPayload(
-                new UpdateInstitutionAccessRightsError(
+            return NewPayload(
+                null,
+                [NewError(
                     UpdateInstitutionAccessRightsErrorCode.UNKNOWN_ACCESS_RIGHTS,
                     $"There are no access rights for this institution.",
                     []
-                )
+                )]
             );
         }
 
@@ -108,6 +99,6 @@ public sealed class UpdateInstitutionAccessRightsMutation
         accessRights.AllowedDatasetsPerTime = input.AllowedDatasetsPerTimeSpan;
         accessRights.Period = TimeSpan.FromDays(input.PeriodInDays);
         await context.SaveChangesAsync(cancellationToken);
-        return new UpdateInstitutionAccessRightsPayload(accessRights);
+        return NewPayload(accessRights, null);
     }
 }

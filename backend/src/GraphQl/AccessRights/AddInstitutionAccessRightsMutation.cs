@@ -8,6 +8,7 @@ using HotChocolate.Types;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics.CodeAnalysis;
 using System.Collections.Generic;
+using Database.Extensions;
 
 namespace Database.GraphQl.AccessRights;
 
@@ -38,69 +39,59 @@ public sealed record AddInstitutionAccessRightsError(
 )
 : UserErrorBase<AddInstitutionAccessRightsErrorCode>(Code, Message, Path);
 
-public sealed class AddInstitutionAccessRightsPayload
-    : InstitutionAccessRightsPayload<AddInstitutionAccessRightsError>
-{
-    public AddInstitutionAccessRightsPayload(
-        Data.InstitutionAccessRights accessRights
-    )
-        : base(accessRights)
-    {
-    }
-
-    public AddInstitutionAccessRightsPayload(
-        AddInstitutionAccessRightsError error
-    )
-        : base(error)
-    {
-    }
-}
+public sealed record AddInstitutionAccessRightsPayload(
+   Data.InstitutionAccessRights? InstitutionAccessRights,
+   IReadOnlyCollection<AddInstitutionAccessRightsError>? Errors
+) : Payload;
 
 [ExtendObjectType(nameof(Mutation))]
 public sealed class AddInstitutionAccessRightsMutation
+: MutationBase<Data.InstitutionAccessRights, AddInstitutionAccessRightsPayload, AddInstitutionAccessRightsError, AddInstitutionAccessRightsErrorCode>
 {
+    protected override AddInstitutionAccessRightsPayload NewPayload(
+        Data.InstitutionAccessRights? data,
+        IReadOnlyCollection<AddInstitutionAccessRightsError>? errors
+    ) => new(data, errors);
+
+    protected override AddInstitutionAccessRightsError NewError(
+        AddInstitutionAccessRightsErrorCode code,
+        string message,
+        IReadOnlyList<string> path
+    ) => new(code, message, path);
+
     public async Task<AddInstitutionAccessRightsPayload> AddInstitutionAccessRightsAsync(
         AddInstitutionAccessRightsInput input,
         ApplicationDbContext context,
-        UserService userService,
         CommonAuthorization authorization,
         CancellationToken cancellationToken
     )
     {
-        var currentUser = await userService.GetCurrentUser(
-            cancellationToken);
-        if (currentUser is null)
+        if ((await AuthorizeAsync(
+                AddInstitutionAccessRightsErrorCode.UNAUTHENTICATED,
+                AddInstitutionAccessRightsErrorCode.UNAUTHORIZED,
+                authorization,
+                cancellationToken
+            )
+            ).Failed(out var currentUser, out var authorizeErrorPayload)
+        )
         {
-            return new AddInstitutionAccessRightsPayload(
-                new AddInstitutionAccessRightsError(
-                    AddInstitutionAccessRightsErrorCode.UNAUTHENTICATED,
-                    $"The user is not authenticated.",
-                    []
-                )
-            );
+            return authorizeErrorPayload;
         }
 
-        if (!authorization.IsCurrentUserAtLeastAssistantManagerOfDatabaseOperator(currentUser))
-        {
-            return new AddInstitutionAccessRightsPayload(
-                new AddInstitutionAccessRightsError(
-                    AddInstitutionAccessRightsErrorCode.UNAUTHORIZED,
-                    $"The current user is not authorized to add access rights for the institution.",
-                    []
-                )
+        var accessRights = await context.InstitutionAccessRights
+            .SingleOrDefaultAsync(x =>
+                x.InstitutionId == input.InstitutionId,
+                cancellationToken
             );
-        }
-
-        var accessRights = await context.InstitutionAccessRights.SingleOrDefaultAsync(x => x.InstitutionId == input.InstitutionId, cancellationToken);
-
         if (accessRights is not null)
         {
-            return new AddInstitutionAccessRightsPayload(
-                new AddInstitutionAccessRightsError(
+            return NewPayload(
+                null,
+                [NewError(
                     AddInstitutionAccessRightsErrorCode.ALREADY_EXISTS,
                     $"The access rights for this institution already exist.",
                     []
-                )
+                )]
             );
         }
 
@@ -111,6 +102,6 @@ public sealed class AddInstitutionAccessRightsMutation
             TimeSpan.FromDays(input.PeriodInDays));
         context.InstitutionAccessRights.Add(accessRights);
         await context.SaveChangesAsync(cancellationToken);
-        return new AddInstitutionAccessRightsPayload(accessRights);
+        return NewPayload(accessRights, null);
     }
 }

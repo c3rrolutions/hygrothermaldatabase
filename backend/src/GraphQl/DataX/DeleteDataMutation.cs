@@ -33,7 +33,7 @@ public sealed record DeleteDataError(
 public sealed record DeleteDataPayload(
     // [GraphQLType<ListType<ErrorType<DeleteDataErrorCode>>>]
     IReadOnlyCollection<DeleteDataError>? Errors
-);
+) : Payload;
 
 [ExtendObjectType(nameof(Mutation))]
 public sealed class DeleteDataMutation

@@ -15,7 +15,7 @@ interface Approval {
 
 interface Data {
   appliedMethod: AppliedMethod!
-  approval: ResponseApproval
+  approval: ResponseApproval!
   approvals: [DataApproval!]!
   componentId: Uuid!
   createdAt: DateTime!
@@ -70,8 +70,8 @@ type AddInstitutionAccessRightsError implements UserError {
 }
 
 type AddInstitutionAccessRightsPayload {
-  accessRights: InstitutionAccessRights
   errors: [AddInstitutionAccessRightsError!]
+  institutionAccessRights: InstitutionAccessRights
   query: Query!
 }
 
@@ -98,7 +98,7 @@ type CalculateMethodPayload {
 
 type CalorimetricData implements Node & Data {
   appliedMethod: AppliedMethod!
-  approval: ResponseApproval
+  approval: ResponseApproval!
   approvals: [DataApproval!]!
   componentId: Uuid!
   createdAt: DateTime!
@@ -305,7 +305,7 @@ type FileMetaInformation {
 
 type GeometricData implements Node & Data {
   appliedMethod: AppliedMethod!
-  approval: ResponseApproval
+  approval: ResponseApproval!
   approvals: [DataApproval!]!
   componentId: Uuid!
   createdAt: DateTime!
@@ -398,7 +398,7 @@ type GetHttpsResourceTreeRoot implements GetHttpsResourceTreeVertex {
 
 type HygrothermalData implements Node & Data {
   appliedMethod: AppliedMethod!
-  approval: ResponseApproval
+  approval: ResponseApproval!
   approvals: [DataApproval!]!
   componentId: Uuid!
   createdAt: DateTime!
@@ -469,7 +469,7 @@ type Mutation {
   createHygrothermalData(input: CreateHygrothermalDataInput!): CreateHygrothermalDataPayload! @cost(weight: "10")
   createOpticalData(input: CreateOpticalDataInput!): CreateOpticalDataPayload! @cost(weight: "10")
   createPhotovoltaicData(input: CreatePhotovoltaicDataInput!): CreatePhotovoltaicDataPayload! @cost(weight: "10")
-  createResponseApprovals: CreateResponseApprovalsPayload! @cost(weight: "10")
+  createResponseApprovals(where: CreateResponseApprovalsFilterInput @cost(weight: "10")): CreateResponseApprovalsPayload! @cost(weight: "10")
   deleteData(input: DeleteDataInput!): DeleteDataPayload! @cost(weight: "10")
   recomputeGetHttpsResourceHashValues(where: RecomputeGetHttpsResourceHashValuesFilterInput @cost(weight: "10")): RecomputeGetHttpsResourceHashValuesPayload! @cost(weight: "10")
   removeDataApproval(input: RemoveDataApprovalInput!): RemoveDataApprovalPayload! @cost(weight: "10")
@@ -477,7 +477,7 @@ type Mutation {
   updateDataAccessRights(input: UpdateDataAccessRightsInput!): UpdateDataAccessRightsPayload! @cost(weight: "10")
   updateDatabase(input: UpdateDatabaseInput!): UpdateDatabasePayload! @cost(weight: "10")
   updateInstitutionAccessRights(input: UpdateInstitutionAccessRightsInput!): UpdateInstitutionAccessRightsPayload! @cost(weight: "10")
-  updateResponseApprovals: UpdateResponseApprovalsPayload! @cost(weight: "10")
+  updateResponseApprovals(where: UpdateResponseApprovalsFilterInput @cost(weight: "10")): UpdateResponseApprovalsPayload! @cost(weight: "10")
 }
 
 type NamedMethodArgument {
@@ -503,7 +503,7 @@ type OpenEndedDateTimeRange {
 
 type OpticalData implements Node & Data {
   appliedMethod: AppliedMethod!
-  approval: ResponseApproval
+  approval: ResponseApproval!
   approvals: [DataApproval!]!
   cielabColors: [CielabColor!]!
   coatedSide: CoatedSide
@@ -567,7 +567,7 @@ type PageInfo {
 
 type PhotovoltaicData implements Node & Data {
   appliedMethod: AppliedMethod!
-  approval: ResponseApproval
+  approval: ResponseApproval!
   approvals: [DataApproval!]!
   componentId: Uuid!
   createdAt: DateTime!
@@ -750,8 +750,8 @@ type UpdateInstitutionAccessRightsError implements UserError {
 }
 
 type UpdateInstitutionAccessRightsPayload {
-  accessRights: InstitutionAccessRights
   errors: [UpdateInstitutionAccessRightsError!]
+  institutionAccessRights: InstitutionAccessRights
   query: Query!
 }
 
@@ -959,6 +959,11 @@ input CreatePhotovoltaicDataInput {
   name: String
   rootResource: RootGetHttpsResourceInput!
   warnings: [String!]!
+}
+
+input CreateResponseApprovalsFilterInput {
+  and: [CreateResponseApprovalsFilterInput!]
+  or: [CreateResponseApprovalsFilterInput!]
 }
 
 input CrossDatabaseDataReferenceInput {
@@ -1631,6 +1636,11 @@ input UpdateInstitutionAccessRightsInput {
   periodInDays: Int!
 }
 
+input UpdateResponseApprovalsFilterInput {
+  and: [UpdateResponseApprovalsFilterInput!]
+  or: [UpdateResponseApprovalsFilterInput!]
+}
+
 input UriHostNameTypePropositionInput {
   equalTo: UriHostNameType @cost(weight: "10")
   notEqualTo: UriHostNameType @cost(weight: "10")
@@ -1775,9 +1785,10 @@ enum CreateGeometricDataErrorCode {
 
 enum CreateGetHttpsResourceErrorCode {
   UNKNOWN
-  UNKNOWN_DATA
   UNAUTHORIZED
   UNAUTHENTICATED
+  UNKNOWN_DATA
+  CREATING_RESPONSE_APPROVAL_FAILED
 }
 
 enum CreateHygrothermalDataErrorCode {
@@ -1879,6 +1890,7 @@ enum RecomputeGetHttpsResourceHashValuesErrorCode {
   UNAUTHORIZED
   UNAUTHENTICATED
   FAILED
+  CREATING_RESPONSE_APPROVAL_FAILED
 }
 
 enum RemoveDataApprovalErrorCode {
@@ -1954,7 +1966,7 @@ enum UpdateResponseApprovalsErrorCode {
   UNAUTHORIZED
   UNAUTHENTICATED
   UNKNOWN_DATABASE
-  UPDATING_RESPONSE_APPROVAL_FAILED
+  CREATING_RESPONSE_APPROVAL_FAILED
 }
 
 enum UriHostNameType {

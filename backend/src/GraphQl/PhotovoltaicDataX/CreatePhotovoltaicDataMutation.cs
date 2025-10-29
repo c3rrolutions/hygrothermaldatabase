@@ -10,6 +10,7 @@ using Database.Utilities;
 using HotChocolate;
 using System.Diagnostics.CodeAnalysis;
 using System.Collections.Generic;
+using Database.Extensions;
 
 namespace Database.GraphQl.PhotovoltaicDataX;
 
@@ -60,91 +61,65 @@ public sealed record CreatePhotovoltaicDataError(
 )
 : UserErrorBase<CreatePhotovoltaicDataErrorCode>(Code, Message, Path);
 
-public sealed class CreatePhotovoltaicDataPayload
-    : PhotovoltaicDataPayload<CreatePhotovoltaicDataError>
-{
-    public CreatePhotovoltaicDataPayload(
-        PhotovoltaicData photovoltaicData
-    )
-        : base(photovoltaicData)
-    {
-    }
-
-    public CreatePhotovoltaicDataPayload(
-        CreatePhotovoltaicDataError error
-    )
-        : base(error)
-    {
-    }
-
-    public CreatePhotovoltaicDataPayload(
-        PhotovoltaicData photovoltaicData,
-        CreatePhotovoltaicDataError error
-    )
-        : base(photovoltaicData, error)
-    {
-    }
-}
+public sealed record CreatePhotovoltaicDataPayload(
+    PhotovoltaicData? PhotovoltaicData,
+    IReadOnlyCollection<CreatePhotovoltaicDataError>? Errors
+) : Payload;
 
 [ExtendObjectType(nameof(Mutation))]
 public sealed class CreatePhotovoltaicDataMutation
+: DataMutationBase<PhotovoltaicData, CreatePhotovoltaicDataPayload, CreatePhotovoltaicDataError, CreatePhotovoltaicDataErrorCode>
 {
     // [UseUserManager] [Authorize(Policy = Configuration.AuthConfiguration.WritePolicy)]
+    protected override CreatePhotovoltaicDataPayload NewPayload(
+        PhotovoltaicData? data,
+        IReadOnlyCollection<CreatePhotovoltaicDataError>? errors
+    ) => new(data, errors);
+
+    protected override CreatePhotovoltaicDataError NewError(
+        CreatePhotovoltaicDataErrorCode code,
+        string message,
+        IReadOnlyList<string> path
+    ) => new(code, message, path);
+
     public async Task<CreatePhotovoltaicDataPayload> CreatePhotovoltaicDataAsync(
         CreatePhotovoltaicDataInput input,
         ApplicationDbContext context,
-        UserService userService,
         CommonAuthorization authorization,
         ResponseApprovalService responseApprovalService,
         CancellationToken cancellationToken
     )
     {
-        var currentUser = await userService.GetCurrentUser(
-            cancellationToken);
-        if (currentUser is null)
+        if ((await AuthorizeAsync(
+                CreatePhotovoltaicDataErrorCode.UNAUTHENTICATED,
+                CreatePhotovoltaicDataErrorCode.UNAUTHORIZED,
+                authorization,
+                cancellationToken
+            )
+            ).Failed(out var currentUser, out var authorizeErrorPayload)
+        )
         {
-            return new CreatePhotovoltaicDataPayload(
-                new CreatePhotovoltaicDataError(
-                    CreatePhotovoltaicDataErrorCode.UNAUTHENTICATED,
-                    $"The user is not authenticated.",
-                    []
-                )
-            );
-        }
-
-        if (!authorization.IsCurrentUserAtLeastAssistantManagerOfDatabaseOperator(currentUser))
-        {
-            return new CreatePhotovoltaicDataPayload(
-                new CreatePhotovoltaicDataError(
-                    CreatePhotovoltaicDataErrorCode.UNAUTHORIZED,
-                    $"The current user is not authorized to create photovoltaic data in this database.",
-                    []
-                )
-            );
+            return authorizeErrorPayload;
         }
 
         var photovoltaicData = input.ToDomainModel(currentUser.Uuid);
         await context.SaveChangesAsync(cancellationToken);
 
-        try
-        {
-            photovoltaicData.Approval = await responseApprovalService.CreateResponseApproval(photovoltaicData, cancellationToken);
-            await context.SaveChangesAsync(cancellationToken);
-        }
-        catch (Exception exception)
+        if ((await CreateResponseApprovalAsync(
+                photovoltaicData,
+                CreatePhotovoltaicDataErrorCode.CREATING_RESPONSE_APPROVAL_FAILED,
+                responseApprovalService,
+                context,
+                cancellationToken
+            )
+            ).Failed(out var createResponseApprovalErrorPayload)
+        )
         {
             context.Remove(photovoltaicData);
             await context.SaveChangesAsync(cancellationToken);
-
-            return new CreatePhotovoltaicDataPayload(
-                photovoltaicData,
-                new CreatePhotovoltaicDataError(
-                    CreatePhotovoltaicDataErrorCode.CREATING_RESPONSE_APPROVAL_FAILED,
-                    $"Signing failed with message: {exception.Message}",
-                    []
-                )
-            );
+            return createResponseApprovalErrorPayload;
         }
-        return new CreatePhotovoltaicDataPayload(photovoltaicData);
+
+        return NewPayload(photovoltaicData, null);
     }
 }

@@ -4,20 +4,17 @@ using System.Threading;
 using System.Threading.Tasks;
 using Database.Data;
 using Database.Authorization;
-using Database.Enumerations;
 using HotChocolate.Types;
 using Microsoft.EntityFrameworkCore;
 using Database.Services;
-using GraphQL.Client.Abstractions.Utilities;
 using System.Collections.Concurrent;
 using Microsoft.Extensions.Logging;
-using Database.Utilities;
 using HotChocolate.Data;
 using GreenDonut.Data;
-using Microsoft.EntityFrameworkCore.Query;
 using Database.GraphQl.Extensions;
 using System.Diagnostics.CodeAnalysis;
 using System.Collections.Generic;
+using Database.Extensions;
 
 namespace Database.GraphQl.GetHttpsResources;
 
@@ -27,7 +24,8 @@ public enum RecomputeGetHttpsResourceHashValuesErrorCode
     UNKNOWN,
     UNAUTHORIZED,
     UNAUTHENTICATED,
-    FAILED
+    FAILED,
+    CREATING_RESPONSE_APPROVAL_FAILED
 }
 
 public sealed record RecomputeGetHttpsResourceHashValuesError(
@@ -37,35 +35,10 @@ public sealed record RecomputeGetHttpsResourceHashValuesError(
 )
 : UserErrorBase<RecomputeGetHttpsResourceHashValuesErrorCode>(Code, Message, Path);
 
-public sealed class RecomputeGetHttpsResourceHashValuesPayload
-    : Payload
-{
-    public IReadOnlyCollection<GetHttpsResource>? GetHttpsResources { get; }
-    public IReadOnlyCollection<RecomputeGetHttpsResourceHashValuesError>? Errors { get; }
-
-    public RecomputeGetHttpsResourceHashValuesPayload(
-        IReadOnlyCollection<GetHttpsResource>? getHttpsResources
-    )
-    {
-        GetHttpsResources = getHttpsResources;
-    }
-
-    public RecomputeGetHttpsResourceHashValuesPayload(
-        RecomputeGetHttpsResourceHashValuesError error
-    )
-    {
-        Errors = [error];
-    }
-
-    public RecomputeGetHttpsResourceHashValuesPayload(
-        IReadOnlyCollection<GetHttpsResource> getHttpsResources,
-        IReadOnlyCollection<RecomputeGetHttpsResourceHashValuesError> errors
-    )
-    : this(getHttpsResources)
-    {
-        Errors = errors;
-    }
-}
+public sealed record RecomputeGetHttpsResourceHashValuesPayload(
+   IReadOnlyCollection<GetHttpsResource>? GetHttpsResources,
+   IReadOnlyCollection<RecomputeGetHttpsResourceHashValuesError>? Errors
+) : Payload;
 
 public static partial class RecomputeGetHttpsResourceHashValuesMutationLogging
 {
@@ -78,40 +51,48 @@ public static partial class RecomputeGetHttpsResourceHashValuesMutationLogging
 
 [ExtendObjectType(nameof(Mutation))]
 public sealed class RecomputeGetHttpsResourceHashValuesMutation
+: DataMutationBase<IReadOnlyCollection<GetHttpsResource>, RecomputeGetHttpsResourceHashValuesPayload, RecomputeGetHttpsResourceHashValuesError, RecomputeGetHttpsResourceHashValuesErrorCode>
 {
+    protected override RecomputeGetHttpsResourceHashValuesPayload NewPayload(
+        IReadOnlyCollection<GetHttpsResource>? data,
+        IReadOnlyCollection<RecomputeGetHttpsResourceHashValuesError>? errors
+    ) => new(data, errors);
+
+    protected override RecomputeGetHttpsResourceHashValuesError NewError(
+        RecomputeGetHttpsResourceHashValuesErrorCode code,
+        string message,
+        IReadOnlyList<string> path
+    ) => new(code, message, path);
+
     [UseFiltering<RecomputeGetHttpsResourceHashValuesFilterType>]
     public async Task<RecomputeGetHttpsResourceHashValuesPayload> RecomputeGetHttpsResourceHashValuesAsync(
         ApplicationDbContext context,
         QueryContext<GetHttpsResource> queryContext,
-        UserService userService,
         CommonAuthorization authorization,
+        ResponseApprovalService responseApprovalService,
         ILogger<RecomputeGetHttpsResourceHashValuesMutation> logger,
         CancellationToken cancellationToken
     )
     {
-        var currentUser = await userService.GetCurrentUser(cancellationToken);
-        if (currentUser is null)
+        if ((await AuthorizeAsync(
+                RecomputeGetHttpsResourceHashValuesErrorCode.UNAUTHENTICATED,
+                RecomputeGetHttpsResourceHashValuesErrorCode.UNAUTHORIZED,
+                authorization,
+                cancellationToken
+            )
+            ).Failed(out var currentUser, out var authorizeErrorPayload)
+        )
         {
-            return new RecomputeGetHttpsResourceHashValuesPayload(
-                new RecomputeGetHttpsResourceHashValuesError(
-                    RecomputeGetHttpsResourceHashValuesErrorCode.UNAUTHENTICATED,
-                    $"The user is not authenticated.",
-                    []
-                )
-            );
+            return authorizeErrorPayload;
         }
-        if (!authorization.IsCurrentUserAtLeastAssistantManagerOfDatabaseOperator(currentUser))
-        {
-            return new RecomputeGetHttpsResourceHashValuesPayload(
-                new RecomputeGetHttpsResourceHashValuesError(
-                    RecomputeGetHttpsResourceHashValuesErrorCode.UNAUTHORIZED,
-                    $"The current user is not authorized to recompute GET HTTPS resource hash values in this database.",
-                    []
-                )
-            );
-        }
+
         var resources =
             await context.GetHttpsResources
+            .Include(r => r.CalorimetricData)
+            .Include(r => r.GeometricData)
+            .Include(r => r.HygrothermalData)
+            .Include(r => r.OpticalData)
+            .Include(r => r.PhotovoltaicData)
             .With(queryContext, sort => sort.StabilizeOrder())
             .ToListAsync(cancellationToken);
         var errors = new ConcurrentBag<RecomputeGetHttpsResourceHashValuesError>();
@@ -123,26 +104,39 @@ public sealed class RecomputeGetHttpsResourceHashValuesMutation
                 try
                 {
                     await resource.RecomputeHashValue(cancellationToken);
+                    if ((await CreateResponseApprovalAsync(
+                            resource.Data ?? throw new InvalidOperationException("Impossible!"),
+                            RecomputeGetHttpsResourceHashValuesErrorCode.CREATING_RESPONSE_APPROVAL_FAILED,
+                            responseApprovalService,
+                            context,
+                            cancellationToken
+                        )
+                        ).Failed(out var createResponseApprovalErrorPayload)
+                    )
+                    {
+                        // TODO Undo hash value recomputation?
+                        // await context.SaveChangesAsync(cancellationToken);
+                        errors.AddRange(createResponseApprovalErrorPayload.Errors);
+                    }
                 }
                 catch (Exception exception)
                 {
                     logger.FailedRecomputingHashValue(resource.Id, exception);
                     errors.Add(
-                        new RecomputeGetHttpsResourceHashValuesError(
+                        NewError(
                             RecomputeGetHttpsResourceHashValuesErrorCode.FAILED,
                             $"Recomputing the hash value for the GET HTTPS resource with ID {resource.Id} failed with message: {exception.Message}",
                             []
                         )
                     );
                 }
-
             }
         );
         await context.SaveChangesAsync(cancellationToken);
         if (!errors.IsEmpty)
         {
-            return new RecomputeGetHttpsResourceHashValuesPayload(resources, errors);
+            return NewPayload(resources, errors);
         }
-        return new RecomputeGetHttpsResourceHashValuesPayload(resources);
+        return NewPayload(resources, null);
     }
 }

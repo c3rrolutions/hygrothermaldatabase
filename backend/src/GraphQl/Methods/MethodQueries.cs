@@ -31,53 +31,10 @@ public sealed record CalculateMethodError(
 )
 : UserErrorBase<CalculateMethodErrorCode>(Code, Message, Path);
 
-public sealed class CalculateMethodPayload
-    : Payload
-{
-    public CalculateMethodPayload(
-        JsonElement result
-    )
-    {
-        Result = result;
-    }
-
-    public CalculateMethodPayload(
-        IReadOnlyCollection<CalculateMethodError> errors
-    )
-    {
-        Errors = errors;
-    }
-
-    public CalculateMethodPayload(
-        CalculateMethodError error
-    )
-        : this([error])
-    {
-    }
-
-    public CalculateMethodPayload(
-        JsonElement result,
-        IReadOnlyCollection<CalculateMethodError> errors
-    )
-    {
-        Result = result;
-        Errors = errors;
-    }
-
-    public CalculateMethodPayload(
-        JsonElement result,
-        CalculateMethodError error
-    )
-        : this(
-            result,
-            [error]
-        )
-    {
-    }
-
-    public JsonElement? Result { get; }
-    public IReadOnlyCollection<CalculateMethodError>? Errors { get; }
-}
+public sealed record CalculateMethodPayload(
+    JsonElement? Result,
+    IReadOnlyCollection<CalculateMethodError>? Errors
+) : Payload;
 
 [ExtendObjectType(nameof(Query))]
 public sealed class MethodQueries
@@ -115,11 +72,12 @@ public sealed class MethodQueries
         if (method is null)
         {
             return new CalculateMethodPayload(
-                new CalculateMethodError(
+                null,
+                [new CalculateMethodError(
                     CalculateMethodErrorCode.UNKNOWN_METHOD,
                     $"The method is unknown.",
                     [nameof(methodId)]
-                )
+                )]
             );
         }
         using var stream = data.OpenReadStream();
@@ -129,7 +87,7 @@ public sealed class MethodQueries
             cancellationToken
         );
         var result = method.Calculate(jsonData.RootElement);
-        return new CalculateMethodPayload(result);
+        return new CalculateMethodPayload(result, null);
     }
 
     public async Task<CalculateMethodPayload> CalculateMethodAsync(
@@ -146,11 +104,12 @@ public sealed class MethodQueries
         if (method is null)
         {
             return new CalculateMethodPayload(
-                new CalculateMethodError(
+                null,
+                [new CalculateMethodError(
                     CalculateMethodErrorCode.UNKNOWN_METHOD,
                     $"The method is unknown.",
                     [nameof(methodId)]
-                )
+                )]
             );
         }
         var database = await GraphQlRequestHelper.TransformExceptionsAsync(
@@ -166,11 +125,12 @@ public sealed class MethodQueries
         if (database is null)
         {
             return new CalculateMethodPayload(
-                new CalculateMethodError(
+                null,
+                [new CalculateMethodError(
                     CalculateMethodErrorCode.UNKNOWN_DATABASE,
                     $"The database is unknown.",
                     [nameof(dataReference), nameof(dataReference.DatabaseId).ToLowerFirst()]
-                )
+                )]
             );
         }
         var query = ConstructQuery(dataReference.DataKind);
@@ -200,11 +160,12 @@ public sealed class MethodQueries
                 }
             }
             return new CalculateMethodPayload(
-                new CalculateMethodError(
+                null,
+                [new CalculateMethodError(
                     CalculateMethodErrorCode.DATA_QUERY_FAILED,
                     $"Failed to query database {database.Locator} for the data.",
                     [nameof(dataReference)]
-                )
+                )]
             );
         }
         var locator = response.Data.Data.ResourceTree.Root.Value.Locator;
@@ -214,7 +175,7 @@ public sealed class MethodQueries
             locator, cancellationToken
         );
         var result = method.Calculate(data);
-        return new CalculateMethodPayload(result);
+        return new CalculateMethodPayload(result, null);
     }
 
     private static string ConstructQuery(DataKind dataKind)

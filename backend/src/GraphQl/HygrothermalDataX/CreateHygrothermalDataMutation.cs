@@ -10,6 +10,7 @@ using Database.Utilities;
 using HotChocolate;
 using System.Diagnostics.CodeAnalysis;
 using System.Collections.Generic;
+using Database.Extensions;
 
 namespace Database.GraphQl.HygrothermalDataX;
 
@@ -60,90 +61,65 @@ public sealed record CreateHygrothermalDataError(
 )
 : UserErrorBase<CreateHygrothermalDataErrorCode>(Code, Message, Path);
 
-public sealed class CreateHygrothermalDataPayload
-    : HygrothermalDataPayload<CreateHygrothermalDataError>
-{
-    public CreateHygrothermalDataPayload(
-        HygrothermalData hygrothermalData
-    )
-        : base(hygrothermalData)
-    {
-    }
-
-    public CreateHygrothermalDataPayload(
-        CreateHygrothermalDataError error
-    )
-        : base(error)
-    {
-    }
-
-    public CreateHygrothermalDataPayload(
-        HygrothermalData hygrothermalData,
-        CreateHygrothermalDataError error
-    )
-        : base(hygrothermalData, error)
-    {
-    }
-}
+public sealed record CreateHygrothermalDataPayload(
+    HygrothermalData? HygrothermalData,
+    IReadOnlyCollection<CreateHygrothermalDataError>? Errors
+) : Payload;
 
 [ExtendObjectType(nameof(Mutation))]
 public sealed class CreateHygrothermalDataMutation
+: DataMutationBase<HygrothermalData, CreateHygrothermalDataPayload, CreateHygrothermalDataError, CreateHygrothermalDataErrorCode>
 {
     // [UseUserManager] [Authorize(Policy = Configuration.AuthConfiguration.WritePolicy)]
+    protected override CreateHygrothermalDataPayload NewPayload(
+        HygrothermalData? data,
+        IReadOnlyCollection<CreateHygrothermalDataError>? errors
+    ) => new(data, errors);
+
+    protected override CreateHygrothermalDataError NewError(
+        CreateHygrothermalDataErrorCode code,
+        string message,
+        IReadOnlyList<string> path
+    ) => new(code, message, path);
+
     public async Task<CreateHygrothermalDataPayload> CreateHygrothermalDataAsync(
         CreateHygrothermalDataInput input,
         ApplicationDbContext context,
-        UserService userService,
         CommonAuthorization authorization,
         ResponseApprovalService responseApprovalService,
         CancellationToken cancellationToken
     )
     {
-        var currentUser = await userService.GetCurrentUser(
-            cancellationToken);
-        if (currentUser is null)
+        if ((await AuthorizeAsync(
+                CreateHygrothermalDataErrorCode.UNAUTHENTICATED,
+                CreateHygrothermalDataErrorCode.UNAUTHORIZED,
+                authorization,
+                cancellationToken
+            )
+            ).Failed(out var currentUser, out var authorizeErrorPayload)
+        )
         {
-            return new CreateHygrothermalDataPayload(
-                new CreateHygrothermalDataError(
-                    CreateHygrothermalDataErrorCode.UNAUTHENTICATED,
-                    $"The user is not authenticated.",
-                    []
-                )
-            );
-        }
-        if (!authorization.IsCurrentUserAtLeastAssistantManagerOfDatabaseOperator(currentUser))
-        {
-            return new CreateHygrothermalDataPayload(
-                new CreateHygrothermalDataError(
-                    CreateHygrothermalDataErrorCode.UNAUTHORIZED,
-                    $"The current user is not authorized to create hygrothermal data in this database.",
-                    []
-                )
-            );
+            return authorizeErrorPayload;
         }
 
         var hygrothermalData = input.ToDomainModel(currentUser.Uuid);
         await context.SaveChangesAsync(cancellationToken);
 
-        try
-        {
-            hygrothermalData.Approval = await responseApprovalService.CreateResponseApproval(hygrothermalData, cancellationToken);
-            await context.SaveChangesAsync(cancellationToken);
-        }
-        catch (Exception exception)
+        if ((await CreateResponseApprovalAsync(
+                hygrothermalData,
+                CreateHygrothermalDataErrorCode.CREATING_RESPONSE_APPROVAL_FAILED,
+                responseApprovalService,
+                context,
+                cancellationToken
+            )
+            ).Failed(out var createResponseApprovalErrorPayload)
+        )
         {
             context.Remove(hygrothermalData);
             await context.SaveChangesAsync(cancellationToken);
-
-            return new CreateHygrothermalDataPayload(
-                hygrothermalData,
-                new CreateHygrothermalDataError(
-                    CreateHygrothermalDataErrorCode.CREATING_RESPONSE_APPROVAL_FAILED,
-                    $"Signing failed with message: {exception.Message}",
-                    []
-                )
-            );
+            return createResponseApprovalErrorPayload;
         }
-        return new CreateHygrothermalDataPayload(hygrothermalData);
+
+        return NewPayload(hygrothermalData, null);
     }
 }

@@ -18,5 +18,11 @@ public class GetHttpsResourceFilterType
         descriptor.Field(x => x.AppliedConversionMethod);
         descriptor.Field(x => x.ArchivedFilesMetaInformation);
         descriptor.Field(x => x.Parent);
+        // descriptor.Field(x => x.Data);
+        descriptor.Field(x => x.CalorimetricData);
+        descriptor.Field(x => x.GeometricData);
+        descriptor.Field(x => x.HygrothermalData);
+        descriptor.Field(x => x.OpticalData);
+        descriptor.Field(x => x.PhotovoltaicData);
     }
 }

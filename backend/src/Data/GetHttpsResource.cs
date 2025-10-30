@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Database.Extensions;
@@ -46,6 +47,7 @@ public sealed class GetHttpsResource(
         HygrothermalDataId = hygrothermalDataId;
         OpticalDataId = opticalDataId;
         PhotovoltaicDataId = photovoltaicDataId;
+        AssertThatExactlyOneDataIdIsNonNull();
     }
 
     public GetHttpsResource(
@@ -91,6 +93,28 @@ public sealed class GetHttpsResource(
         OpticalDataId = opticalDataId;
         PhotovoltaicDataId = photovoltaicDataId;
         GeometricDataId = geometricDataId;
+        AssertThatExactlyOneDataIdIsNonNull();
+    }
+
+    private void AssertThatExactlyOneDataIdIsNonNull()
+    {
+        var nonNullDataIdCount = new Guid?[] {
+            CalorimetricDataId,
+            HygrothermalDataId,
+            OpticalDataId,
+            PhotovoltaicDataId,
+            GeometricDataId
+        }
+        .NotNull()
+        .Count();
+        if (nonNullDataIdCount is 0)
+        {
+            throw new InvalidOperationException("All data IDs are null.");
+        }
+        if (nonNullDataIdCount >= 2)
+        {
+            throw new InvalidOperationException("There is more than 1 non-null data ID.");
+        }
     }
 
     public string FilePath { get => Path.Combine(FilesDirectoryPath, Id.ToString("D")); }
@@ -100,7 +124,7 @@ public sealed class GetHttpsResource(
 
     public ICollection<FileMetaInformation> ArchivedFilesMetaInformation { get; private set; } = [];
 
-    // TODO Make sure that at least one ID is always present. In that case `Guid.Empty` should never be used!
+    // Note that at least one data ID is always present. So `Guid.Empty` will never be used.
     [NotMapped]
     public Guid DataId => CalorimetricDataId ?? HygrothermalDataId ?? OpticalDataId ?? PhotovoltaicDataId ?? GeometricDataId ?? Guid.Empty;
 

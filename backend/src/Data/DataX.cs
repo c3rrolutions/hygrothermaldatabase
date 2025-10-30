@@ -40,6 +40,25 @@ public abstract class DataX(
         AppliedMethod = appliedMethod;
     }
 
+    public void Update(
+        string locale,
+        Guid componentId,
+        string? name,
+        string? description,
+        string[] warnings,
+        DateTime createdAt,
+        Guid creatorId
+    )
+    {
+        Locale = locale;
+        ComponentId = componentId;
+        Name = name;
+        Description = description;
+        Warnings = warnings;
+        CreatedAt = createdAt;
+        CreatorId = creatorId;
+    }
+
     public Guid UserId { get; private set; } = userId;
     public string Locale { get; private set; } = locale;
     public Guid ComponentId { get; private set; } = componentId;

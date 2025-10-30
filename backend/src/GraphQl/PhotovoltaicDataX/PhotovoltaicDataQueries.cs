@@ -20,8 +20,8 @@ public sealed class PhotovoltaicDataQueries
     [UsePaging]
     // [UseProjection] // We disabled projections because when requesting `id` all results had the
     // same `id` and when also requesting `uuid`, the latter was always the empty UUID `000...`.
-    [UseFiltering]
-    [UseSorting]
+    [UseFiltering<PhotovoltaicDataFilterType>]
+    [UseSorting<PhotovoltaicDataSortType>]
     public async Task<IQueryable<PhotovoltaicData>> GetAllPhotovoltaicData(
         [GraphQLType<LocaleType>] string? locale,
         ApplicationDbContext context,
@@ -43,7 +43,7 @@ public sealed class PhotovoltaicDataQueries
         return await accessRightsService.ApplyAccessRightsOnData(filteredData, cancellationToken);
     }
 
-    [UseFiltering(typeof(PhotovoltaicData))]
+    [UseFiltering<PhotovoltaicDataFilterType>]
     public Task<bool> GetHasPhotovoltaicData(
         [GraphQLType<LocaleType>] string? locale,
         ApplicationDbContext context,

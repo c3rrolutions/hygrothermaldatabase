@@ -3,9 +3,19 @@ schema {
   mutation: Mutation
 }
 
+interface Approval {
+  approverId: Uuid!
+  keyFingerprint: String!
+  message: String!
+  query: String!
+  signature: String!
+  timestamp: DateTime!
+  variables: Any!
+}
+
 interface Data {
   appliedMethod: AppliedMethod!
-  approval: ResponseApproval
+  approval: ResponseApproval!
   approvals: [DataApproval!]!
   componentId: Uuid!
   createdAt: DateTime!
@@ -26,12 +36,22 @@ interface Data {
   warnings: [String!]!
 }
 
+interface GetHttpsResourceTreeVertex {
+  value: GetHttpsResource!
+  vertexId: ID
+}
+
 "The node interface is implemented by entities that have a global unique identifier."
 interface Node {
   id: ID!
 }
 
-type AddDataApprovalError {
+interface UserError {
+  message: String!
+  path: [String!]!
+}
+
+type AddDataApprovalError implements UserError {
   code: AddDataApprovalErrorCode!
   message: String!
   path: [String!]!
@@ -43,9 +63,15 @@ type AddDataApprovalPayload {
   query: Query!
 }
 
+type AddInstitutionAccessRightsError implements UserError {
+  code: AddInstitutionAccessRightsErrorCode!
+  message: String!
+  path: [String!]!
+}
+
 type AddInstitutionAccessRightsPayload {
-  accessRights: InstitutionAccessRights
-  errors: [InstitutionAccessRightsError!]
+  errors: [AddInstitutionAccessRightsError!]
+  institutionAccessRights: InstitutionAccessRights
   query: Query!
 }
 
@@ -59,7 +85,7 @@ type AppliedMethod {
   sources: [NamedMethodSource!]!
 }
 
-type CalculateMethodError {
+type CalculateMethodError implements UserError {
   code: CalculateMethodErrorCode!
   message: String!
   path: [String!]!
@@ -72,7 +98,7 @@ type CalculateMethodPayload {
 
 type CalorimetricData implements Node & Data {
   appliedMethod: AppliedMethod!
-  approval: ResponseApproval
+  approval: ResponseApproval!
   approvals: [DataApproval!]!
   componentId: Uuid!
   createdAt: DateTime!
@@ -122,7 +148,7 @@ type CielabColor {
   observer: CalorimetricObserver
 }
 
-type CreateCalorimetricDataError {
+type CreateCalorimetricDataError implements UserError {
   code: CreateCalorimetricDataErrorCode!
   message: String!
   path: [String!]!
@@ -134,7 +160,7 @@ type CreateCalorimetricDataPayload {
   query: Query!
 }
 
-type CreateGeometricDataError {
+type CreateGeometricDataError implements UserError {
   code: CreateGeometricDataErrorCode!
   message: String!
   path: [String!]!
@@ -146,7 +172,7 @@ type CreateGeometricDataPayload {
   query: Query!
 }
 
-type CreateGetHttpsResourceError {
+type CreateGetHttpsResourceError implements UserError {
   code: CreateGetHttpsResourceErrorCode!
   message: String!
   path: [String!]!
@@ -158,7 +184,7 @@ type CreateGetHttpsResourcePayload {
   query: Query!
 }
 
-type CreateHygrothermalDataError {
+type CreateHygrothermalDataError implements UserError {
   code: CreateHygrothermalDataErrorCode!
   message: String!
   path: [String!]!
@@ -170,7 +196,7 @@ type CreateHygrothermalDataPayload {
   query: Query!
 }
 
-type CreateOpticalDataError {
+type CreateOpticalDataError implements UserError {
   code: CreateOpticalDataErrorCode!
   message: String!
   path: [String!]!
@@ -182,7 +208,7 @@ type CreateOpticalDataPayload {
   query: Query!
 }
 
-type CreatePhotovoltaicDataError {
+type CreatePhotovoltaicDataError implements UserError {
   code: CreatePhotovoltaicDataErrorCode!
   message: String!
   path: [String!]!
@@ -194,7 +220,7 @@ type CreatePhotovoltaicDataPayload {
   query: Query!
 }
 
-type CreateResponseApprovalsError {
+type CreateResponseApprovalsError implements UserError {
   code: CreateResponseApprovalsErrorCode!
   message: String!
   path: [String!]!
@@ -223,7 +249,7 @@ type DataAccessRights {
   hasRestrictionsByUser: Boolean!
 }
 
-type DataApproval {
+type DataApproval implements Approval {
   approverId: Uuid!
   keyFingerprint: String!
   message: String!
@@ -261,6 +287,17 @@ type DatabaseOperatorEdge {
   node: Institution!
 }
 
+type DeleteDataError implements UserError {
+  code: DeleteDataErrorCode!
+  message: String!
+  path: [String!]!
+}
+
+type DeleteDataPayload {
+  errors: [DeleteDataError!]
+  query: Query!
+}
+
 type FileMetaInformation {
   dataFormatId: Uuid!
   path: [String!]!
@@ -268,7 +305,7 @@ type FileMetaInformation {
 
 type GeometricData implements Node & Data {
   appliedMethod: AppliedMethod!
-  approval: ResponseApproval
+  approval: ResponseApproval!
   approvals: [DataApproval!]!
   componentId: Uuid!
   createdAt: DateTime!
@@ -347,21 +384,21 @@ type GetHttpsResourceTree {
   root: GetHttpsResourceTreeRoot! @cost(weight: "10")
 }
 
-type GetHttpsResourceTreeNonRootVertex {
+type GetHttpsResourceTreeNonRootVertex implements GetHttpsResourceTreeVertex {
   appliedConversionMethod: ToTreeVertexAppliedConversionMethod!
   parentId: ID!
   value: GetHttpsResource!
   vertexId: ID!
 }
 
-type GetHttpsResourceTreeRoot {
+type GetHttpsResourceTreeRoot implements GetHttpsResourceTreeVertex {
   value: GetHttpsResource!
   vertexId: ID!
 }
 
 type HygrothermalData implements Node & Data {
   appliedMethod: AppliedMethod!
-  approval: ResponseApproval
+  approval: ResponseApproval!
   approvals: [DataApproval!]!
   componentId: Uuid!
   createdAt: DateTime!
@@ -418,33 +455,29 @@ type InstitutionAccessRights {
   version: NonNegativeInt!
 }
 
-type InstitutionAccessRightsError {
-  code: InstitutionAccessRightsErrorCode!
-  message: String!
-  path: [String!]!
-}
-
 type KeyValuePairOfGuidAndNullableOfUInt32 {
   key: Uuid!
   value: NonNegativeInt
 }
 
 type Mutation {
-  addAccessRights(input: InstitutionAccessRightsInput!): AddInstitutionAccessRightsPayload! @cost(weight: "10")
-  addDataApproval(input: DataApprovalInput!): AddDataApprovalPayload! @cost(weight: "10")
+  addDataApproval(input: AddDataApprovalInput!): AddDataApprovalPayload! @cost(weight: "10")
+  addInstitutionAccessRights(input: AddInstitutionAccessRightsInput!): AddInstitutionAccessRightsPayload! @cost(weight: "10")
   createCalorimetricData(input: CreateCalorimetricDataInput!): CreateCalorimetricDataPayload! @cost(weight: "10")
   createGeometricData(input: CreateGeometricDataInput!): CreateGeometricDataPayload! @cost(weight: "10")
   createGetHttpsResource(input: CreateGetHttpsResourceInput!): CreateGetHttpsResourcePayload! @cost(weight: "10")
   createHygrothermalData(input: CreateHygrothermalDataInput!): CreateHygrothermalDataPayload! @cost(weight: "10")
   createOpticalData(input: CreateOpticalDataInput!): CreateOpticalDataPayload! @cost(weight: "10")
   createPhotovoltaicData(input: CreatePhotovoltaicDataInput!): CreatePhotovoltaicDataPayload! @cost(weight: "10")
-  createResponseApprovals: CreateResponseApprovalsPayload! @cost(weight: "10")
+  createResponseApprovals(where: CreateResponseApprovalsFilterInput @cost(weight: "10")): CreateResponseApprovalsPayload! @cost(weight: "10")
+  deleteData(input: DeleteDataInput!): DeleteDataPayload! @cost(weight: "10")
   recomputeGetHttpsResourceHashValues(where: RecomputeGetHttpsResourceHashValuesFilterInput @cost(weight: "10")): RecomputeGetHttpsResourceHashValuesPayload! @cost(weight: "10")
-  removeDataApproval(input: DataApprovalInput!): RemoveDataApprovalPayload! @cost(weight: "10")
-  updateAccessRights(input: InstitutionAccessRightsInput!): UpdateAccessRightsPayload! @cost(weight: "10")
-  updateDataAccessRights(input: DataAccessRightsInput!): UpdateDataAccessRightsPayload! @cost(weight: "10")
+  removeDataApproval(input: RemoveDataApprovalInput!): RemoveDataApprovalPayload! @cost(weight: "10")
+  updateData(input: UpdateDataInput!): UpdateDataPayload! @cost(weight: "10")
+  updateDataAccessRights(input: UpdateDataAccessRightsInput!): UpdateDataAccessRightsPayload! @cost(weight: "10")
   updateDatabase(input: UpdateDatabaseInput!): UpdateDatabasePayload! @cost(weight: "10")
-  updateResponseApprovals: UpdateResponseApprovalsPayload! @cost(weight: "10")
+  updateInstitutionAccessRights(input: UpdateInstitutionAccessRightsInput!): UpdateInstitutionAccessRightsPayload! @cost(weight: "10")
+  updateResponseApprovals(where: UpdateResponseApprovalsFilterInput @cost(weight: "10")): UpdateResponseApprovalsPayload! @cost(weight: "10")
 }
 
 type NamedMethodArgument {
@@ -470,7 +503,7 @@ type OpenEndedDateTimeRange {
 
 type OpticalData implements Node & Data {
   appliedMethod: AppliedMethod!
-  approval: ResponseApproval
+  approval: ResponseApproval!
   approvals: [DataApproval!]!
   cielabColors: [CielabColor!]!
   coatedSide: CoatedSide
@@ -534,7 +567,7 @@ type PageInfo {
 
 type PhotovoltaicData implements Node & Data {
   appliedMethod: AppliedMethod!
-  approval: ResponseApproval
+  approval: ResponseApproval!
   approvals: [DataApproval!]!
   componentId: Uuid!
   createdAt: DateTime!
@@ -621,7 +654,7 @@ type Query {
   verificationCode: String!
 }
 
-type RecomputeGetHttpsResourceHashValuesError {
+type RecomputeGetHttpsResourceHashValuesError implements UserError {
   code: RecomputeGetHttpsResourceHashValuesErrorCode!
   message: String!
   path: [String!]!
@@ -633,7 +666,7 @@ type RecomputeGetHttpsResourceHashValuesPayload {
   query: Query!
 }
 
-type RemoveDataApprovalError {
+type RemoveDataApprovalError implements UserError {
   code: RemoveDataApprovalErrorCode!
   message: String!
   path: [String!]!
@@ -645,7 +678,7 @@ type RemoveDataApprovalPayload {
   query: Query!
 }
 
-type ResponseApproval {
+type ResponseApproval implements Approval {
   approverId: Uuid!
   keyFingerprint: String!
   message: String!
@@ -674,13 +707,7 @@ type ToTreeVertexAppliedConversionMethod {
   sourceName: String!
 }
 
-type UpdateAccessRightsPayload {
-  accessRights: InstitutionAccessRights
-  errors: [InstitutionAccessRightsError!]
-  query: Query!
-}
-
-type UpdateDataAccessRightsError {
+type UpdateDataAccessRightsError implements UserError {
   code: UpdateDataAccessRightsErrorCode!
   message: String!
   path: [String!]!
@@ -689,6 +716,18 @@ type UpdateDataAccessRightsError {
 type UpdateDataAccessRightsPayload {
   dataAccessRights: DataAccessRights
   errors: [UpdateDataAccessRightsError!]
+  query: Query!
+}
+
+type UpdateDataError implements UserError {
+  code: UpdateDataErrorCode!
+  message: String!
+  path: [String!]!
+}
+
+type UpdateDataPayload {
+  data: Data
+  errors: [UpdateDataError!]
   query: Query!
 }
 
@@ -704,7 +743,19 @@ type UpdateDatabasePayload {
   query: Query!
 }
 
-type UpdateResponseApprovalsError {
+type UpdateInstitutionAccessRightsError implements UserError {
+  code: UpdateInstitutionAccessRightsErrorCode!
+  message: String!
+  path: [String!]!
+}
+
+type UpdateInstitutionAccessRightsPayload {
+  errors: [UpdateInstitutionAccessRightsError!]
+  institutionAccessRights: InstitutionAccessRights
+  query: Query!
+}
+
+type UpdateResponseApprovalsError implements UserError {
   code: UpdateResponseApprovalsErrorCode!
   message: String!
   path: [String!]!
@@ -737,6 +788,26 @@ type UserInfo {
 
 union Reference = Publication | Standard
 
+input AddDataApprovalInput {
+  approverId: Uuid!
+  dataId: Uuid!
+  dataKind: DataKind!
+  keyFingerprint: String!
+  message: String!
+  query: String!
+  signature: String!
+  statement: ReferenceInput!
+  timestamp: DateTime!
+  variables: Any!
+}
+
+input AddInstitutionAccessRightsInput {
+  allowedDatasetsPerTimeSpan: NonNegativeInt
+  allowedUserCount: NonNegativeInt
+  institutionId: Uuid!
+  periodInDays: Int!
+}
+
 input AppliedMethodInput {
   arguments: [NamedMethodArgumentInput!]!
   methodId: Uuid!
@@ -747,7 +818,7 @@ input AppliedMethodPropositionInput {
   and: [AppliedMethodPropositionInput!]
   or: [AppliedMethodPropositionInput!]
   methodId: UuidPropositionInput
-  arguments: ListNamedMethodArgumentFilterTypePropositionInput
+  arguments: ListFilterInputTypeOfNamedMethodArgumentPropositionInput
   sources: ListFilterInputTypeOfNamedMethodSourcePropositionInput
 }
 
@@ -771,7 +842,7 @@ input CalorimetricDataPropositionInput {
   createdAt: DateTimePropositionInput
   appliedMethod: AppliedMethodPropositionInput
   approvals: ListFilterInputTypeOfDataApprovalPropositionInput
-  resources: ListGetHttpsResourceFilterTypePropositionInput
+  resources: ListFilterInputTypeOfGetHttpsResourcePropositionInput
   warnings: StringsPropositionInput
   id: UuidPropositionInput
   gValues: FloatsPropositionInput
@@ -856,12 +927,6 @@ input CreateHygrothermalDataInput {
   warnings: [String!]!
 }
 
-input CreateNumerationInput {
-  mainNumber: String!
-  prefix: String
-  suffix: String
-}
-
 input CreateOpticalDataInput {
   appliedMethod: AppliedMethodInput!
   cielabColors: [CielabColorInput!]!
@@ -896,6 +961,11 @@ input CreatePhotovoltaicDataInput {
   warnings: [String!]!
 }
 
+input CreateResponseApprovalsFilterInput {
+  and: [CreateResponseApprovalsFilterInput!]
+  or: [CreateResponseApprovalsFilterInput!]
+}
+
 input CrossDatabaseDataReferenceInput {
   databaseId: Uuid!
   dataId: Uuid!
@@ -910,27 +980,6 @@ input CrossDatabaseDataReferencePropositionInput {
   dataTimestamp: DateTimePropositionInput
   dataKind: DataKindPropositionInput
   databaseId: UuidPropositionInput
-}
-
-input DataAccessRightsInput {
-  allowedApplications: [String!]
-  allowedInstitutions: [Uuid!]
-  allowedUserAndQuantity: [KeyValuePairOfGuidAndNullableOfUInt32Input!]
-  dataId: Uuid!
-  dataKind: DataKind!
-}
-
-input DataApprovalInput {
-  approverId: Uuid!
-  dataId: Uuid!
-  dataKind: DataKind!
-  keyFingerprint: String!
-  message: String!
-  query: String!
-  signature: String!
-  statement: ReferenceInput!
-  timestamp: DateTime!
-  variables: Any!
 }
 
 input DataApprovalPropositionInput {
@@ -957,7 +1006,7 @@ input DataFilterInput {
   createdAt: DateTimePropositionInput
   appliedMethod: AppliedMethodPropositionInput
   approvals: ListFilterInputTypeOfDataApprovalPropositionInput
-  resources: ListGetHttpsResourceFilterTypePropositionInput
+  resources: ListFilterInputTypeOfGetHttpsResourcePropositionInput
   warnings: StringsPropositionInput
 }
 
@@ -966,6 +1015,16 @@ input DataKindPropositionInput {
   notEqualTo: DataKind @cost(weight: "10")
   in: [DataKind!] @cost(weight: "10")
   notIn: [DataKind!] @cost(weight: "10")
+}
+
+input DataSortInput {
+  locale: SortEnumType @cost(weight: "10")
+  name: SortEnumType @cost(weight: "10")
+  description: SortEnumType @cost(weight: "10")
+  componentId: SortEnumType @cost(weight: "10")
+  creatorId: SortEnumType @cost(weight: "10")
+  createdAt: SortEnumType @cost(weight: "10")
+  appliedMethod: AppliedMethodSortInput @cost(weight: "10")
 }
 
 input DateTimePropositionInput {
@@ -981,6 +1040,11 @@ input DateTimePropositionInput {
   notLessThan: DateTime @cost(weight: "10")
   lessThanOrEqualTo: DateTime @cost(weight: "10")
   notLessThanOrEqualTo: DateTime @cost(weight: "10")
+}
+
+input DeleteDataInput {
+  dataId: Uuid!
+  dataKind: DataKind!
 }
 
 input FileMetaInformationInput {
@@ -1028,7 +1092,7 @@ input GeometricDataPropositionInput {
   createdAt: DateTimePropositionInput
   appliedMethod: AppliedMethodPropositionInput
   approvals: ListFilterInputTypeOfDataApprovalPropositionInput
-  resources: ListGetHttpsResourceFilterTypePropositionInput
+  resources: ListFilterInputTypeOfGetHttpsResourcePropositionInput
   warnings: StringsPropositionInput
   id: UuidPropositionInput
   thicknesses: FloatsPropositionInput
@@ -1054,7 +1118,12 @@ input GetHttpsResourcePropositionInput {
   dataFormatId: UuidPropositionInput
   appliedConversionMethod: ToTreeVertexAppliedConversionMethodPropositionInput
   archivedFilesMetaInformation: ListFilterInputTypeOfFileMetaInformationPropositionInput
-  parent: GetHttpsResourcePropositionInput
+  parent: GetHttpsResourceTreeNonRootVertexFilterInput
+  calorimetricData: CalorimetricDataPropositionInput
+  geometricData: GeometricDataPropositionInput
+  hygrothermalData: HygrothermalDataPropositionInput
+  opticalData: OpticalDataPropositionInput
+  photovoltaicData: PhotovoltaicDataPropositionInput
 }
 
 input GetHttpsResourceSortInput {
@@ -1063,7 +1132,7 @@ input GetHttpsResourceSortInput {
   hashValue: SortEnumType @cost(weight: "10")
   dataFormatId: SortEnumType @cost(weight: "10")
   appliedConversionMethod: ToTreeVertexAppliedConversionMethodSortInput @cost(weight: "10")
-  parent: GetHttpsResourceSortInput @cost(weight: "10")
+  parent: GetHttpsResourceTreeNonRootVertSortInput @cost(weight: "10")
 }
 
 input GetHttpsResourceTreeNonRootVertSortInput {
@@ -1072,7 +1141,7 @@ input GetHttpsResourceTreeNonRootVertSortInput {
   hashValue: SortEnumType @cost(weight: "10")
   dataFormatId: SortEnumType @cost(weight: "10")
   appliedConversionMethod: ToTreeVertexAppliedConversionMethodSortInput @cost(weight: "10")
-  parent: GetHttpsResourceSortInput @cost(weight: "10")
+  parent: GetHttpsResourceTreeNonRootVertSortInput @cost(weight: "10")
 }
 
 input GetHttpsResourceTreeNonRootVertexFilterInput {
@@ -1084,7 +1153,7 @@ input GetHttpsResourceTreeNonRootVertexFilterInput {
   dataFormatId: UuidPropositionInput
   appliedConversionMethod: ToTreeVertexAppliedConversionMethodPropositionInput
   archivedFilesMetaInformation: ListFilterInputTypeOfFileMetaInformationPropositionInput
-  parent: GetHttpsResourcePropositionInput
+  parent: GetHttpsResourceTreeNonRootVertexFilterInput
 }
 
 input HygrothermalDataPropositionInput {
@@ -1098,7 +1167,7 @@ input HygrothermalDataPropositionInput {
   createdAt: DateTimePropositionInput
   appliedMethod: AppliedMethodPropositionInput
   approvals: ListFilterInputTypeOfDataApprovalPropositionInput
-  resources: ListGetHttpsResourceFilterTypePropositionInput
+  resources: ListFilterInputTypeOfGetHttpsResourcePropositionInput
   warnings: StringsPropositionInput
   id: UuidPropositionInput
 }
@@ -1112,13 +1181,6 @@ input HygrothermalDataSortInput {
   createdAt: SortEnumType @cost(weight: "10")
   appliedMethod: AppliedMethodSortInput @cost(weight: "10")
   id: SortEnumType @cost(weight: "10")
-}
-
-input InstitutionAccessRightsInput {
-  allowedDatasetsPerTimeSpan: NonNegativeInt
-  allowedUserCount: NonNegativeInt
-  institutionId: Uuid!
-  periodInDays: Int!
 }
 
 input Int32PropositionInput {
@@ -1175,24 +1237,24 @@ input ListFilterInputTypeOfFileMetaInformationPropositionInput {
   any: Boolean @cost(weight: "10")
 }
 
+input ListFilterInputTypeOfGetHttpsResourcePropositionInput {
+  all: GetHttpsResourceTreeNonRootVertexFilterInput @cost(weight: "10")
+  none: GetHttpsResourceTreeNonRootVertexFilterInput @cost(weight: "10")
+  some: GetHttpsResourceTreeNonRootVertexFilterInput @cost(weight: "10")
+  any: Boolean @cost(weight: "10")
+}
+
+input ListFilterInputTypeOfNamedMethodArgumentPropositionInput {
+  all: NamedMethodArgumentPropositionInput @cost(weight: "10")
+  none: NamedMethodArgumentPropositionInput @cost(weight: "10")
+  some: NamedMethodArgumentPropositionInput @cost(weight: "10")
+  any: Boolean @cost(weight: "10")
+}
+
 input ListFilterInputTypeOfNamedMethodSourcePropositionInput {
   all: NamedMethodSourcePropositionInput @cost(weight: "10")
   none: NamedMethodSourcePropositionInput @cost(weight: "10")
   some: NamedMethodSourcePropositionInput @cost(weight: "10")
-  any: Boolean @cost(weight: "10")
-}
-
-input ListGetHttpsResourceFilterTypePropositionInput {
-  all: GetHttpsResourcePropositionInput @cost(weight: "10")
-  none: GetHttpsResourcePropositionInput @cost(weight: "10")
-  some: GetHttpsResourcePropositionInput @cost(weight: "10")
-  any: Boolean @cost(weight: "10")
-}
-
-input ListNamedMethodArgumentFilterTypePropositionInput {
-  all: NamedMethodArgumentPropositionInput @cost(weight: "10")
-  none: NamedMethodArgumentPropositionInput @cost(weight: "10")
-  some: NamedMethodArgumentPropositionInput @cost(weight: "10")
   any: Boolean @cost(weight: "10")
 }
 
@@ -1212,6 +1274,10 @@ input NamedMethodArgumentPropositionInput {
   and: [NamedMethodArgumentPropositionInput!]
   or: [NamedMethodArgumentPropositionInput!]
   name: StringPropositionInput
+}
+
+input NamedMethodArgumentSortInput {
+  name: SortEnumType @cost(weight: "10")
 }
 
 input NamedMethodSourceInput {
@@ -1276,12 +1342,24 @@ input NullableOfOpticalComponentTypePropositionInput {
   notIn: [OpticalComponentType] @cost(weight: "10")
 }
 
+input NumerationInput {
+  mainNumber: String!
+  prefix: String
+  suffix: String
+}
+
 input NumerationPropositionInput {
   and: [NumerationPropositionInput!]
   or: [NumerationPropositionInput!]
   prefix: StringPropositionInput
   mainNumber: StringPropositionInput
   suffix: StringPropositionInput
+}
+
+input NumerationSortInput {
+  prefix: SortEnumType @cost(weight: "10")
+  mainNumber: SortEnumType @cost(weight: "10")
+  suffix: SortEnumType @cost(weight: "10")
 }
 
 input OpticalDataPropositionInput {
@@ -1295,7 +1373,7 @@ input OpticalDataPropositionInput {
   createdAt: DateTimePropositionInput
   appliedMethod: AppliedMethodPropositionInput
   approvals: ListFilterInputTypeOfDataApprovalPropositionInput
-  resources: ListGetHttpsResourceFilterTypePropositionInput
+  resources: ListFilterInputTypeOfGetHttpsResourcePropositionInput
   warnings: StringsPropositionInput
   id: UuidPropositionInput
   type: NullableOfOpticalComponentTypePropositionInput
@@ -1332,7 +1410,7 @@ input PhotovoltaicDataPropositionInput {
   createdAt: DateTimePropositionInput
   appliedMethod: AppliedMethodPropositionInput
   approvals: ListFilterInputTypeOfDataApprovalPropositionInput
-  resources: ListGetHttpsResourceFilterTypePropositionInput
+  resources: ListFilterInputTypeOfGetHttpsResourcePropositionInput
   warnings: StringsPropositionInput
   id: UuidPropositionInput
 }
@@ -1377,6 +1455,21 @@ input PublicationPropositionInput {
   section: StringPropositionInput
 }
 
+input PublicationSortInput {
+  "The Digital Object Identifier (DOI) is a very important persistent identifier for publications. It MUST be defined here if it is available for a publication."
+  doi: SortEnumType @cost(weight: "10")
+  "The website arXiv.org is a free and open-access archive for publications. The arXiv identifier can be used to define a publication."
+  arXiv: SortEnumType @cost(weight: "10")
+  "A Uniform Resource Name (URN) can be used to define a publication. TODO: Improve the regex pattern to further restrict the string."
+  urn: SortEnumType @cost(weight: "10")
+  "If a persistent identifiert like DOI is defined above, this webAdress can define a convenient web address to access the publication. However, if no persistent identifier exist, this web address is the only identifier of this publication. In this case, it is important to choose a web address with a high probability to persist long."
+  webAddress: UriSortInput @cost(weight: "10")
+  title: SortEnumType @cost(weight: "10")
+  abstract: SortEnumType @cost(weight: "10")
+  "Referenced section"
+  section: SortEnumType @cost(weight: "10")
+}
+
 input RecomputeGetHttpsResourceHashValuesFilterInput {
   and: [RecomputeGetHttpsResourceHashValuesFilterInput!]
   or: [RecomputeGetHttpsResourceHashValuesFilterInput!]
@@ -1386,8 +1479,12 @@ input RecomputeGetHttpsResourceHashValuesFilterInput {
   dataFormatId: UuidPropositionInput
   appliedConversionMethod: ToTreeVertexAppliedConversionMethodPropositionInput
   archivedFilesMetaInformation: ListFilterInputTypeOfFileMetaInformationPropositionInput
-  parent: GetHttpsResourcePropositionInput
-  data: DataFilterInput
+  parent: GetHttpsResourceTreeNonRootVertexFilterInput
+  calorimetricData: CalorimetricDataPropositionInput
+  geometricData: GeometricDataPropositionInput
+  hygrothermalData: HygrothermalDataPropositionInput
+  opticalData: OpticalDataPropositionInput
+  photovoltaicData: PhotovoltaicDataPropositionInput
 }
 
 input ReferenceInput {
@@ -1402,6 +1499,17 @@ input ReferencePropositionInput {
   publication: PublicationPropositionInput
 }
 
+input ReferenceSortInput {
+  standard: StandardSortInput @cost(weight: "10")
+  publication: PublicationSortInput @cost(weight: "10")
+}
+
+input RemoveDataApprovalInput {
+  dataId: Uuid!
+  dataKind: DataKind!
+  signature: String!
+}
+
 input RootGetHttpsResourceInput {
   appliedConversionMethod: ToTreeVertexAppliedConversionMethodInput
   archivedFilesMetaInformation: [FileMetaInformationInput!]!
@@ -1412,7 +1520,7 @@ input RootGetHttpsResourceInput {
 input StandardInput {
   abstract: String
   locator: Url
-  numeration: CreateNumerationInput!
+  numeration: NumerationInput!
   section: String
   standardizers: [Standardizer!]!
   title: String
@@ -1432,6 +1540,18 @@ input StandardPropositionInput {
   abstract: StringPropositionInput
   "The section of the standard to which the reference refers to."
   section: StringPropositionInput
+}
+
+"`ISO 52022` is an example of the abbreviation of a standardizer and the main number of the identifier."
+input StandardSortInput {
+  "It is important to define the year in which the standard was issued because there can be relevant updates of one standard."
+  year: SortEnumType @cost(weight: "10")
+  numeration: NumerationSortInput @cost(weight: "10")
+  locator: UriSortInput @cost(weight: "10")
+  title: SortEnumType @cost(weight: "10")
+  abstract: SortEnumType @cost(weight: "10")
+  "The section of the standard to which the reference refers to."
+  section: SortEnumType @cost(weight: "10")
 }
 
 input StandardizerPropositionInput {
@@ -1473,7 +1593,7 @@ input ToTreeVertexAppliedConversionMethodPropositionInput {
   and: [ToTreeVertexAppliedConversionMethodPropositionInput!]
   or: [ToTreeVertexAppliedConversionMethodPropositionInput!]
   methodId: UuidPropositionInput
-  arguments: ListNamedMethodArgumentFilterTypePropositionInput
+  arguments: ListFilterInputTypeOfNamedMethodArgumentPropositionInput
   sourceName: StringPropositionInput
 }
 
@@ -1482,11 +1602,43 @@ input ToTreeVertexAppliedConversionMethodSortInput {
   sourceName: SortEnumType @cost(weight: "10")
 }
 
+input UpdateDataAccessRightsInput {
+  allowedApplications: [String!]
+  allowedInstitutions: [Uuid!]
+  allowedUserAndQuantity: [KeyValuePairOfGuidAndNullableOfUInt32Input!]
+  dataId: Uuid!
+  dataKind: DataKind!
+}
+
+input UpdateDataInput {
+  componentId: Uuid!
+  createdAt: DateTime!
+  creatorId: Uuid!
+  dataId: Uuid!
+  dataKind: DataKind!
+  description: String
+  locale: String!
+  name: String
+  warnings: [String!]!
+}
+
 input UpdateDatabaseInput {
   databaseId: Uuid!
   description: String!
   locator: Url!
   name: String!
+}
+
+input UpdateInstitutionAccessRightsInput {
+  allowedDatasetsPerTimeSpan: NonNegativeInt
+  allowedUserCount: NonNegativeInt
+  institutionId: Uuid!
+  periodInDays: Int!
+}
+
+input UpdateResponseApprovalsFilterInput {
+  and: [UpdateResponseApprovalsFilterInput!]
+  or: [UpdateResponseApprovalsFilterInput!]
 }
 
 input UriHostNameTypePropositionInput {
@@ -1523,6 +1675,30 @@ input UriPropositionInput {
   userInfo: StringPropositionInput
 }
 
+input UriSortInput {
+  absolutePath: SortEnumType @cost(weight: "10")
+  absoluteUri: SortEnumType @cost(weight: "10")
+  localPath: SortEnumType @cost(weight: "10")
+  authority: SortEnumType @cost(weight: "10")
+  hostNameType: SortEnumType @cost(weight: "10")
+  isDefaultPort: SortEnumType @cost(weight: "10")
+  isFile: SortEnumType @cost(weight: "10")
+  isLoopback: SortEnumType @cost(weight: "10")
+  pathAndQuery: SortEnumType @cost(weight: "10")
+  isUnc: SortEnumType @cost(weight: "10")
+  host: SortEnumType @cost(weight: "10")
+  port: SortEnumType @cost(weight: "10")
+  query: SortEnumType @cost(weight: "10")
+  fragment: SortEnumType @cost(weight: "10")
+  scheme: SortEnumType @cost(weight: "10")
+  originalString: SortEnumType @cost(weight: "10")
+  dnsSafeHost: SortEnumType @cost(weight: "10")
+  idnHost: SortEnumType @cost(weight: "10")
+  isAbsoluteUri: SortEnumType @cost(weight: "10")
+  userEscaped: SortEnumType @cost(weight: "10")
+  userInfo: SortEnumType @cost(weight: "10")
+}
+
 input UuidPropositionInput {
   equalTo: Uuid @cost(weight: "10")
   notEqualTo: Uuid @cost(weight: "10")
@@ -1554,6 +1730,13 @@ enum AddDataApprovalErrorCode {
   ILLEGAL_MESSAGE
   WRONG_RESPONSE
   WRONG_STATEMENT
+}
+
+enum AddInstitutionAccessRightsErrorCode {
+  UNKNOWN
+  UNAUTHENTICATED
+  UNAUTHORIZED
+  ALREADY_EXISTS
 }
 
 "Defines when a policy shall be executed."
@@ -1602,9 +1785,10 @@ enum CreateGeometricDataErrorCode {
 
 enum CreateGetHttpsResourceErrorCode {
   UNKNOWN
-  UNKNOWN_DATA
   UNAUTHORIZED
   UNAUTHENTICATED
+  UNKNOWN_DATA
+  CREATING_RESPONSE_APPROVAL_FAILED
 }
 
 enum CreateHygrothermalDataErrorCode {
@@ -1649,17 +1833,15 @@ enum DatabaseVerificationState {
   VERIFIED
 }
 
+enum DeleteDataErrorCode {
+  UNAUTHENTICATED
+  UNAUTHORIZED
+  UNKNOWN_DATA
+}
+
 enum Illuminant {
   A
   D65
-}
-
-enum InstitutionAccessRightsErrorCode {
-  UNKNOWN
-  UNAUTHENTICATED
-  UNAUTHORIZED
-  ALREADY_EXISTS
-  UNKNOWN_ACCESS_RIGHTS
 }
 
 enum JsonValueKind {
@@ -1708,6 +1890,7 @@ enum RecomputeGetHttpsResourceHashValuesErrorCode {
   UNAUTHORIZED
   UNAUTHENTICATED
   FAILED
+  CREATING_RESPONSE_APPROVAL_FAILED
 }
 
 enum RemoveDataApprovalErrorCode {
@@ -1758,10 +1941,24 @@ enum UpdateDataAccessRightsErrorCode {
   UNKNOWN_DATA
 }
 
+enum UpdateDataErrorCode {
+  UNAUTHENTICATED
+  UNAUTHORIZED
+  UNKNOWN_DATA
+  CREATING_RESPONSE_APPROVAL_FAILED
+}
+
 enum UpdateDatabaseErrorCode {
   UNKNOWN
   UNAUTHORIZED
   UNKNOWN_DATABASE
+}
+
+enum UpdateInstitutionAccessRightsErrorCode {
+  UNKNOWN
+  UNAUTHENTICATED
+  UNAUTHORIZED
+  UNKNOWN_ACCESS_RIGHTS
 }
 
 enum UpdateResponseApprovalsErrorCode {
@@ -1769,7 +1966,7 @@ enum UpdateResponseApprovalsErrorCode {
   UNAUTHORIZED
   UNAUTHENTICATED
   UNKNOWN_DATABASE
-  UPDATING_RESPONSE_APPROVAL_FAILED
+  CREATING_RESPONSE_APPROVAL_FAILED
 }
 
 enum UriHostNameType {

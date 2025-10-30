@@ -11,8 +11,30 @@ using GraphQL.Client.Abstractions.Utilities;
 using HotChocolate;
 using HotChocolate.Resolvers;
 using HotChocolate.Types;
+using System.Diagnostics.CodeAnalysis;
+using System.Collections.Generic;
 
 namespace Database.GraphQl.Methods;
+
+[SuppressMessage("Naming", "CA1707")]
+public enum CalculateMethodErrorCode
+{
+    UNKNOWN_METHOD,
+    UNKNOWN_DATABASE,
+    DATA_QUERY_FAILED
+}
+
+public sealed record CalculateMethodError(
+    CalculateMethodErrorCode Code,
+    string Message,
+    IReadOnlyList<string> Path
+)
+: UserErrorBase<CalculateMethodErrorCode>(Code, Message, Path);
+
+public sealed record CalculateMethodPayload(
+    JsonElement? Result,
+    IReadOnlyCollection<CalculateMethodError>? Errors
+) : Payload;
 
 [ExtendObjectType(nameof(Query))]
 public sealed class MethodQueries
@@ -50,11 +72,12 @@ public sealed class MethodQueries
         if (method is null)
         {
             return new CalculateMethodPayload(
-                new CalculateMethodError(
+                null,
+                [new CalculateMethodError(
                     CalculateMethodErrorCode.UNKNOWN_METHOD,
                     $"The method is unknown.",
                     [nameof(methodId)]
-                )
+                )]
             );
         }
         using var stream = data.OpenReadStream();
@@ -64,7 +87,7 @@ public sealed class MethodQueries
             cancellationToken
         );
         var result = method.Calculate(jsonData.RootElement);
-        return new CalculateMethodPayload(result);
+        return new CalculateMethodPayload(result, null);
     }
 
     public async Task<CalculateMethodPayload> CalculateMethodAsync(
@@ -81,11 +104,12 @@ public sealed class MethodQueries
         if (method is null)
         {
             return new CalculateMethodPayload(
-                new CalculateMethodError(
+                null,
+                [new CalculateMethodError(
                     CalculateMethodErrorCode.UNKNOWN_METHOD,
                     $"The method is unknown.",
                     [nameof(methodId)]
-                )
+                )]
             );
         }
         var database = await GraphQlRequestHelper.TransformExceptionsAsync(
@@ -101,11 +125,12 @@ public sealed class MethodQueries
         if (database is null)
         {
             return new CalculateMethodPayload(
-                new CalculateMethodError(
+                null,
+                [new CalculateMethodError(
                     CalculateMethodErrorCode.UNKNOWN_DATABASE,
                     $"The database is unknown.",
                     [nameof(dataReference), nameof(dataReference.DatabaseId).ToLowerFirst()]
-                )
+                )]
             );
         }
         var query = ConstructQuery(dataReference.DataKind);
@@ -135,11 +160,12 @@ public sealed class MethodQueries
                 }
             }
             return new CalculateMethodPayload(
-                new CalculateMethodError(
+                null,
+                [new CalculateMethodError(
                     CalculateMethodErrorCode.DATA_QUERY_FAILED,
                     $"Failed to query database {database.Locator} for the data.",
                     [nameof(dataReference)]
-                )
+                )]
             );
         }
         var locator = response.Data.Data.ResourceTree.Root.Value.Locator;
@@ -149,7 +175,7 @@ public sealed class MethodQueries
             locator, cancellationToken
         );
         var result = method.Calculate(data);
-        return new CalculateMethodPayload(result);
+        return new CalculateMethodPayload(result, null);
     }
 
     private static string ConstructQuery(DataKind dataKind)

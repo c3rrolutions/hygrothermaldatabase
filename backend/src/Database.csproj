@@ -32,6 +32,7 @@
     <PackageReference Include="HotChocolate.Data.EntityFramework" Version="15.1.11" />
     <PackageReference Include="HotChocolate.PersistedOperations.InMemory" Version="15.1.11" />
     <PackageReference Include="HotChocolate.Stitching" Version="13.9.15" />
+    <PackageReference Include="HotChocolate.Types.Analyzers" Version="15.1.11" />
     <PackageReference Include="HotChocolate.Types.Scalars" Version="15.1.11" />
     <PackageReference Include="JsonPath.Net" Version="2.1.1" />
     <PackageReference Include="MailKit" Version="4.14.1" />

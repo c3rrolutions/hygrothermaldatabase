@@ -1,0 +1,125 @@
+using System;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using HotChocolate.Types;
+using Database.Authorization;
+using Database.Data;
+using Database.Services;
+using Database.Utilities;
+using HotChocolate;
+using System.Diagnostics.CodeAnalysis;
+using System.Collections.Generic;
+using Database.Extensions;
+
+namespace Database.GraphQl.PhotovoltaicDataX;
+
+public sealed record CreatePhotovoltaicDataInput(
+    // TODO Why does specifying the type with an attribute not work here?
+    [GraphQLType<NonNullType<LocaleType>>] string Locale,
+    Guid ComponentId,
+    string? Name,
+    string? Description,
+    string[] Warnings,
+    DateTime CreatedAt,
+    Guid CreatorId,
+    AppliedMethodInput AppliedMethod,
+    RootGetHttpsResourceInput RootResource
+)
+{
+    public PhotovoltaicData ToDomainModel(Guid userId)
+    {
+        var photovoltaicData = new PhotovoltaicData(
+            userId,
+            Locale,
+            ComponentId,
+            Name,
+            Description,
+            Warnings,
+            CreatorId,
+            CreatedAt,
+            AppliedMethod.ToDomainModel()
+        );
+        photovoltaicData.Resources.Add(RootResource.ToDomainModel());
+        return photovoltaicData;
+    }
+};
+
+[SuppressMessage("Naming", "CA1707")]
+public enum CreatePhotovoltaicDataErrorCode
+{
+    UNKNOWN,
+    UNAUTHORIZED,
+    UNAUTHENTICATED,
+    CREATING_RESPONSE_APPROVAL_FAILED
+}
+
+public sealed record CreatePhotovoltaicDataError(
+    CreatePhotovoltaicDataErrorCode Code,
+    string Message,
+    IReadOnlyList<string> Path
+)
+: UserErrorBase<CreatePhotovoltaicDataErrorCode>(Code, Message, Path);
+
+public sealed record CreatePhotovoltaicDataPayload(
+    PhotovoltaicData? PhotovoltaicData,
+    IReadOnlyCollection<CreatePhotovoltaicDataError>? Errors
+) : Payload;
+
+[ExtendObjectType(nameof(Mutation))]
+public sealed class CreatePhotovoltaicDataMutation
+: DataMutationBase<PhotovoltaicData, CreatePhotovoltaicDataPayload, CreatePhotovoltaicDataError, CreatePhotovoltaicDataErrorCode>
+{
+    // [UseUserManager] [Authorize(Policy = Configuration.AuthConfiguration.WritePolicy)]
+    protected override CreatePhotovoltaicDataPayload NewPayload(
+        PhotovoltaicData? data,
+        IReadOnlyCollection<CreatePhotovoltaicDataError>? errors
+    ) => new(data, errors);
+
+    protected override CreatePhotovoltaicDataError NewError(
+        CreatePhotovoltaicDataErrorCode code,
+        string message,
+        IReadOnlyList<string> path
+    ) => new(code, message, path);
+
+    public async Task<CreatePhotovoltaicDataPayload> CreatePhotovoltaicDataAsync(
+        CreatePhotovoltaicDataInput input,
+        ApplicationDbContext context,
+        CommonAuthorization authorization,
+        ResponseApprovalService responseApprovalService,
+        CancellationToken cancellationToken
+    )
+    {
+        if ((await AuthorizeAsync(
+                CreatePhotovoltaicDataErrorCode.UNAUTHENTICATED,
+                CreatePhotovoltaicDataErrorCode.UNAUTHORIZED,
+                authorization,
+                cancellationToken
+            )
+            ).Failed(out var currentUser, out var authorizeErrorPayload)
+        )
+        {
+            return authorizeErrorPayload;
+        }
+
+        var photovoltaicData = input.ToDomainModel(currentUser.Uuid);
+        await context.SaveChangesAsync(cancellationToken);
+
+        if ((await CreateResponseApprovalAsync(
+                photovoltaicData,
+                CreatePhotovoltaicDataErrorCode.CREATING_RESPONSE_APPROVAL_FAILED,
+                responseApprovalService,
+                context,
+                cancellationToken
+            )
+            ).Failed(out var createResponseApprovalErrorPayload)
+        )
+        {
+            context.Remove(photovoltaicData);
+            await context.SaveChangesAsync(cancellationToken);
+            return createResponseApprovalErrorPayload;
+        }
+
+        return NewPayload(photovoltaicData, null);
+    }
+}

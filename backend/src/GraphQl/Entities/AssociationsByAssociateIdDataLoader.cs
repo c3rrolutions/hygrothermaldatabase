@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Database.Data;
 using GreenDonut;
 using Microsoft.EntityFrameworkCore;
-using Guid = System.Guid;
 
 namespace Database.GraphQl.Entities;
 

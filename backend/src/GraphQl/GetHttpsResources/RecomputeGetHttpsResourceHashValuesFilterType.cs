@@ -12,6 +12,5 @@ public sealed class RecomputeGetHttpsResourceHashValuesFilterType
     {
         base.Configure(descriptor);
         descriptor.Name(nameof(RecomputeGetHttpsResourceHashValuesFilterType)[..^10] + GraphQlConstants.FilterInputSuffix);
-        descriptor.Field(x => x.Data);
     }
 }

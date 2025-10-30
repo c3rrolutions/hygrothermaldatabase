@@ -90,6 +90,7 @@ public sealed class FileUploadController(
     public async Task<IActionResult> UploadFile(
         [FromQuery] Guid getHttpsResourceUuid,
         [FromServices] ApplicationDbContext context,
+        [FromServices] CommonAuthorization authorization,
         [FromServices] UserService userService,
         CancellationToken cancellationToken
     )
@@ -101,7 +102,7 @@ public sealed class FileUploadController(
                 $"User is not authenticated.");
             return BadRequest(ModelState);
         }
-        if (!CommonAuthorization.IsCurrentUserAtLeastAssistantManagerOfDatabaseOperator(currentUser))
+        if (!authorization.IsCurrentUserAtLeastAssistantManagerOfDatabaseOperator(currentUser))
         {
             return Unauthorized();
         }

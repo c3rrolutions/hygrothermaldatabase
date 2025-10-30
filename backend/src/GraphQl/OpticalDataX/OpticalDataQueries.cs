@@ -20,8 +20,8 @@ public sealed class OpticalDataQueries
     [UsePaging]
     // [UseProjection] // We disabled projections because when requesting `id` all results had the
     // same `id` and when also requesting `uuid`, the latter was always the empty UUID `000...`.
-    [UseFiltering]
-    [UseSorting]
+    [UseFiltering<OpticalDataFilterType>]
+    [UseSorting<OpticalDataSortType>]
     public async Task<IQueryable<OpticalData>> GetAllOpticalData(
         [GraphQLType<LocaleType>] string? locale,
         ApplicationDbContext context,
@@ -43,7 +43,7 @@ public sealed class OpticalDataQueries
         return await accessRightsService.ApplyAccessRightsOnData(filteredData, cancellationToken);
     }
 
-    [UseFiltering(typeof(OpticalData))]
+    [UseFiltering<OpticalDataFilterType>]
     public Task<bool> GetHasOpticalData(
         [GraphQLType<LocaleType>] string? locale,
         ApplicationDbContext context,

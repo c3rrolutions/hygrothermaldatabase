@@ -20,8 +20,8 @@ public sealed class CalorimetricDataQueries
     [UsePaging]
     // [UseProjection] // We disabled projections because when requesting `id` all results had the
     // same `id` and when also requesting `uuid`, the latter was always the empty UUID `000...`.
-    [UseFiltering]
-    [UseSorting]
+    [UseFiltering<CalorimetricDataFilterType>]
+    [UseSorting<CalorimetricDataSortType>]
     public async Task<IQueryable<CalorimetricData>> GetAllCalorimetricData(
         [GraphQLType<LocaleType>] string? locale,
         ApplicationDbContext context,
@@ -43,7 +43,7 @@ public sealed class CalorimetricDataQueries
         return await accessRightsService.ApplyAccessRightsOnData(filteredData, cancellationToken);
     }
 
-    [UseFiltering(typeof(CalorimetricData))]
+    [UseFiltering<CalorimetricDataFilterType>]
     public Task<bool> GetHasCalorimetricData(
         [GraphQLType<LocaleType>] string? locale,
         ApplicationDbContext context,

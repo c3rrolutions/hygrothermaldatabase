@@ -1,19 +1,29 @@
 using System;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Database.Services;
 using static Database.ApiRequests.QueryCurrentUser;
 
 namespace Database.Authorization;
 
-public static class CommonAuthorization
+public sealed class CommonAuthorization(
+    UserService userService
+)
 {
-    public static bool IsCurrentUserAtLeastAssistantManagerOfDatabaseOperator(
+    public Task<CurrentUser?> GetCurrentUserAsync(CancellationToken cancellationToken)
+    {
+        return userService.GetCurrentUser(cancellationToken);
+    }
+
+    public bool IsCurrentUserAtLeastAssistantManagerOfDatabaseOperator(
         CurrentUser currentUser
-        )
+    )
     {
         return currentUser.DatabaseOperatingRepresentedInstitutions.TotalCount >= 1;
     }
 
-    public static bool IsCurrentUserAtLeastAssistantManagerOfVerifiedInstitution(
+    public bool IsCurrentUserAtLeastAssistantManagerOfVerifiedInstitution(
         CurrentUser currentUser,
         Guid institutionId
     )

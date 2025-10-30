@@ -32,5 +32,8 @@ public sealed class DataType(AppSettings appSettings)
         descriptor
             .Field(x => x.Locale)
             .Type<NonNullType<LocaleType>>();
+        descriptor
+            .Field(x => x.Approval)
+            .Type<NonNullType<ObjectType<ResponseApproval>>>();
     }
 }

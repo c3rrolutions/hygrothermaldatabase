@@ -1,4 +1,5 @@
 using System;
+using Database.Data;
 using Database.Enumerations;
 
 namespace Database.GraphQl;
@@ -8,4 +9,15 @@ public sealed record CrossDatabaseDataReferenceInput(
     DateTime DataTimestamp,
     DataKind DataKind,
     Guid DatabaseId
-);
+)
+{
+    public CrossDatabaseDataReference ToDomainModel()
+    {
+        return new CrossDatabaseDataReference(
+            DataId,
+            DataTimestamp,
+            DataKind,
+            DatabaseId
+        );
+    }
+};

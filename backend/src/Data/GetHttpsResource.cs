@@ -166,13 +166,18 @@ public sealed class GetHttpsResource(
     [InverseProperty(nameof(Parent))]
     public ICollection<GetHttpsResource> Children { get; } = [];
 
-    public static string ConstructVertexId(Guid id)
+    public bool DoesFileExist()
     {
-        return id.ToString("D").Base64Encode();
+        return File.Exists(FilePath);
     }
 
     public async Task RecomputeHashValue(CancellationToken cancellationToken)
     {
         HashValue = await Sha256FileHasher.ComputeForFile(FilePath, cancellationToken);
+    }
+
+    public static string ConstructVertexId(Guid id)
+    {
+        return id.ToString("D").Base64Encode();
     }
 }

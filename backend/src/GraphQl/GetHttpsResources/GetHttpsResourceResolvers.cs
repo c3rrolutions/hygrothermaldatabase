@@ -30,6 +30,13 @@ public sealed class GetHttpsResourceResolvers
                 cancellationToken
             );
         }
+        if (getHttpsResource.GeometricDataId is not null)
+        {
+            return await geometricDataById.LoadAsync(
+                getHttpsResource.GeometricDataId ?? Guid.Empty,
+                cancellationToken
+            );
+        }
         if (getHttpsResource.HygrothermalDataId is not null)
         {
             return await hygrothermalDataById.LoadAsync(
@@ -48,13 +55,6 @@ public sealed class GetHttpsResourceResolvers
         {
             return await photovoltaicDataById.LoadAsync(
                 getHttpsResource.PhotovoltaicDataId ?? Guid.Empty,
-                cancellationToken
-            );
-        }
-        if (getHttpsResource.GeometricDataId is not null)
-        {
-            return await geometricDataById.LoadAsync(
-                getHttpsResource.GeometricDataId ?? Guid.Empty,
                 cancellationToken
             );
         }
@@ -78,7 +78,6 @@ public sealed class GetHttpsResourceResolvers
         CancellationToken cancellationToken
     )
     {
-        // TODO Why is `?? Guid.Empty` below necessary although `getHttpsResource.ParentId` is not null?
         return getHttpsResource.ParentId is null
             ? null
             : await byId.LoadAsync(getHttpsResource.ParentId ?? Guid.Empty, cancellationToken)!;

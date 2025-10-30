@@ -356,7 +356,7 @@ type GetHttpsResource implements Node {
   data: Data @cost(weight: "10")
   dataFormatId: Uuid!
   description: String
-  filePath: String!
+  doesFileExist: Boolean!
   hashValue: String!
   id: ID!
   locator: Url!

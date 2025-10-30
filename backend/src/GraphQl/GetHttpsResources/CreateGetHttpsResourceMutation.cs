@@ -6,19 +6,15 @@ using Database.Data;
 using Database.Authorization;
 using Database.Enumerations;
 using HotChocolate.Types;
-using Microsoft.EntityFrameworkCore;
 using Database.Services;
-using GraphQL.Client.Abstractions.Utilities;
-using System.Collections.Concurrent;
 using Microsoft.Extensions.Logging;
 using Database.Utilities;
-using HotChocolate.Data;
 using GreenDonut.Data;
-using Microsoft.EntityFrameworkCore.Query;
-using Database.GraphQl.Extensions;
 using System.Diagnostics.CodeAnalysis;
 using System.Collections.Generic;
 using Database.Extensions;
+using GraphQL.Client.Abstractions.Utilities;
+using Microsoft.EntityFrameworkCore;
 
 namespace Database.GraphQl.GetHttpsResources;
 
@@ -30,7 +26,25 @@ public sealed record CreateGetHttpsResourceInput(
     Guid? ParentId,
     IReadOnlyList<FileMetaInformationInput> ArchivedFilesMetaInformation,
     ToTreeVertexAppliedConversionMethodInput? AppliedConversionMethod
-) : IIdentifyDataInput;
+) : IIdentifyDataInput
+{
+    public GetHttpsResource ToDomainModel()
+    {
+        return new GetHttpsResource(
+            Description,
+            Sha256FileHasher.ComputeForString(""), // The correct hash value is computed when the file for this resource is being uploaded.
+            DataFormatId,
+            DataKind == DataKind.CALORIMETRIC_DATA ? DataId : null,
+            DataKind == DataKind.GEOMETRIC_DATA ? DataId : null,
+            DataKind == DataKind.HYGROTHERMAL_DATA ? DataId : null,
+            DataKind == DataKind.OPTICAL_DATA ? DataId : null,
+            DataKind == DataKind.PHOTOVOLTAIC_DATA ? DataId : null,
+            ParentId,
+            ArchivedFilesMetaInformation.Select(i => i.ToDomainModel()).ToList(),
+            AppliedConversionMethod?.ToDomainModel()
+        );
+    }
+}
 
 [SuppressMessage("Naming", "CA1707")]
 public enum CreateGetHttpsResourceErrorCode
@@ -39,7 +53,10 @@ public enum CreateGetHttpsResourceErrorCode
     UNAUTHORIZED,
     UNAUTHENTICATED,
     UNKNOWN_DATA,
-    CREATING_RESPONSE_APPROVAL_FAILED
+    APPLIED_CONVERSION_METHOD_WITHOUT_PARENT,
+    CREATING_RESPONSE_APPROVAL_FAILED,
+    UNKNOWN_PARENT,
+    ILLEGAL_PARENT
 }
 
 public sealed record CreateGetHttpsResourceError(
@@ -111,19 +128,48 @@ public sealed class CreateGetHttpsResourceMutation
             return fetchDataErrorPayload;
         }
 
-        var getHttpsResource = new GetHttpsResource(
-            input.Description,
-            Sha256FileHasher.ComputeForString(""), // The correct hash value is computed when the file for this resource is being uploaded.
-            input.DataFormatId,
-            input.DataKind == DataKind.CALORIMETRIC_DATA ? input.DataId : null,
-            input.DataKind == DataKind.GEOMETRIC_DATA ? input.DataId : null,
-            input.DataKind == DataKind.HYGROTHERMAL_DATA ? input.DataId : null,
-            input.DataKind == DataKind.OPTICAL_DATA ? input.DataId : null,
-            input.DataKind == DataKind.PHOTOVOLTAIC_DATA ? input.DataId : null,
-            input.ParentId,
-            input.ArchivedFilesMetaInformation.Select(i => i.ToDomainModel()).ToList(),
-            input?.AppliedConversionMethod.ToDomainModel()
-        );
+        var errors = new List<CreateGetHttpsResourceError>();
+        var parent = await context.GetHttpsResources
+            .SingleOrDefaultAsync(_ =>
+                _.Id == input.ParentId,
+                cancellationToken
+            );
+        if (parent is null)
+        {
+            errors.Add(
+                NewError(
+                    CreateGetHttpsResourceErrorCode.UNKNOWN_PARENT,
+                    "There is not GET HTTPS resource with the parent ID.",
+                    [nameof(input), nameof(input.ParentId).ToLowerFirst()]
+                )
+            );
+        }
+        if (parent is not null && parent.DataId != input.DataId)
+        {
+            errors.Add(
+                NewError(
+                    CreateGetHttpsResourceErrorCode.ILLEGAL_PARENT,
+                    $"The parent belongs to the data set with ID {parent.DataId} which is not the data set of the resource to be created, namely the one with the ID {input.DataId}.",
+                    [nameof(input), nameof(input.ParentId).ToLowerFirst()]
+                )
+            );
+        }
+        if (input.AppliedConversionMethod is not null && input.ParentId is null)
+        {
+            errors.Add(
+                NewError(
+                    CreateGetHttpsResourceErrorCode.APPLIED_CONVERSION_METHOD_WITHOUT_PARENT,
+                    "The resource does not have a parent yet an applied conversion method was given. This method is supposed to have been applied to this resource's parent.",
+                    [nameof(input), nameof(input.AppliedConversionMethod).ToLowerFirst()]
+                )
+            );
+        }
+        if (errors.Count >= 1)
+        {
+            return NewPayload(null, errors);
+        }
+
+        var getHttpsResource = input.ToDomainModel();
         context.GetHttpsResources.Add(getHttpsResource);
         await context.SaveChangesAsync(cancellationToken);
 

@@ -1,8 +1,12 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Database.Enumerations;
+using Database.GraphQl.Extensions;
+using GreenDonut.Data;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -26,6 +30,7 @@ public sealed class ApplicationDbContext
     internal const string IlluminantTypeName = "illuminant";
     internal const string OpticalComponentSubtypeTypeName = "optical_component_subtype";
     internal const string OpticalComponentTypeTypeName = "optical_component_type";
+    internal const string PublishingStateTypeName = "publishing_state";
     internal const string StandardizerTypeName = "standardizer";
 
     public ApplicationDbContext(
@@ -68,6 +73,43 @@ public sealed class ApplicationDbContext
     public Task<IData?> GetDataAsync(Guid id, DataKind dataKind, CancellationToken cancellationToken)
     {
         return Data(dataKind).SingleOrDefaultAsync(x => x.Id == id, cancellationToken);
+    }
+
+    public IAsyncEnumerable<IData> GetAllDataAsync(
+        Expression<Func<IData, bool>> where,
+        QueryContext<IData> queryContext
+    )
+    {
+        return (
+            CalorimetricData.AsQueryable<IData>()
+            .With(queryContext, sort => sort.StabilizeOrder())
+            .Where(where)
+            .ToAsyncEnumerable()
+        )
+        .Union(
+            GeometricData.AsQueryable<IData>()
+            .With(queryContext, sort => sort.StabilizeOrder())
+            .Where(where)
+            .ToAsyncEnumerable()
+        )
+        .Union(
+            HygrothermalData.AsQueryable<IData>()
+            .With(queryContext, sort => sort.StabilizeOrder())
+            .Where(where)
+            .ToAsyncEnumerable()
+        )
+        .Union(
+            OpticalData.AsQueryable<IData>()
+            .With(queryContext, sort => sort.StabilizeOrder())
+            .Where(where)
+            .ToAsyncEnumerable()
+        )
+        .Union(
+            PhotovoltaicData.AsQueryable<IData>()
+            .With(queryContext, sort => sort.StabilizeOrder())
+            .Where(where)
+            .ToAsyncEnumerable()
+        );
     }
 
     private static void CreateEnumerations(ModelBuilder builder, string schemaName)

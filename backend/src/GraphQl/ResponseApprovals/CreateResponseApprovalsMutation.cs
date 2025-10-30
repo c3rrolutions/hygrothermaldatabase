@@ -9,12 +9,9 @@ using GreenDonut.Data;
 using Database.Authorization;
 using Database.Data;
 using Database.Services;
-using HotChocolate;
 using HotChocolate.Data;
 using HotChocolate.Types;
-using HotChocolate.Data.Filters;
 using Microsoft.Extensions.Logging;
-using Database.GraphQl.Extensions;
 using Database.Extensions;
 
 namespace Database.GraphQl.ResponseApprovals;
@@ -90,36 +87,7 @@ public sealed class CreateResponseApprovalsMutation
         var dataSets = new ConcurrentBag<IData>();
         var errors = new ConcurrentBag<CreateResponseApprovalsError>();
         await Parallel.ForEachAsync(
-            (
-                context.CalorimetricData.AsQueryable<IData>()
-                .With(queryContext, sort => sort.StabilizeOrder())
-                .Where(d => d.Approval == null)
-                .ToAsyncEnumerable()
-            )
-            .Union(
-                context.GeometricData.AsQueryable<IData>()
-                .With(queryContext, sort => sort.StabilizeOrder())
-                .Where(d => d.Approval == null)
-                .ToAsyncEnumerable()
-            )
-            .Union(
-                context.HygrothermalData.AsQueryable<IData>()
-                .With(queryContext, sort => sort.StabilizeOrder())
-                .Where(d => d.Approval == null)
-                .ToAsyncEnumerable()
-            )
-            .Union(
-                context.OpticalData.AsQueryable<IData>()
-                .With(queryContext, sort => sort.StabilizeOrder())
-                .Where(d => d.Approval == null)
-                .ToAsyncEnumerable()
-            )
-            .Union(
-                context.PhotovoltaicData.AsQueryable<IData>()
-                .With(queryContext, sort => sort.StabilizeOrder())
-                .Where(d => d.Approval == null)
-                .ToAsyncEnumerable()
-            ),
+            context.GetAllDataAsync(_ => _.Approval == null, queryContext),
             cancellationToken,
             async (data, cancellationToken) =>
             {

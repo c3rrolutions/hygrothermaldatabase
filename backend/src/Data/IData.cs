@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
+using Database.Enumerations;
 using Database.GraphQl;
 
 namespace Database.Data;
@@ -26,6 +27,7 @@ public interface IData : IEntity
     ResponseApproval? Approval { get; set; }
     string Locale { get; }
     DataAccessRights DataAccessRights { get; }
+    PublishingState PublishingState { get; }
 
     /// <summary>
     /// Check if dataset is restricted for passed application id.
@@ -58,4 +60,8 @@ public interface IData : IEntity
         DateTime createdAt,
         Guid creatorId
     );
+
+    void Publish();
+
+    void Retract();
 }

@@ -28,6 +28,7 @@ interface Data {
   isRestrictedByUser(alreadyAccesedCount: NonNegativeInt! uuid: Uuid!): Boolean!
   locale: Locale!
   name: String
+  publishingState: PublishingState!
   resources: [GetHttpsResource!]!
   resourceTree: GetHttpsResourceTree!
   timestamp: DateTime!
@@ -113,6 +114,7 @@ type CalorimetricData implements Node & Data {
   isRestrictedByUser(alreadyAccesedCount: NonNegativeInt! uuid: Uuid!): Boolean!
   locale: Locale!
   name: String
+  publishingState: PublishingState!
   resources(order: [GetHttpsResourceSortInput!] @cost(weight: "10") where: GetHttpsResourcePropositionInput @cost(weight: "10")): [GetHttpsResource!]! @cost(weight: "10")
   resourceTree: GetHttpsResourceTree!
   timestamp: DateTime!
@@ -319,6 +321,7 @@ type GeometricData implements Node & Data {
   isRestrictedByUser(alreadyAccesedCount: NonNegativeInt! uuid: Uuid!): Boolean!
   locale: Locale!
   name: String
+  publishingState: PublishingState!
   resources(order: [GetHttpsResourceSortInput!] @cost(weight: "10") where: GetHttpsResourcePropositionInput @cost(weight: "10")): [GetHttpsResource!]! @cost(weight: "10")
   resourceTree: GetHttpsResourceTree!
   thicknesses: [Float!]!
@@ -412,6 +415,7 @@ type HygrothermalData implements Node & Data {
   isRestrictedByUser(alreadyAccesedCount: NonNegativeInt! uuid: Uuid!): Boolean!
   locale: Locale!
   name: String
+  publishingState: PublishingState!
   resources(order: [GetHttpsResourceSortInput!] @cost(weight: "10") where: GetHttpsResourcePropositionInput @cost(weight: "10")): [GetHttpsResource!]! @cost(weight: "10")
   resourceTree: GetHttpsResourceTree!
   timestamp: DateTime!
@@ -471,8 +475,10 @@ type Mutation {
   createPhotovoltaicData(input: CreatePhotovoltaicDataInput!): CreatePhotovoltaicDataPayload! @cost(weight: "10")
   createResponseApprovals(where: CreateResponseApprovalsFilterInput @cost(weight: "10")): CreateResponseApprovalsPayload! @cost(weight: "10")
   deleteData(input: DeleteDataInput!): DeleteDataPayload! @cost(weight: "10")
+  publishData(input: PublishDataInput!): PublishDataPayload! @cost(weight: "10")
   recomputeGetHttpsResourceHashValues(where: RecomputeGetHttpsResourceHashValuesFilterInput @cost(weight: "10")): RecomputeGetHttpsResourceHashValuesPayload! @cost(weight: "10")
   removeDataApproval(input: RemoveDataApprovalInput!): RemoveDataApprovalPayload! @cost(weight: "10")
+  retractData(input: RetractDataInput!): RetractDataPayload! @cost(weight: "10")
   updateData(input: UpdateDataInput!): UpdateDataPayload! @cost(weight: "10")
   updateDataAccessRights(input: UpdateDataAccessRightsInput!): UpdateDataAccessRightsPayload! @cost(weight: "10")
   updateDatabase(input: UpdateDatabaseInput!): UpdateDatabasePayload! @cost(weight: "10")
@@ -525,6 +531,7 @@ type OpticalData implements Node & Data {
   nearnormalHemisphericalSolarTransmittances: [Float!]!
   nearnormalHemisphericalVisibleReflectances: [Float!]!
   nearnormalHemisphericalVisibleTransmittances: [Float!]!
+  publishingState: PublishingState!
   resources(order: [GetHttpsResourceSortInput!] @cost(weight: "10") where: GetHttpsResourcePropositionInput @cost(weight: "10")): [GetHttpsResource!]! @cost(weight: "10")
   resourceTree: GetHttpsResourceTree!
   subtype: OpticalComponentSubtype
@@ -581,6 +588,7 @@ type PhotovoltaicData implements Node & Data {
   isRestrictedByUser(alreadyAccesedCount: NonNegativeInt! uuid: Uuid!): Boolean!
   locale: Locale!
   name: String
+  publishingState: PublishingState!
   resources(order: [GetHttpsResourceSortInput!] @cost(weight: "10") where: GetHttpsResourcePropositionInput @cost(weight: "10")): [GetHttpsResource!]! @cost(weight: "10")
   resourceTree: GetHttpsResourceTree!
   timestamp: DateTime!
@@ -623,11 +631,28 @@ type Publication {
   webAddress: Url
 }
 
+type PublishDataError implements UserError {
+  code: PublishDataErrorCode!
+  message: String!
+  path: [String!]!
+}
+
+type PublishDataPayload {
+  data: Data
+  errors: [PublishDataError!]
+  query: Query!
+}
+
 type Query {
   allCalorimetricData("Returns the elements in the list that come after the specified cursor." after: String "Returns the elements in the list that come before the specified cursor." before: String "Returns the first _n_ elements from the list." first: Int "Returns the last _n_ elements from the list." last: Int locale: Locale order: [CalorimetricDataSortInput!] @cost(weight: "10") where: CalorimetricDataPropositionInput @cost(weight: "10")): CalorimetricDataConnection @listSize(assumedSize: 100, slicingArguments: [ "first", "last" ], slicingArgumentDefaultValue: 100, sizedFields: [ "edges", "nodes" ], requireOneSlicingArgument: false) @cost(weight: "10")
   allGeometricData("Returns the elements in the list that come after the specified cursor." after: String "Returns the elements in the list that come before the specified cursor." before: String "Returns the first _n_ elements from the list." first: Int "Returns the last _n_ elements from the list." last: Int locale: Locale order: [GeometricDataSortInput!] @cost(weight: "10") where: GeometricDataPropositionInput @cost(weight: "10")): GeometricDataConnection @listSize(assumedSize: 100, slicingArguments: [ "first", "last" ], slicingArgumentDefaultValue: 100, sizedFields: [ "edges", "nodes" ], requireOneSlicingArgument: false) @cost(weight: "10")
   allHygrothermalData("Returns the elements in the list that come after the specified cursor." after: String "Returns the elements in the list that come before the specified cursor." before: String "Returns the first _n_ elements from the list." first: Int "Returns the last _n_ elements from the list." last: Int locale: Locale order: [HygrothermalDataSortInput!] @cost(weight: "10") where: HygrothermalDataPropositionInput @cost(weight: "10")): HygrothermalDataConnection @listSize(assumedSize: 100, slicingArguments: [ "first", "last" ], slicingArgumentDefaultValue: 100, sizedFields: [ "edges", "nodes" ], requireOneSlicingArgument: false) @cost(weight: "10")
   allOpticalData("Returns the elements in the list that come after the specified cursor." after: String "Returns the elements in the list that come before the specified cursor." before: String "Returns the first _n_ elements from the list." first: Int "Returns the last _n_ elements from the list." last: Int locale: Locale order: [OpticalDataSortInput!] @cost(weight: "10") where: OpticalDataPropositionInput @cost(weight: "10")): OpticalDataConnection @listSize(assumedSize: 100, slicingArguments: [ "first", "last" ], slicingArgumentDefaultValue: 100, sizedFields: [ "edges", "nodes" ], requireOneSlicingArgument: false) @cost(weight: "10")
+  allPendingCalorimetricData("Returns the elements in the list that come after the specified cursor." after: String "Returns the elements in the list that come before the specified cursor." before: String "Returns the first _n_ elements from the list." first: Int "Returns the last _n_ elements from the list." last: Int locale: Locale order: [CalorimetricDataSortInput!] @cost(weight: "10") where: CalorimetricDataPropositionInput @cost(weight: "10")): CalorimetricDataConnection @listSize(assumedSize: 100, slicingArguments: [ "first", "last" ], slicingArgumentDefaultValue: 100, sizedFields: [ "edges", "nodes" ], requireOneSlicingArgument: false) @cost(weight: "10")
+  allPendingGeometricData("Returns the elements in the list that come after the specified cursor." after: String "Returns the elements in the list that come before the specified cursor." before: String "Returns the first _n_ elements from the list." first: Int "Returns the last _n_ elements from the list." last: Int locale: Locale order: [GeometricDataSortInput!] @cost(weight: "10") where: GeometricDataPropositionInput @cost(weight: "10")): GeometricDataConnection @listSize(assumedSize: 100, slicingArguments: [ "first", "last" ], slicingArgumentDefaultValue: 100, sizedFields: [ "edges", "nodes" ], requireOneSlicingArgument: false) @cost(weight: "10")
+  allPendingHygrothermalData("Returns the elements in the list that come after the specified cursor." after: String "Returns the elements in the list that come before the specified cursor." before: String "Returns the first _n_ elements from the list." first: Int "Returns the last _n_ elements from the list." last: Int locale: Locale order: [HygrothermalDataSortInput!] @cost(weight: "10") where: HygrothermalDataPropositionInput @cost(weight: "10")): HygrothermalDataConnection @listSize(assumedSize: 100, slicingArguments: [ "first", "last" ], slicingArgumentDefaultValue: 100, sizedFields: [ "edges", "nodes" ], requireOneSlicingArgument: false) @cost(weight: "10")
+  allPendingOpticalData("Returns the elements in the list that come after the specified cursor." after: String "Returns the elements in the list that come before the specified cursor." before: String "Returns the first _n_ elements from the list." first: Int "Returns the last _n_ elements from the list." last: Int locale: Locale order: [OpticalDataSortInput!] @cost(weight: "10") where: OpticalDataPropositionInput @cost(weight: "10")): OpticalDataConnection @listSize(assumedSize: 100, slicingArguments: [ "first", "last" ], slicingArgumentDefaultValue: 100, sizedFields: [ "edges", "nodes" ], requireOneSlicingArgument: false) @cost(weight: "10")
+  allPendingPhotovoltaicData("Returns the elements in the list that come after the specified cursor." after: String "Returns the elements in the list that come before the specified cursor." before: String "Returns the first _n_ elements from the list." first: Int "Returns the last _n_ elements from the list." last: Int locale: Locale order: [PhotovoltaicDataSortInput!] @cost(weight: "10") where: PhotovoltaicDataPropositionInput @cost(weight: "10")): PhotovoltaicDataConnection @listSize(assumedSize: 100, slicingArguments: [ "first", "last" ], slicingArgumentDefaultValue: 100, sizedFields: [ "edges", "nodes" ], requireOneSlicingArgument: false) @cost(weight: "10")
   allPhotovoltaicData("Returns the elements in the list that come after the specified cursor." after: String "Returns the elements in the list that come before the specified cursor." before: String "Returns the first _n_ elements from the list." first: Int "Returns the last _n_ elements from the list." last: Int locale: Locale order: [PhotovoltaicDataSortInput!] @cost(weight: "10") where: PhotovoltaicDataPropositionInput @cost(weight: "10")): PhotovoltaicDataConnection @listSize(assumedSize: 100, slicingArguments: [ "first", "last" ], slicingArgumentDefaultValue: 100, sizedFields: [ "edges", "nodes" ], requireOneSlicingArgument: false) @cost(weight: "10")
   calculateMethod(dataReference: CrossDatabaseDataReferenceInput! methodId: Uuid!): CalculateMethodPayload! @cost(weight: "10")
   calculateMethodWithDataUpload(data: Upload! methodId: Uuid!): CalculateMethodPayload! @cost(weight: "10")
@@ -686,6 +711,18 @@ type ResponseApproval implements Approval {
   signature: String!
   timestamp: DateTime!
   variables: Any!
+}
+
+type RetractDataError implements UserError {
+  code: RetractDataErrorCode!
+  message: String!
+  path: [String!]!
+}
+
+type RetractDataPayload {
+  data: Data
+  errors: [RetractDataError!]
+  query: Query!
 }
 
 "`ISO 52022` is an example of the abbreviation of a standardizer and the main number of the identifier."
@@ -1470,6 +1507,11 @@ input PublicationSortInput {
   section: SortEnumType @cost(weight: "10")
 }
 
+input PublishDataInput {
+  dataId: Uuid!
+  dataKind: DataKind!
+}
+
 input RecomputeGetHttpsResourceHashValuesFilterInput {
   and: [RecomputeGetHttpsResourceHashValuesFilterInput!]
   or: [RecomputeGetHttpsResourceHashValuesFilterInput!]
@@ -1508,6 +1550,11 @@ input RemoveDataApprovalInput {
   dataId: Uuid!
   dataKind: DataKind!
   signature: String!
+}
+
+input RetractDataInput {
+  dataId: Uuid!
+  dataKind: DataKind!
 }
 
 input RootGetHttpsResourceInput {
@@ -1788,7 +1835,10 @@ enum CreateGetHttpsResourceErrorCode {
   UNAUTHORIZED
   UNAUTHENTICATED
   UNKNOWN_DATA
+  APPLIED_CONVERSION_METHOD_WITHOUT_PARENT
   CREATING_RESPONSE_APPROVAL_FAILED
+  UNKNOWN_PARENT
+  ILLEGAL_PARENT
 }
 
 enum CreateHygrothermalDataErrorCode {
@@ -1885,6 +1935,19 @@ enum OpticalComponentType {
   SHADING
 }
 
+enum PublishDataErrorCode {
+  UNAUTHENTICATED
+  UNAUTHORIZED
+  UNKNOWN_DATA
+  CREATING_RESPONSE_APPROVAL_FAILED
+}
+
+enum PublishingState {
+  PENDING
+  PUBLISHED
+  RETRACTED
+}
+
 enum RecomputeGetHttpsResourceHashValuesErrorCode {
   UNKNOWN
   UNAUTHORIZED
@@ -1899,6 +1962,13 @@ enum RemoveDataApprovalErrorCode {
   UNAUTHORIZED
   UNKNOWN_DATA
   UNKNOWN_APPROVAL
+  CREATING_RESPONSE_APPROVAL_FAILED
+}
+
+enum RetractDataErrorCode {
+  UNAUTHENTICATED
+  UNAUTHORIZED
+  UNKNOWN_DATA
   CREATING_RESPONSE_APPROVAL_FAILED
 }
 

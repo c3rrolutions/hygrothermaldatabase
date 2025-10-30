@@ -16,6 +16,16 @@ public sealed class CommonAuthorization(
         return userService.GetCurrentUser(cancellationToken);
     }
 
+    public async Task<bool> IsCurrentUserAtLeastAssistantManagerOfDatabaseOperator(CancellationToken cancellationToken)
+    {
+        var currentUser = await GetCurrentUserAsync(cancellationToken);
+        if (currentUser is null)
+        {
+            return false;
+        }
+        return IsCurrentUserAtLeastAssistantManagerOfDatabaseOperator(currentUser);
+    }
+
     public bool IsCurrentUserAtLeastAssistantManagerOfDatabaseOperator(
         CurrentUser currentUser
     )

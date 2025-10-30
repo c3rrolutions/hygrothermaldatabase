@@ -3,26 +3,27 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Database.Data;
-using Database.GraphQl.Extensions;
+using Database.GraphQl.DataX;
 using Database.Services;
 using HotChocolate;
 using HotChocolate.Data;
 using HotChocolate.Data.Sorting;
 using HotChocolate.Resolvers;
 using HotChocolate.Types;
-using Microsoft.EntityFrameworkCore;
+using Database.Authorization;
 
 namespace Database.GraphQl.HygrothermalDataX;
 
 [ExtendObjectType(nameof(Query))]
 public sealed class HygrothermalDataQueries
+: DataQueriesBase<HygrothermalData>
 {
     [UsePaging]
     // [UseProjection] // We disabled projections because when requesting `id` all results had the
     // same `id` and when also requesting `uuid`, the latter was always the empty UUID `000...`.
     [UseFiltering<HygrothermalDataFilterType>]
     [UseSorting<HygrothermalDataSortType>]
-    public async Task<IQueryable<HygrothermalData>> GetAllHygrothermalData(
+    public Task<IQueryable<HygrothermalData>> GetAllHygrothermalDataAsync(
         [GraphQLType<LocaleType>] string? locale,
         ApplicationDbContext context,
         AccessRightsService accessRightsService,
@@ -31,32 +32,59 @@ public sealed class HygrothermalDataQueries
         CancellationToken cancellationToken
     )
     {
-        sorting.StabilizeOrder<HygrothermalData>();
-        var filteredData =
-            context.HygrothermalData.AsNoTracking()
-            .Sort(resolverContext)
-            .Filter(resolverContext);
-        if (!await filteredData.AnyAsync(x => x.DataAccessRights.HasRestrictions, cancellationToken))
-        {
-            return filteredData;
-        }
-        return await accessRightsService.ApplyAccessRightsOnData(filteredData, cancellationToken);
+        return GetAllDataAsync(
+            context.HygrothermalData,
+            locale,
+            accessRightsService,
+            sorting,
+            resolverContext,
+            cancellationToken
+        );
+    }
+
+    [UsePaging]
+    // [UseProjection] // We disabled projections because when requesting `id` all results had the
+    // same `id` and when also requesting `uuid`, the latter was always the empty UUID `000...`.
+    [UseFiltering<HygrothermalDataFilterType>]
+    [UseSorting<HygrothermalDataSortType>]
+    public Task<IQueryable<HygrothermalData>> GetAllPendingHygrothermalDataAsync(
+        [GraphQLType<LocaleType>] string? locale,
+        ApplicationDbContext context,
+        AccessRightsService accessRightsService,
+        IResolverContext resolverContext,
+        ISortingContext sorting,
+        CommonAuthorization authorization,
+        CancellationToken cancellationToken
+    )
+    {
+        return GetAllPendingDataAsync(
+            context.HygrothermalData,
+            locale,
+            accessRightsService,
+            sorting,
+            resolverContext,
+            authorization,
+            cancellationToken
+        );
     }
 
     [UseFiltering<HygrothermalDataFilterType>]
-    public Task<bool> GetHasHygrothermalData(
+    public Task<bool> GetHasHygrothermalDataAsync(
         [GraphQLType<LocaleType>] string? locale,
         ApplicationDbContext context,
         IResolverContext resolverContext,
         CancellationToken cancellationToken
     )
     {
-        return context.HygrothermalData.AsNoTracking()
-            .Filter(resolverContext)
-            .AnyAsync(cancellationToken);
+        return GetHasDataAsync(
+            context.HygrothermalData,
+            locale,
+            resolverContext,
+            cancellationToken
+        );
     }
 
-    public async Task<HygrothermalData?> GetHygrothermalDataAsync(
+    public Task<HygrothermalData?> GetHygrothermalDataAsync(
         Guid id,
         [GraphQLType<LocaleType>] string? locale,
         HygrothermalDataByIdDataLoader byId,
@@ -64,18 +92,12 @@ public sealed class HygrothermalDataQueries
         CancellationToken cancellationToken
     )
     {
-        var hygrothermalData = await byId.LoadAsync(
+        return GetDataAsync(
             id,
+            locale,
+            byId,
+            accessRightsService,
             cancellationToken
         );
-        if (hygrothermalData is null)
-        {
-            return null;
-        }
-        if (!hygrothermalData.DataAccessRights.HasRestrictions)
-        {
-            return hygrothermalData;
-        }
-        return await accessRightsService.ApplyAccessRightsOnData(hygrothermalData, cancellationToken);
     }
 }

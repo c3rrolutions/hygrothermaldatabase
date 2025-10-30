@@ -181,6 +181,7 @@ public sealed class Startup(
                     .MapEnum<Illuminant>(ApplicationDbContext.IlluminantTypeName, appSettings.Database.SchemaName)
                     .MapEnum<OpticalComponentSubtype>(ApplicationDbContext.OpticalComponentSubtypeTypeName, appSettings.Database.SchemaName)
                     .MapEnum<OpticalComponentType>(ApplicationDbContext.OpticalComponentTypeTypeName, appSettings.Database.SchemaName)
+                    .MapEnum<PublishingState>(ApplicationDbContext.PublishingStateTypeName, appSettings.Database.SchemaName)
                     .MapEnum<Standardizer>(ApplicationDbContext.StandardizerTypeName, appSettings.Database.SchemaName)
             // .UseNodaTime();
             )

@@ -11,7 +11,6 @@ using HotChocolate;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Database.Extensions;
-using Database.Extensions;
 
 namespace Database.GraphQl.CalorimetricDataX;
 

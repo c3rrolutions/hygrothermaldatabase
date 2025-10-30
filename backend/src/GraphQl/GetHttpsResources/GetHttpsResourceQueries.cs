@@ -8,6 +8,7 @@ using HotChocolate.Data.Sorting;
 using HotChocolate.Types;
 using Database.Data;
 using Database.GraphQl.Extensions;
+using Database.Enumerations;
 
 namespace Database.GraphQl.GetHttpsResources;
 
@@ -24,7 +25,12 @@ public sealed class GetHttpsResourceQueries
     )
     {
         sorting.StabilizeOrder<GetHttpsResource>();
-        return context.GetHttpsResources.AsNoTracking();
+        return context.GetHttpsResources.AsNoTracking()
+            .Where(_ => _.CalorimetricData == null || _.CalorimetricData.PublishingState != PublishingState.PENDING)
+            .Where(_ => _.GeometricData == null || _.GeometricData.PublishingState != PublishingState.PENDING)
+            .Where(_ => _.HygrothermalData == null || _.HygrothermalData.PublishingState != PublishingState.PENDING)
+            .Where(_ => _.OpticalData == null || _.OpticalData.PublishingState != PublishingState.PENDING)
+            .Where(_ => _.PhotovoltaicData == null || _.PhotovoltaicData.PublishingState != PublishingState.PENDING);
     }
 
     public Task<GetHttpsResource?> GetGetHttpsResourceAsync(

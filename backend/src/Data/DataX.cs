@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Database.Enumerations;
 
 namespace Database.Data;
 
@@ -59,6 +60,16 @@ public abstract class DataX(
         CreatorId = creatorId;
     }
 
+    public void Publish()
+    {
+        PublishingState = PublishingState.PUBLISHED;
+    }
+
+    public void Retract()
+    {
+        PublishingState = PublishingState.RETRACTED;
+    }
+
     public Guid UserId { get; private set; } = userId;
     public string Locale { get; private set; } = locale;
     public Guid ComponentId { get; private set; } = componentId;
@@ -77,6 +88,8 @@ public abstract class DataX(
     public virtual ICollection<GetHttpsResource> Resources { get; } = [];
 
     public DataAccessRights DataAccessRights { get; private set; } = new DataAccessRights();
+
+    public PublishingState PublishingState { get; private set; } = PublishingState.PENDING;
 
     /// <inheritdoc/>
     public bool IsRestrictedByApplication(string applicationId)

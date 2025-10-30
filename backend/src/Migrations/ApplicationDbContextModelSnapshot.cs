@@ -1858,10 +1858,6 @@ namespace Database.Migrations
 
                             b1.ToTable("CielabColor", "database", t =>
                                 {
-                                    t.HasCheckConstraint("CK_OpticalData_CielabColors_AStar", "\"AStar\" >= 0.0 AND \"AStar\" <= 100.0");
-
-                                    t.HasCheckConstraint("CK_OpticalData_CielabColors_BStar", "\"BStar\" >= 0.0 AND \"BStar\" <= 100.0");
-
                                     t.HasCheckConstraint("CK_OpticalData_CielabColors_LStar", "\"LStar\" >= 0.0 AND \"LStar\" <= 100.0");
                                 });
 

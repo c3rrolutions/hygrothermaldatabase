@@ -54,20 +54,6 @@ END $EF$;
 DO $EF$
 BEGIN
     IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20251024124734_AddObserverAndIlluminantToCielabColor') THEN
-    ALTER TABLE database."CielabColor" ADD CONSTRAINT "CK_OpticalData_CielabColors_AStar" CHECK ("AStar" >= 0.0 AND "AStar" <= 100.0);
-    END IF;
-END $EF$;
-
-DO $EF$
-BEGIN
-    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20251024124734_AddObserverAndIlluminantToCielabColor') THEN
-    ALTER TABLE database."CielabColor" ADD CONSTRAINT "CK_OpticalData_CielabColors_BStar" CHECK ("BStar" >= 0.0 AND "BStar" <= 100.0);
-    END IF;
-END $EF$;
-
-DO $EF$
-BEGIN
-    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20251024124734_AddObserverAndIlluminantToCielabColor') THEN
     ALTER TABLE database."CielabColor" ADD CONSTRAINT "CK_OpticalData_CielabColors_LStar" CHECK ("LStar" >= 0.0 AND "LStar" <= 100.0);
     END IF;
 END $EF$;

@@ -55,11 +55,13 @@ public enum CreateGetHttpsResourceErrorCode
     UNAUTHORIZED,
     UNAUTHENTICATED,
     UNKNOWN_DATA,
-    APPLIED_CONVERSION_METHOD_WITHOUT_PARENT,
-    CREATING_RESPONSE_APPROVAL_FAILED,
     UNKNOWN_PARENT,
     ILLEGAL_PARENT,
-    UNKNOWN_DATA_FORMAT
+    APPLIED_CONVERSION_METHOD_WITHOUT_PARENT,
+    UNKNOWN_DATA_FORMAT,
+    DUPLICATE_ROOT_RESOURCE,
+    CREATING_RESPONSE_APPROVAL_FAILED,
+    PARENT_WITHOUT_APPLIED_CONVERSION_METHOD
 }
 
 public sealed record CreateGetHttpsResourceError(
@@ -144,12 +146,15 @@ public sealed class CreateGetHttpsResourceMutation
                 )
             );
         }
-        var parent = await context.GetHttpsResources
+        var parent =
+            input.ParentId is null
+            ? null
+            : await context.GetHttpsResources
             .SingleOrDefaultAsync(_ =>
                 _.Id == input.ParentId,
                 cancellationToken
             );
-        if (parent is null)
+        if (parent is null && input.ParentId is not null)
         {
             errors.Add(
                 NewError(
@@ -176,6 +181,31 @@ public sealed class CreateGetHttpsResourceMutation
                     CreateGetHttpsResourceErrorCode.APPLIED_CONVERSION_METHOD_WITHOUT_PARENT,
                     "The resource does not have a parent yet an applied conversion method was given. This method is supposed to have been applied to this resource's parent.",
                     [nameof(input), nameof(input.AppliedConversionMethod).ToLowerFirst()]
+                )
+            );
+        }
+        if (input.ParentId is not null && input.AppliedConversionMethod is null)
+        {
+            errors.Add(
+                NewError(
+                    CreateGetHttpsResourceErrorCode.PARENT_WITHOUT_APPLIED_CONVERSION_METHOD,
+                    "The resource has a parent yet no applied conversion method was given. How did this resource come about from its parent?",
+                    [nameof(input), nameof(input.AppliedConversionMethod).ToLowerFirst()]
+                )
+            );
+        }
+        if (input.ParentId is null &&
+            await context.GetHttpsResources.AsNoTracking()
+            .Where(_ => _.ParentId == null)
+            .Where(_ => _.GetDataId(input.DataKind) == input.DataId)
+            .AnyAsync(cancellationToken)
+        )
+        {
+            errors.Add(
+                NewError(
+                    CreateGetHttpsResourceErrorCode.DUPLICATE_ROOT_RESOURCE,
+                    "The data set does already have a root resource.",
+                    [nameof(input), nameof(input.ParentId).ToLowerFirst()]
                 )
             );
         }

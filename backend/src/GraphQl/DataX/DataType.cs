@@ -35,5 +35,8 @@ public sealed class DataType(AppSettings appSettings)
         descriptor
             .Field(x => x.Approval)
             .Type<NonNullType<ObjectType<ResponseApproval>>>();
+        descriptor
+            .Field(_ => _.PublishingState)
+            .Ignore();
     }
 }

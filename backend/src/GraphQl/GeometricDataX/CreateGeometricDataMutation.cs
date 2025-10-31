@@ -30,7 +30,7 @@ public sealed record CreateGeometricDataInput(
 {
     public GeometricData ToDomainModel(Guid userId)
     {
-        var geometricData = new GeometricData(
+        return new(
             userId,
             Locale,
             ComponentId,
@@ -42,7 +42,6 @@ public sealed record CreateGeometricDataInput(
             AppliedMethod.ToDomainModel(),
             Thicknesses
         );
-        return geometricData;
     }
 };
 

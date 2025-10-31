@@ -40,7 +40,7 @@ public sealed record CreateOpticalDataInput(
 {
     public OpticalData ToDomainModel(Guid userId)
     {
-        var opticalData = new OpticalData(
+        return new(
             userId,
             Locale,
             ComponentId,
@@ -61,7 +61,6 @@ public sealed record CreateOpticalDataInput(
             ColorRenderingIndices,
             CielabColors.Select(c => c.ToDomainModel()).ToList()
         );
-        return opticalData;
     }
 };
 

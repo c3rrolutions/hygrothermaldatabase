@@ -13,6 +13,8 @@ using HotChocolate.Data;
 using HotChocolate.Types;
 using Microsoft.Extensions.Logging;
 using Database.Extensions;
+using Database.GraphQl.Extensions;
+using HotChocolate.Resolvers;
 
 namespace Database.GraphQl.ResponseApprovals;
 
@@ -37,9 +39,9 @@ public static partial class CreateResponseApprovalsMutationLogging
 {
     [LoggerMessage(
         Level = LogLevel.Warning,
-        Message = "Creating response approval for data of type {Type} with ID {Id} failed with the errors {Errors}."
+        Message = "Creating response approval for data of type {Type} with ID {Id}."
     )]
-    public static partial void FailedCreatingResponseApproval(this ILogger<CreateResponseApprovalsMutation> logger, Type type, Guid id, IEnumerable<string>? errors);
+    public static partial void FailedCreatingResponseApproval(this ILogger<CreateResponseApprovalsMutation> logger, Type type, Guid id, Exception exception);
 }
 
 public sealed record CreateResponseApprovalsPayload(
@@ -65,7 +67,7 @@ public sealed class CreateResponseApprovalsMutation
 
     [UseFiltering<CreateResponseApprovalsFilterType>]
     public async Task<CreateResponseApprovalsPayload> CreateResponseApprovalsAsync(
-        QueryContext<IData> queryContext,
+        IResolverContext resolverContext,
         ApplicationDbContext context,
         CommonAuthorization authorization,
         ResponseApprovalService responseApprovalService,
@@ -73,6 +75,7 @@ public sealed class CreateResponseApprovalsMutation
         CancellationToken cancellationToken
     )
     {
+        var queryContext = resolverContext.GetQueryContext<IData>();
         if ((await AuthorizeAsync(
                 CreateResponseApprovalsErrorCode.UNAUTHENTICATED,
                 CreateResponseApprovalsErrorCode.UNAUTHORIZED,
@@ -91,22 +94,21 @@ public sealed class CreateResponseApprovalsMutation
             cancellationToken,
             async (data, cancellationToken) =>
             {
-                if ((await CreateResponseApprovalAsync(
-                        data,
-                        CreateResponseApprovalsErrorCode.CREATING_RESPONSE_APPROVAL_FAILED,
-                        responseApprovalService,
-                        context,
-                        cancellationToken
-                    )
-                    ).Failed(out var createResponseApprovalErrorPayload)
-                )
+                try
                 {
-                    logger.FailedCreatingResponseApproval(data.GetType(), data.Id, createResponseApprovalErrorPayload.Errors?.Select(_ => _.Message));
-                    errors.AddRange(createResponseApprovalErrorPayload.Errors);
-                }
-                else
-                {
+                    data.Approval = await responseApprovalService.CreateResponseApproval(data, cancellationToken);
                     dataSets.Add(data);
+                }
+                catch (Exception exception)
+                {
+                    logger.FailedCreatingResponseApproval(data.GetType(), data.Id, exception);
+                    errors.Add(
+                        NewError(
+                            CreateResponseApprovalsErrorCode.CREATING_RESPONSE_APPROVAL_FAILED,
+                            $"Failed creating a response approval for the data set {data.Id} named '{data.Name}' with the error message: {exception.Message}",
+                            []
+                        )
+                    );
                 }
             }
         );

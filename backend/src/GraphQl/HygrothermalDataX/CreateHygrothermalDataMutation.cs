@@ -30,7 +30,7 @@ public sealed record CreateHygrothermalDataInput(
 {
     public HygrothermalData ToDomainModel(Guid userId)
     {
-        var hygrothermalData = new HygrothermalData(
+        return new(
             userId,
             Locale,
             ComponentId,
@@ -41,7 +41,6 @@ public sealed record CreateHygrothermalDataInput(
             CreatedAt,
             AppliedMethod.ToDomainModel()
         );
-        return hygrothermalData;
     }
 };
 
@@ -123,6 +122,7 @@ public sealed class CreateHygrothermalDataMutation
         }
 
         var hygrothermalData = input.ToDomainModel(currentUser.Uuid);
+        context.HygrothermalData.Add(hygrothermalData);
         await context.SaveChangesAsync(cancellationToken);
 
         if ((await CreateResponseApprovalAsync(

@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
-using HotChocolate;
 using HotChocolate.Types;
 using Database.Authorization;
 using Database.Data;
 using Database.Enumerations;
 using Database.Extensions;
 using Database.Services;
+using Microsoft.EntityFrameworkCore;
+using System.Linq;
 
 namespace Database.GraphQl.DataX;
 
@@ -24,7 +25,10 @@ public enum PublishDataErrorCode
     UNAUTHENTICATED,
     UNAUTHORIZED,
     UNKNOWN_DATA,
-    CREATING_RESPONSE_APPROVAL_FAILED
+    CREATING_RESPONSE_APPROVAL_FAILED,
+    MISSING_ROOT_RESOURCE,
+    DUPLICATE_ROOT_RESOURCE,
+    RESOURCES_WITHOUT_FILE
 }
 
 public sealed record PublishDataError(
@@ -83,6 +87,52 @@ public sealed class PublishDataMutation
         )
         {
             return fetchDataErrorPayload;
+        }
+
+        var errors = new List<PublishDataError>();
+        var rootResources =
+            await context.GetHttpsResources.AsQueryable()
+            .Where(_ => _.ParentId == null)
+            .Where(_ => _.GetDataId(input.DataKind) == input.DataId)
+            .ToListAsync(cancellationToken);
+        if (rootResources.Count == 0)
+        {
+            errors.Add(
+                NewError(
+                    PublishDataErrorCode.MISSING_ROOT_RESOURCE,
+                    "The data set does not have a root resource.",
+                    []
+                )
+            );
+        }
+        if (rootResources.Count >= 2)
+        {
+            errors.Add(
+                NewError(
+                    PublishDataErrorCode.DUPLICATE_ROOT_RESOURCE,
+                    $"The data set has more than one root resource, namely those with the IDs {string.Join(", ", rootResources.Select(_ => _.Id.ToString("D")))}.",
+                    []
+                )
+            );
+        }
+        var resources =
+            await context.GetHttpsResources.AsQueryable()
+            .Where(_ => _.GetDataId(input.DataKind) == input.DataId)
+            .ToListAsync(cancellationToken);
+        var resourcesWithoutFile = resources.Where(_ => !_.DoesFileExist()).ToList();
+        if (resourcesWithoutFile.Count >= 1)
+        {
+            errors.Add(
+                NewError(
+                    PublishDataErrorCode.RESOURCES_WITHOUT_FILE,
+                    $"The data set has at least one resource without a file, namely those with the IDs {string.Join(", ", resourcesWithoutFile.Select(_ => _.Id.ToString("D")))}.",
+                    []
+                )
+            );
+        }
+        if (errors.Count >= 1)
+        {
+            return NewPayload(null, errors);
         }
 
         var rememberedPublishingState = data.PublishingState;

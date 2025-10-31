@@ -15,6 +15,7 @@ using Database.GraphQl.Extensions;
 using System.Diagnostics.CodeAnalysis;
 using System.Collections.Generic;
 using Database.Extensions;
+using HotChocolate.Resolvers;
 
 namespace Database.GraphQl.GetHttpsResources;
 
@@ -67,13 +68,15 @@ public sealed class RecomputeGetHttpsResourceHashValuesMutation
     [UseFiltering<RecomputeGetHttpsResourceHashValuesFilterType>]
     public async Task<RecomputeGetHttpsResourceHashValuesPayload> RecomputeGetHttpsResourceHashValuesAsync(
         ApplicationDbContext context,
-        QueryContext<GetHttpsResource> queryContext,
+        IResolverContext resolverContext,
         CommonAuthorization authorization,
         ResponseApprovalService responseApprovalService,
         ILogger<RecomputeGetHttpsResourceHashValuesMutation> logger,
         CancellationToken cancellationToken
     )
     {
+        var queryContext = resolverContext.GetQueryContext<GetHttpsResource>();
+
         if ((await AuthorizeAsync(
                 RecomputeGetHttpsResourceHashValuesErrorCode.UNAUTHENTICATED,
                 RecomputeGetHttpsResourceHashValuesErrorCode.UNAUTHORIZED,

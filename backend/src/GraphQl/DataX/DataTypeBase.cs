@@ -31,5 +31,8 @@ public abstract class DataTypeBase<TData, TDataByIdDataLoader>
         descriptor
             .Field(x => x.Approval)
             .Type<NonNullType<ObjectType<ResponseApproval>>>();
+        descriptor
+            .Field(_ => _.PublishingState)
+            .Ignore();
     }
 }

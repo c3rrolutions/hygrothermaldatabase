@@ -30,7 +30,7 @@ public sealed record CreatePhotovoltaicDataInput(
 {
     public PhotovoltaicData ToDomainModel(Guid userId)
     {
-        var photovoltaicData = new PhotovoltaicData(
+        return new(
             userId,
             Locale,
             ComponentId,
@@ -41,7 +41,6 @@ public sealed record CreatePhotovoltaicDataInput(
             CreatedAt,
             AppliedMethod.ToDomainModel()
         );
-        return photovoltaicData;
     }
 };
 
@@ -123,6 +122,7 @@ public sealed class CreatePhotovoltaicDataMutation
         }
 
         var photovoltaicData = input.ToDomainModel(currentUser.Uuid);
+        context.PhotovoltaicData.Add(photovoltaicData);
         await context.SaveChangesAsync(cancellationToken);
 
         if ((await CreateResponseApprovalAsync(

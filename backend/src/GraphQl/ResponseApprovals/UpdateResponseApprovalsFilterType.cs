@@ -7,7 +7,7 @@ public sealed class UpdateResponseApprovalsFilterType
 : ResponseApprovalFilterType
 {
     protected override void Configure(
-        IFilterInputTypeDescriptor<ResponseApproval> descriptor
+        IFilterInputTypeDescriptor<IData> descriptor
     )
     {
         base.Configure(descriptor);

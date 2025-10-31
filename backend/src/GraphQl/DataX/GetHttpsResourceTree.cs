@@ -6,6 +6,8 @@ using GreenDonut;
 using GreenDonut.Data;
 using Database.Data;
 using HotChocolate.Data;
+using HotChocolate.Resolvers;
+using Database.GraphQl.Extensions;
 
 namespace Database.GraphQl.DataX;
 
@@ -27,11 +29,12 @@ public sealed class GetHttpsResourceTree(
     [UseFiltering<GetHttpsResourceTreeNonRootVertexFilterType>]
     [UseSorting<GetHttpsResourceTreeNonRootVertexSortType>]
     public async Task<IReadOnlyList<GetHttpsResourceTreeNonRootVertex>> GetNonRootVertices(
-        QueryContext<GetHttpsResource> queryContext,
+        IResolverContext resolverContext,
         GetHttpsResourceTreeNonRootVerticesByDataIdDataLoader byId,
         CancellationToken cancellationToken
     )
     {
+        var queryContext = resolverContext.GetQueryContext<GetHttpsResource>();
         return (
             await byId
                 .With(queryContext)

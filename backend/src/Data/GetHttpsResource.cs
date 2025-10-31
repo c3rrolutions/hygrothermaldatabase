@@ -5,21 +5,31 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Database.Enumerations;
 using Database.Extensions;
 using Database.Utilities;
+using EntityFrameworkCore.Projectables;
 
 namespace Database.Data;
 
 // `DbContext` needs this constructor without owned entities.
-public sealed class GetHttpsResource(
-    string? description,
-    string hashValue,
-    Guid dataFormatId,
-    string? fileExtension
-)
+public sealed class GetHttpsResource
 : Entity
 {
     public const string FilesDirectoryPath = "./files/";
+
+    public GetHttpsResource(
+        string? description,
+        string hashValue,
+        Guid dataFormatId,
+        string? fileExtension
+    )
+    {
+        Description = description;
+        HashValue = hashValue;
+        DataFormatId = dataFormatId;
+        FileExtension = fileExtension;
+    }
 
     public GetHttpsResource(
         string? description,
@@ -74,10 +84,10 @@ public sealed class GetHttpsResource(
         }
     }
 
-    public string? Description { get; private set; } = description;
-    public string HashValue { get; private set; } = hashValue;
-    public Guid DataFormatId { get; private set; } = dataFormatId;
-    public string? FileExtension { get; private set; } = fileExtension;
+    public string? Description { get; private set; }
+    public string HashValue { get; private set; }
+    public Guid DataFormatId { get; private set; }
+    public string? FileExtension { get; private set; }
 
     public string FileName =>
         Id.ToString("D")
@@ -92,7 +102,32 @@ public sealed class GetHttpsResource(
     [NotMapped]
     public Guid DataId => CalorimetricDataId ?? HygrothermalDataId ?? OpticalDataId ?? PhotovoltaicDataId ?? GeometricDataId ?? Guid.Empty;
 
-    [NotMapped] public IData? Data => CalorimetricData ?? HygrothermalData ?? OpticalData ?? GeometricData ?? PhotovoltaicData as IData;
+    [NotMapped]
+    public IData? Data => CalorimetricData ?? HygrothermalData ?? OpticalData ?? GeometricData ?? PhotovoltaicData as IData;
+
+    [Projectable]
+    public Guid? GetDataId(DataKind dataKind) =>
+        dataKind switch
+        {
+            DataKind.CALORIMETRIC_DATA => CalorimetricDataId,
+            DataKind.GEOMETRIC_DATA => GeometricDataId,
+            DataKind.HYGROTHERMAL_DATA => HygrothermalDataId,
+            DataKind.OPTICAL_DATA => OpticalDataId,
+            DataKind.PHOTOVOLTAIC_DATA => PhotovoltaicDataId,
+            _ => null, // throw new ArgumentOutOfRangeException(nameof(dataKind), $"Unsupported data kind {dataKind}"),
+        };
+
+    [Projectable]
+    public IData? GetData(DataKind dataKind) =>
+        dataKind switch
+        {
+            DataKind.CALORIMETRIC_DATA => CalorimetricData,
+            DataKind.GEOMETRIC_DATA => GeometricData,
+            DataKind.HYGROTHERMAL_DATA => HygrothermalData,
+            DataKind.OPTICAL_DATA => OpticalData,
+            DataKind.PHOTOVOLTAIC_DATA => PhotovoltaicData,
+            _ => null, //throw new ArgumentOutOfRangeException(nameof(dataKind), $"Unsupported data kind {dataKind}"),
+        };
 
     public Guid? CalorimetricDataId { get; private set; }
 

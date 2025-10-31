@@ -32,7 +32,7 @@ public sealed record CreateCalorimetricDataInput(
 {
     public CalorimetricData ToDomainModel(Guid userId)
     {
-        var calorimetricData = new CalorimetricData(
+        return new(
             userId,
             Locale,
             ComponentId,
@@ -45,7 +45,6 @@ public sealed record CreateCalorimetricDataInput(
             GValues,
             UValues
         );
-        return calorimetricData;
     }
 };
 
@@ -127,6 +126,7 @@ public sealed class CreateCalorimetricDataMutation
         }
 
         var calorimetricData = input.ToDomainModel(currentUser.Uuid);
+        context.CalorimetricData.Add(calorimetricData);
         await context.SaveChangesAsync(cancellationToken);
 
         if ((await CreateResponseApprovalAsync(

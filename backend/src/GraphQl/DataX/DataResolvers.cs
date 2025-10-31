@@ -7,6 +7,8 @@ using GreenDonut.Data;
 using HotChocolate.Data;
 using GreenDonut;
 using Database.GraphQl.GetHttpsResources;
+using HotChocolate.Resolvers;
+using Database.GraphQl.Extensions;
 
 namespace Database.GraphQl.DataX;
 
@@ -16,11 +18,12 @@ public sealed class DataResolvers
     [UseSorting<GetHttpsResourceSortType>]
     public async Task<GetHttpsResource[]> GetGetHttpsResources(
         [Parent] IData data,
-        QueryContext<GetHttpsResource> queryContext,
+        IResolverContext resolverContext,
         GetHttpsResourcesByDataIdDataLoader byId,
         CancellationToken cancellationToken
     )
     {
+        var queryContext = resolverContext.GetQueryContext<GetHttpsResource>();
         return await
             byId
             .With(queryContext)

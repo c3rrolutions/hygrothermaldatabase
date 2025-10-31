@@ -13,6 +13,8 @@ using HotChocolate.Types;
 using HotChocolate.Data;
 using Microsoft.Extensions.Logging;
 using Database.Extensions;
+using Database.GraphQl.Extensions;
+using HotChocolate.Resolvers;
 
 namespace Database.GraphQl.ResponseApprovals;
 
@@ -37,9 +39,9 @@ public static partial class UpdateResponseApprovalsMutationLogging
 {
     [LoggerMessage(
         Level = LogLevel.Warning,
-        Message = "Updating response approval for data of type {Type} with ID {Id} failed with the errors {Errors}."
+        Message = "Updating response approval for data of type {Type} with ID {Id} failed."
     )]
-    public static partial void FailedUpdatingResponseApproval(this ILogger<UpdateResponseApprovalsMutation> logger, Type type, Guid id, IEnumerable<string>? errors);
+    public static partial void FailedUpdatingResponseApproval(this ILogger<UpdateResponseApprovalsMutation> logger, Type type, Guid id, Exception exception);
 }
 
 public sealed record UpdateResponseApprovalsPayload(
@@ -64,7 +66,7 @@ public sealed class UpdateResponseApprovalsMutation
 
     [UseFiltering<UpdateResponseApprovalsFilterType>]
     public async Task<UpdateResponseApprovalsPayload> UpdateResponseApprovalsAsync(
-        QueryContext<IData> queryContext,
+        IResolverContext resolverContext,
         ApplicationDbContext context,
         CommonAuthorization authorization,
         ResponseApprovalService responseApprovalService,
@@ -72,6 +74,7 @@ public sealed class UpdateResponseApprovalsMutation
         CancellationToken cancellationToken
     )
     {
+        var queryContext = resolverContext.GetQueryContext<IData>();
         if ((await AuthorizeAsync(
                 UpdateResponseApprovalsErrorCode.UNAUTHENTICATED,
                 UpdateResponseApprovalsErrorCode.UNAUTHORIZED,
@@ -91,22 +94,21 @@ public sealed class UpdateResponseApprovalsMutation
             cancellationToken,
             async (data, cancellationToken) =>
             {
-                if ((await CreateResponseApprovalAsync(
-                        data,
-                        UpdateResponseApprovalsErrorCode.CREATING_RESPONSE_APPROVAL_FAILED,
-                        responseApprovalService,
-                        context,
-                        cancellationToken
-                    )
-                    ).Failed(out var createResponseApprovalErrorPayload)
-                )
+                try
                 {
-                    logger.FailedUpdatingResponseApproval(data.GetType(), data.Id, createResponseApprovalErrorPayload.Errors?.Select(_ => _.Message));
-                    errors.AddRange(createResponseApprovalErrorPayload.Errors);
-                }
-                else
-                {
+                    data.Approval = await responseApprovalService.CreateResponseApproval(data, cancellationToken);
                     dataSets.Add(data);
+                }
+                catch (Exception exception)
+                {
+                    logger.FailedUpdatingResponseApproval(data.GetType(), data.Id, exception);
+                    errors.Add(
+                        NewError(
+                            UpdateResponseApprovalsErrorCode.CREATING_RESPONSE_APPROVAL_FAILED,
+                            $"Failed creating a response approval for the data set {data.Id} named '{data.Name}' with the error message: {exception.Message}",
+                            []
+                        )
+                    );
                 }
             }
         );

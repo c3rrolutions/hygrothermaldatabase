@@ -95,7 +95,7 @@ public sealed class PublishDataMutation
             .Where(_ => _.ParentId == null)
             .Where(_ => _.GetDataId(input.DataKind) == input.DataId)
             .ToListAsync(cancellationToken);
-        if (rootResources.Count == 0)
+        if (rootResources.Count is 0)
         {
             errors.Add(
                 NewError(

@@ -15,7 +15,13 @@ public sealed class GetHttpsResourceType
             .Field("locator")
             .ResolveWith<GetHttpsResourceResolvers>(t => t.GetLocator(default!, default!));
         descriptor
+            .Field(_ => _.FileName)
+            .Ignore();
+        descriptor
             .Field(_ => _.FilePath)
+            .Ignore();
+        descriptor
+            .Field(_ => _.FileExtension)
             .Ignore();
         descriptor
             .Field(x => x.ParentId)

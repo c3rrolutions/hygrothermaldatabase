@@ -10,13 +10,14 @@ using Database.Utilities;
 
 namespace Database.Data;
 
+// `DbContext` needs this constructor without owned entities.
 public sealed class GetHttpsResource(
     string? description,
     string hashValue,
     Guid dataFormatId,
-    Guid? parentId
-    )
-        : Entity
+    string? fileExtension
+)
+: Entity
 {
     public const string FilesDirectoryPath = "./files/";
 
@@ -24,6 +25,7 @@ public sealed class GetHttpsResource(
         string? description,
         string hashValue,
         Guid dataFormatId,
+        string? fileExtension,
         Guid? calorimetricDataId,
         Guid? geometricDataId,
         Guid? hygrothermalDataId,
@@ -37,62 +39,17 @@ public sealed class GetHttpsResource(
             description,
             hashValue,
             dataFormatId,
-            parentId,
-            archivedFilesMetaInformation,
-            appliedConversionMethod
+            fileExtension
         )
     {
         CalorimetricDataId = calorimetricDataId;
-        GeometricDataId = geometricDataId;
         HygrothermalDataId = hygrothermalDataId;
         OpticalDataId = opticalDataId;
         PhotovoltaicDataId = photovoltaicDataId;
-        AssertThatExactlyOneDataIdIsNonNull();
-    }
-
-    public GetHttpsResource(
-        string? description,
-        string hashValue,
-        Guid dataFormatId,
-        Guid? parentId,
-        ICollection<FileMetaInformation> archivedFilesMetaInformation,
-        ToTreeVertexAppliedConversionMethod? appliedConversionMethod
-    )
-        : this(
-            description,
-            hashValue,
-            dataFormatId,
-            parentId
-        )
-    {
+        GeometricDataId = geometricDataId;
+        ParentId = parentId;
         ArchivedFilesMetaInformation = archivedFilesMetaInformation;
         AppliedConversionMethod = appliedConversionMethod;
-    }
-
-    // `DbContext` needs this constructor without owned entities.
-    public GetHttpsResource(
-        string? description,
-        string hashValue,
-        Guid dataFormatId,
-        Guid? calorimetricDataId,
-        Guid? hygrothermalDataId,
-        Guid? opticalDataId,
-        Guid? photovoltaicDataId,
-        Guid? geometricDataId,
-        Guid? parentId
-    )
-        : this(
-            description,
-            hashValue,
-            dataFormatId,
-            parentId
-        )
-    {
-        CalorimetricDataId = calorimetricDataId;
-        HygrothermalDataId = hygrothermalDataId;
-        OpticalDataId = opticalDataId;
-        PhotovoltaicDataId = photovoltaicDataId;
-        GeometricDataId = geometricDataId;
         AssertThatExactlyOneDataIdIsNonNull();
     }
 
@@ -117,10 +74,17 @@ public sealed class GetHttpsResource(
         }
     }
 
-    public string FilePath { get => Path.Combine(FilesDirectoryPath, Id.ToString("D")); }
     public string? Description { get; private set; } = description;
     public string HashValue { get; private set; } = hashValue;
     public Guid DataFormatId { get; private set; } = dataFormatId;
+    public string? FileExtension { get; private set; } = fileExtension;
+
+    public string FileName =>
+        Id.ToString("D")
+        + (FileExtension is null ? "" : $".{FileExtension}");
+
+    public string FilePath =>
+        Path.Combine(FilesDirectoryPath, FileName);
 
     public ICollection<FileMetaInformation> ArchivedFilesMetaInformation { get; private set; } = [];
 
@@ -155,7 +119,7 @@ public sealed class GetHttpsResource(
     [InverseProperty(nameof(GeometricData.Resources))]
     public GeometricData? GeometricData { get; set; }
 
-    public Guid? ParentId { get; private set; } = parentId;
+    public Guid? ParentId { get; private set; }
 
     // TODO Require the conversion method to be given whenever there is a parent. In other words, either both are `null` or both are non-`null`.
     public ToTreeVertexAppliedConversionMethod? AppliedConversionMethod { get; private set; }

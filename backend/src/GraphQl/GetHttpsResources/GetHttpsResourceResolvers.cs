@@ -68,7 +68,7 @@ public sealed class GetHttpsResourceResolvers
     {
         return new UriBuilder(appSettings.HostUri)
         {
-            Path = $"/api/resources/{getHttpsResource.Id}"
+            Path = $"/api/resources/{getHttpsResource.FileName}"
         }.Uri;
     }
 

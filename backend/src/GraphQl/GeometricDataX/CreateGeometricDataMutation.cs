@@ -10,7 +10,9 @@ using Database.Utilities;
 using System.Diagnostics.CodeAnalysis;
 using HotChocolate;
 using System.Collections.Generic;
+using Database.GraphQl.DataX;
 using Database.Extensions;
+using Database.ApiRequests;
 
 namespace Database.GraphQl.GeometricDataX;
 
@@ -23,9 +25,8 @@ public sealed record CreateGeometricDataInput(
     DateTime CreatedAt,
     Guid CreatorId,
     AppliedMethodInput AppliedMethod,
-    RootGetHttpsResourceInput RootResource,
     double[] Thicknesses
-)
+) : IValidateCreateInput
 {
     public GeometricData ToDomainModel(Guid userId)
     {
@@ -41,7 +42,6 @@ public sealed record CreateGeometricDataInput(
             AppliedMethod.ToDomainModel(),
             Thicknesses
         );
-        geometricData.Resources.Add(RootResource.ToDomainModel());
         return geometricData;
     }
 };
@@ -52,6 +52,9 @@ public enum CreateGeometricDataErrorCode
     UNKNOWN,
     UNAUTHORIZED,
     UNAUTHENTICATED,
+    UNKNOWN_COMPONENT,
+    ILLEGAL_CREATED_AT,
+    UNKNOWN_CREATOR,
     CREATING_RESPONSE_APPROVAL_FAILED
 }
 
@@ -69,7 +72,7 @@ public sealed record CreateGeometricDataPayload(
 
 [ExtendObjectType(nameof(Mutation))]
 public sealed class CreateGeometricDataMutation
-: DataMutationBase<GeometricData, CreateGeometricDataPayload, CreateGeometricDataError, CreateGeometricDataErrorCode>
+: CreateDataMutationBase<GeometricData, CreateGeometricDataPayload, CreateGeometricDataError, CreateGeometricDataErrorCode>
 {
     // [UseUserManager]
     //[Authorize(Policy = Configuration.AuthConfiguration.WriteApiScope)]
@@ -88,6 +91,8 @@ public sealed class CreateGeometricDataMutation
         CreateGeometricDataInput input,
         ApplicationDbContext context,
         CommonAuthorization authorization,
+        IComponentByIdDataLoader componentByIdDataLoader,
+        IInstitutionByIdDataLoader institutionByIdDataLoader,
         ResponseApprovalService responseApprovalService,
         CancellationToken cancellationToken
     )
@@ -102,6 +107,21 @@ public sealed class CreateGeometricDataMutation
         )
         {
             return authorizeErrorPayload;
+        }
+
+        if ((await ValidateAsync(
+                input,
+                CreateGeometricDataErrorCode.ILLEGAL_CREATED_AT,
+                componentByIdDataLoader,
+                CreateGeometricDataErrorCode.UNKNOWN_COMPONENT,
+                institutionByIdDataLoader,
+                CreateGeometricDataErrorCode.UNKNOWN_CREATOR,
+                cancellationToken
+            )
+            ).Failed(out var validateErrorPayload)
+        )
+        {
+            return validateErrorPayload;
         }
 
         var geometricData = input.ToDomainModel(currentUser.Uuid);

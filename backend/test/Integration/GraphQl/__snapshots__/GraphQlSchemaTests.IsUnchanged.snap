@@ -924,7 +924,6 @@ input CreateCalorimetricDataInput {
   gValues: [Float!]!
   locale: String!
   name: String
-  rootResource: RootGetHttpsResourceInput!
   uValues: [Float!]!
   warnings: [String!]!
 }
@@ -937,7 +936,6 @@ input CreateGeometricDataInput {
   description: String
   locale: String!
   name: String
-  rootResource: RootGetHttpsResourceInput!
   thicknesses: [Float!]!
   warnings: [String!]!
 }
@@ -960,7 +958,6 @@ input CreateHygrothermalDataInput {
   description: String
   locale: String!
   name: String
-  rootResource: RootGetHttpsResourceInput!
   warnings: [String!]!
 }
 
@@ -980,7 +977,6 @@ input CreateOpticalDataInput {
   nearnormalHemisphericalSolarTransmittances: [Float!]!
   nearnormalHemisphericalVisibleReflectances: [Float!]!
   nearnormalHemisphericalVisibleTransmittances: [Float!]!
-  rootResource: RootGetHttpsResourceInput!
   subtype: OpticalComponentSubtype
   type: OpticalComponentType
   warnings: [String!]!
@@ -994,7 +990,6 @@ input CreatePhotovoltaicDataInput {
   description: String
   locale: String!
   name: String
-  rootResource: RootGetHttpsResourceInput!
   warnings: [String!]!
 }
 
@@ -1557,13 +1552,6 @@ input RetractDataInput {
   dataKind: DataKind!
 }
 
-input RootGetHttpsResourceInput {
-  appliedConversionMethod: ToTreeVertexAppliedConversionMethodInput
-  archivedFilesMetaInformation: [FileMetaInformationInput!]!
-  dataFormatId: Uuid!
-  description: String!
-}
-
 input StandardInput {
   abstract: String
   locator: Url
@@ -1820,6 +1808,9 @@ enum CreateCalorimetricDataErrorCode {
   UNKNOWN
   UNAUTHORIZED
   UNAUTHENTICATED
+  UNKNOWN_COMPONENT
+  ILLEGAL_CREATED_AT
+  UNKNOWN_CREATOR
   CREATING_RESPONSE_APPROVAL_FAILED
 }
 
@@ -1827,6 +1818,9 @@ enum CreateGeometricDataErrorCode {
   UNKNOWN
   UNAUTHORIZED
   UNAUTHENTICATED
+  UNKNOWN_COMPONENT
+  ILLEGAL_CREATED_AT
+  UNKNOWN_CREATOR
   CREATING_RESPONSE_APPROVAL_FAILED
 }
 
@@ -1839,12 +1833,16 @@ enum CreateGetHttpsResourceErrorCode {
   CREATING_RESPONSE_APPROVAL_FAILED
   UNKNOWN_PARENT
   ILLEGAL_PARENT
+  UNKNOWN_DATA_FORMAT
 }
 
 enum CreateHygrothermalDataErrorCode {
   UNKNOWN
   UNAUTHORIZED
   UNAUTHENTICATED
+  UNKNOWN_COMPONENT
+  ILLEGAL_CREATED_AT
+  UNKNOWN_CREATOR
   CREATING_RESPONSE_APPROVAL_FAILED
 }
 
@@ -1852,6 +1850,9 @@ enum CreateOpticalDataErrorCode {
   UNKNOWN
   UNAUTHORIZED
   UNAUTHENTICATED
+  UNKNOWN_COMPONENT
+  ILLEGAL_CREATED_AT
+  UNKNOWN_CREATOR
   CREATING_RESPONSE_APPROVAL_FAILED
 }
 
@@ -1859,6 +1860,9 @@ enum CreatePhotovoltaicDataErrorCode {
   UNKNOWN
   UNAUTHORIZED
   UNAUTHENTICATED
+  UNKNOWN_COMPONENT
+  ILLEGAL_CREATED_AT
+  UNKNOWN_CREATOR
   CREATING_RESPONSE_APPROVAL_FAILED
 }
 

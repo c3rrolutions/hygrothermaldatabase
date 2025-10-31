@@ -15,6 +15,7 @@ using System.Collections.Generic;
 using Database.Extensions;
 using GraphQL.Client.Abstractions.Utilities;
 using Microsoft.EntityFrameworkCore;
+using Database.ApiRequests;
 
 namespace Database.GraphQl.GetHttpsResources;
 
@@ -28,12 +29,13 @@ public sealed record CreateGetHttpsResourceInput(
     ToTreeVertexAppliedConversionMethodInput? AppliedConversionMethod
 ) : IIdentifyDataInput
 {
-    public GetHttpsResource ToDomainModel()
+    public GetHttpsResource ToDomainModel(string? fileExtension)
     {
         return new GetHttpsResource(
             Description,
             Sha256FileHasher.ComputeForString(""), // The correct hash value is computed when the file for this resource is being uploaded.
             DataFormatId,
+            fileExtension,
             DataKind == DataKind.CALORIMETRIC_DATA ? DataId : null,
             DataKind == DataKind.GEOMETRIC_DATA ? DataId : null,
             DataKind == DataKind.HYGROTHERMAL_DATA ? DataId : null,
@@ -56,7 +58,8 @@ public enum CreateGetHttpsResourceErrorCode
     APPLIED_CONVERSION_METHOD_WITHOUT_PARENT,
     CREATING_RESPONSE_APPROVAL_FAILED,
     UNKNOWN_PARENT,
-    ILLEGAL_PARENT
+    ILLEGAL_PARENT,
+    UNKNOWN_DATA_FORMAT
 }
 
 public sealed record CreateGetHttpsResourceError(
@@ -99,6 +102,7 @@ public sealed class CreateGetHttpsResourceMutation
     public async Task<CreateGetHttpsResourcePayload> CreateGetHttpsResourceAsync(
         CreateGetHttpsResourceInput input,
         ApplicationDbContext context,
+        IDataFormatByIdDataLoader dataFormatByIdDataLoader,
         ResponseApprovalService responseApprovalService,
         CommonAuthorization authorization,
         CancellationToken cancellationToken
@@ -129,6 +133,17 @@ public sealed class CreateGetHttpsResourceMutation
         }
 
         var errors = new List<CreateGetHttpsResourceError>();
+        var dataFormat = await dataFormatByIdDataLoader.LoadAsync(input.DataFormatId, cancellationToken);
+        if (dataFormat is null)
+        {
+            errors.Add(
+                NewError(
+                    CreateGetHttpsResourceErrorCode.UNKNOWN_DATA_FORMAT,
+                    "There is no data format with the format ID.",
+                    [nameof(input), nameof(input.DataFormatId).ToLowerFirst()]
+                )
+            );
+        }
         var parent = await context.GetHttpsResources
             .SingleOrDefaultAsync(_ =>
                 _.Id == input.ParentId,
@@ -169,7 +184,7 @@ public sealed class CreateGetHttpsResourceMutation
             return NewPayload(null, errors);
         }
 
-        var getHttpsResource = input.ToDomainModel();
+        var getHttpsResource = input.ToDomainModel(dataFormat?.Extension);
         context.GetHttpsResources.Add(getHttpsResource);
         await context.SaveChangesAsync(cancellationToken);
 

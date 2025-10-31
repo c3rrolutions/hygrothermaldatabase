@@ -11,6 +11,8 @@ using HotChocolate;
 using System.Diagnostics.CodeAnalysis;
 using System.Collections.Generic;
 using Database.Extensions;
+using Database.GraphQl.DataX;
+using Database.ApiRequests;
 
 namespace Database.GraphQl.PhotovoltaicDataX;
 
@@ -23,9 +25,8 @@ public sealed record CreatePhotovoltaicDataInput(
     string[] Warnings,
     DateTime CreatedAt,
     Guid CreatorId,
-    AppliedMethodInput AppliedMethod,
-    RootGetHttpsResourceInput RootResource
-)
+    AppliedMethodInput AppliedMethod
+) : IValidateCreateInput
 {
     public PhotovoltaicData ToDomainModel(Guid userId)
     {
@@ -40,7 +41,6 @@ public sealed record CreatePhotovoltaicDataInput(
             CreatedAt,
             AppliedMethod.ToDomainModel()
         );
-        photovoltaicData.Resources.Add(RootResource.ToDomainModel());
         return photovoltaicData;
     }
 };
@@ -51,6 +51,9 @@ public enum CreatePhotovoltaicDataErrorCode
     UNKNOWN,
     UNAUTHORIZED,
     UNAUTHENTICATED,
+    UNKNOWN_COMPONENT,
+    ILLEGAL_CREATED_AT,
+    UNKNOWN_CREATOR,
     CREATING_RESPONSE_APPROVAL_FAILED
 }
 
@@ -68,7 +71,7 @@ public sealed record CreatePhotovoltaicDataPayload(
 
 [ExtendObjectType(nameof(Mutation))]
 public sealed class CreatePhotovoltaicDataMutation
-: DataMutationBase<PhotovoltaicData, CreatePhotovoltaicDataPayload, CreatePhotovoltaicDataError, CreatePhotovoltaicDataErrorCode>
+: CreateDataMutationBase<PhotovoltaicData, CreatePhotovoltaicDataPayload, CreatePhotovoltaicDataError, CreatePhotovoltaicDataErrorCode>
 {
     // [UseUserManager] [Authorize(Policy = Configuration.AuthConfiguration.WritePolicy)]
     protected override CreatePhotovoltaicDataPayload NewPayload(
@@ -86,6 +89,8 @@ public sealed class CreatePhotovoltaicDataMutation
         CreatePhotovoltaicDataInput input,
         ApplicationDbContext context,
         CommonAuthorization authorization,
+        IComponentByIdDataLoader componentByIdDataLoader,
+        IInstitutionByIdDataLoader institutionByIdDataLoader,
         ResponseApprovalService responseApprovalService,
         CancellationToken cancellationToken
     )
@@ -100,6 +105,21 @@ public sealed class CreatePhotovoltaicDataMutation
         )
         {
             return authorizeErrorPayload;
+        }
+
+        if ((await ValidateAsync(
+                input,
+                CreatePhotovoltaicDataErrorCode.ILLEGAL_CREATED_AT,
+                componentByIdDataLoader,
+                CreatePhotovoltaicDataErrorCode.UNKNOWN_COMPONENT,
+                institutionByIdDataLoader,
+                CreatePhotovoltaicDataErrorCode.UNKNOWN_CREATOR,
+                cancellationToken
+            )
+            ).Failed(out var validateErrorPayload)
+        )
+        {
+            return validateErrorPayload;
         }
 
         var photovoltaicData = input.ToDomainModel(currentUser.Uuid);

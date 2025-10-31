@@ -12,7 +12,7 @@ namespace Database.ApiRequests;
 /// </summary>
 public sealed class QueryCurrentUser
 {
-    private const string CurrentUserFileName = "CurrentUser.graphql";
+    private const string QueryFileName = "CurrentUser.graphql";
 
     public static Uri GetGraphQlEndpoint(AppSettings appSettings) =>
         appSettings.MetabaseGraphQlEndpoint;
@@ -74,7 +74,7 @@ public sealed class QueryCurrentUser
         return (await apiRequestService.QueryGraphQl<CurrentUserData>(
             GetGraphQlEndpoint(appSettings),
             new GraphQLRequest(
-                await apiRequestService.ConstructGraphQlQuery(CurrentUserFileName),
+                await apiRequestService.ConstructGraphQlQuery(QueryFileName),
                 new
                 {
                     databaseId = appSettings.DatabaseId

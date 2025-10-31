@@ -12,6 +12,7 @@ using Database.GraphQl.DataX;
 using HotChocolate;
 using Database.Enumerations;
 using System.Linq;
+using Database.ApiRequests;
 
 namespace Database.GraphQl.OpticalDataX;
 
@@ -28,7 +29,6 @@ public sealed record CreateOpticalDataInput(
     OpticalComponentSubtype? Subtype,
     CoatedSide? CoatedSide,
     AppliedMethodInput AppliedMethod,
-    RootGetHttpsResourceInput RootResource,
     double[] NearnormalHemisphericalVisibleTransmittances,
     double[] NearnormalHemisphericalVisibleReflectances,
     double[] NearnormalHemisphericalSolarTransmittances,
@@ -36,7 +36,7 @@ public sealed record CreateOpticalDataInput(
     double[] InfraredEmittances,
     double[] ColorRenderingIndices,
     IReadOnlyList<CielabColorInput> CielabColors
-)
+) : IValidateCreateInput
 {
     public OpticalData ToDomainModel(Guid userId)
     {
@@ -61,7 +61,6 @@ public sealed record CreateOpticalDataInput(
             ColorRenderingIndices,
             CielabColors.Select(c => c.ToDomainModel()).ToList()
         );
-        opticalData.Resources.Add(RootResource.ToDomainModel());
         return opticalData;
     }
 };
@@ -72,6 +71,9 @@ public enum CreateOpticalDataErrorCode
     UNKNOWN,
     UNAUTHORIZED,
     UNAUTHENTICATED,
+    UNKNOWN_COMPONENT,
+    ILLEGAL_CREATED_AT,
+    UNKNOWN_CREATOR,
     CREATING_RESPONSE_APPROVAL_FAILED
 }
 
@@ -89,7 +91,7 @@ public sealed record CreateOpticalDataPayload(
 
 [ExtendObjectType(nameof(Mutation))]
 public sealed class CreateOpticalDataMutation
-: DataMutationBase<OpticalData, CreateOpticalDataPayload, CreateOpticalDataError, CreateOpticalDataErrorCode>
+: CreateDataMutationBase<OpticalData, CreateOpticalDataPayload, CreateOpticalDataError, CreateOpticalDataErrorCode>
 {
     protected override CreateOpticalDataPayload NewPayload(
         OpticalData? data,
@@ -107,6 +109,8 @@ public sealed class CreateOpticalDataMutation
         CreateOpticalDataInput input,
         ApplicationDbContext context,
         CommonAuthorization authorization,
+        IComponentByIdDataLoader componentByIdDataLoader,
+        IInstitutionByIdDataLoader institutionByIdDataLoader,
         ResponseApprovalService responseApprovalService,
         CancellationToken cancellationToken
     )
@@ -121,6 +125,21 @@ public sealed class CreateOpticalDataMutation
         )
         {
             return authorizeErrorPayload;
+        }
+
+        if ((await ValidateAsync(
+                input,
+                CreateOpticalDataErrorCode.ILLEGAL_CREATED_AT,
+                componentByIdDataLoader,
+                CreateOpticalDataErrorCode.UNKNOWN_COMPONENT,
+                institutionByIdDataLoader,
+                CreateOpticalDataErrorCode.UNKNOWN_CREATOR,
+                cancellationToken
+            )
+            ).Failed(out var validateErrorPayload)
+        )
+        {
+            return validateErrorPayload;
         }
 
         var opticalData = input.ToDomainModel(currentUser.Uuid);

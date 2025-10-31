@@ -10,7 +10,9 @@ using Database.Utilities;
 using HotChocolate;
 using System.Diagnostics.CodeAnalysis;
 using System.Collections.Generic;
+using Database.GraphQl.DataX;
 using Database.Extensions;
+using Database.ApiRequests;
 
 namespace Database.GraphQl.HygrothermalDataX;
 
@@ -23,9 +25,8 @@ public sealed record CreateHygrothermalDataInput(
     string[] Warnings,
     DateTime CreatedAt,
     Guid CreatorId,
-    AppliedMethodInput AppliedMethod,
-    RootGetHttpsResourceInput RootResource
-)
+    AppliedMethodInput AppliedMethod
+) : IValidateCreateInput
 {
     public HygrothermalData ToDomainModel(Guid userId)
     {
@@ -40,7 +41,6 @@ public sealed record CreateHygrothermalDataInput(
             CreatedAt,
             AppliedMethod.ToDomainModel()
         );
-        hygrothermalData.Resources.Add(RootResource.ToDomainModel());
         return hygrothermalData;
     }
 };
@@ -51,6 +51,9 @@ public enum CreateHygrothermalDataErrorCode
     UNKNOWN,
     UNAUTHORIZED,
     UNAUTHENTICATED,
+    UNKNOWN_COMPONENT,
+    ILLEGAL_CREATED_AT,
+    UNKNOWN_CREATOR,
     CREATING_RESPONSE_APPROVAL_FAILED
 }
 
@@ -68,7 +71,7 @@ public sealed record CreateHygrothermalDataPayload(
 
 [ExtendObjectType(nameof(Mutation))]
 public sealed class CreateHygrothermalDataMutation
-: DataMutationBase<HygrothermalData, CreateHygrothermalDataPayload, CreateHygrothermalDataError, CreateHygrothermalDataErrorCode>
+: CreateDataMutationBase<HygrothermalData, CreateHygrothermalDataPayload, CreateHygrothermalDataError, CreateHygrothermalDataErrorCode>
 {
     // [UseUserManager] [Authorize(Policy = Configuration.AuthConfiguration.WritePolicy)]
     protected override CreateHygrothermalDataPayload NewPayload(
@@ -86,6 +89,8 @@ public sealed class CreateHygrothermalDataMutation
         CreateHygrothermalDataInput input,
         ApplicationDbContext context,
         CommonAuthorization authorization,
+        IComponentByIdDataLoader componentByIdDataLoader,
+        IInstitutionByIdDataLoader institutionByIdDataLoader,
         ResponseApprovalService responseApprovalService,
         CancellationToken cancellationToken
     )
@@ -100,6 +105,21 @@ public sealed class CreateHygrothermalDataMutation
         )
         {
             return authorizeErrorPayload;
+        }
+
+        if ((await ValidateAsync(
+                input,
+                CreateHygrothermalDataErrorCode.ILLEGAL_CREATED_AT,
+                componentByIdDataLoader,
+                CreateHygrothermalDataErrorCode.UNKNOWN_COMPONENT,
+                institutionByIdDataLoader,
+                CreateHygrothermalDataErrorCode.UNKNOWN_CREATOR,
+                cancellationToken
+            )
+            ).Failed(out var validateErrorPayload)
+        )
+        {
+            return validateErrorPayload;
         }
 
         var hygrothermalData = input.ToDomainModel(currentUser.Uuid);

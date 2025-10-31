@@ -1,0 +1,9 @@
+query Institutions($ids: [Uuid!]!) {
+  connection: institutions(where: { id: { in: $ids } }) {
+    edges {
+      node {
+        uuid
+      }
+    }
+  }
+}

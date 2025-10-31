@@ -11,6 +11,8 @@ using HotChocolate;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Database.Extensions;
+using Database.GraphQl.DataX;
+using Database.ApiRequests;
 
 namespace Database.GraphQl.CalorimetricDataX;
 
@@ -24,10 +26,9 @@ public sealed record CreateCalorimetricDataInput(
     DateTime CreatedAt,
     Guid CreatorId,
     AppliedMethodInput AppliedMethod,
-    RootGetHttpsResourceInput RootResource,
     double[] GValues,
     double[] UValues
-)
+) : IValidateCreateInput
 {
     public CalorimetricData ToDomainModel(Guid userId)
     {
@@ -44,7 +45,6 @@ public sealed record CreateCalorimetricDataInput(
             GValues,
             UValues
         );
-        calorimetricData.Resources.Add(RootResource.ToDomainModel());
         return calorimetricData;
     }
 };
@@ -55,6 +55,9 @@ public enum CreateCalorimetricDataErrorCode
     UNKNOWN,
     UNAUTHORIZED,
     UNAUTHENTICATED,
+    UNKNOWN_COMPONENT,
+    ILLEGAL_CREATED_AT,
+    UNKNOWN_CREATOR,
     CREATING_RESPONSE_APPROVAL_FAILED
 }
 
@@ -72,7 +75,7 @@ public sealed record CreateCalorimetricDataPayload(
 
 [ExtendObjectType(nameof(Mutation))]
 public sealed class CreateCalorimetricDataMutation
-: DataMutationBase<CalorimetricData, CreateCalorimetricDataPayload, CreateCalorimetricDataError, CreateCalorimetricDataErrorCode>
+: CreateDataMutationBase<CalorimetricData, CreateCalorimetricDataPayload, CreateCalorimetricDataError, CreateCalorimetricDataErrorCode>
 {
     // [UseUserManager] [Authorize(Policy = Configuration.AuthConfiguration.WritePolicy)]
     protected override CreateCalorimetricDataPayload NewPayload(
@@ -90,6 +93,8 @@ public sealed class CreateCalorimetricDataMutation
         CreateCalorimetricDataInput input,
         ApplicationDbContext context,
         CommonAuthorization authorization,
+        IComponentByIdDataLoader componentByIdDataLoader,
+        IInstitutionByIdDataLoader institutionByIdDataLoader,
         ResponseApprovalService responseApprovalService,
         CancellationToken cancellationToken
     )
@@ -104,6 +109,21 @@ public sealed class CreateCalorimetricDataMutation
         )
         {
             return authorizeErrorPayload;
+        }
+
+        if ((await ValidateAsync(
+                input,
+                CreateCalorimetricDataErrorCode.ILLEGAL_CREATED_AT,
+                componentByIdDataLoader,
+                CreateCalorimetricDataErrorCode.UNKNOWN_COMPONENT,
+                institutionByIdDataLoader,
+                CreateCalorimetricDataErrorCode.UNKNOWN_CREATOR,
+                cancellationToken
+            )
+            ).Failed(out var validateErrorPayload)
+        )
+        {
+            return validateErrorPayload;
         }
 
         var calorimetricData = input.ToDomainModel(currentUser.Uuid);

@@ -10,7 +10,6 @@ using GreenDonut.Data;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Org.BouncyCastle.Math.EC.Rfc7748;
 using SchemaNameOptionsExtension = Database.Data.Extensions.SchemaNameOptionsExtension;
 
 namespace Database.Data;
@@ -184,11 +183,58 @@ public sealed class ApplicationDbContext
     }
 
     private static
+        EntityTypeBuilder<CalorimetricData>
+        ConfigureCalorimetricData(
+            EntityTypeBuilder<CalorimetricData> builder
+        )
+    {
+        builder
+            .HasMany(_ => _.Resources)
+            .WithOne(_ => _.CalorimetricData)
+            .HasForeignKey(_ => _.CalorimetricDataId)
+            .OnDelete(DeleteBehavior.Cascade);
+        return builder;
+    }
+
+    private static
+        EntityTypeBuilder<GeometricData>
+        ConfigureGeometricData(
+            EntityTypeBuilder<GeometricData> builder
+        )
+    {
+        builder
+            .HasMany(_ => _.Resources)
+            .WithOne(_ => _.GeometricData)
+            .HasForeignKey(_ => _.GeometricDataId)
+            .OnDelete(DeleteBehavior.Cascade);
+        return builder;
+    }
+
+    private static
+        EntityTypeBuilder<HygrothermalData>
+        ConfigureHygrothermalData(
+            EntityTypeBuilder<HygrothermalData> builder
+        )
+    {
+        builder
+            .HasMany(_ => _.Resources)
+            .WithOne(_ => _.HygrothermalData)
+            .HasForeignKey(_ => _.HygrothermalDataId)
+            .OnDelete(DeleteBehavior.Cascade);
+        return builder;
+    }
+
+    private static
         EntityTypeBuilder<OpticalData>
         ConfigureOpticalData(
             EntityTypeBuilder<OpticalData> builder
         )
     {
+        builder
+            .HasMany(_ => _.Resources)
+            .WithOne(_ => _.OpticalData)
+            .HasForeignKey(_ => _.OpticalDataId)
+            .OnDelete(DeleteBehavior.Cascade);
         builder.OwnsMany(
             data => data.CielabColors
         ).ToTable(
@@ -200,6 +246,20 @@ public sealed class ApplicationDbContext
                 );
             }
         );
+        return builder;
+    }
+
+    private static
+        EntityTypeBuilder<PhotovoltaicData>
+        ConfigurePhotovoltaicData(
+            EntityTypeBuilder<PhotovoltaicData> builder
+        )
+    {
+        builder
+            .HasMany(_ => _.Resources)
+            .WithOne(_ => _.PhotovoltaicData)
+            .HasForeignKey(_ => _.PhotovoltaicDataId)
+            .OnDelete(DeleteBehavior.Cascade);
         return builder;
     }
 
@@ -218,24 +278,34 @@ public sealed class ApplicationDbContext
         CreateEnumerations(modelBuilder, _schemaName);
         ConfigureIdentityEntities(modelBuilder);
         ConfigureEntity(
-                modelBuilder.Entity<GetHttpsResource>()
-            )
-            .ToTable("get_https_resource");
-        ConfigureData(
-            ConfigureEntity(modelBuilder.Entity<CalorimetricData>())
-        ).ToTable("calorimetric_data");
-        ConfigureData(
-            ConfigureEntity(modelBuilder.Entity<GeometricData>())
-        ).ToTable("geometric_data");
-        ConfigureData(
-            ConfigureEntity(modelBuilder.Entity<HygrothermalData>())
-        ).ToTable("hygrothermal_data");
+            modelBuilder.Entity<GetHttpsResource>()
+        )
+        .ToTable("get_https_resource");
+        ConfigureCalorimetricData(
+            ConfigureData(
+                ConfigureEntity(modelBuilder.Entity<CalorimetricData>())
+            ).ToTable("calorimetric_data")
+        );
+        ConfigureGeometricData(
+            ConfigureData(
+                ConfigureEntity(modelBuilder.Entity<GeometricData>())
+            ).ToTable("geometric_data")
+        );
+        ConfigureHygrothermalData(
+            ConfigureData(
+                ConfigureEntity(modelBuilder.Entity<HygrothermalData>())
+            ).ToTable("hygrothermal_data")
+        );
         ConfigureOpticalData(
-            ConfigureEntity(modelBuilder.Entity<OpticalData>())
+            ConfigureData(
+                ConfigureEntity(modelBuilder.Entity<OpticalData>())
+            )
         ).ToTable("optical_data");
-        ConfigureData(
-            ConfigureEntity(modelBuilder.Entity<PhotovoltaicData>())
-        ).ToTable("photovoltaic_data");
+        ConfigurePhotovoltaicData(
+            ConfigureData(
+                ConfigureEntity(modelBuilder.Entity<PhotovoltaicData>())
+            ).ToTable("photovoltaic_data")
+        );
         ConfigureEntity(
                 modelBuilder.Entity<User>()
             )

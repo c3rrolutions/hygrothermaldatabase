@@ -9,15 +9,16 @@ using Database.Enumerations;
 using Database.Extensions;
 using Database.Utilities;
 using EntityFrameworkCore.Projectables;
+using Microsoft.EntityFrameworkCore;
 
 namespace Database.Data;
 
-// `DbContext` needs this constructor without owned entities.
 public sealed class GetHttpsResource
 : Entity
 {
     public const string FilesDirectoryPath = "./files/";
 
+    // Constructor for EF Core because navigation properties cannot be set using a constructor: https://learn.microsoft.com/en-us/ef/core/modeling/constructors#binding-to-mapped-properties
     public GetHttpsResource(
         string? description,
         string hashValue,
@@ -31,6 +32,9 @@ public sealed class GetHttpsResource
         FileExtension = fileExtension;
     }
 
+    /// <summary>
+    /// Construct a root resource.
+    /// </summary>
     public GetHttpsResource(
         string? description,
         string hashValue,
@@ -41,9 +45,42 @@ public sealed class GetHttpsResource
         Guid? hygrothermalDataId,
         Guid? opticalDataId,
         Guid? photovoltaicDataId,
-        Guid? parentId,
+        ICollection<FileMetaInformation> archivedFilesMetaInformation
+    )
+        : this(
+            description,
+            hashValue,
+            dataFormatId,
+            fileExtension
+        )
+    {
+        CalorimetricDataId = calorimetricDataId;
+        HygrothermalDataId = hygrothermalDataId;
+        OpticalDataId = opticalDataId;
+        PhotovoltaicDataId = photovoltaicDataId;
+        GeometricDataId = geometricDataId;
+        ParentId = null;
+        ArchivedFilesMetaInformation = archivedFilesMetaInformation;
+        AppliedConversionMethod = null;
+        AssertThatExactlyOneDataIdIsNonNull();
+    }
+
+    /// <summary>
+    /// Construct a child resource.
+    /// </summary>
+    public GetHttpsResource(
+        string? description,
+        string hashValue,
+        Guid dataFormatId,
+        string? fileExtension,
+        Guid? calorimetricDataId,
+        Guid? geometricDataId,
+        Guid? hygrothermalDataId,
+        Guid? opticalDataId,
+        Guid? photovoltaicDataId,
+        Guid parentId,
         ICollection<FileMetaInformation> archivedFilesMetaInformation,
-        ToTreeVertexAppliedConversionMethod? appliedConversionMethod
+        ToTreeVertexAppliedConversionMethod appliedConversionMethod
     )
         : this(
             description,
@@ -100,9 +137,11 @@ public sealed class GetHttpsResource
 
     // Note that at least one data ID is always present. So `Guid.Empty` will never be used.
     [NotMapped]
+    [Projectable]
     public Guid DataId => CalorimetricDataId ?? HygrothermalDataId ?? OpticalDataId ?? PhotovoltaicDataId ?? GeometricDataId ?? Guid.Empty;
 
     [NotMapped]
+    [Projectable]
     public IData? Data => CalorimetricData ?? HygrothermalData ?? OpticalData ?? GeometricData ?? PhotovoltaicData as IData;
 
     [Projectable]
@@ -156,7 +195,6 @@ public sealed class GetHttpsResource
 
     public Guid? ParentId { get; private set; }
 
-    // TODO Require the conversion method to be given whenever there is a parent. In other words, either both are `null` or both are non-`null`.
     public ToTreeVertexAppliedConversionMethod? AppliedConversionMethod { get; private set; }
 
     // TODO The parent's `Data` must be the same as this resource's `Data`.

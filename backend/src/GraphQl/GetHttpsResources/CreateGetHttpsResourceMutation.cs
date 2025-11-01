@@ -31,7 +31,8 @@ public sealed record CreateGetHttpsResourceInput(
 {
     public GetHttpsResource ToDomainModel(string? fileExtension)
     {
-        return new GetHttpsResource(
+        return ParentId is null || AppliedConversionMethod is null
+        ? new(
             Description,
             Sha256FileHasher.ComputeForString(""), // The correct hash value is computed when the file for this resource is being uploaded.
             DataFormatId,
@@ -41,9 +42,21 @@ public sealed record CreateGetHttpsResourceInput(
             DataKind == DataKind.HYGROTHERMAL_DATA ? DataId : null,
             DataKind == DataKind.OPTICAL_DATA ? DataId : null,
             DataKind == DataKind.PHOTOVOLTAIC_DATA ? DataId : null,
-            ParentId,
+            ArchivedFilesMetaInformation.Select(i => i.ToDomainModel()).ToList()
+          )
+        : new(
+            Description,
+            Sha256FileHasher.ComputeForString(""), // The correct hash value is computed when the file for this resource is being uploaded.
+            DataFormatId,
+            fileExtension,
+            DataKind == DataKind.CALORIMETRIC_DATA ? DataId : null,
+            DataKind == DataKind.GEOMETRIC_DATA ? DataId : null,
+            DataKind == DataKind.HYGROTHERMAL_DATA ? DataId : null,
+            DataKind == DataKind.OPTICAL_DATA ? DataId : null,
+            DataKind == DataKind.PHOTOVOLTAIC_DATA ? DataId : null,
+            ParentId ?? Guid.Empty,
             ArchivedFilesMetaInformation.Select(i => i.ToDomainModel()).ToList(),
-            AppliedConversionMethod?.ToDomainModel()
+            AppliedConversionMethod.ToDomainModel()
         );
     }
 }

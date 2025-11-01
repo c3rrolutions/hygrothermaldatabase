@@ -183,6 +183,31 @@ public sealed class ApplicationDbContext
     }
 
     private static
+        EntityTypeBuilder<GetHttpsResource>
+        ConfigureGetHttpsResource(
+            EntityTypeBuilder<GetHttpsResource> builder
+        )
+    {
+        // add partial indexes, see https://www.postgresql.org/docs/18/indexes-partial.html
+        builder
+            .HasIndex(_ => new { _.CalorimetricDataId, _.ParentId })
+            .HasFilter($"{nameof(GetHttpsResource.CalorimetricDataId)} IS NOT NULL AND {nameof(GetHttpsResource.ParentId)} IS NULL");
+        builder
+            .HasIndex(_ => new { _.GeometricDataId, _.ParentId })
+            .HasFilter($"{nameof(GetHttpsResource.GeometricDataId)} IS NOT NULL AND {nameof(GetHttpsResource.ParentId)} IS NULL");
+        builder
+            .HasIndex(_ => new { _.HygrothermalDataId, _.ParentId })
+            .HasFilter($"{nameof(GetHttpsResource.HygrothermalDataId)} IS NOT NULL AND {nameof(GetHttpsResource.ParentId)} IS NULL");
+        builder
+            .HasIndex(_ => new { _.OpticalDataId, _.ParentId })
+            .HasFilter($"{nameof(GetHttpsResource.OpticalDataId)} IS NOT NULL AND {nameof(GetHttpsResource.ParentId)} IS NULL");
+        builder
+            .HasIndex(_ => new { _.PhotovoltaicDataId, _.ParentId })
+            .HasFilter($"{nameof(GetHttpsResource.PhotovoltaicDataId)} IS NOT NULL AND {nameof(GetHttpsResource.ParentId)} IS NULL");
+        return builder;
+    }
+
+    private static
         EntityTypeBuilder<CalorimetricData>
         ConfigureCalorimetricData(
             EntityTypeBuilder<CalorimetricData> builder
@@ -241,7 +266,7 @@ public sealed class ApplicationDbContext
             color =>
             {
                 color.HasCheckConstraint(
-                    $"CK_OpticalData_CielabColors_{nameof(CielabColor.LStar)}",
+                    $"CK_{nameof(OpticalData)}_{nameof(CielabColor)}s_{nameof(CielabColor.LStar)}",
                     $"\"{nameof(CielabColor.LStar)}\" >= 0.0 AND \"{nameof(CielabColor.LStar)}\" <= 100.0"
                 );
             }
@@ -278,9 +303,19 @@ public sealed class ApplicationDbContext
         CreateEnumerations(modelBuilder, _schemaName);
         ConfigureIdentityEntities(modelBuilder);
         ConfigureEntity(
-            modelBuilder.Entity<GetHttpsResource>()
+            ConfigureGetHttpsResource(modelBuilder.Entity<GetHttpsResource>())
         )
-        .ToTable("get_https_resource");
+        .ToTable(
+            "get_https_resource",
+            _ =>
+            {
+                _.HasCheckConstraint(
+                    $"CK_{nameof(GetHttpsResource)}_Root_Or_Child",
+                    $"(\"{nameof(GetHttpsResource.ParentId)}\" IS NULL AND \"{nameof(GetHttpsResource.AppliedConversionMethod)}\" IS NULL)" +
+                    $"OR (\"{nameof(GetHttpsResource.ParentId)}\" IS NOT NULL AND \"{nameof(GetHttpsResource.AppliedConversionMethod)}\" IS NOT NULL)"
+                );
+            }
+        );
         ConfigureCalorimetricData(
             ConfigureData(
                 ConfigureEntity(modelBuilder.Entity<CalorimetricData>())

@@ -165,6 +165,13 @@ public sealed class GetHttpsResource
     [InverseProperty(nameof(Parent))]
     public ICollection<GetHttpsResource> Children { get; } = [];
 
+    public void UpdateFileExtension(string fileExtension)
+    {
+        var oldFilePath = FilePath;
+        FileExtension = fileExtension;
+        File.Move(oldFilePath, FilePath);
+    }
+
     public bool DoesFileExist()
     {
         return File.Exists(FilePath);

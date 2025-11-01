@@ -170,6 +170,11 @@ public sealed class GetHttpsResource
         return File.Exists(FilePath);
     }
 
+    public void DeleteFile()
+    {
+        File.Delete(FilePath);
+    }
+
     public async Task RecomputeHashValue(CancellationToken cancellationToken)
     {
         HashValue = await Sha256FileHasher.ComputeForFile(FilePath, cancellationToken);

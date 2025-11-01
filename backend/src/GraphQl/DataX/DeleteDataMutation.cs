@@ -8,6 +8,9 @@ using Database.Authorization;
 using Database.Data;
 using Database.Enumerations;
 using Database.Extensions;
+using System.Linq;
+using Microsoft.AspNetCore.Mvc;
+using System.IO;
 
 namespace Database.GraphQl.DataX;
 
@@ -95,6 +98,17 @@ public sealed class DeleteDataMutation
             );
         }
 
+        // Delete resource files if they exist.
+        // The resources themselves are deleted through cascading deletes.
+        await context.Entry(data)
+            .Collection(_ => _.Resources)
+            .LoadAsync(cancellationToken);
+        foreach (var resource in data.Resources)
+        {
+            resource.DeleteFile();
+        }
+
+        // TODO Would a simple `context.Remove(data);` also work?
         switch (data)
         {
             case CalorimetricData calorimetricData:

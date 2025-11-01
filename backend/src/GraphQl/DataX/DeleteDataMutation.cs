@@ -21,7 +21,8 @@ public enum DeleteDataErrorCode
 {
     UNAUTHENTICATED,
     UNAUTHORIZED,
-    UNKNOWN_DATA
+    UNKNOWN_DATA,
+    NOT_PENDING
 }
 
 public sealed record DeleteDataError(
@@ -80,6 +81,18 @@ public sealed class DeleteDataMutation
         )
         {
             return fetchDataErrorPayload;
+        }
+
+        if (data.PublishingState is not PublishingState.PENDING)
+        {
+            return NewPayload(
+                null,
+                [NewError(
+                    DeleteDataErrorCode.NOT_PENDING,
+                    $"The publishing state is not pending but {data.PublishingState}. If it is published, you may retract the data set. A retracted data set does not show up in queries for all data.",
+                    []
+                )]
+            );
         }
 
         switch (data)

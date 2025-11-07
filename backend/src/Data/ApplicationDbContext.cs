@@ -190,19 +190,19 @@ public sealed class ApplicationDbContext
     {
         // add partial indexes, see https://www.postgresql.org/docs/18/indexes-partial.html
         builder
-            .HasIndex(_ => new { _.CalorimetricDataId, _.ParentId })
+            .HasIndex(_ => new { _.CalorimetricDataId })
             .HasFilter($"{nameof(GetHttpsResource.CalorimetricDataId)} IS NOT NULL AND {nameof(GetHttpsResource.ParentId)} IS NULL");
         builder
-            .HasIndex(_ => new { _.GeometricDataId, _.ParentId })
+            .HasIndex(_ => new { _.GeometricDataId })
             .HasFilter($"{nameof(GetHttpsResource.GeometricDataId)} IS NOT NULL AND {nameof(GetHttpsResource.ParentId)} IS NULL");
         builder
-            .HasIndex(_ => new { _.HygrothermalDataId, _.ParentId })
+            .HasIndex(_ => new { _.HygrothermalDataId })
             .HasFilter($"{nameof(GetHttpsResource.HygrothermalDataId)} IS NOT NULL AND {nameof(GetHttpsResource.ParentId)} IS NULL");
         builder
-            .HasIndex(_ => new { _.OpticalDataId, _.ParentId })
+            .HasIndex(_ => new { _.OpticalDataId })
             .HasFilter($"{nameof(GetHttpsResource.OpticalDataId)} IS NOT NULL AND {nameof(GetHttpsResource.ParentId)} IS NULL");
         builder
-            .HasIndex(_ => new { _.PhotovoltaicDataId, _.ParentId })
+            .HasIndex(_ => new { _.PhotovoltaicDataId })
             .HasFilter($"{nameof(GetHttpsResource.PhotovoltaicDataId)} IS NOT NULL AND {nameof(GetHttpsResource.ParentId)} IS NULL");
         return builder;
     }

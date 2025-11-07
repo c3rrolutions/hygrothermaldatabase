@@ -26,6 +26,7 @@ using Database.Data;
 using Database.Data.Extensions;
 using Database.Enumerations;
 using Database.Services;
+using Laraue.EfCoreTriggers.PostgreSql.Extensions;
 
 namespace Database;
 
@@ -188,7 +189,8 @@ public sealed class Startup(
             )
             .UseSchemaName(appSettings.Database.SchemaName)
             .UseOpenIddict()
-            .UseProjectables();
+            .UseProjectables()
+            .UsePostgreSqlTriggers();
         if (!environment.IsProduction())
         {
             options

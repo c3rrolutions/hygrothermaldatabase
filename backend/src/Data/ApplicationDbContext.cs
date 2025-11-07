@@ -5,8 +5,10 @@ using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Database.Enumerations;
+using Database.Extensions;
 using Database.GraphQl.Extensions;
 using GreenDonut.Data;
+using Laraue.EfCoreTriggers.Common.Extensions;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -191,19 +193,74 @@ public sealed class ApplicationDbContext
         // add partial indexes, see https://www.postgresql.org/docs/18/indexes-partial.html
         builder
             .HasIndex(_ => new { _.CalorimetricDataId })
-            .HasFilter($"{nameof(GetHttpsResource.CalorimetricDataId)} IS NOT NULL AND {nameof(GetHttpsResource.ParentId)} IS NULL");
+            .HasFilter(
+                $"""
+                {nameof(GetHttpsResource.CalorimetricDataId).Enquote()} IS NOT NULL AND {nameof(GetHttpsResource.ParentId).Enquote()} IS NULL
+                """
+            );
         builder
             .HasIndex(_ => new { _.GeometricDataId })
-            .HasFilter($"{nameof(GetHttpsResource.GeometricDataId)} IS NOT NULL AND {nameof(GetHttpsResource.ParentId)} IS NULL");
+            .HasFilter(
+                $"""
+                {nameof(GetHttpsResource.GeometricDataId).Enquote()} IS NOT NULL AND {nameof(GetHttpsResource.ParentId).Enquote()} IS NULL
+                """
+            );
         builder
             .HasIndex(_ => new { _.HygrothermalDataId })
-            .HasFilter($"{nameof(GetHttpsResource.HygrothermalDataId)} IS NOT NULL AND {nameof(GetHttpsResource.ParentId)} IS NULL");
+            .HasFilter(
+                $"""
+                {nameof(GetHttpsResource.HygrothermalDataId).Enquote()} IS NOT NULL AND {nameof(GetHttpsResource.ParentId).Enquote()} IS NULL
+                """
+            );
         builder
             .HasIndex(_ => new { _.OpticalDataId })
-            .HasFilter($"{nameof(GetHttpsResource.OpticalDataId)} IS NOT NULL AND {nameof(GetHttpsResource.ParentId)} IS NULL");
+            .HasFilter(
+                $"""
+                {nameof(GetHttpsResource.OpticalDataId).Enquote()} IS NOT NULL AND {nameof(GetHttpsResource.ParentId).Enquote()} IS NULL
+                """
+            );
         builder
             .HasIndex(_ => new { _.PhotovoltaicDataId })
-            .HasFilter($"{nameof(GetHttpsResource.PhotovoltaicDataId)} IS NOT NULL AND {nameof(GetHttpsResource.ParentId)} IS NULL");
+            .HasFilter(
+                $"""
+                {nameof(GetHttpsResource.PhotovoltaicDataId).Enquote()} IS NOT NULL AND {nameof(GetHttpsResource.ParentId).Enquote()} IS NULL
+                """
+            );
+        builder
+            .BeforeInsert(trigger => trigger
+                .SetTriggerName(GetHttpsResource.DataIdsMustMatchTriggerName)
+                .Action(action => action
+                    // .Condition(_ => _.New.ParentId != null)
+                    .ExecuteRawSql(
+                        $"""
+                        IF NEW.{nameof(GetHttpsResource.ParentId).Enquote()} IS NOT NULL
+                           AND (
+                               SELECT COUNT({nameof(GetHttpsResource.Id).Enquote()})
+                               FROM "{GetHttpsResource.TableName}"
+                               WHERE COALESCE({string.Join(", ", GetHttpsResource.DataIdFieldNames.Select(_ => _.Enquote()))}) = COALESCE({string.Join(", ", GetHttpsResource.DataIdFieldNames.Select(_ => $"NEW.{_.Enquote()}"))})
+                           )
+                           <> 1
+                        THEN
+                            RAISE EXCEPTION 'The new resource must have the same data ID as its parent.';
+                        END IF;
+                        """
+                    )
+                )
+            );
+        builder
+            .BeforeUpdate(trigger => trigger
+                .SetTriggerName(GetHttpsResource.DataIdCannotChangeTriggerName)
+                .Action(action => action
+                    .ExecuteRawSql(
+                        $"""
+                        IF COALESCE({string.Join(", ", GetHttpsResource.DataIdFieldNames.Select(_ => $"OLD.{_.Enquote()}"))}) <> COALESCE({string.Join(", ", GetHttpsResource.DataIdFieldNames.Select(_ => $"NEW.{_.Enquote()}"))})
+                        THEN
+                            RAISE EXCEPTION 'You cannot change the data ID of a resource.';
+                        END IF;
+                        """
+                    )
+                )
+            );
         return builder;
     }
 
@@ -267,7 +324,7 @@ public sealed class ApplicationDbContext
             {
                 color.HasCheckConstraint(
                     $"CK_{nameof(OpticalData)}_{nameof(CielabColor)}s_{nameof(CielabColor.LStar)}",
-                    $"\"{nameof(CielabColor.LStar)}\" >= 0.0 AND \"{nameof(CielabColor.LStar)}\" <= 100.0"
+                    $"{nameof(CielabColor.LStar)}.Enquote() >= 0.0 AND {nameof(CielabColor.LStar).Enquote()} <= 100.0"
                 );
             }
         );
@@ -306,14 +363,24 @@ public sealed class ApplicationDbContext
             ConfigureGetHttpsResource(modelBuilder.Entity<GetHttpsResource>())
         )
         .ToTable(
-            "get_https_resource",
+            GetHttpsResource.TableName,
             _ =>
             {
                 _.HasCheckConstraint(
                     $"CK_{nameof(GetHttpsResource)}_Root_Or_Child",
-                    $"(\"{nameof(GetHttpsResource.ParentId)}\" IS NULL AND \"{nameof(GetHttpsResource.AppliedConversionMethod)}\" IS NULL)" +
-                    $"OR (\"{nameof(GetHttpsResource.ParentId)}\" IS NOT NULL AND \"{nameof(GetHttpsResource.AppliedConversionMethod)}\" IS NOT NULL)"
+                    $"""
+                    ({nameof(GetHttpsResource.ParentId).Enquote()} IS NULL AND "{nameof(GetHttpsResource.AppliedConversionMethod)}_{nameof(ToTreeVertexAppliedConversionMethod.MethodId)}" IS NULL)
+                    OR ({nameof(GetHttpsResource.ParentId).Enquote()} IS NOT NULL AND "{nameof(GetHttpsResource.AppliedConversionMethod)}_{nameof(ToTreeVertexAppliedConversionMethod.MethodId)}" IS NOT NULL)
+                    """
                 );
+                _.HasCheckConstraint(
+                    $"CK_{nameof(GetHttpsResource)}_Exactly_One_Data_Set",
+                    $"NUM_NONNULLS({string.Join(", ", GetHttpsResource.DataIdFieldNames.Select(_ => _.Enquote()))}) = 1"
+                );
+                foreach (var triggerName in GetHttpsResource.TriggerNames)
+                {
+                    _.HasTrigger(triggerName);
+                }
             }
         );
         ConfigureCalorimetricData(

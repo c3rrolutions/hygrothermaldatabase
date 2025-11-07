@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.IO;
 using System.Linq;
@@ -9,7 +10,6 @@ using Database.Enumerations;
 using Database.Extensions;
 using Database.Utilities;
 using EntityFrameworkCore.Projectables;
-using Microsoft.EntityFrameworkCore;
 
 namespace Database.Data;
 
@@ -17,6 +17,22 @@ public sealed class GetHttpsResource
 : Entity
 {
     public const string FilesDirectoryPath = "./files/";
+    public const string TableName = "get_https_resource";
+
+    public const string DataIdsMustMatchTriggerName = "data_ids_must_match";
+    public const string DataIdCannotChangeTriggerName = "data_id_cannot_change";
+    public static readonly ImmutableArray<string> TriggerNames = [
+        DataIdsMustMatchTriggerName,
+        DataIdCannotChangeTriggerName
+    ];
+
+    public static readonly ImmutableArray<string> DataIdFieldNames = [
+        nameof(CalorimetricDataId),
+        nameof(GeometricDataId),
+        nameof(HygrothermalDataId),
+        nameof(OpticalDataId),
+        nameof(PhotovoltaicDataId)
+    ];
 
     // Constructor for EF Core because navigation properties cannot be set using a constructor: https://learn.microsoft.com/en-us/ef/core/modeling/constructors#binding-to-mapped-properties
     public GetHttpsResource(

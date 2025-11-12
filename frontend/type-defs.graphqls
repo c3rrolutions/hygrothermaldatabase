@@ -28,11 +28,10 @@ interface Data {
   isRestrictedByUser(alreadyAccesedCount: NonNegativeInt! uuid: Uuid!): Boolean!
   locale: Locale!
   name: String
-  publishingState: PublishingState!
   resources: [GetHttpsResource!]!
   resourceTree: GetHttpsResourceTree!
   timestamp: DateTime!
-  userId: Uuid!
+  userId: Uuid
   uuid: Uuid!
   warnings: [String!]!
 }
@@ -114,11 +113,10 @@ type CalorimetricData implements Node & Data {
   isRestrictedByUser(alreadyAccesedCount: NonNegativeInt! uuid: Uuid!): Boolean!
   locale: Locale!
   name: String
-  publishingState: PublishingState!
   resources(order: [GetHttpsResourceSortInput!] @cost(weight: "10") where: GetHttpsResourcePropositionInput @cost(weight: "10")): [GetHttpsResource!]! @cost(weight: "10")
   resourceTree: GetHttpsResourceTree!
   timestamp: DateTime!
-  userId: Uuid!
+  userId: Uuid
   uuid: Uuid! @cost(weight: "10")
   uValues: [Float!]!
   warnings: [String!]!
@@ -274,9 +272,9 @@ type DataEdge {
 }
 
 type Database {
+  description: String!
   isAuthorizedToUpdateNode: Boolean!
   isAuthorizedToVerifyNode: Boolean!
-  description: String!
   locator: Url!
   name: String!
   operator: DatabaseOperatorEdge!
@@ -321,12 +319,11 @@ type GeometricData implements Node & Data {
   isRestrictedByUser(alreadyAccesedCount: NonNegativeInt! uuid: Uuid!): Boolean!
   locale: Locale!
   name: String
-  publishingState: PublishingState!
   resources(order: [GetHttpsResourceSortInput!] @cost(weight: "10") where: GetHttpsResourcePropositionInput @cost(weight: "10")): [GetHttpsResource!]! @cost(weight: "10")
   resourceTree: GetHttpsResourceTree!
   thicknesses: [Float!]!
   timestamp: DateTime!
-  userId: Uuid!
+  userId: Uuid
   uuid: Uuid! @cost(weight: "10")
   warnings: [String!]!
 }
@@ -415,11 +412,10 @@ type HygrothermalData implements Node & Data {
   isRestrictedByUser(alreadyAccesedCount: NonNegativeInt! uuid: Uuid!): Boolean!
   locale: Locale!
   name: String
-  publishingState: PublishingState!
   resources(order: [GetHttpsResourceSortInput!] @cost(weight: "10") where: GetHttpsResourcePropositionInput @cost(weight: "10")): [GetHttpsResource!]! @cost(weight: "10")
   resourceTree: GetHttpsResourceTree!
   timestamp: DateTime!
-  userId: Uuid!
+  userId: Uuid
   uuid: Uuid! @cost(weight: "10")
   warnings: [String!]!
 }
@@ -531,13 +527,12 @@ type OpticalData implements Node & Data {
   nearnormalHemisphericalSolarTransmittances: [Float!]!
   nearnormalHemisphericalVisibleReflectances: [Float!]!
   nearnormalHemisphericalVisibleTransmittances: [Float!]!
-  publishingState: PublishingState!
   resources(order: [GetHttpsResourceSortInput!] @cost(weight: "10") where: GetHttpsResourcePropositionInput @cost(weight: "10")): [GetHttpsResource!]! @cost(weight: "10")
   resourceTree: GetHttpsResourceTree!
   subtype: OpticalComponentSubtype
   timestamp: DateTime!
   type: OpticalComponentType
-  userId: Uuid!
+  userId: Uuid
   uuid: Uuid! @cost(weight: "10")
   warnings: [String!]!
 }
@@ -588,11 +583,10 @@ type PhotovoltaicData implements Node & Data {
   isRestrictedByUser(alreadyAccesedCount: NonNegativeInt! uuid: Uuid!): Boolean!
   locale: Locale!
   name: String
-  publishingState: PublishingState!
   resources(order: [GetHttpsResourceSortInput!] @cost(weight: "10") where: GetHttpsResourcePropositionInput @cost(weight: "10")): [GetHttpsResource!]! @cost(weight: "10")
   resourceTree: GetHttpsResourceTree!
   timestamp: DateTime!
-  userId: Uuid!
+  userId: Uuid
   uuid: Uuid! @cost(weight: "10")
   warnings: [String!]!
 }
@@ -996,13 +990,16 @@ input CreatePhotovoltaicDataInput {
 input CreateResponseApprovalsFilterInput {
   and: [CreateResponseApprovalsFilterInput!]
   or: [CreateResponseApprovalsFilterInput!]
-  timestamp: DateTimePropositionInput
-  signature: StringPropositionInput
-  keyFingerprint: StringPropositionInput
-  query: StringPropositionInput
-  variables: JsonElementPropositionInput
-  message: StringPropositionInput
-  approverId: UuidPropositionInput
+  locale: StringPropositionInput
+  name: StringPropositionInput
+  description: StringPropositionInput
+  componentId: UuidPropositionInput
+  creatorId: UuidPropositionInput
+  createdAt: DateTimePropositionInput
+  appliedMethod: AppliedMethodPropositionInput
+  approvals: ListFilterInputTypeOfDataApprovalPropositionInput
+  resources: ListFilterInputTypeOfGetHttpsResourcePropositionInput
+  warnings: StringsPropositionInput
 }
 
 input CrossDatabaseDataReferenceInput {
@@ -1681,13 +1678,16 @@ input UpdateInstitutionAccessRightsInput {
 input UpdateResponseApprovalsFilterInput {
   and: [UpdateResponseApprovalsFilterInput!]
   or: [UpdateResponseApprovalsFilterInput!]
-  timestamp: DateTimePropositionInput
-  signature: StringPropositionInput
-  keyFingerprint: StringPropositionInput
-  query: StringPropositionInput
-  variables: JsonElementPropositionInput
-  message: StringPropositionInput
-  approverId: UuidPropositionInput
+  locale: StringPropositionInput
+  name: StringPropositionInput
+  description: StringPropositionInput
+  componentId: UuidPropositionInput
+  creatorId: UuidPropositionInput
+  createdAt: DateTimePropositionInput
+  appliedMethod: AppliedMethodPropositionInput
+  approvals: ListFilterInputTypeOfDataApprovalPropositionInput
+  resources: ListFilterInputTypeOfGetHttpsResourcePropositionInput
+  warnings: StringsPropositionInput
 }
 
 input UriHostNameTypePropositionInput {
@@ -1849,6 +1849,7 @@ enum CreateGetHttpsResourceErrorCode {
   UNKNOWN_DATA_FORMAT
   DUPLICATE_ROOT_RESOURCE
   CREATING_RESPONSE_APPROVAL_FAILED
+  PARENT_WITHOUT_APPLIED_CONVERSION_METHOD
 }
 
 enum CreateHygrothermalDataErrorCode {
@@ -1906,6 +1907,7 @@ enum DeleteDataErrorCode {
   UNAUTHENTICATED
   UNAUTHORIZED
   UNKNOWN_DATA
+  NOT_PENDING
 }
 
 enum Illuminant {
@@ -1962,12 +1964,6 @@ enum PublishDataErrorCode {
   MISSING_ROOT_RESOURCE
   DUPLICATE_ROOT_RESOURCE
   RESOURCES_WITHOUT_FILE
-}
-
-enum PublishingState {
-  PENDING
-  PUBLISHED
-  RETRACTED
 }
 
 enum RecomputeGetHttpsResourceHashValuesErrorCode {

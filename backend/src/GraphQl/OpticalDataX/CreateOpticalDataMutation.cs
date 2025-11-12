@@ -38,7 +38,7 @@ public sealed record CreateOpticalDataInput(
     IReadOnlyList<CielabColorInput> CielabColors
 ) : IValidateCreateInput
 {
-    public OpticalData ToDomainModel(Guid userId)
+    public OpticalData ToDomainModel(Guid? userId)
     {
         return new(
             userId,
@@ -120,7 +120,7 @@ public sealed class CreateOpticalDataMutation
                 authorization,
                 cancellationToken
             )
-            ).Failed(out var currentUser, out var authorizeErrorPayload)
+            ).Failed(out var currentUserOrApplication, out var authorizeErrorPayload)
         )
         {
             return authorizeErrorPayload;
@@ -141,7 +141,7 @@ public sealed class CreateOpticalDataMutation
             return validateErrorPayload;
         }
 
-        var opticalData = input.ToDomainModel(currentUser.Uuid);
+        var opticalData = input.ToDomainModel(currentUserOrApplication.CurrentUser?.Uuid);
         context.OpticalData.Add(opticalData);
         await context.SaveChangesAsync(cancellationToken);
 

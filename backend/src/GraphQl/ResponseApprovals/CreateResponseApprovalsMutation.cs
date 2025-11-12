@@ -82,7 +82,7 @@ public sealed class CreateResponseApprovalsMutation
                 authorization,
                 cancellationToken
             )
-            ).Failed(out var currentUser, out var authorizeErrorPayload)
+            ).Failed(out var _, out var authorizeErrorPayload)
         )
         {
             return authorizeErrorPayload;

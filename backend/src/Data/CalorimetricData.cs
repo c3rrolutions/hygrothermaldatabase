@@ -8,7 +8,7 @@ public sealed class CalorimetricData
     : DataX
 {
     public CalorimetricData(
-        Guid userId,
+        Guid? userId,
         string locale,
         Guid componentId,
         string? name,
@@ -37,7 +37,7 @@ public sealed class CalorimetricData
 
     // `DbContext` needs this constructor without owned entities.
     public CalorimetricData(
-        Guid userId,
+        Guid? userId,
         string locale,
         Guid componentId,
         string? name,

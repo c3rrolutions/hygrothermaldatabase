@@ -72,7 +72,7 @@ public sealed class UpdateInstitutionAccessRightsMutation
                 authorization,
                 cancellationToken
             )
-            ).Failed(out var currentUser, out var authorizeErrorPayload)
+            ).Failed(out var _, out var authorizeErrorPayload)
         )
         {
             return authorizeErrorPayload;

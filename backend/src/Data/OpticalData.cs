@@ -14,7 +14,7 @@ public sealed class OpticalData
     public static readonly Guid BedJsonDataFormatId = new("9ca9e8f5-94bf-4fdd-81e3-31a58d7ca708");
 
     public OpticalData(
-        Guid userId,
+        Guid? userId,
         string locale,
         Guid componentId,
         string? name,
@@ -59,7 +59,7 @@ public sealed class OpticalData
 
     // `DbContext` needs this constructor without owned entities.
     public OpticalData(
-        Guid userId,
+        Guid? userId,
         string locale,
         Guid componentId,
         string? name,

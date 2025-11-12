@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Database.Data;
-using static Database.ApiRequests.QueryCurrentUser;
+using static Database.ApiRequests.QueryCurrentUserOrApplication;
 
 namespace Database.Services;
 
@@ -44,25 +44,28 @@ public sealed class AccessRightsService(
     where T : IData
     {
         ApplicationDbContext? context = null;
-        IReadOnlyList<Guid>? representedInstitutionIds = null;
+        uint? alreadyAccessedByUserCount = null;
+        IReadOnlyList<Guid>? institutionIds = null;
         IReadOnlyList<InstitutionAccessRights>? institutionAccessRights = null;
-        uint? alreadyAccessedCount = null;
 
-        var currentUser = await userService.GetCurrentUser(cancellationToken);
+        var currentUserOrApplication = await userService.GetCurrentUserOrApplicationAsync(cancellationToken);
         var openIdConnectClientId = userService.GetOpenIdConnectClientId();
 
-        if (currentUser is not null)
+        if (currentUserOrApplication.CurrentUser is not null)
         {
             context = dbContextFactory.CreateDbContext();
-            representedInstitutionIds = currentUser.RepresentedInstitutions.Edges.Select(e => e.Node.Uuid).ToList().AsReadOnly();
-            institutionAccessRights = (await context.InstitutionAccessRights.AsQueryable()
-                .Where(x => representedInstitutionIds.Contains(x.InstitutionId))
-                .ToListAsync(cancellationToken))
-                .AsReadOnly();
-            alreadyAccessedCount = cacheService.GetAccessCountForUser(currentUser.Uuid);
+            alreadyAccessedByUserCount = cacheService.GetAccessCountForUser(currentUserOrApplication.CurrentUser.Uuid);
+            institutionIds = currentUserOrApplication.CurrentUser.RepresentedInstitutions.Edges.Select(e => e.Node.Uuid).ToList().AsReadOnly();
+            institutionAccessRights = await GetInstitutionAccessRightsAsync(institutionIds, context, cancellationToken);
+        }
+        else if (currentUserOrApplication.CurrentApplication is not null)
+        {
+            context = dbContextFactory.CreateDbContext();
+            institutionIds = [currentUserOrApplication.CurrentApplication.Owner.Node.Uuid];
+            institutionAccessRights = await GetInstitutionAccessRightsAsync(institutionIds, context, cancellationToken);
         }
 
-        var result = ProcessData(data, currentUser, openIdConnectClientId, representedInstitutionIds, institutionAccessRights, alreadyAccessedCount, cacheService);
+        var result = ProcessData(data, currentUserOrApplication.CurrentUser, openIdConnectClientId, institutionIds, institutionAccessRights, alreadyAccessedByUserCount, cacheService);
 
         if (context is not null)
         {
@@ -72,13 +75,27 @@ public sealed class AccessRightsService(
         return result.AsQueryable<T>();
     }
 
+    private static async Task<IReadOnlyList<InstitutionAccessRights>> GetInstitutionAccessRightsAsync(
+        IReadOnlyList<Guid> institutionIds,
+        ApplicationDbContext context,
+        CancellationToken cancellationToken
+    )
+    {
+        return (
+            await context.InstitutionAccessRights.AsQueryable()
+                .Where(x => institutionIds.Contains(x.InstitutionId))
+                .ToListAsync(cancellationToken)
+        )
+        .AsReadOnly();
+    }
+
     private IEnumerable<T> ProcessData<T>(
         IQueryable<T> data,
         CurrentUser? currentUser,
         string? openIdConnectClientId,
-        IReadOnlyList<Guid>? representedInstitutionIds,
+        IReadOnlyList<Guid>? institutionIds,
         IReadOnlyList<InstitutionAccessRights>? institutionAccessRights,
-        uint? alreadyAccessedCount,
+        uint? alreadyAccessedByUserCount,
         CacheService cacheService
     )
     where T : IData
@@ -99,8 +116,8 @@ public sealed class AccessRightsService(
                 }
                 if (dataItem.DataAccessRights.HasRestrictionsByInstitution
                     && (
-                        representedInstitutionIds is null
-                        || dataItem.IsRestrictedByInstitutions(representedInstitutionIds)
+                        institutionIds is null
+                        || dataItem.IsRestrictedByInstitutions(institutionIds)
                     )
                     )
                 {
@@ -110,18 +127,18 @@ public sealed class AccessRightsService(
                 if (dataItem.DataAccessRights.HasRestrictionsByUser
                     && (
                         currentUser is null
-                        || alreadyAccessedCount is null
-                        || dataItem.IsRestrictedByUser(currentUser.Uuid, alreadyAccessedCount ?? 0)
+                        || alreadyAccessedByUserCount is null
+                        || dataItem.IsRestrictedByUser(currentUser.Uuid, alreadyAccessedByUserCount ?? 0)
                     )
                 )
                 {
                     logger.DataRestriction(dataItem.Id, "Allowed accesses for user reached.");
                     continue;
                 }
-                if (currentUser is not null && alreadyAccessedCount is not null)
+                if (currentUser is not null && alreadyAccessedByUserCount is not null)
                 {
-                    alreadyAccessedCount = alreadyAccessedCount + 1;
-                    cacheService.SetAccessCountForUser(currentUser.Uuid, alreadyAccessedCount ?? 0);
+                    alreadyAccessedByUserCount = alreadyAccessedByUserCount + 1;
+                    cacheService.SetAccessCountForUser(currentUser.Uuid, alreadyAccessedByUserCount ?? 0);
                 }
                 var reason = "";
                 if (institutionAccessRights is not null

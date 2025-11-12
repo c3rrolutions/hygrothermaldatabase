@@ -28,7 +28,7 @@ public sealed record CreatePhotovoltaicDataInput(
     AppliedMethodInput AppliedMethod
 ) : IValidateCreateInput
 {
-    public PhotovoltaicData ToDomainModel(Guid userId)
+    public PhotovoltaicData ToDomainModel(Guid? userId)
     {
         return new(
             userId,
@@ -100,7 +100,7 @@ public sealed class CreatePhotovoltaicDataMutation
                 authorization,
                 cancellationToken
             )
-            ).Failed(out var currentUser, out var authorizeErrorPayload)
+            ).Failed(out var currentUserOrApplication, out var authorizeErrorPayload)
         )
         {
             return authorizeErrorPayload;
@@ -121,7 +121,7 @@ public sealed class CreatePhotovoltaicDataMutation
             return validateErrorPayload;
         }
 
-        var photovoltaicData = input.ToDomainModel(currentUser.Uuid);
+        var photovoltaicData = input.ToDomainModel(currentUserOrApplication.CurrentUser?.Uuid);
         context.PhotovoltaicData.Add(photovoltaicData);
         await context.SaveChangesAsync(cancellationToken);
 

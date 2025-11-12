@@ -3,7 +3,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Database.Services;
-using static Database.ApiRequests.QueryCurrentUser;
+using static Database.ApiRequests.QueryCurrentUserOrApplication;
 
 namespace Database.Authorization;
 
@@ -11,26 +11,33 @@ public sealed class CommonAuthorization(
     UserService userService
 )
 {
-    public Task<CurrentUser?> GetCurrentUserAsync(CancellationToken cancellationToken)
+    public Task<CurrentUserOrApplication> GetCurrentUserOrApplicationAsync(CancellationToken cancellationToken)
     {
-        return userService.GetCurrentUser(cancellationToken);
+        return userService.GetCurrentUserOrApplicationAsync(cancellationToken);
     }
 
-    public async Task<bool> IsCurrentUserAtLeastAssistantManagerOfDatabaseOperator(CancellationToken cancellationToken)
+    public Task<bool> IsAuthenticated(CancellationToken cancellationToken)
     {
-        var currentUser = await GetCurrentUserAsync(cancellationToken);
-        if (currentUser is null)
-        {
-            return false;
-        }
-        return IsCurrentUserAtLeastAssistantManagerOfDatabaseOperator(currentUser);
+        return userService.UserOrApplicationAsync(
+            user => Task.FromResult(user is not null),
+            application => Task.FromResult(application is not null),
+            cancellationToken
+        );
     }
 
-    public bool IsCurrentUserAtLeastAssistantManagerOfDatabaseOperator(
-        CurrentUser currentUser
-    )
+    public Task<bool> IsDatabaseOperator(CancellationToken cancellationToken)
     {
-        return currentUser.DatabaseOperatingRepresentedInstitutions.TotalCount >= 1;
+        return userService.UserOrApplicationAsync(
+            user => Task.FromResult(
+                user is not null
+                && user.IsAtLeastAssistantManagerOfDatabaseOperator()
+            ),
+            application => Task.FromResult(
+                application is not null
+                && application.IsOwnedByDatabaseOperator()
+            ),
+            cancellationToken
+        );
     }
 
     public bool IsCurrentUserAtLeastAssistantManagerOfVerifiedInstitution(

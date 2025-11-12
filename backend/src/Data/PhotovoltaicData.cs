@@ -8,7 +8,7 @@ public sealed class PhotovoltaicData
     : DataX
 {
     public PhotovoltaicData(
-        Guid userId,
+        Guid? userId,
         string locale,
         Guid componentId,
         string? name,
@@ -33,7 +33,7 @@ public sealed class PhotovoltaicData
 
     // `DbContext` needs this constructor without owned entities.
     public PhotovoltaicData(
-        Guid userId,
+        Guid? userId,
         string locale,
         Guid componentId,
         string? name,

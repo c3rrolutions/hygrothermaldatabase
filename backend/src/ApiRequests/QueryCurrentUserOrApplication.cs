@@ -10,9 +10,9 @@ namespace Database.ApiRequests;
 /// <summary>
 /// Class to request user info from Metabase API.
 /// </summary>
-public sealed class QueryCurrentUser
+public sealed class QueryCurrentUserOrApplication
 {
-    private const string QueryFileName = "CurrentUser.graphql";
+    private const string QueryFileName = "CurrentUserOrApplication.graphql";
 
     public static Uri GetGraphQlEndpoint(AppSettings appSettings) =>
         appSettings.MetabaseGraphQlEndpoint;
@@ -22,7 +22,13 @@ public sealed class QueryCurrentUser
         string Name,
         UserRepresentedInstitutionConnection RepresentedInstitutions,
         UserRepresentedInstitutionConnection DatabaseOperatingRepresentedInstitutions
-    );
+    )
+    {
+        public bool IsAtLeastAssistantManagerOfDatabaseOperator()
+        {
+            return DatabaseOperatingRepresentedInstitutions.TotalCount >= 1;
+        }
+    };
 
     public sealed record UserRepresentedInstitutionConnection(
         IReadOnlyList<UserRepresentedInstitutionEdge> Edges,
@@ -60,18 +66,53 @@ public sealed class QueryCurrentUser
         string Name
     );
 
-    private sealed record CurrentUserData(CurrentUser? CurrentUser);
+    public sealed record CurrentOpenIdConnectApplication(
+        Guid Uuid,
+        string ClientId,
+        OpenIdConnectApplicationOwnerEdge Owner
+    )
+    {
+        public bool IsOwnedByDatabaseOperator()
+        {
+            return Owner.Node.DatabaseOperatingDatabases.TotalCount >= 1
+                || Owner.Node.DatabaseOperatingManagedInstitutions.TotalCount >= 1;
+        }
+    };
+
+    public sealed record OpenIdConnectApplicationOwnerEdge(
+        OpenIdConnectApplicationOwnerNode Node
+    );
+
+    public sealed record OpenIdConnectApplicationOwnerNode(
+        Guid Uuid,
+        string Name,
+        DatabaseOperatingDatabaseConnection DatabaseOperatingDatabases,
+        DatabaseOperatingManagedInstitutionConnection DatabaseOperatingManagedInstitutions
+    );
+
+    public sealed record DatabaseOperatingDatabaseConnection(
+        uint TotalCount
+    );
+
+    public sealed record DatabaseOperatingManagedInstitutionConnection(
+        uint TotalCount
+    );
+
+    public sealed record CurrentUserOrApplication(
+        CurrentUser? CurrentUser,
+        CurrentOpenIdConnectApplication? CurrentApplication
+    );
 
     /// <summary>
     /// Request current user from Metabase.
     /// </summary>
-    public static async Task<CurrentUser?> Do(
+    public static async Task<CurrentUserOrApplication> Do(
         AppSettings appSettings,
         ApiRequestService apiRequestService,
         CancellationToken cancellationToken
     )
     {
-        return (await apiRequestService.QueryGraphQl<CurrentUserData>(
+        return (await apiRequestService.QueryGraphQl<CurrentUserOrApplication>(
             GetGraphQlEndpoint(appSettings),
             new GraphQLRequest(
                 await apiRequestService.ConstructGraphQlQuery(QueryFileName),
@@ -79,11 +120,10 @@ public sealed class QueryCurrentUser
                 {
                     databaseId = appSettings.DatabaseId
                 },
-                "CurrentUser"
+                "CurrentUserOrApplication"
             ),
             cancellationToken
         ))
-        .Data
-        .CurrentUser;
+        .Data;
     }
 }

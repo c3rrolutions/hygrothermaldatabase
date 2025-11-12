@@ -28,7 +28,7 @@ public sealed record CreateGeometricDataInput(
     double[] Thicknesses
 ) : IValidateCreateInput
 {
-    public GeometricData ToDomainModel(Guid userId)
+    public GeometricData ToDomainModel(Guid? userId)
     {
         return new(
             userId,
@@ -102,7 +102,7 @@ public sealed class CreateGeometricDataMutation
                 authorization,
                 cancellationToken
             )
-            ).Failed(out var currentUser, out var authorizeErrorPayload)
+            ).Failed(out var currentUserOrApplication, out var authorizeErrorPayload)
         )
         {
             return authorizeErrorPayload;
@@ -123,7 +123,7 @@ public sealed class CreateGeometricDataMutation
             return validateErrorPayload;
         }
 
-        var geometricData = input.ToDomainModel(currentUser.Uuid);
+        var geometricData = input.ToDomainModel(currentUserOrApplication.CurrentUser?.Uuid);
         context.GeometricData.Add(geometricData);
         await context.SaveChangesAsync(cancellationToken);
 

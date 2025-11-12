@@ -30,7 +30,7 @@ public sealed record CreateCalorimetricDataInput(
     double[] UValues
 ) : IValidateCreateInput
 {
-    public CalorimetricData ToDomainModel(Guid userId)
+    public CalorimetricData ToDomainModel(Guid? userId)
     {
         return new(
             userId,
@@ -104,7 +104,7 @@ public sealed class CreateCalorimetricDataMutation
                 authorization,
                 cancellationToken
             )
-            ).Failed(out var currentUser, out var authorizeErrorPayload)
+            ).Failed(out var currentUserOrApplication, out var authorizeErrorPayload)
         )
         {
             return authorizeErrorPayload;
@@ -125,7 +125,7 @@ public sealed class CreateCalorimetricDataMutation
             return validateErrorPayload;
         }
 
-        var calorimetricData = input.ToDomainModel(currentUser.Uuid);
+        var calorimetricData = input.ToDomainModel(currentUserOrApplication.CurrentUser?.Uuid);
         context.CalorimetricData.Add(calorimetricData);
         await context.SaveChangesAsync(cancellationToken);
 

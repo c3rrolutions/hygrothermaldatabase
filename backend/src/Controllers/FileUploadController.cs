@@ -91,18 +91,10 @@ public sealed class FileUploadController(
         [FromQuery] Guid getHttpsResourceUuid,
         [FromServices] ApplicationDbContext context,
         [FromServices] CommonAuthorization authorization,
-        [FromServices] UserService userService,
         CancellationToken cancellationToken
     )
     {
-        var currentUser = await userService.GetCurrentUser(cancellationToken);
-        if (currentUser is null)
-        {
-            ModelState.AddModelError("CurrentUser",
-                $"User is not authenticated.");
-            return BadRequest(ModelState);
-        }
-        if (!authorization.IsCurrentUserAtLeastAssistantManagerOfDatabaseOperator(currentUser))
+        if (!await authorization.IsDatabaseOperator(cancellationToken))
         {
             return Unauthorized();
         }

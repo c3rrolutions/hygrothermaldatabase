@@ -28,7 +28,7 @@ public sealed record CreateHygrothermalDataInput(
     AppliedMethodInput AppliedMethod
 ) : IValidateCreateInput
 {
-    public HygrothermalData ToDomainModel(Guid userId)
+    public HygrothermalData ToDomainModel(Guid? userId)
     {
         return new(
             userId,
@@ -100,7 +100,7 @@ public sealed class CreateHygrothermalDataMutation
                 authorization,
                 cancellationToken
             )
-            ).Failed(out var currentUser, out var authorizeErrorPayload)
+            ).Failed(out var currentUserOrApplication, out var authorizeErrorPayload)
         )
         {
             return authorizeErrorPayload;
@@ -121,7 +121,7 @@ public sealed class CreateHygrothermalDataMutation
             return validateErrorPayload;
         }
 
-        var hygrothermalData = input.ToDomainModel(currentUser.Uuid);
+        var hygrothermalData = input.ToDomainModel(currentUserOrApplication.CurrentUser?.Uuid);
         context.HygrothermalData.Add(hygrothermalData);
         await context.SaveChangesAsync(cancellationToken);
 

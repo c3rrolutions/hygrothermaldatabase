@@ -153,11 +153,9 @@ public sealed class GetHttpsResource
 
     // Note that at least one data ID is always present. So `Guid.Empty` will never be used.
     [NotMapped]
-    [Projectable]
     public Guid DataId => CalorimetricDataId ?? HygrothermalDataId ?? OpticalDataId ?? PhotovoltaicDataId ?? GeometricDataId ?? Guid.Empty;
 
     [NotMapped]
-    [Projectable]
     public IData? Data => CalorimetricData ?? HygrothermalData ?? OpticalData ?? GeometricData ?? PhotovoltaicData as IData;
 
     [Projectable]

@@ -14,8 +14,8 @@ mutation UpdateDatabase(
                     uuid
                 }
             }
-            canCurrentUserUpdateNode
-            canCurrentUserVerifyNode
+            isAuthorizedToUpdateNode
+            isAuthorizedToVerifyNode
         }
         errors {
             code

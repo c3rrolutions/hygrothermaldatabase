@@ -274,8 +274,8 @@ type DataEdge {
 }
 
 type Database {
-  canCurrentUserUpdateNode: Boolean!
-  canCurrentUserVerifyNode: Boolean!
+  isAuthorizedToUpdateNode: Boolean!
+  isAuthorizedToVerifyNode: Boolean!
   description: String!
   locator: Url!
   name: String!

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
-using HotChocolate;
 using HotChocolate.Types;
 using Database.Authorization;
 using Database.Data;
@@ -24,7 +23,8 @@ public enum RetractDataErrorCode
     UNAUTHENTICATED,
     UNAUTHORIZED,
     UNKNOWN_DATA,
-    CREATING_RESPONSE_APPROVAL_FAILED
+    CREATING_RESPONSE_APPROVAL_FAILED,
+    NOT_PUBLISHED
 }
 
 public sealed record RetractDataError(
@@ -83,6 +83,18 @@ public sealed class RetractDataMutation
         )
         {
             return fetchDataErrorPayload;
+        }
+
+        if (data.PublishingState is not PublishingState.PUBLISHED)
+        {
+            return NewPayload(
+                null,
+                [NewError(
+                    RetractDataErrorCode.NOT_PUBLISHED,
+                    $"The publishing state is not published but {data.PublishingState}. If it is pending, you may delete the data set instead.",
+                    []
+                )]
+            );
         }
 
         var rememberedPublishingState = data.PublishingState;

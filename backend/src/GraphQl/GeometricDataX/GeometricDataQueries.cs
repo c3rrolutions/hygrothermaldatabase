@@ -67,14 +67,14 @@ public sealed class GeometricDataQueries
     }
 
     [UseFiltering<GeometricDataFilterType>]
-    public Task<bool> GetHasGeometricDataAsync(
+    public Task<bool> HasGeometricDataAsync(
         [GraphQLType<LocaleType>] string? locale,
         ApplicationDbContext context,
         IResolverContext resolverContext,
         CancellationToken cancellationToken
     )
     {
-        return GetHasDataAsync(
+        return HasDataAsync(
             context.GeometricData,
             locale,
             resolverContext,

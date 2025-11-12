@@ -69,14 +69,14 @@ public sealed class OpticalDataQueries
     }
 
     [UseFiltering<OpticalDataFilterType>]
-    public Task<bool> GetHasOpticalDataAsync(
+    public Task<bool> HasOpticalDataAsync(
         [GraphQLType<LocaleType>] string? locale,
         ApplicationDbContext context,
         IResolverContext resolverContext,
         CancellationToken cancellationToken
     )
     {
-        return GetHasDataAsync(
+        return HasDataAsync(
             context.OpticalData,
             locale,
             resolverContext,

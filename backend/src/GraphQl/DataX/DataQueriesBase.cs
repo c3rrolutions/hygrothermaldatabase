@@ -67,7 +67,7 @@ where TData : class, IData
         return await accessRightsService.ApplyAccessRightsOnData(filteredData, cancellationToken);
     }
 
-    protected Task<bool> GetHasDataAsync(
+    protected Task<bool> HasDataAsync(
         DbSet<TData> data,
         [GraphQLType<LocaleType>] string? locale,
         IResolverContext resolverContext,

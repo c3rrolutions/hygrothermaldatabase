@@ -241,6 +241,16 @@ public sealed class GetHttpsResource
         HashValue = await Sha256FileHasher.ComputeForFile(FilePath, cancellationToken);
     }
 
+    public bool IsRoot()
+    {
+        return ParentId is null;
+    }
+
+    public bool IsChild()
+    {
+        return ParentId is not null;
+    }
+
     public static string ConstructVertexId(Guid id)
     {
         return id.ToString("D").Base64Encode();

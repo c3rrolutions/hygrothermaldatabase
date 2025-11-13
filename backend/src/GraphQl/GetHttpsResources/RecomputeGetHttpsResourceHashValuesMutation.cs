@@ -16,6 +16,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Collections.Generic;
 using Database.Extensions;
 using HotChocolate.Resolvers;
+using HotChocolate.Data.Filters;
 
 namespace Database.GraphQl.GetHttpsResources;
 
@@ -40,6 +41,18 @@ public sealed record RecomputeGetHttpsResourceHashValuesPayload(
    IReadOnlyCollection<GetHttpsResource>? GetHttpsResources,
    IReadOnlyCollection<RecomputeGetHttpsResourceHashValuesError>? Errors
 ) : Payload;
+
+public sealed class RecomputeGetHttpsResourceHashValuesFilterType
+    : GetHttpsResourceFilterType
+{
+    protected override void Configure(
+        IFilterInputTypeDescriptor<GetHttpsResource> descriptor
+    )
+    {
+        base.Configure(descriptor);
+        descriptor.Name(nameof(RecomputeGetHttpsResourceHashValuesFilterType)[..^10] + GraphQlConstants.FilterInputSuffix);
+    }
+}
 
 public static partial class RecomputeGetHttpsResourceHashValuesMutationLogging
 {

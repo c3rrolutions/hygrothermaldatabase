@@ -15,6 +15,7 @@ using Microsoft.Extensions.Logging;
 using Database.Extensions;
 using Database.GraphQl.Extensions;
 using HotChocolate.Resolvers;
+using HotChocolate.Data.Filters;
 
 namespace Database.GraphQl.ResponseApprovals;
 
@@ -48,6 +49,18 @@ public sealed record UpdateResponseApprovalsPayload(
     IReadOnlyCollection<IData>? Data,
     IReadOnlyCollection<UpdateResponseApprovalsError>? Errors
 ) : Payload;
+
+public sealed class UpdateResponseApprovalsFilterType
+: ResponseApprovalFilterType
+{
+    protected override void Configure(
+        IFilterInputTypeDescriptor<IData> descriptor
+    )
+    {
+        base.Configure(descriptor);
+        descriptor.Name(nameof(UpdateResponseApprovalsFilterType)[..^10] + GraphQlConstants.FilterInputSuffix);
+    }
+}
 
 [ExtendObjectType(nameof(Mutation))]
 public sealed class UpdateResponseApprovalsMutation

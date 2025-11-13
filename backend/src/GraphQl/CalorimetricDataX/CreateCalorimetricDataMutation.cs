@@ -26,13 +26,17 @@ public sealed record CreateCalorimetricDataInput(
     DateTime CreatedAt,
     Guid CreatorId,
     AppliedMethodInput AppliedMethod,
+    RootGetHttpsResourceInput RootResource,
     double[] GValues,
     double[] UValues
 ) : IValidateCreateInput
 {
-    public CalorimetricData ToDomainModel(Guid? userId)
+    public CalorimetricData ToDomainModel(
+        Guid? userId,
+        string? fileExtension
+    )
     {
-        return new(
+        var data = new CalorimetricData(
             userId,
             Locale,
             ComponentId,
@@ -45,6 +49,8 @@ public sealed record CreateCalorimetricDataInput(
             GValues,
             UValues
         );
+        data.Resources.Add(RootResource.ToDomainModel(fileExtension));
+        return data;
     }
 };
 
@@ -57,6 +63,8 @@ public enum CreateCalorimetricDataErrorCode
     UNKNOWN_COMPONENT,
     ILLEGAL_CREATED_AT,
     UNKNOWN_CREATOR,
+    UNKNOWN_APPLIED_METHOD,
+    UNKNOWN_DATA_FORMAT,
     CREATING_RESPONSE_APPROVAL_FAILED
 }
 
@@ -94,6 +102,8 @@ public sealed class CreateCalorimetricDataMutation
         CommonAuthorization authorization,
         IComponentByIdDataLoader componentByIdDataLoader,
         IInstitutionByIdDataLoader institutionByIdDataLoader,
+        IMethodByIdDataLoader methodByIdDataLoader,
+        IDataFormatByIdDataLoader dataFormatByIdDataLoader,
         ResponseApprovalService responseApprovalService,
         CancellationToken cancellationToken
     )
@@ -117,15 +127,22 @@ public sealed class CreateCalorimetricDataMutation
                 CreateCalorimetricDataErrorCode.UNKNOWN_COMPONENT,
                 institutionByIdDataLoader,
                 CreateCalorimetricDataErrorCode.UNKNOWN_CREATOR,
+                methodByIdDataLoader,
+                CreateCalorimetricDataErrorCode.UNKNOWN_APPLIED_METHOD,
+                dataFormatByIdDataLoader,
+                CreateCalorimetricDataErrorCode.UNKNOWN_DATA_FORMAT,
                 cancellationToken
             )
-            ).Failed(out var validateErrorPayload)
+            ).Failed(out var dataFormat, out var validateErrorPayload)
         )
         {
             return validateErrorPayload;
         }
 
-        var calorimetricData = input.ToDomainModel(currentUserOrApplication.CurrentUser?.Uuid);
+        var calorimetricData = input.ToDomainModel(
+            currentUserOrApplication.CurrentUser?.Uuid,
+            dataFormat.Extension
+        );
         context.CalorimetricData.Add(calorimetricData);
         await context.SaveChangesAsync(cancellationToken);
 

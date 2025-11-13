@@ -1,0 +1,9 @@
+query Methods($ids: [Uuid!]!) {
+  connection: methods(where: { id: { in: $ids } }) {
+    edges {
+      node {
+        uuid
+      }
+    }
+  }
+}

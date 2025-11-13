@@ -25,12 +25,16 @@ public sealed record CreatePhotovoltaicDataInput(
     string[] Warnings,
     DateTime CreatedAt,
     Guid CreatorId,
-    AppliedMethodInput AppliedMethod
+    AppliedMethodInput AppliedMethod,
+    RootGetHttpsResourceInput RootResource
 ) : IValidateCreateInput
 {
-    public PhotovoltaicData ToDomainModel(Guid? userId)
+    public PhotovoltaicData ToDomainModel(
+        Guid? userId,
+        string? fileExtension
+    )
     {
-        return new(
+        var data = new PhotovoltaicData(
             userId,
             Locale,
             ComponentId,
@@ -41,6 +45,8 @@ public sealed record CreatePhotovoltaicDataInput(
             CreatedAt,
             AppliedMethod.ToDomainModel()
         );
+        data.Resources.Add(RootResource.ToDomainModel(fileExtension));
+        return data;
     }
 };
 
@@ -53,6 +59,8 @@ public enum CreatePhotovoltaicDataErrorCode
     UNKNOWN_COMPONENT,
     ILLEGAL_CREATED_AT,
     UNKNOWN_CREATOR,
+    UNKNOWN_APPLIED_METHOD,
+    UNKNOWN_DATA_FORMAT,
     CREATING_RESPONSE_APPROVAL_FAILED
 }
 
@@ -90,6 +98,8 @@ public sealed class CreatePhotovoltaicDataMutation
         CommonAuthorization authorization,
         IComponentByIdDataLoader componentByIdDataLoader,
         IInstitutionByIdDataLoader institutionByIdDataLoader,
+        IMethodByIdDataLoader methodByIdDataLoader,
+        IDataFormatByIdDataLoader dataFormatByIdDataLoader,
         ResponseApprovalService responseApprovalService,
         CancellationToken cancellationToken
     )
@@ -113,15 +123,22 @@ public sealed class CreatePhotovoltaicDataMutation
                 CreatePhotovoltaicDataErrorCode.UNKNOWN_COMPONENT,
                 institutionByIdDataLoader,
                 CreatePhotovoltaicDataErrorCode.UNKNOWN_CREATOR,
+                methodByIdDataLoader,
+                CreatePhotovoltaicDataErrorCode.UNKNOWN_APPLIED_METHOD,
+                dataFormatByIdDataLoader,
+                CreatePhotovoltaicDataErrorCode.UNKNOWN_DATA_FORMAT,
                 cancellationToken
             )
-            ).Failed(out var validateErrorPayload)
+            ).Failed(out var dataFormat, out var validateErrorPayload)
         )
         {
             return validateErrorPayload;
         }
 
-        var photovoltaicData = input.ToDomainModel(currentUserOrApplication.CurrentUser?.Uuid);
+        var photovoltaicData = input.ToDomainModel(
+            currentUserOrApplication.CurrentUser?.Uuid,
+            dataFormat.Extension
+        );
         context.PhotovoltaicData.Add(photovoltaicData);
         await context.SaveChangesAsync(cancellationToken);
 

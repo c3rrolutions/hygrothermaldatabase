@@ -56,11 +56,6 @@ public sealed class GetHttpsResource
         string hashValue,
         Guid dataFormatId,
         string? fileExtension,
-        Guid? calorimetricDataId,
-        Guid? geometricDataId,
-        Guid? hygrothermalDataId,
-        Guid? opticalDataId,
-        Guid? photovoltaicDataId,
         ICollection<FileMetaInformation> archivedFilesMetaInformation
     )
         : this(
@@ -70,15 +65,10 @@ public sealed class GetHttpsResource
             fileExtension
         )
     {
-        CalorimetricDataId = calorimetricDataId;
-        HygrothermalDataId = hygrothermalDataId;
-        OpticalDataId = opticalDataId;
-        PhotovoltaicDataId = photovoltaicDataId;
-        GeometricDataId = geometricDataId;
         ParentId = null;
         ArchivedFilesMetaInformation = archivedFilesMetaInformation;
         AppliedConversionMethod = null;
-        AssertThatExactlyOneDataIdIsNonNull();
+        // The data ID is set by EF Core.
     }
 
     /// <summary>

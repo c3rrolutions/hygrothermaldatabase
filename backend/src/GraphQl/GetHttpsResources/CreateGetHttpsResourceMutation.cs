@@ -24,15 +24,14 @@ public sealed record CreateGetHttpsResourceInput(
     Guid DataFormatId,
     Guid DataId,
     DataKind DataKind,
-    Guid? ParentId,
+    Guid ParentId,
     IReadOnlyList<FileMetaInformationInput> ArchivedFilesMetaInformation,
-    ToTreeVertexAppliedConversionMethodInput? AppliedConversionMethod
+    ToTreeVertexAppliedConversionMethodInput AppliedConversionMethod
 ) : IIdentifyDataInput
 {
     public GetHttpsResource ToDomainModel(string? fileExtension)
     {
-        return ParentId is null || AppliedConversionMethod is null
-        ? new(
+        return new(
             Description,
             Sha256FileHasher.ComputeForString(""), // The correct hash value is computed when the file for this resource is being uploaded.
             DataFormatId,
@@ -42,19 +41,7 @@ public sealed record CreateGetHttpsResourceInput(
             DataKind == DataKind.HYGROTHERMAL_DATA ? DataId : null,
             DataKind == DataKind.OPTICAL_DATA ? DataId : null,
             DataKind == DataKind.PHOTOVOLTAIC_DATA ? DataId : null,
-            ArchivedFilesMetaInformation.Select(i => i.ToDomainModel()).ToList()
-          )
-        : new(
-            Description,
-            Sha256FileHasher.ComputeForString(""), // The correct hash value is computed when the file for this resource is being uploaded.
-            DataFormatId,
-            fileExtension,
-            DataKind == DataKind.CALORIMETRIC_DATA ? DataId : null,
-            DataKind == DataKind.GEOMETRIC_DATA ? DataId : null,
-            DataKind == DataKind.HYGROTHERMAL_DATA ? DataId : null,
-            DataKind == DataKind.OPTICAL_DATA ? DataId : null,
-            DataKind == DataKind.PHOTOVOLTAIC_DATA ? DataId : null,
-            ParentId ?? Guid.Empty,
+            ParentId,
             ArchivedFilesMetaInformation.Select(i => i.ToDomainModel()).ToList(),
             AppliedConversionMethod.ToDomainModel()
         );
@@ -70,11 +57,8 @@ public enum CreateGetHttpsResourceErrorCode
     UNKNOWN_DATA,
     UNKNOWN_PARENT,
     ILLEGAL_PARENT,
-    APPLIED_CONVERSION_METHOD_WITHOUT_PARENT,
     UNKNOWN_DATA_FORMAT,
-    DUPLICATE_ROOT_RESOURCE,
-    CREATING_RESPONSE_APPROVAL_FAILED,
-    PARENT_WITHOUT_APPLIED_CONVERSION_METHOD
+    CREATING_RESPONSE_APPROVAL_FAILED
 }
 
 public sealed record CreateGetHttpsResourceError(
@@ -160,14 +144,12 @@ public sealed class CreateGetHttpsResourceMutation
             );
         }
         var parent =
-            input.ParentId is null
-            ? null
-            : await context.GetHttpsResources
+            await context.GetHttpsResources
             .SingleOrDefaultAsync(_ =>
                 _.Id == input.ParentId,
                 cancellationToken
             );
-        if (parent is null && input.ParentId is not null)
+        if (parent is null)
         {
             errors.Add(
                 NewError(
@@ -183,41 +165,6 @@ public sealed class CreateGetHttpsResourceMutation
                 NewError(
                     CreateGetHttpsResourceErrorCode.ILLEGAL_PARENT,
                     $"The parent belongs to the data set with ID {parent.DataId} which is not the data set of the resource to be created, namely the one with the ID {input.DataId}.",
-                    [nameof(input), nameof(input.ParentId).ToLowerFirst()]
-                )
-            );
-        }
-        if (input.AppliedConversionMethod is not null && input.ParentId is null)
-        {
-            errors.Add(
-                NewError(
-                    CreateGetHttpsResourceErrorCode.APPLIED_CONVERSION_METHOD_WITHOUT_PARENT,
-                    "The resource does not have a parent yet an applied conversion method was given. This method is supposed to have been applied to this resource's parent.",
-                    [nameof(input), nameof(input.AppliedConversionMethod).ToLowerFirst()]
-                )
-            );
-        }
-        if (input.ParentId is not null && input.AppliedConversionMethod is null)
-        {
-            errors.Add(
-                NewError(
-                    CreateGetHttpsResourceErrorCode.PARENT_WITHOUT_APPLIED_CONVERSION_METHOD,
-                    "The resource has a parent yet no applied conversion method was given. How did this resource come about from its parent?",
-                    [nameof(input), nameof(input.AppliedConversionMethod).ToLowerFirst()]
-                )
-            );
-        }
-        if (input.ParentId is null &&
-            await context.GetHttpsResources.AsNoTracking()
-            .Where(_ => _.ParentId == null)
-            .Where(_ => _.GetDataId(input.DataKind) == input.DataId)
-            .AnyAsync(cancellationToken)
-        )
-        {
-            errors.Add(
-                NewError(
-                    CreateGetHttpsResourceErrorCode.DUPLICATE_ROOT_RESOURCE,
-                    "The data set does already have a root resource.",
                     [nameof(input), nameof(input.ParentId).ToLowerFirst()]
                 )
             );

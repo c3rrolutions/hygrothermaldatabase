@@ -29,6 +29,7 @@ public sealed record CreateOpticalDataInput(
     OpticalComponentSubtype? Subtype,
     CoatedSide? CoatedSide,
     AppliedMethodInput AppliedMethod,
+    RootGetHttpsResourceInput RootResource,
     double[] NearnormalHemisphericalVisibleTransmittances,
     double[] NearnormalHemisphericalVisibleReflectances,
     double[] NearnormalHemisphericalSolarTransmittances,
@@ -38,9 +39,12 @@ public sealed record CreateOpticalDataInput(
     IReadOnlyList<CielabColorInput> CielabColors
 ) : IValidateCreateInput
 {
-    public OpticalData ToDomainModel(Guid? userId)
+    public OpticalData ToDomainModel(
+        Guid? userId,
+        string? fileExtension
+    )
     {
-        return new(
+        var data = new OpticalData(
             userId,
             Locale,
             ComponentId,
@@ -61,6 +65,8 @@ public sealed record CreateOpticalDataInput(
             ColorRenderingIndices,
             CielabColors.Select(c => c.ToDomainModel()).ToList()
         );
+        data.Resources.Add(RootResource.ToDomainModel(fileExtension));
+        return data;
     }
 };
 
@@ -73,6 +79,8 @@ public enum CreateOpticalDataErrorCode
     UNKNOWN_COMPONENT,
     ILLEGAL_CREATED_AT,
     UNKNOWN_CREATOR,
+    UNKNOWN_APPLIED_METHOD,
+    UNKNOWN_DATA_FORMAT,
     CREATING_RESPONSE_APPROVAL_FAILED
 }
 
@@ -110,6 +118,8 @@ public sealed class CreateOpticalDataMutation
         CommonAuthorization authorization,
         IComponentByIdDataLoader componentByIdDataLoader,
         IInstitutionByIdDataLoader institutionByIdDataLoader,
+        IMethodByIdDataLoader methodByIdDataLoader,
+        IDataFormatByIdDataLoader dataFormatByIdDataLoader,
         ResponseApprovalService responseApprovalService,
         CancellationToken cancellationToken
     )
@@ -133,15 +143,22 @@ public sealed class CreateOpticalDataMutation
                 CreateOpticalDataErrorCode.UNKNOWN_COMPONENT,
                 institutionByIdDataLoader,
                 CreateOpticalDataErrorCode.UNKNOWN_CREATOR,
+                methodByIdDataLoader,
+                CreateOpticalDataErrorCode.UNKNOWN_APPLIED_METHOD,
+                dataFormatByIdDataLoader,
+                CreateOpticalDataErrorCode.UNKNOWN_DATA_FORMAT,
                 cancellationToken
             )
-            ).Failed(out var validateErrorPayload)
+            ).Failed(out var dataFormat, out var validateErrorPayload)
         )
         {
             return validateErrorPayload;
         }
 
-        var opticalData = input.ToDomainModel(currentUserOrApplication.CurrentUser?.Uuid);
+        var opticalData = input.ToDomainModel(
+            currentUserOrApplication.CurrentUser?.Uuid,
+            dataFormat.Extension
+        );
         context.OpticalData.Add(opticalData);
         await context.SaveChangesAsync(cancellationToken);
 

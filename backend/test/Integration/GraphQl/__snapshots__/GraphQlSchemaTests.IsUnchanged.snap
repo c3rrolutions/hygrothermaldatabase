@@ -298,6 +298,18 @@ type DeleteDataPayload {
   query: Query!
 }
 
+type DeleteGetHttpsResourceError implements UserError {
+  code: DeleteGetHttpsResourceErrorCode!
+  message: String!
+  path: [String!]!
+}
+
+type DeleteGetHttpsResourcePayload {
+  errors: [DeleteGetHttpsResourceError!]
+  getHttpsResource: GetHttpsResource
+  query: Query!
+}
+
 type FileMetaInformation {
   dataFormatId: Uuid!
   path: [String!]!
@@ -356,6 +368,8 @@ type GetHttpsResource implements Node {
   doesFileExist: Boolean!
   hashValue: String!
   id: ID!
+  isChild: Boolean!
+  isRoot: Boolean!
   locator: Url!
   parent: GetHttpsResource @cost(weight: "10")
   uuid: Uuid! @cost(weight: "10")
@@ -471,6 +485,7 @@ type Mutation {
   createPhotovoltaicData(input: CreatePhotovoltaicDataInput!): CreatePhotovoltaicDataPayload! @cost(weight: "10")
   createResponseApprovals(where: CreateResponseApprovalsFilterInput @cost(weight: "10")): CreateResponseApprovalsPayload! @cost(weight: "10")
   deleteData(input: DeleteDataInput!): DeleteDataPayload! @cost(weight: "10")
+  deleteGetHttpsResource(input: DeleteGetHttpsResourceInput!): DeleteGetHttpsResourcePayload! @cost(weight: "10")
   publishData(input: PublishDataInput!): PublishDataPayload! @cost(weight: "10")
   recomputeGetHttpsResourceHashValues(where: RecomputeGetHttpsResourceHashValuesFilterInput @cost(weight: "10")): RecomputeGetHttpsResourceHashValuesPayload! @cost(weight: "10")
   removeDataApproval(input: RemoveDataApprovalInput!): RemoveDataApprovalPayload! @cost(weight: "10")
@@ -669,6 +684,7 @@ type Query {
   "Lookup nodes by a list of IDs."
   nodes("The list of node IDs." ids: [ID!]!): [Node]! @cost(weight: "10")
   opticalData(id: Uuid! locale: Locale): OpticalData @cost(weight: "10")
+  pendingGetHttpsResources("Returns the elements in the list that come after the specified cursor." after: String "Returns the elements in the list that come before the specified cursor." before: String "Returns the first _n_ elements from the list." first: Int "Returns the last _n_ elements from the list." last: Int order: [GetHttpsResourceSortInput!] @cost(weight: "10") where: GetHttpsResourcePropositionInput @cost(weight: "10")): GetHttpsResourceConnection @listSize(assumedSize: 100, slicingArguments: [ "first", "last" ], slicingArgumentDefaultValue: 100, sizedFields: [ "edges", "nodes" ], requireOneSlicingArgument: false) @cost(weight: "10")
   photovoltaicData(id: Uuid! locale: Locale): PhotovoltaicData @cost(weight: "10")
   verificationCode: String!
 }
@@ -918,6 +934,7 @@ input CreateCalorimetricDataInput {
   gValues: [Float!]!
   locale: String!
   name: String
+  rootResource: RootGetHttpsResourceInput!
   uValues: [Float!]!
   warnings: [String!]!
 }
@@ -930,18 +947,19 @@ input CreateGeometricDataInput {
   description: String
   locale: String!
   name: String
+  rootResource: RootGetHttpsResourceInput!
   thicknesses: [Float!]!
   warnings: [String!]!
 }
 
 input CreateGetHttpsResourceInput {
-  appliedConversionMethod: ToTreeVertexAppliedConversionMethodInput
+  appliedConversionMethod: ToTreeVertexAppliedConversionMethodInput!
   archivedFilesMetaInformation: [FileMetaInformationInput!]!
   dataFormatId: Uuid!
   dataId: Uuid!
   dataKind: DataKind!
   description: String!
-  parentId: Uuid
+  parentId: Uuid!
 }
 
 input CreateHygrothermalDataInput {
@@ -952,6 +970,7 @@ input CreateHygrothermalDataInput {
   description: String
   locale: String!
   name: String
+  rootResource: RootGetHttpsResourceInput!
   warnings: [String!]!
 }
 
@@ -971,6 +990,7 @@ input CreateOpticalDataInput {
   nearnormalHemisphericalSolarTransmittances: [Float!]!
   nearnormalHemisphericalVisibleReflectances: [Float!]!
   nearnormalHemisphericalVisibleTransmittances: [Float!]!
+  rootResource: RootGetHttpsResourceInput!
   subtype: OpticalComponentSubtype
   type: OpticalComponentType
   warnings: [String!]!
@@ -984,6 +1004,7 @@ input CreatePhotovoltaicDataInput {
   description: String
   locale: String!
   name: String
+  rootResource: RootGetHttpsResourceInput!
   warnings: [String!]!
 }
 
@@ -1081,6 +1102,10 @@ input DateTimePropositionInput {
 input DeleteDataInput {
   dataId: Uuid!
   dataKind: DataKind!
+}
+
+input DeleteGetHttpsResourceInput {
+  getHttpsResourceId: Uuid!
 }
 
 input FileMetaInformationInput {
@@ -1556,6 +1581,12 @@ input RetractDataInput {
   dataKind: DataKind!
 }
 
+input RootGetHttpsResourceInput {
+  archivedFilesMetaInformation: [FileMetaInformationInput!]!
+  dataFormatId: Uuid!
+  description: String!
+}
+
 input StandardInput {
   abstract: String
   locator: Url
@@ -1825,6 +1856,8 @@ enum CreateCalorimetricDataErrorCode {
   UNKNOWN_COMPONENT
   ILLEGAL_CREATED_AT
   UNKNOWN_CREATOR
+  UNKNOWN_APPLIED_METHOD
+  UNKNOWN_DATA_FORMAT
   CREATING_RESPONSE_APPROVAL_FAILED
 }
 
@@ -1835,6 +1868,8 @@ enum CreateGeometricDataErrorCode {
   UNKNOWN_COMPONENT
   ILLEGAL_CREATED_AT
   UNKNOWN_CREATOR
+  UNKNOWN_APPLIED_METHOD
+  UNKNOWN_DATA_FORMAT
   CREATING_RESPONSE_APPROVAL_FAILED
 }
 
@@ -1845,11 +1880,8 @@ enum CreateGetHttpsResourceErrorCode {
   UNKNOWN_DATA
   UNKNOWN_PARENT
   ILLEGAL_PARENT
-  APPLIED_CONVERSION_METHOD_WITHOUT_PARENT
   UNKNOWN_DATA_FORMAT
-  DUPLICATE_ROOT_RESOURCE
   CREATING_RESPONSE_APPROVAL_FAILED
-  PARENT_WITHOUT_APPLIED_CONVERSION_METHOD
 }
 
 enum CreateHygrothermalDataErrorCode {
@@ -1859,6 +1891,8 @@ enum CreateHygrothermalDataErrorCode {
   UNKNOWN_COMPONENT
   ILLEGAL_CREATED_AT
   UNKNOWN_CREATOR
+  UNKNOWN_APPLIED_METHOD
+  UNKNOWN_DATA_FORMAT
   CREATING_RESPONSE_APPROVAL_FAILED
 }
 
@@ -1869,6 +1903,8 @@ enum CreateOpticalDataErrorCode {
   UNKNOWN_COMPONENT
   ILLEGAL_CREATED_AT
   UNKNOWN_CREATOR
+  UNKNOWN_APPLIED_METHOD
+  UNKNOWN_DATA_FORMAT
   CREATING_RESPONSE_APPROVAL_FAILED
 }
 
@@ -1879,6 +1915,8 @@ enum CreatePhotovoltaicDataErrorCode {
   UNKNOWN_COMPONENT
   ILLEGAL_CREATED_AT
   UNKNOWN_CREATOR
+  UNKNOWN_APPLIED_METHOD
+  UNKNOWN_DATA_FORMAT
   CREATING_RESPONSE_APPROVAL_FAILED
 }
 
@@ -1908,6 +1946,17 @@ enum DeleteDataErrorCode {
   UNAUTHORIZED
   UNKNOWN_DATA
   NOT_PENDING
+}
+
+enum DeleteGetHttpsResourceErrorCode {
+  UNKNOWN
+  UNAUTHORIZED
+  UNAUTHENTICATED
+  UNKNOWN_RESOURCE
+  ROOT_RESOURCE
+  NOT_PENDING_DATA
+  CREATING_RESPONSE_APPROVAL_FAILED
+  HAS_CHILDREN
 }
 
 enum Illuminant {
@@ -1988,6 +2037,7 @@ enum RetractDataErrorCode {
   UNAUTHORIZED
   UNKNOWN_DATA
   CREATING_RESPONSE_APPROVAL_FAILED
+  NOT_PUBLISHED
 }
 
 enum SortEnumType {

@@ -191,7 +191,7 @@ public sealed class ApplicationDbContext
         return builder;
     }
 
-    private static
+    private
         EntityTypeBuilder<GetHttpsResource>
         ConfigureGetHttpsResource(
             EntityTypeBuilder<GetHttpsResource> builder
@@ -204,35 +204,40 @@ public sealed class ApplicationDbContext
                 $"""
                 {nameof(GetHttpsResource.CalorimetricDataId).Enquote()} IS NOT NULL AND {nameof(GetHttpsResource.ParentId).Enquote()} IS NULL
                 """
-            );
+            )
+            .IsUnique(true);
         builder
             .HasIndex(_ => new { _.GeometricDataId })
             .HasFilter(
                 $"""
                 {nameof(GetHttpsResource.GeometricDataId).Enquote()} IS NOT NULL AND {nameof(GetHttpsResource.ParentId).Enquote()} IS NULL
                 """
-            );
+            )
+            .IsUnique(true);
         builder
             .HasIndex(_ => new { _.HygrothermalDataId })
             .HasFilter(
                 $"""
                 {nameof(GetHttpsResource.HygrothermalDataId).Enquote()} IS NOT NULL AND {nameof(GetHttpsResource.ParentId).Enquote()} IS NULL
                 """
-            );
+            )
+            .IsUnique(true);
         builder
             .HasIndex(_ => new { _.OpticalDataId })
             .HasFilter(
                 $"""
                 {nameof(GetHttpsResource.OpticalDataId).Enquote()} IS NOT NULL AND {nameof(GetHttpsResource.ParentId).Enquote()} IS NULL
                 """
-            );
+            )
+            .IsUnique(true);
         builder
             .HasIndex(_ => new { _.PhotovoltaicDataId })
             .HasFilter(
                 $"""
                 {nameof(GetHttpsResource.PhotovoltaicDataId).Enquote()} IS NOT NULL AND {nameof(GetHttpsResource.ParentId).Enquote()} IS NULL
                 """
-            );
+            )
+            .IsUnique(true);
         builder
             .BeforeInsert(trigger => trigger
                 .SetTriggerName(GetHttpsResource.DataIdsMustMatchTriggerName)
@@ -243,8 +248,8 @@ public sealed class ApplicationDbContext
                         IF NEW.{nameof(GetHttpsResource.ParentId).Enquote()} IS NOT NULL
                            AND (
                                SELECT COUNT({nameof(GetHttpsResource.Id).Enquote()})
-                               FROM "{GetHttpsResource.TableName}"
-                               WHERE COALESCE({string.Join(", ", GetHttpsResource.DataIdFieldNames.Select(_ => _.Enquote()))}) = COALESCE({string.Join(", ", GetHttpsResource.DataIdFieldNames.Select(_ => $"NEW.{_.Enquote()}"))})
+                               FROM {_schemaName}.{GetHttpsResource.TableName.Enquote()}
+                               WHERE {nameof(GetHttpsResource.Id).Enquote()} = NEW.{nameof(GetHttpsResource.ParentId).Enquote()} AND COALESCE({string.Join(", ", GetHttpsResource.DataIdFieldNames.Select(_ => _.Enquote()))}) = COALESCE({string.Join(", ", GetHttpsResource.DataIdFieldNames.Select(_ => $"NEW.{_.Enquote()}"))})
                            )
                            <> 1
                         THEN
@@ -331,7 +336,7 @@ public sealed class ApplicationDbContext
             {
                 color.HasCheckConstraint(
                     $"CK_{nameof(OpticalData)}_{nameof(CielabColor)}s_{nameof(CielabColor.LStar)}",
-                    $"{nameof(CielabColor.LStar)}.Enquote() >= 0.0 AND {nameof(CielabColor.LStar).Enquote()} <= 100.0"
+                    $"{nameof(CielabColor.LStar).Enquote()} >= 0.0 AND {nameof(CielabColor.LStar).Enquote()} <= 100.0"
                 );
             }
         );

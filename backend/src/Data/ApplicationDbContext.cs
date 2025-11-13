@@ -51,12 +51,19 @@ public sealed class ApplicationDbContext
     public DbSet<DataProtectionKey> DataProtectionKeys { get; private set; } = default!;
     public DbSet<InstitutionAccessRights> InstitutionAccessRights { get; private set; } = default!;
 
+    public IQueryable<GetHttpsResource> GetHttpsResourcesWithData =>
+        GetHttpsResources.AsQueryable()
+        .Include(_ => _.CalorimetricData)
+        .Include(_ => _.GeometricData)
+        .Include(_ => _.HygrothermalData)
+        .Include(_ => _.OpticalData)
+        .Include(_ => _.PhotovoltaicData);
 
     public DbSet<CalorimetricData> CalorimetricData { get; private set; } = default!;
     public DbSet<GeometricData> GeometricData { get; private set; } = default!;
     public DbSet<HygrothermalData> HygrothermalData { get; private set; } = default!;
-    public DbSet<PhotovoltaicData> PhotovoltaicData { get; private set; } = default!;
     public DbSet<OpticalData> OpticalData { get; private set; } = default!;
+    public DbSet<PhotovoltaicData> PhotovoltaicData { get; private set; } = default!;
 
     public IQueryable<IData> Data(DataKind dataKind)
     {

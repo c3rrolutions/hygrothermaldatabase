@@ -106,13 +106,8 @@ public sealed class FileUploadController(
             );
             return BadRequest(ModelState);
         }
-        var getHttpsResource = await context.GetHttpsResources.AsQueryable()
-                .Include(e => e.CalorimetricData)
-                .Include(e => e.GeometricData)
-                .Include(e => e.HygrothermalData)
-                .Include(e => e.OpticalData)
-                .Include(e => e.PhotovoltaicData)
-                .Where(e => e.Id == getHttpsResourceUuid)
+        var getHttpsResource = await context.GetHttpsResourcesWithData.AsQueryable()
+                .Where(_ => _.Id == getHttpsResourceUuid)
                 .SingleOrDefaultAsync(cancellationToken);
         if (getHttpsResource is null)
         {

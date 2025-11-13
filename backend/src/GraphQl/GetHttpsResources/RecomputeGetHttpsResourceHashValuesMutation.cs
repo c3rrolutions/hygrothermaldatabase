@@ -90,12 +90,7 @@ public sealed class RecomputeGetHttpsResourceHashValuesMutation
         }
 
         var resources =
-            await context.GetHttpsResources
-            .Include(r => r.CalorimetricData)
-            .Include(r => r.GeometricData)
-            .Include(r => r.HygrothermalData)
-            .Include(r => r.OpticalData)
-            .Include(r => r.PhotovoltaicData)
+            await context.GetHttpsResourcesWithData
             .With(queryContext, sort => sort.StabilizeOrder())
             .ToListAsync(cancellationToken);
         var errors = new ConcurrentBag<RecomputeGetHttpsResourceHashValuesError>();

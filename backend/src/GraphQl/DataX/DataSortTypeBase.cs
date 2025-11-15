@@ -1,17 +1,18 @@
 using Database.Data;
+using Database.GraphQl.Entities;
 using HotChocolate.Data.Sorting;
 
 namespace Database.GraphQl.DataX;
 
 public abstract class DataSortTypeBase<TData>
-    : SortInputType<TData>
+    : EntitySortType<TData>
     where TData : IData
 {
     protected override void Configure(
         ISortInputTypeDescriptor<TData> descriptor
     )
     {
-        descriptor.BindFieldsExplicitly();
+        base.Configure(descriptor);
         descriptor.Field(x => x.Locale);
         descriptor.Field(x => x.Name);
         descriptor.Field(x => x.Description);

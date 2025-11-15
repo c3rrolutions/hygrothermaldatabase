@@ -12,7 +12,6 @@ public sealed class CalorimetricDataFilterType
     )
     {
         base.Configure(descriptor);
-        descriptor.Field(x => x.Id);
         descriptor.Field(x => x.GValues);
         descriptor.Field(x => x.UValues);
     }

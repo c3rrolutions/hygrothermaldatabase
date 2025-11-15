@@ -1,17 +1,17 @@
 using HotChocolate.Data.Filters;
+using Database.GraphQl.Entities;
 using Database.Data;
 
 namespace Database.GraphQl.GetHttpsResources;
 
 public class GetHttpsResourceFilterType
-    : FilterInputType<GetHttpsResource>
+    : EntityFilterType<GetHttpsResource>
 {
     protected override void Configure(
         IFilterInputTypeDescriptor<GetHttpsResource> descriptor
     )
     {
-        descriptor.BindFieldsExplicitly();
-        descriptor.Field(x => x.Id);
+        base.Configure(descriptor);
         descriptor.Field(x => x.Description);
         descriptor.Field(x => x.HashValue);
         descriptor.Field(x => x.DataFormatId);

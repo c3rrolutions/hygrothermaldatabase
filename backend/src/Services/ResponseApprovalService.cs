@@ -4,6 +4,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Database.Data;
+using GraphQL;
+using Database.Json;
+using HotChocolate;
+using System.Linq;
 
 namespace Database.Services;
 
@@ -41,6 +45,12 @@ public sealed class ResponseApprovalService(
         logger.QueryAllMetaData(dataObject.GetType(), dataObject.Id);
         var (query, variables, response) = await QueryAllMetaData(dataObject, cancellationToken);
         logger.QueryAndVariablesAndResponce(query, variables, response);
+        var typedResponse = JsonSerializer.Deserialize<GraphQLResponse<JsonElement>>(response, JsonSerializerSettings.GraphQl)
+             ?? throw new JsonException($"Failed to deserialize the GraphQL response: {response}");
+        if (typedResponse.Errors is not null && typedResponse.Errors.Length >= 1)
+        {
+            throw new GraphQLException($"The GraphQL response contains the following errors: {string.Join(", ", typedResponse.Errors.Select(_ => $"'{_.Message}' [{string.Join(", ", _.Extensions?.Select(e => $"{e.Key}: '{e.Value}'") ?? [])}] ({string.Join(".", _.Path?.Select(p => p.ToString()) ?? [])})"))}");
+        }
         var (signature, fingerprint) = await signingService.SignData(response);
         return new ResponseApproval(
             DateTime.UtcNow,
@@ -58,11 +68,11 @@ public sealed class ResponseApprovalService(
     {
         return dataObject switch
         {
-            GeometricData data => await ApiRequests.QueryAllMetaData.Do(data.Id, ApiRequests.QueryAllMetaData.GeometricDataFileNames, appSettings, apiRequestService, cancellationToken),
             CalorimetricData data => await ApiRequests.QueryAllMetaData.Do(data.Id, ApiRequests.QueryAllMetaData.CalorimetricDataFileNames, appSettings, apiRequestService, cancellationToken),
+            GeometricData data => await ApiRequests.QueryAllMetaData.Do(data.Id, ApiRequests.QueryAllMetaData.GeometricDataFileNames, appSettings, apiRequestService, cancellationToken),
             HygrothermalData data => await ApiRequests.QueryAllMetaData.Do(data.Id, ApiRequests.QueryAllMetaData.HygrothermalDataFileNames, appSettings, apiRequestService, cancellationToken),
-            PhotovoltaicData data => await ApiRequests.QueryAllMetaData.Do(data.Id, ApiRequests.QueryAllMetaData.PhotovoltaicDataFileNames, appSettings, apiRequestService, cancellationToken),
             OpticalData data => await ApiRequests.QueryAllMetaData.Do(data.Id, ApiRequests.QueryAllMetaData.OpticalDataFileNames, appSettings, apiRequestService, cancellationToken),
+            PhotovoltaicData data => await ApiRequests.QueryAllMetaData.Do(data.Id, ApiRequests.QueryAllMetaData.PhotovoltaicDataFileNames, appSettings, apiRequestService, cancellationToken),
             _ => throw new ArgumentOutOfRangeException($"Unsupported data type {typeof(T)}"),
         };
     }

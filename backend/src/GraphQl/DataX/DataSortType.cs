@@ -10,7 +10,7 @@ public sealed class DataSortType
         ISortInputTypeDescriptor<IData> descriptor
     )
     {
-        descriptor.Name(nameof(IData)[1..] + GraphQlConstants.SortInputSuffix);
         base.Configure(descriptor);
+        descriptor.Name(nameof(IData)[1..] + GraphQlConstants.SortInputSuffix);
     }
 }

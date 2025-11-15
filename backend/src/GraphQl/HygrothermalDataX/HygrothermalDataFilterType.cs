@@ -12,6 +12,5 @@ public sealed class HygrothermalDataFilterType
     )
     {
         base.Configure(descriptor);
-        descriptor.Field(x => x.Id);
     }
 }

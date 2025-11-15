@@ -12,7 +12,6 @@ public sealed class OpticalDataFilterType
     )
     {
         base.Configure(descriptor);
-        descriptor.Field(x => x.Id);
         descriptor.Field(x => x.Type);
         descriptor.Field(x => x.Subtype);
         descriptor.Field(x => x.CoatedSide);

@@ -1,17 +1,17 @@
 using Database.Data;
+using Database.GraphQl.Entities;
 using HotChocolate.Data.Sorting;
 
 namespace Database.GraphQl.GetHttpsResources;
 
 public class GetHttpsResourceSortType
-    : SortInputType<GetHttpsResource>
+    : EntitySortType<GetHttpsResource>
 {
     protected override void Configure(
         ISortInputTypeDescriptor<GetHttpsResource> descriptor
     )
     {
-        descriptor.BindFieldsExplicitly();
-        descriptor.Field(x => x.Id);
+        base.Configure(descriptor);
         descriptor.Field(x => x.Description);
         descriptor.Field(x => x.HashValue);
         descriptor.Field(x => x.DataFormatId);

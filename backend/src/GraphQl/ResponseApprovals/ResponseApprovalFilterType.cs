@@ -1,16 +1,18 @@
 using Database.Data;
+using Database.GraphQl.Entities;
 using HotChocolate.Data.Filters;
 
 namespace Database.GraphQl.ResponseApprovals;
 
 public abstract class ResponseApprovalFilterType
-: FilterInputType<IData>
+: EntityFilterType<IData>
 {
     protected override void Configure(
         IFilterInputTypeDescriptor<IData> descriptor
     )
     {
-        descriptor.BindFieldsExplicitly();
+        base.Configure(descriptor);
+        descriptor.Field(x => x.UserId);
         descriptor.Field(x => x.Locale);
         descriptor.Field(x => x.Name);
         descriptor.Field(x => x.Description);

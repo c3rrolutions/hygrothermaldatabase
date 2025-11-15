@@ -12,7 +12,6 @@ public sealed class GeometricDataFilterType
     )
     {
         base.Configure(descriptor);
-        descriptor.Field(x => x.Id);
         descriptor.Field(x => x.Thicknesses);
     }
 }

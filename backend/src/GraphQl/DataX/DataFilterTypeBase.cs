@@ -1,17 +1,19 @@
 using Database.Data;
+using Database.GraphQl.Entities;
 using HotChocolate.Data.Filters;
 
 namespace Database.GraphQl.DataX;
 
 public abstract class DataFilterTypeBase<TData>
-    : FilterInputType<TData>
+    : EntityFilterType<TData>
     where TData : IData
 {
     protected override void Configure(
         IFilterInputTypeDescriptor<TData> descriptor
     )
     {
-        descriptor.BindFieldsExplicitly();
+        base.Configure(descriptor);
+        descriptor.Field(x => x.UserId);
         descriptor.Field(x => x.Locale);
         descriptor.Field(x => x.Name);
         descriptor.Field(x => x.Description);

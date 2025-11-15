@@ -12,6 +12,5 @@ public sealed class PhotovoltaicDataFilterType
     )
     {
         base.Configure(descriptor);
-        descriptor.Field(x => x.Id);
     }
 }

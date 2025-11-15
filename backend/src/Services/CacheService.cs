@@ -1,24 +1,25 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Caching.Memory;
-using static Database.ApiRequests.QueryCurrentUser;
+using static Database.ApiRequests.QueryCurrentUserOrApplication;
 
 namespace Database.Services;
 
 public sealed class CacheService(
-    IMemoryCache currentUserCache,
+    IMemoryCache currentUserOrApplicationCache,
     IMemoryCache accessCountCache,
     IMemoryCache timePeriodCountCache)
 {
-    public CurrentUser? SetUser(string token, CurrentUser? cacheUser)
+    public CurrentUserOrApplication? SetCurrentUserOrApplication(string token, CurrentUserOrApplication cachedUserOrApplication)
     {
         var cacheEntryOptions = new MemoryCacheEntryOptions()
             .SetSlidingExpiration(TimeSpan.FromHours(1));
-        return currentUserCache.Set(token, cacheUser, cacheEntryOptions);
+        return currentUserOrApplicationCache.Set(token, cachedUserOrApplication, cacheEntryOptions);
     }
 
-    public bool TryGetUser(string token, out CurrentUser? cacheUser)
+    public bool TryGetCurrentUserOrApplication(string token, [NotNullWhen(true)] out CurrentUserOrApplication? cachedUserOrApplication)
     {
-        return currentUserCache.TryGetValue(token, out cacheUser);
+        return currentUserOrApplicationCache.TryGetValue(token, out cachedUserOrApplication);
     }
 
     public uint GetAccessCountForUser(Guid userId)

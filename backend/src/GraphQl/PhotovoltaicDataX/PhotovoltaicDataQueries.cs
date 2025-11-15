@@ -71,14 +71,14 @@ public sealed class PhotovoltaicDataQueries
     }
 
     [UseFiltering<PhotovoltaicDataFilterType>]
-    public Task<bool> GetHasPhotovoltaicDataAsync(
+    public Task<bool> HasPhotovoltaicDataAsync(
         [GraphQLType<LocaleType>] string? locale,
         ApplicationDbContext context,
         IResolverContext resolverContext,
         CancellationToken cancellationToken
     )
     {
-        return GetHasDataAsync(
+        return HasDataAsync(
             context.PhotovoltaicData,
             locale,
             resolverContext,

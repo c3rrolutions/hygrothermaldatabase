@@ -8,7 +8,7 @@ public sealed class HygrothermalData
     : DataX
 {
     public HygrothermalData(
-        Guid userId,
+        Guid? userId,
         string locale,
         Guid componentId,
         string? name,
@@ -33,7 +33,7 @@ public sealed class HygrothermalData
 
     // `DbContext` needs this constructor without owned entities.
     public HygrothermalData(
-        Guid userId,
+        Guid? userId,
         string locale,
         Guid componentId,
         string? name,

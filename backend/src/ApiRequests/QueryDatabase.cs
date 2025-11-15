@@ -21,8 +21,8 @@ public sealed class QueryDatabase
          DatabaseVerificationState VerificationState,
          string VerificationCode,
          DatabaseOperatorEdge Operator,
-         bool CanCurrentUserUpdateNode,
-         bool CanCurrentUserVerifyNode
+         bool IsAuthorizedToUpdateNode,
+         bool IsAuthorizedToVerifyNode
     );
 
     public enum DatabaseVerificationState

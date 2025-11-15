@@ -71,14 +71,14 @@ public sealed class CalorimetricDataQueries
     }
 
     [UseFiltering<CalorimetricDataFilterType>]
-    public Task<bool> GetHasCalorimetricDataAsync(
+    public Task<bool> HasCalorimetricDataAsync(
         [GraphQLType<LocaleType>] string? locale,
         ApplicationDbContext context,
         IResolverContext resolverContext,
         CancellationToken cancellationToken
     )
     {
-        return GetHasDataAsync(
+        return HasDataAsync(
             context.CalorimetricData,
             locale,
             resolverContext,

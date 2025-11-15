@@ -35,6 +35,7 @@
     <PackageReference Include="HotChocolate.Types.Analyzers" Version="15.1.11" />
     <PackageReference Include="HotChocolate.Types.Scalars" Version="15.1.11" />
     <PackageReference Include="JsonPath.Net" Version="2.1.1" />
+    <PackageReference Include="Laraue.EfCoreTriggers.PostgreSql" Version="9.0.1" />
     <PackageReference Include="MailKit" Version="4.14.1" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.10" />
     <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="9.0.10" />

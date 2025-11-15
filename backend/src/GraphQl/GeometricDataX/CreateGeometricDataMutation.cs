@@ -25,12 +25,16 @@ public sealed record CreateGeometricDataInput(
     DateTime CreatedAt,
     Guid CreatorId,
     AppliedMethodInput AppliedMethod,
+    RootGetHttpsResourceInput RootResource,
     double[] Thicknesses
 ) : IValidateCreateInput
 {
-    public GeometricData ToDomainModel(Guid userId)
+    public GeometricData ToDomainModel(
+        Guid? userId,
+        string? fileExtension
+    )
     {
-        return new(
+        var data = new GeometricData(
             userId,
             Locale,
             ComponentId,
@@ -42,6 +46,8 @@ public sealed record CreateGeometricDataInput(
             AppliedMethod.ToDomainModel(),
             Thicknesses
         );
+        data.Resources.Add(RootResource.ToDomainModel(fileExtension));
+        return data;
     }
 };
 
@@ -54,6 +60,8 @@ public enum CreateGeometricDataErrorCode
     UNKNOWN_COMPONENT,
     ILLEGAL_CREATED_AT,
     UNKNOWN_CREATOR,
+    UNKNOWN_APPLIED_METHOD,
+    UNKNOWN_DATA_FORMAT,
     CREATING_RESPONSE_APPROVAL_FAILED
 }
 
@@ -92,6 +100,8 @@ public sealed class CreateGeometricDataMutation
         CommonAuthorization authorization,
         IComponentByIdDataLoader componentByIdDataLoader,
         IInstitutionByIdDataLoader institutionByIdDataLoader,
+        IMethodByIdDataLoader methodByIdDataLoader,
+        IDataFormatByIdDataLoader dataFormatByIdDataLoader,
         ResponseApprovalService responseApprovalService,
         CancellationToken cancellationToken
     )
@@ -102,7 +112,7 @@ public sealed class CreateGeometricDataMutation
                 authorization,
                 cancellationToken
             )
-            ).Failed(out var currentUser, out var authorizeErrorPayload)
+            ).Failed(out var currentUserOrApplication, out var authorizeErrorPayload)
         )
         {
             return authorizeErrorPayload;
@@ -115,15 +125,22 @@ public sealed class CreateGeometricDataMutation
                 CreateGeometricDataErrorCode.UNKNOWN_COMPONENT,
                 institutionByIdDataLoader,
                 CreateGeometricDataErrorCode.UNKNOWN_CREATOR,
+                methodByIdDataLoader,
+                CreateGeometricDataErrorCode.UNKNOWN_APPLIED_METHOD,
+                dataFormatByIdDataLoader,
+                CreateGeometricDataErrorCode.UNKNOWN_DATA_FORMAT,
                 cancellationToken
             )
-            ).Failed(out var validateErrorPayload)
+            ).Failed(out var dataFormat, out var validateErrorPayload)
         )
         {
             return validateErrorPayload;
         }
 
-        var geometricData = input.ToDomainModel(currentUser.Uuid);
+        var geometricData = input.ToDomainModel(
+            currentUserOrApplication.CurrentUser?.Uuid,
+            dataFormat.Extension
+        );
         context.GeometricData.Add(geometricData);
         await context.SaveChangesAsync(cancellationToken);
 

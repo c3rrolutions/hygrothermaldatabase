@@ -13,7 +13,7 @@ query Database(
                 uuid
             }
         }
-        canCurrentUserUpdateNode
-        canCurrentUserVerifyNode
+        isAuthorizedToUpdateNode
+        isAuthorizedToVerifyNode
     }
 }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.IO;
 using System.Linq;
@@ -12,12 +13,28 @@ using EntityFrameworkCore.Projectables;
 
 namespace Database.Data;
 
-// `DbContext` needs this constructor without owned entities.
 public sealed class GetHttpsResource
 : Entity
 {
     public const string FilesDirectoryPath = "./files/";
+    public const string TableName = "get_https_resource";
 
+    public const string DataIdsMustMatchTriggerName = "data_ids_must_match";
+    public const string DataIdCannotChangeTriggerName = "data_id_cannot_change";
+    public static readonly ImmutableArray<string> TriggerNames = [
+        DataIdsMustMatchTriggerName,
+        DataIdCannotChangeTriggerName
+    ];
+
+    public static readonly ImmutableArray<string> DataIdFieldNames = [
+        nameof(CalorimetricDataId),
+        nameof(GeometricDataId),
+        nameof(HygrothermalDataId),
+        nameof(OpticalDataId),
+        nameof(PhotovoltaicDataId)
+    ];
+
+    // Constructor for EF Core because navigation properties cannot be set using a constructor: https://learn.microsoft.com/en-us/ef/core/modeling/constructors#binding-to-mapped-properties
     public GetHttpsResource(
         string? description,
         string hashValue,
@@ -31,6 +48,32 @@ public sealed class GetHttpsResource
         FileExtension = fileExtension;
     }
 
+    /// <summary>
+    /// Construct a root resource.
+    /// </summary>
+    public GetHttpsResource(
+        string? description,
+        string hashValue,
+        Guid dataFormatId,
+        string? fileExtension,
+        ICollection<FileMetaInformation> archivedFilesMetaInformation
+    )
+        : this(
+            description,
+            hashValue,
+            dataFormatId,
+            fileExtension
+        )
+    {
+        ParentId = null;
+        ArchivedFilesMetaInformation = archivedFilesMetaInformation;
+        AppliedConversionMethod = null;
+        // The data ID is set by EF Core.
+    }
+
+    /// <summary>
+    /// Construct a child resource.
+    /// </summary>
     public GetHttpsResource(
         string? description,
         string hashValue,
@@ -41,9 +84,9 @@ public sealed class GetHttpsResource
         Guid? hygrothermalDataId,
         Guid? opticalDataId,
         Guid? photovoltaicDataId,
-        Guid? parentId,
+        Guid parentId,
         ICollection<FileMetaInformation> archivedFilesMetaInformation,
-        ToTreeVertexAppliedConversionMethod? appliedConversionMethod
+        ToTreeVertexAppliedConversionMethod appliedConversionMethod
     )
         : this(
             description,
@@ -156,7 +199,6 @@ public sealed class GetHttpsResource
 
     public Guid? ParentId { get; private set; }
 
-    // TODO Require the conversion method to be given whenever there is a parent. In other words, either both are `null` or both are non-`null`.
     public ToTreeVertexAppliedConversionMethod? AppliedConversionMethod { get; private set; }
 
     // TODO The parent's `Data` must be the same as this resource's `Data`.
@@ -165,14 +207,36 @@ public sealed class GetHttpsResource
     [InverseProperty(nameof(Parent))]
     public ICollection<GetHttpsResource> Children { get; } = [];
 
+    public void UpdateFileExtension(string fileExtension)
+    {
+        var oldFilePath = FilePath;
+        FileExtension = fileExtension;
+        File.Move(oldFilePath, FilePath);
+    }
+
     public bool DoesFileExist()
     {
         return File.Exists(FilePath);
     }
 
+    public void DeleteFile()
+    {
+        File.Delete(FilePath);
+    }
+
     public async Task RecomputeHashValue(CancellationToken cancellationToken)
     {
         HashValue = await Sha256FileHasher.ComputeForFile(FilePath, cancellationToken);
+    }
+
+    public bool IsRoot()
+    {
+        return ParentId is null;
+    }
+
+    public bool IsChild()
+    {
+        return ParentId is not null;
     }
 
     public static string ConstructVertexId(Guid id)

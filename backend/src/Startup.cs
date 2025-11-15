@@ -26,6 +26,7 @@ using Database.Data;
 using Database.Data.Extensions;
 using Database.Enumerations;
 using Database.Services;
+using Laraue.EfCoreTriggers.PostgreSql.Extensions;
 
 namespace Database;
 
@@ -175,6 +176,7 @@ public sealed class Startup(
                 appSettings.Database.ConnectionString,
                 _ => _
                     .SetPostgresVersion(13, 13)
+                    .UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery) // https://learn.microsoft.com/en-us/ef/core/querying/single-split-queries#enabling-split-queries-globally
                     .MapEnum<CalorimetricObserver>(ApplicationDbContext.CalorimetricObserverTypeName, appSettings.Database.SchemaName)
                     .MapEnum<CoatedSide>(ApplicationDbContext.CoatedSideTypeName, appSettings.Database.SchemaName)
                     .MapEnum<DataKind>(ApplicationDbContext.DataKindTypeName, appSettings.Database.SchemaName)
@@ -187,7 +189,8 @@ public sealed class Startup(
             )
             .UseSchemaName(appSettings.Database.SchemaName)
             .UseOpenIddict()
-            .UseProjectables();
+            .UseProjectables()
+            .UsePostgreSqlTriggers();
         if (!environment.IsProduction())
         {
             options

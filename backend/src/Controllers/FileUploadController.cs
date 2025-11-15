@@ -91,18 +91,10 @@ public sealed class FileUploadController(
         [FromQuery] Guid getHttpsResourceUuid,
         [FromServices] ApplicationDbContext context,
         [FromServices] CommonAuthorization authorization,
-        [FromServices] UserService userService,
         CancellationToken cancellationToken
     )
     {
-        var currentUser = await userService.GetCurrentUser(cancellationToken);
-        if (currentUser is null)
-        {
-            ModelState.AddModelError("CurrentUser",
-                $"User is not authenticated.");
-            return BadRequest(ModelState);
-        }
-        if (!authorization.IsCurrentUserAtLeastAssistantManagerOfDatabaseOperator(currentUser))
+        if (!await authorization.IsDatabaseOperator(cancellationToken))
         {
             return Unauthorized();
         }
@@ -114,13 +106,8 @@ public sealed class FileUploadController(
             );
             return BadRequest(ModelState);
         }
-        var getHttpsResource = await context.GetHttpsResources.AsQueryable()
-                .Include(e => e.CalorimetricData)
-                .Include(e => e.GeometricData)
-                .Include(e => e.HygrothermalData)
-                .Include(e => e.OpticalData)
-                .Include(e => e.PhotovoltaicData)
-                .Where(e => e.Id == getHttpsResourceUuid)
+        var getHttpsResource = await context.GetHttpsResourcesWithData.AsQueryable()
+                .Where(_ => _.Id == getHttpsResourceUuid)
                 .SingleOrDefaultAsync(cancellationToken);
         if (getHttpsResource is null)
         {
@@ -188,7 +175,7 @@ public sealed class FileUploadController(
             // read the headers for the next section.
             section = await reader.ReadNextSectionAsync(cancellationToken);
         }
-        if (getHttpsResource.OpticalData is not null)
+        if (getHttpsResource.IsRoot() && getHttpsResource.OpticalData is not null)
         {
             await getHttpsResource.OpticalData.ExtractAndSetMirroredValuesFromFile(
                 getHttpsResource.FilePath,

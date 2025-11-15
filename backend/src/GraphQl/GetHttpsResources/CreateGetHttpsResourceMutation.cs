@@ -24,14 +24,14 @@ public sealed record CreateGetHttpsResourceInput(
     Guid DataFormatId,
     Guid DataId,
     DataKind DataKind,
-    Guid? ParentId,
+    Guid ParentId,
     IReadOnlyList<FileMetaInformationInput> ArchivedFilesMetaInformation,
-    ToTreeVertexAppliedConversionMethodInput? AppliedConversionMethod
-) : IIdentifyDataInput
+    ToTreeVertexAppliedConversionMethodInput AppliedConversionMethod
+) : IIdentifyDataInput, IValidateGetHttpsResourceInput
 {
     public GetHttpsResource ToDomainModel(string? fileExtension)
     {
-        return new GetHttpsResource(
+        return new(
             Description,
             Sha256FileHasher.ComputeForString(""), // The correct hash value is computed when the file for this resource is being uploaded.
             DataFormatId,
@@ -43,7 +43,7 @@ public sealed record CreateGetHttpsResourceInput(
             DataKind == DataKind.PHOTOVOLTAIC_DATA ? DataId : null,
             ParentId,
             ArchivedFilesMetaInformation.Select(i => i.ToDomainModel()).ToList(),
-            AppliedConversionMethod?.ToDomainModel()
+            AppliedConversionMethod.ToDomainModel()
         );
     }
 }
@@ -57,11 +57,8 @@ public enum CreateGetHttpsResourceErrorCode
     UNKNOWN_DATA,
     UNKNOWN_PARENT,
     ILLEGAL_PARENT,
-    APPLIED_CONVERSION_METHOD_WITHOUT_PARENT,
     UNKNOWN_DATA_FORMAT,
-    DUPLICATE_ROOT_RESOURCE,
-    CREATING_RESPONSE_APPROVAL_FAILED,
-    PARENT_WITHOUT_APPLIED_CONVERSION_METHOD
+    CREATING_RESPONSE_APPROVAL_FAILED
 }
 
 public sealed record CreateGetHttpsResourceError(
@@ -116,7 +113,7 @@ public sealed class CreateGetHttpsResourceMutation
                 authorization,
                 cancellationToken
             )
-            ).Failed(out var currentUser, out var authorizeErrorPayload)
+            ).Failed(out var _, out var authorizeErrorPayload)
         )
         {
             return authorizeErrorPayload;
@@ -135,26 +132,13 @@ public sealed class CreateGetHttpsResourceMutation
         }
 
         var errors = new List<CreateGetHttpsResourceError>();
-        var dataFormat = await dataFormatByIdDataLoader.LoadAsync(input.DataFormatId, cancellationToken);
-        if (dataFormat is null)
-        {
-            errors.Add(
-                NewError(
-                    CreateGetHttpsResourceErrorCode.UNKNOWN_DATA_FORMAT,
-                    "There is no data format with the format ID.",
-                    [nameof(input), nameof(input.DataFormatId).ToLowerFirst()]
-                )
-            );
-        }
         var parent =
-            input.ParentId is null
-            ? null
-            : await context.GetHttpsResources
+            await context.GetHttpsResources
             .SingleOrDefaultAsync(_ =>
                 _.Id == input.ParentId,
                 cancellationToken
             );
-        if (parent is null && input.ParentId is not null)
+        if (parent is null)
         {
             errors.Add(
                 NewError(
@@ -174,42 +158,19 @@ public sealed class CreateGetHttpsResourceMutation
                 )
             );
         }
-        if (input.AppliedConversionMethod is not null && input.ParentId is null)
+        var validateResourceResult = await ValidateGetHttpsResourceAsync(
+            input,
+            [nameof(input)],
+            dataFormatByIdDataLoader,
+            CreateGetHttpsResourceErrorCode.UNKNOWN_DATA_FORMAT,
+            cancellationToken
+        );
+        if (validateResourceResult.Failed(out var dataFormat, out var validateResourceErrors))
         {
-            errors.Add(
-                NewError(
-                    CreateGetHttpsResourceErrorCode.APPLIED_CONVERSION_METHOD_WITHOUT_PARENT,
-                    "The resource does not have a parent yet an applied conversion method was given. This method is supposed to have been applied to this resource's parent.",
-                    [nameof(input), nameof(input.AppliedConversionMethod).ToLowerFirst()]
-                )
-            );
+            errors.AddRange(validateResourceErrors);
         }
-        if (input.ParentId is not null && input.AppliedConversionMethod is null)
-        {
-            errors.Add(
-                NewError(
-                    CreateGetHttpsResourceErrorCode.PARENT_WITHOUT_APPLIED_CONVERSION_METHOD,
-                    "The resource has a parent yet no applied conversion method was given. How did this resource come about from its parent?",
-                    [nameof(input), nameof(input.AppliedConversionMethod).ToLowerFirst()]
-                )
-            );
-        }
-        if (input.ParentId is null &&
-            await context.GetHttpsResources.AsNoTracking()
-            .Where(_ => _.ParentId == null)
-            .Where(_ => _.GetDataId(input.DataKind) == input.DataId)
-            .AnyAsync(cancellationToken)
-        )
-        {
-            errors.Add(
-                NewError(
-                    CreateGetHttpsResourceErrorCode.DUPLICATE_ROOT_RESOURCE,
-                    "The data set does already have a root resource.",
-                    [nameof(input), nameof(input.ParentId).ToLowerFirst()]
-                )
-            );
-        }
-        if (errors.Count >= 1)
+        // Note that `dataFormat` is only `null`, when `validateResourceResult` failed.
+        if (errors.Count >= 1 || dataFormat is null)
         {
             return NewPayload(null, errors);
         }

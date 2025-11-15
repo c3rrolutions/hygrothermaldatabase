@@ -6,7 +6,7 @@ using Database.Enumerations;
 namespace Database.Data;
 
 public abstract class DataX(
-    Guid userId,
+    Guid? userId,
     string locale,
     Guid componentId,
     string? name,
@@ -17,7 +17,7 @@ public abstract class DataX(
 ) : Entity, IData
 {
     protected DataX(
-        Guid userId,
+        Guid? userId,
         string locale,
         Guid componentId,
         string? name,
@@ -70,7 +70,7 @@ public abstract class DataX(
         PublishingState = PublishingState.RETRACTED;
     }
 
-    public Guid UserId { get; private set; } = userId;
+    public Guid? UserId { get; private set; } = userId;
     public string Locale { get; private set; } = locale;
     public Guid ComponentId { get; private set; } = componentId;
     public string? Name { get; private set; } = name;

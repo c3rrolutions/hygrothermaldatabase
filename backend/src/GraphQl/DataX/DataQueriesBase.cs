@@ -50,7 +50,7 @@ where TData : class, IData
         CancellationToken cancellationToken
     )
     {
-        if (!await authorization.IsCurrentUserAtLeastAssistantManagerOfDatabaseOperator(cancellationToken))
+        if (!await authorization.IsDatabaseOperator(cancellationToken))
         {
             return Enumerable.Empty<TData>().AsQueryable();
         }
@@ -67,7 +67,7 @@ where TData : class, IData
         return await accessRightsService.ApplyAccessRightsOnData(filteredData, cancellationToken);
     }
 
-    protected Task<bool> GetHasDataAsync(
+    protected Task<bool> HasDataAsync(
         DbSet<TData> data,
         [GraphQLType<LocaleType>] string? locale,
         IResolverContext resolverContext,

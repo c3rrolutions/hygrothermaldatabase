@@ -69,14 +69,14 @@ public sealed class HygrothermalDataQueries
     }
 
     [UseFiltering<HygrothermalDataFilterType>]
-    public Task<bool> GetHasHygrothermalDataAsync(
+    public Task<bool> HasHygrothermalDataAsync(
         [GraphQLType<LocaleType>] string? locale,
         ApplicationDbContext context,
         IResolverContext resolverContext,
         CancellationToken cancellationToken
     )
     {
-        return GetHasDataAsync(
+        return HasDataAsync(
             context.HygrothermalData,
             locale,
             resolverContext,

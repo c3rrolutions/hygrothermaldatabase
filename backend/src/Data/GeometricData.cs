@@ -8,7 +8,7 @@ public sealed class GeometricData
     : DataX
 {
     public GeometricData(
-        Guid userId,
+        Guid? userId,
         string locale,
         Guid componentId,
         string? name,
@@ -34,7 +34,7 @@ public sealed class GeometricData
     }
 
     public GeometricData(
-        Guid userId,
+        Guid? userId,
         string locale,
         Guid componentId,
         string? name,

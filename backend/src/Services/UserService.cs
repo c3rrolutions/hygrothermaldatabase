@@ -7,7 +7,8 @@ using OpenIddict.Abstractions;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using Database.ApiRequests;
 using Database.Extensions;
-using static Database.ApiRequests.QueryCurrentUser;
+using static Database.ApiRequests.QueryCurrentUserOrApplication;
+using System;
 
 namespace Database.Services;
 
@@ -32,47 +33,64 @@ public sealed class UserService(
     ApiRequestService apiRequestService,
     IHttpContextAccessor httpContextAccessor,
     CacheService cacheService,
-    ILogger<UserService> logger)
+    ILogger<UserService> logger
+)
 {
     /// <summary>
-    /// Get application from user calims.
+    /// Get client ID from user claims.
     /// </summary>
-    /// <returns> ClientId from claims as applicationId. </returns>
     public string? GetOpenIdConnectClientId()
     {
         return httpContextAccessor.HttpContext?.User.GetClaim(Claims.AuthorizedParty);
     }
 
+    public async Task<T> UserOrApplicationAsync<T>(
+        Func<CurrentUser?, Task<T>> authorizeUser,
+        Func<CurrentOpenIdConnectApplication?, Task<T>> authorizeApplication,
+        CancellationToken cancellationToken
+    )
+    {
+        var userOrApplication = await GetCurrentUserOrApplicationAsync(cancellationToken);
+        if (userOrApplication.CurrentApplication is not null)
+        {
+            return await authorizeApplication(userOrApplication.CurrentApplication);
+        }
+        else
+        {
+            return await authorizeUser(userOrApplication.CurrentUser);
+        }
+    }
+
     /// <summary>
-    /// Get current user from Metabase (or the local cache).
+    /// Get current user or OpenId Connect application from Metabase (or the local cache).
     /// </summary>
-    /// <param name="cancellationToken"> <see cref="CancellationToken"/> </param>
-    /// <returns> </returns>
-    public async Task<CurrentUser?> GetCurrentUser(CancellationToken cancellationToken)
+    public async Task<CurrentUserOrApplication> GetCurrentUserOrApplicationAsync(
+        CancellationToken cancellationToken
+    )
     {
         // Extract token
         var token = await httpContextAccessor.ExtractBearerToken();
         logger.ExtractedToken(token);
         if (token is null)
         {
-            return await QueryCurrentUser.Do(
+            return await QueryCurrentUserOrApplication.Do(
                 appSettings,
                 apiRequestService,
                 cancellationToken
             );
         }
         // Check if there is already a user for token
-        if (!cacheService.TryGetUser(token, out var cacheUser))
+        if (!cacheService.TryGetCurrentUserOrApplication(token, out var cachedUserOrApplication))
         {
             // Get user from Metabase
-            cacheUser = await QueryCurrentUser.Do(
+            cachedUserOrApplication = await QueryCurrentUserOrApplication.Do(
                 appSettings,
                 apiRequestService,
                 cancellationToken
             );
             // Store user in cache
-            cacheService.SetUser(token, cacheUser);
+            cacheService.SetCurrentUserOrApplication(token, cachedUserOrApplication);
         }
-        return cacheUser;
+        return cachedUserOrApplication;
     }
 }

@@ -18,4 +18,9 @@ public static class StringExtensions
             Convert.FromBase64String(base64EncodedData)
         );
     }
+
+    public static string Enquote(this string str)
+    {
+        return "\"" + str + "\"";
+    }
 }

@@ -11,8 +11,8 @@ fragment DatabasePartial on Database {
   # }
   verificationState
   verificationCode
-  canCurrentUserUpdateNode
-  canCurrentUserVerifyNode
+  isAuthorizedToUpdateNode
+  isAuthorizedToVerifyNode
 }
 
 query Database {

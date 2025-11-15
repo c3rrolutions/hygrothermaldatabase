@@ -5,9 +5,7 @@ using System.Collections.Generic;
 using Database.ApiRequests;
 using GraphQL.Client.Abstractions.Utilities;
 using Database.Extensions;
-using System.Globalization;
 using static Database.ApiRequests.DataFormatDataLoader;
-using System.Linq;
 
 namespace Database.GraphQl.DataX;
 
@@ -82,58 +80,24 @@ where TError : class
             );
         }
         // TODO check applied method sources
-        var validateDataFormats = new Task<Result<DataFormat, TError>>[1 + input.RootResource.ArchivedFilesMetaInformation.Count];
-        validateDataFormats[0] = Task.Run<Result<DataFormat, TError>>(async () =>
-            {
-                var dataFormat = await dataFormatByIdDataLoader.LoadAsync(input.RootResource.DataFormatId, cancellationToken);
-                if (dataFormat is null)
-                {
-                    return new Result<DataFormat, TError>.Error(
-                        NewError(
-                            unknownDataFormatErrorCode,
-                            "The data format does not exist",
-                            [nameof(input), nameof(input.RootResource).ToLowerFirst(), nameof(input.RootResource.DataFormatId).ToLowerFirst()]
-                        )
-                    );
-                }
-                return new Result<DataFormat, TError>.Data(dataFormat);
-            },
+        var validateRootResourceResult = await ValidateGetHttpsResourceAsync(
+            input.RootResource,
+            [nameof(input), nameof(input.RootResource)],
+            dataFormatByIdDataLoader,
+            unknownDataFormatErrorCode,
             cancellationToken
         );
-        foreach (var (archivedFileMetaInformation, index) in input.RootResource.ArchivedFilesMetaInformation.WithIndex())
+        if (validateRootResourceResult.Failed(out var dataFormat, out var validateRootResourceErrors))
         {
-            validateDataFormats[index + 1] = Task.Run<Result<DataFormat, TError>>(async () =>
-                {
-                    var dataFormat = await dataFormatByIdDataLoader.LoadAsync(archivedFileMetaInformation.DataFormatId, cancellationToken);
-                    if (dataFormat is null)
-                    {
-                        // TODO Is the index in the path formated correctly or should it be enclosed in square brackets?
-                        return new Result<DataFormat, TError>.Error(
-                            NewError(
-                                unknownDataFormatErrorCode,
-                                "The data format does not exist",
-                                [nameof(input), nameof(input.RootResource).ToLowerFirst(), nameof(input.RootResource.ArchivedFilesMetaInformation).ToLowerFirst(), index.ToString(CultureInfo.InvariantCulture), nameof(archivedFileMetaInformation.DataFormatId).ToLowerFirst()]
-                            )
-                        );
-                    }
-                    return new Result<DataFormat, TError>.Data(dataFormat);
-                },
-                cancellationToken
-            );
+            errors.AddRange(validateRootResourceErrors);
         }
-        var maybeDataFormats = await Task.WhenAll(validateDataFormats);
-        errors.AddRange(
-            maybeDataFormats
-            .Select(_ => _.Failed(out var error) ? error : null)
-            .NotNull()
-        );
-        if (errors.Count >= 1)
+        // Note that `dataFormat` is only `null`, when `validateRootResourceResult` failed.
+        if (errors.Count >= 1 || dataFormat is null)
         {
             return new Result<DataFormat, TPayload>.Error(
                 NewPayload(null, errors)
             );
         }
-        maybeDataFormats[0].Succeeded(out var dataFormat);
-        return new Result<DataFormat, TPayload>.Data(dataFormat ?? throw new InvalidOperationException("Impossible because there are no errors when this code line is being executed!"));
+        return new Result<DataFormat, TPayload>.Data(dataFormat);
     }
 }

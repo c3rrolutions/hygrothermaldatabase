@@ -27,7 +27,7 @@ public sealed record CreateGetHttpsResourceInput(
     Guid ParentId,
     IReadOnlyList<FileMetaInformationInput> ArchivedFilesMetaInformation,
     ToTreeVertexAppliedConversionMethodInput AppliedConversionMethod
-) : IIdentifyDataInput
+) : IIdentifyDataInput, IValidateGetHttpsResourceInput
 {
     public GetHttpsResource ToDomainModel(string? fileExtension)
     {
@@ -132,17 +132,6 @@ public sealed class CreateGetHttpsResourceMutation
         }
 
         var errors = new List<CreateGetHttpsResourceError>();
-        var dataFormat = await dataFormatByIdDataLoader.LoadAsync(input.DataFormatId, cancellationToken);
-        if (dataFormat is null)
-        {
-            errors.Add(
-                NewError(
-                    CreateGetHttpsResourceErrorCode.UNKNOWN_DATA_FORMAT,
-                    "There is no data format with the format ID.",
-                    [nameof(input), nameof(input.DataFormatId).ToLowerFirst()]
-                )
-            );
-        }
         var parent =
             await context.GetHttpsResources
             .SingleOrDefaultAsync(_ =>
@@ -169,7 +158,19 @@ public sealed class CreateGetHttpsResourceMutation
                 )
             );
         }
-        if (errors.Count >= 1)
+        var validateResourceResult = await ValidateGetHttpsResourceAsync(
+            input,
+            [nameof(input)],
+            dataFormatByIdDataLoader,
+            CreateGetHttpsResourceErrorCode.UNKNOWN_DATA_FORMAT,
+            cancellationToken
+        );
+        if (validateResourceResult.Failed(out var dataFormat, out var validateResourceErrors))
+        {
+            errors.AddRange(validateResourceErrors);
+        }
+        // Note that `dataFormat` is only `null`, when `validateResourceResult` failed.
+        if (errors.Count >= 1 || dataFormat is null)
         {
             return NewPayload(null, errors);
         }

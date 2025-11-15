@@ -6,11 +6,18 @@ using Database.Utilities;
 
 namespace Database.GraphQl;
 
+public interface IValidateGetHttpsResourceInput
+{
+    public Guid DataFormatId { get; }
+    public IReadOnlyList<FileMetaInformationInput> ArchivedFilesMetaInformation { get; }
+}
+
 public sealed record RootGetHttpsResourceInput(
     string Description,
     Guid DataFormatId,
     IReadOnlyList<FileMetaInformationInput> ArchivedFilesMetaInformation
 )
+: IValidateGetHttpsResourceInput
 {
     public GetHttpsResource ToDomainModel(string? fileExtension)
     {

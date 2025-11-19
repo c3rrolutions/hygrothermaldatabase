@@ -1,14 +1,15 @@
-import * as React from "react";
+import { useQuery } from '@apollo/client/react';
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { Button, Menu } from "antd";
 import { UserOutlined } from "@ant-design/icons";
 import paths from "../paths";
-import { useCurrentUserQuery } from "../queries/currentUser.graphql";
+import { CurrentUserDocument } from "../queries/currentUser.generated";
 import { getXsrfToken } from "../lib/apollo";
+import { Route } from 'next';
 
 type NavItemProps = {
-  path: string;
+  path: Route;
   label: string;
 };
 
@@ -33,7 +34,7 @@ const moderatorItems = [
 
 export default function NavBar({ items }: NavBarProps) {
   const router = useRouter();
-  const currentUser = useCurrentUserQuery()?.data?.currentUser;
+  const currentUser = useQuery(CurrentUserDocument)?.data?.currentUser;
 
   return (
     <Menu mode="horizontal" selectedKeys={[router.pathname]} theme="dark">

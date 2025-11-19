@@ -1,15 +1,16 @@
-import { useDatabaseQuery } from "../../queries/databases.graphql";
+import { useQuery } from '@apollo/client/react';
+import { DatabaseDocument } from "../../queries/databases.generated";
 import { Skeleton, Result, Descriptions, Typography, Tag } from "antd";
 import { PageHeader } from "@ant-design/pro-layout";
 import { ReactNode, useEffect } from "react";
 import { messageApolloError } from "../../lib/apollo";
 import UpdateDatabase from "./UpdateDatabase";
-import { DatabaseVerificationState } from "../../__generated__/__types__";
+import { DatabaseVerificationState } from "../../__generated__/graphql";
 
 export type DatabaseProps = {};
 
 export default function Database({}: DatabaseProps) {
-  const { loading, error, data } = useDatabaseQuery();
+  const { loading, error, data } = useQuery(DatabaseDocument);
   const database = data?.database;
 
   useEffect(() => {

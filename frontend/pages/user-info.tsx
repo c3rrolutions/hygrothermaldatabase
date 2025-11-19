@@ -1,12 +1,13 @@
+import { useQuery } from '@apollo/client/react';
 import Layout from "../components/Layout";
-import { useCurrentUserInfoQuery } from "../queries/currentUser.graphql";
+import { CurrentUserInfoDocument } from "../queries/currentUser.generated";
 import { Skeleton, Result, Descriptions, Typography } from "antd";
 import { PageHeader } from "@ant-design/pro-layout";
 import { useEffect } from "react";
 import { messageApolloError } from "../lib/apollo";
 
 function Page() {
-  const { loading, error, data } = useCurrentUserInfoQuery();
+  const { loading, error, data } = useQuery(CurrentUserInfoDocument);
   const currentUserInfo = data?.currentUserInfo;
 
   useEffect(() => {

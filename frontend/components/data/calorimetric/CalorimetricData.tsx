@@ -1,16 +1,17 @@
-import { Scalars } from "../../../__generated__/__types__";
-import { useCalorimetricDataQuery } from "../../../queries/data.graphql";
+import { Scalars } from "../../../__generated__/graphql";
+import { CalorimetricDataDocument } from "../../../queries/data.generated";
 import { Skeleton, Result, Descriptions } from "antd";
 import { useEffect } from "react";
 import { messageApolloError } from "../../../lib/apollo";
 import DataPageHeader from "../DataPageHeader";
+import { useQuery } from "@apollo/client/react";
 
 export type CalorimetricDataProps = {
-  calorimetricDataId: Scalars["Uuid"];
+  calorimetricDataId: Scalars["Uuid"]["input"];
 };
 
 export default function CalorimetricData({ calorimetricDataId }: CalorimetricDataProps) {
-  const { loading, error, data } = useCalorimetricDataQuery({
+  const { loading, error, data } = useQuery(CalorimetricDataDocument, {
     variables: {
       uuid: calorimetricDataId,
     },

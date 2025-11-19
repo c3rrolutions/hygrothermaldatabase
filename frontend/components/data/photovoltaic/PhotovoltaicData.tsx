@@ -1,16 +1,17 @@
-import { Scalars } from "../../../__generated__/__types__";
-import { usePhotovoltaicDataQuery } from "../../../queries/data.graphql";
+import { Scalars } from "../../../__generated__/graphql";
+import { PhotovoltaicDataDocument } from "../../../queries/data.generated";
 import { Skeleton, Result } from "antd";
 import { useEffect } from "react";
 import { messageApolloError } from "../../../lib/apollo";
 import DataPageHeader from "../DataPageHeader";
+import { useQuery } from "@apollo/client/react";
 
 export type PhotovoltaicDataProps = {
-  photovoltaicDataId: Scalars["Uuid"];
+  photovoltaicDataId: Scalars["Uuid"]["input"];
 };
 
 export default function PhotovoltaicData({ photovoltaicDataId }: PhotovoltaicDataProps) {
-  const { loading, error, data } = usePhotovoltaicDataQuery({
+  const { loading, error, data } = useQuery(PhotovoltaicDataDocument, {
     variables: {
       uuid: photovoltaicDataId,
     },

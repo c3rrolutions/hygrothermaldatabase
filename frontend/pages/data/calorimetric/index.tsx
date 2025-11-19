@@ -8,12 +8,12 @@ import {
   Typography,
   Descriptions,
 } from "antd";
-import { useAllCalorimetricDataQuery } from "../../../queries/data.graphql";
+import { AllCalorimetricDataDocument } from "../../../queries/data.generated";
 import {
   CalorimetricData,
   Scalars,
   CalorimetricDataPropositionInput,
-} from "../../../__generated__/__types__";
+} from "../../../__generated__/graphql";
 import { useState } from "react";
 import { setMapValue } from "../../../lib/freeTextFilter";
 import {
@@ -34,6 +34,7 @@ import {
   UuidPropositionFormList,
 } from "../../../components/UuidPropositionFormList";
 import paths from "../../../paths";
+import { useQuery } from "@apollo/client/react";
 
 const layout = {
   labelCol: { span: 8 },
@@ -97,7 +98,7 @@ function Page() {
   // An alternative would be `useLazy...` as told in https://github.com/apollographql/apollo-client/issues/5268#issuecomment-527727653
   // `useLazy...` does not return a `Promise` though as `use...Query.refetch` does which is used below.
   // For error policies see https://www.apollographql.com/docs/react/v2/data/error-handling/#error-policies
-  const allCalorimetricDataQuery = useAllCalorimetricDataQuery({
+  const allCalorimetricDataQuery = useQuery(AllCalorimetricDataDocument, {
     skip: true,
     errorPolicy: "all",
   });
@@ -112,33 +113,33 @@ function Page() {
     uValues,
   }: {
     componentIds:
-      | {
-          negator: Negator;
-          comparator: UuidPropositionComparator;
-          value: Scalars["Uuid"] | undefined;
-        }[]
-      | undefined;
+    | {
+      negator: Negator;
+      comparator: UuidPropositionComparator;
+      value: Scalars["Uuid"]["input"] | undefined;
+    }[]
+    | undefined;
     dataFormatIds:
-      | {
-          negator: Negator;
-          comparator: UuidPropositionComparator;
-          value: Scalars["Uuid"] | undefined;
-        }[]
-      | undefined;
+    | {
+      negator: Negator;
+      comparator: UuidPropositionComparator;
+      value: Scalars["Uuid"]["input"] | undefined;
+    }[]
+    | undefined;
     gValues:
-      | {
-          negator: Negator;
-          comparator: FloatPropositionComparator;
-          value: number | undefined;
-        }[]
-      | undefined;
+    | {
+      negator: Negator;
+      comparator: FloatPropositionComparator;
+      value: number | undefined;
+    }[]
+    | undefined;
     uValues:
-      | {
-          negator: Negator;
-          comparator: FloatPropositionComparator;
-          value: number | undefined;
-        }[]
-      | undefined;
+    | {
+      negator: Negator;
+      comparator: FloatPropositionComparator;
+      value: number | undefined;
+    }[]
+    | undefined;
   }) => {
     const filter = async () => {
       try {
@@ -203,13 +204,13 @@ function Page() {
           propositions.length == 0
             ? {}
             : {
-                where: conjunct(propositions),
-              }
+              where: conjunct(propositions),
+            }
         );
         if (error) {
           // TODO Handle properly.
           console.log(error);
-          messageApi.error(error.graphQLErrors.map((error) => error.message));
+          messageApi.error(error.message);
         }
         // TODO Casting to `CalorimetricData` is wrong and error prone!
         setData((data?.allCalorimetricData?.edges?.map((x) => x.node) || []) as CalorimetricData[]);

@@ -1,16 +1,17 @@
-import { Scalars } from "../../../__generated__/__types__";
-import { useGeometricDataQuery } from "../../../queries/data.graphql";
+import { Scalars } from "../../../__generated__/graphql";
+import { GeometricDataDocument } from "../../../queries/data.generated";
 import { Skeleton, Result, Descriptions } from "antd";
 import { useEffect } from "react";
 import { messageApolloError } from "../../../lib/apollo";
 import DataPageHeader from "../DataPageHeader";
+import { useQuery } from "@apollo/client/react";
 
 export type GeometricDataProps = {
-    geometricDataId: Scalars["Uuid"];
+    geometricDataId: Scalars["Uuid"]["input"];
 };
 
 export default function GeometricData({ geometricDataId }: GeometricDataProps) {
-    const { loading, error, data } = useGeometricDataQuery({
+    const { loading, error, data } = useQuery(GeometricDataDocument, {
         variables: {
             uuid: geometricDataId,
         },

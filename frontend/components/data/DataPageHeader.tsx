@@ -2,7 +2,7 @@ import { Descriptions, Typography } from "antd";
 import { PageHeader } from "@ant-design/pro-layout";
 import Link from "next/link";
 import paths from "../../paths";
-import { DataPartialFragment } from "../../queries/data.graphql";
+import { DataPartialFragment } from "../../queries/data.generated";
 import { ReactNode } from "react";
 
 export type DataPageHeaderProps = {
@@ -51,13 +51,15 @@ export default function DataPageHeader({ data, extra, children }: DataPageHeader
                         {data.resourceTree.root.value.uuid}
                     </Typography.Link>
                 </Descriptions.Item>
-                <Descriptions.Item label="User">
-                    <Typography.Link
-                        href={paths.metabase.user(data.userId)}
-                    >
-                        {data.userId}
-                    </Typography.Link>
-                </Descriptions.Item>
+                {data.userId != null &&
+                    <Descriptions.Item label="User">
+                        <Typography.Link
+                            href={paths.metabase.user(data.userId)}
+                        >
+                            {data.userId}
+                        </Typography.Link>
+                    </Descriptions.Item>
+                }
                 {children}
             </Descriptions>
         </PageHeader>

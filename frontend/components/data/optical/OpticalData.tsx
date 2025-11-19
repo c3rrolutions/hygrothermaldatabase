@@ -1,16 +1,17 @@
-import { Scalars } from "../../../__generated__/__types__";
-import { useOpticalDataQuery } from "../../../queries/data.graphql";
+import { Scalars } from "../../../__generated__/graphql";
+import { OpticalDataDocument } from "../../../queries/data.generated";
 import { Skeleton, Result, Descriptions } from "antd";
 import { useEffect } from "react";
 import { messageApolloError } from "../../../lib/apollo";
 import DataPageHeader from "../DataPageHeader";
+import { useQuery } from "@apollo/client/react";
 
 export type OpticalDataProps = {
-  opticalDataId: Scalars["Uuid"];
+  opticalDataId: Scalars["Uuid"]["input"];
 };
 
 export default function OpticalData({ opticalDataId }: OpticalDataProps) {
-  const { loading, error, data } = useOpticalDataQuery({
+  const { loading, error, data } = useQuery(OpticalDataDocument, {
     variables: {
       uuid: opticalDataId,
     },

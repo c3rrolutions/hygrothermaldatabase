@@ -8,12 +8,12 @@ import {
     Typography,
     Descriptions,
 } from "antd";
-import { useAllGeometricDataQuery } from "../../../queries/data.graphql";
+import { AllGeometricDataDocument } from "../../../queries/data.generated";
 import {
     GeometricData,
     Scalars,
     GeometricDataPropositionInput,
-} from "../../../__generated__/__types__";
+} from "../../../__generated__/graphql";
 import { useState } from "react";
 import { setMapValue } from "../../../lib/freeTextFilter";
 import {
@@ -34,6 +34,7 @@ import {
     UuidPropositionFormList,
 } from "../../../components/UuidPropositionFormList";
 import paths from "../../../paths";
+import { useQuery } from "@apollo/client/react";
 
 const layout = {
     labelCol: { span: 8 },
@@ -82,7 +83,7 @@ function Page() {
     const [messageApi, contextHolder] = message.useMessage();
     const [data, setData] = useState<GeometricData[]>([]);
 
-    const allGeometricDataQuery = useAllGeometricDataQuery({
+    const allGeometricDataQuery = useQuery(AllGeometricDataDocument, {
         skip: true,
         errorPolicy: "all",
     });
@@ -99,14 +100,14 @@ function Page() {
         | {
             negator: Negator;
             comparator: UuidPropositionComparator;
-            value: Scalars["Uuid"] | undefined;
+            value: Scalars["Uuid"]["input"] | undefined;
         }[]
         | undefined;
         dataFormatIds:
         | {
             negator: Negator;
             comparator: UuidPropositionComparator;
-            value: Scalars["Uuid"] | undefined;
+            value: Scalars["Uuid"]["input"] | undefined;
         }[]
         | undefined;
         thicknesses:
@@ -167,7 +168,7 @@ function Page() {
                 );
                 if (error) {
                     console.log(error);
-                    messageApi.error(error.graphQLErrors.map((error) => error.message));
+                    messageApi.error(error.message);
                 }
                 setData((data?.allGeometricData?.edges?.map((x) => x.node) || []) as GeometricData[]);
             } catch (error) {

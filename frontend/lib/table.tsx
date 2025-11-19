@@ -6,12 +6,14 @@ import {
 } from "./freeTextFilter";
 import Link from "next/link";
 import {
-  AppliedMethod,
-  GetHttpsResourceTree,
   Scalars,
-} from "../__generated__/__types__";
+  Publication,
+  Standard,
+} from "../__generated__/graphql";
 import { Highlight } from "../components/Highlight";
 import paths from "../paths";
+import { JSX } from "react";
+import { Route } from "next";
 
 const sortDirections: SortOrder[] = ["ascend", "descend"];
 
@@ -62,7 +64,7 @@ export function getColumnProps<RecordType>(
 export function getDateTimeColumnProps<RecordType>(
   title: string,
   key: keyof RecordType,
-  getValue: (record: RecordType) => Scalars["DateTime"] | null | undefined
+  getValue: (record: RecordType) => Scalars["DateTime"]["output"] | null | undefined
 ) {
   return {
     ...getColumnProps(title, key),
@@ -77,7 +79,7 @@ export function getDateTimeColumnProps<RecordType>(
 }
 
 export function getTimestampColumnProps<
-  RecordType extends { timestamp: string }
+  RecordType extends { timestamp: Scalars["DateTime"]["output"] }
 >() {
   return {
     ...getDateTimeColumnProps<RecordType>(
@@ -135,7 +137,7 @@ export function getInternallyLinkedFilterableStringColumnProps<RecordType>(
     key: keyof RecordType
   ) => (newFilterText: string) => void,
   getFilterText: (key: keyof RecordType) => string | undefined,
-  getPath: (record: RecordType) => string
+  getPath: (record: RecordType) => Route
 ) {
   return getFilterableStringColumnProps(
     title,
@@ -206,12 +208,12 @@ export function getExternallyLinkedFilterableLocatorColumnProps<RecordType>(
   );
 }
 
-export function getUuidColumnProps<RecordType extends { uuid: string }>(
+export function getUuidColumnProps<RecordType extends { uuid: Scalars["Uuid"]["output"] }>(
   onFilterTextChange: (
     key: keyof RecordType
   ) => (newFilterText: string) => void,
   getFilterText: (key: keyof RecordType) => string | undefined,
-  getPath: (uuid: string) => string
+  getPath: (uuid: Scalars["Uuid"]["output"]) => Route
 ) {
   return getInternallyLinkedFilterableStringColumnProps(
     "UUID",
@@ -353,10 +355,10 @@ export function getDescriptionListColumnProps<RecordType>(
   key: keyof RecordType,
   getEntries: (record: RecordType) =>
     | {
-        key: string;
-        title: string;
-        value: string | null | undefined;
-      }[]
+      key: string;
+      title: string;
+      value: string | null | undefined;
+    }[]
     | null
     | undefined
 ) {
@@ -399,15 +401,15 @@ export function getFilterableDescriptionListColumnProps<RecordType>(
   key: keyof RecordType,
   getEntries: (record: RecordType) =>
     | {
-        key: string;
-        title: string;
-        value: string | null | undefined;
-        render?: (
-          record: RecordType,
-          highlightedValue: JSX.Element,
-          value: string | null | undefined
-        ) => JSX.Element;
-      }[]
+      key: string;
+      title: string;
+      value: string | null | undefined;
+      render?: (
+        record: RecordType,
+        highlightedValue: JSX.Element,
+        value: string | null | undefined
+      ) => JSX.Element;
+    }[]
     | null
     | undefined,
   onFilterTextChange: (
@@ -470,8 +472,105 @@ export function getFilterableDescriptionListColumnProps<RecordType>(
   };
 }
 
+export function getReferenceColumnProps<
+  RecordType extends { reference?: Publication | Standard | null }
+>(
+  onFilterTextChange: (
+    key: keyof RecordType
+  ) => (newFilterText: string) => void,
+  getFilterText: (key: keyof RecordType) => string | undefined
+) {
+  return getFilterableDescriptionListColumnProps(
+    "Reference",
+    "reference",
+    (record) =>
+      record.reference && [
+        {
+          key: "title",
+          title: "Title",
+          value: record.reference.title,
+        },
+        {
+          key: "abstract",
+          title: "Abstract",
+          value: record.reference.abstract,
+        },
+        {
+          key: "section",
+          title: "Section",
+          value: record.reference.section,
+        },
+        ...(record.reference.__typename !== "Standard"
+          ? []
+          : [
+            {
+              key: "numeration",
+              title: "Numeration",
+              value: `${record.reference.numeration.prefix} ${record.reference.numeration.mainNumber} ${record.reference.numeration.suffix}`,
+            },
+            {
+              key: "year",
+              title: "Year",
+              value: record.reference.year,
+            },
+            {
+              key: "locator",
+              title: "Locator",
+              value: record.reference.locator,
+              render: (
+                _record: RecordType,
+                hightlightedValue: JSX.Element,
+                value: string | null | undefined
+              ) => (
+                // TODO Actually, `value` is neither `null` nor `undefined` but the type system does not know about it. How can we make it know about it so we don't need `|| ""` here?
+                (<Typography.Link href={value || ""}>
+                  {hightlightedValue}
+                </Typography.Link>)
+              ),
+            },
+            {
+              key: "Standardizers",
+              title: "Standardizers",
+              value: record.reference.standardizers.join(", "),
+            },
+          ]),
+        ...(record.reference.__typename !== "Publication"
+          ? []
+          : [
+            {
+              key: "arXiv",
+              title: "arXiv",
+              value: record.reference.arXiv,
+            },
+            {
+              key: "doi",
+              title: "DOI",
+              value: record.reference.doi,
+            },
+            {
+              key: "urn",
+              title: "URN",
+              value: record.reference.urn,
+            },
+            {
+              key: "webAddress",
+              title: "Website",
+              value: record.reference.webAddress,
+            },
+            {
+              key: "authors",
+              title: "Authors",
+              value: record.reference.authors?.join(", "),
+            },
+          ]),
+      ],
+    onFilterTextChange,
+    getFilterText
+  );
+}
+
 export function getComponentUuidColumnProps<
-  RecordType extends { componentId: Scalars["Uuid"] }
+  RecordType extends { componentId: Scalars["Uuid"]["output"] }
 >(
   onFilterTextChange: (
     key: keyof RecordType
@@ -489,7 +588,7 @@ export function getComponentUuidColumnProps<
 }
 
 export function getAppliedMethodColumnProps<
-  RecordType extends { appliedMethod: AppliedMethod }
+  RecordType extends { appliedMethod: { methodId: Scalars["Uuid"]["output"] } }
 >(
   onFilterTextChange: (
     key: keyof RecordType
@@ -529,7 +628,7 @@ export function getAppliedMethodColumnProps<
 }
 
 export function getResourceTreeColumnProps<
-  RecordType extends { resourceTree: GetHttpsResourceTree }
+  RecordType extends { resourceTree: { root: { value: { description?: string | null | undefined, hashValue: string, locator: Scalars["Url"]["output"], dataFormatId: Scalars["Uuid"]["output"] } } } }
 >(
   onFilterTextChange: (
     key: keyof RecordType
@@ -561,7 +660,7 @@ export function getResourceTreeColumnProps<
         ),
       },
       {
-        key: "formatId",
+        key: "dataFormatId",
         title: "Data Format UUID",
         value: x.resourceTree.root.value.dataFormatId,
         render: (_record, hightlightedValue, _value) => (

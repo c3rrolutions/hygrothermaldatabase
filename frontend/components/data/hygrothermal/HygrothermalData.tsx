@@ -1,16 +1,17 @@
-import { Scalars } from "../../../__generated__/__types__";
-import { useHygrothermalDataQuery } from "../../../queries/data.graphql";
+import { Scalars } from "../../../__generated__/graphql";
+import { HygrothermalDataDocument } from "../../../queries/data.generated";
 import { Skeleton, Result } from "antd";
 import { useEffect } from "react";
 import { messageApolloError } from "../../../lib/apollo";
 import DataPageHeader from "../DataPageHeader";
+import { useQuery } from "@apollo/client/react";
 
 export type HygrothermalDataProps = {
-  hygrothermalDataId: Scalars["Uuid"];
+  hygrothermalDataId: Scalars["Uuid"]["input"];
 };
 
 export default function HygrothermalData({ hygrothermalDataId }: HygrothermalDataProps) {
-  const { loading, error, data } = useHygrothermalDataQuery({
+  const { loading, error, data } = useQuery(HygrothermalDataDocument, {
     variables: {
       uuid: hygrothermalDataId,
     },

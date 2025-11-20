@@ -1,8 +1,8 @@
 import { Scalars } from "../../../__generated__/graphql";
 import { HygrothermalDataDocument } from "../../../queries/data.generated";
-import { Skeleton, Result } from "antd";
+import { Skeleton, Result, message } from "antd";
 import { useEffect } from "react";
-import { messageApolloError } from "../../../lib/apollo";
+import { stringifyApolloError } from "../../../lib/apollo";
 import DataPageHeader from "../DataPageHeader";
 import { useQuery } from "@apollo/client/react";
 
@@ -17,10 +17,11 @@ export default function HygrothermalData({ hygrothermalDataId }: HygrothermalDat
     },
   });
   const hygrothermalData = data?.hygrothermalData;
+  const [messageApi, contextHolder] = message.useMessage();
 
   useEffect(() => {
     if (error) {
-      messageApolloError(error);
+      messageApi.error(stringifyApolloError(error));
     }
   }, [error]);
 
@@ -39,6 +40,8 @@ export default function HygrothermalData({ hygrothermalDataId }: HygrothermalDat
   }
 
   return (
+    <>
+      {contextHolder}
     <DataPageHeader
       data={hygrothermalData}
     // extra={[
@@ -49,5 +52,6 @@ export default function HygrothermalData({ hygrothermalDataId }: HygrothermalDat
     // ]}
     >
     </DataPageHeader>
+    </>
   );
 }

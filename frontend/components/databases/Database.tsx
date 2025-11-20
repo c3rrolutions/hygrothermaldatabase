@@ -1,21 +1,22 @@
 import { useQuery } from '@apollo/client/react';
 import { DatabaseDocument } from "../../queries/databases.generated";
-import { Skeleton, Result, Descriptions, Typography, Tag } from "antd";
+import { Skeleton, Result, Descriptions, Typography, Tag, message } from "antd";
 import { PageHeader } from "@ant-design/pro-layout";
 import { ReactNode, useEffect } from "react";
-import { messageApolloError } from "../../lib/apollo";
+import { stringifyApolloError } from "../../lib/apollo";
 import UpdateDatabase from "./UpdateDatabase";
 import { DatabaseVerificationState } from "../../__generated__/graphql";
 
 export type DatabaseProps = {};
 
-export default function Database({}: DatabaseProps) {
+export default function Database({ }: DatabaseProps) {
   const { loading, error, data } = useQuery(DatabaseDocument);
   const database = data?.database;
+  const [messageApi, contextHolder] = message.useMessage();
 
   useEffect(() => {
     if (error) {
-      messageApolloError(error);
+      messageApi.error(stringifyApolloError(error));
     }
   }, [error]);
 
@@ -35,20 +36,21 @@ export default function Database({}: DatabaseProps) {
 
   return (
     <>
+      {contextHolder}
       <PageHeader
         title={database.name}
         subTitle={database.description}
         extra={([] as ReactNode[]).concat(
           database.isAuthorizedToUpdateNode
             ? [
-                <UpdateDatabase
-                  key="updateDatabase"
-                  databaseId={database.uuid}
-                  name={database.name}
-                  description={database.description}
-                  locator={database.locator}
-                />,
-              ]
+              <UpdateDatabase
+                key="updateDatabase"
+                databaseId={database.uuid}
+                name={database.name}
+                description={database.description}
+                locator={database.locator}
+              />,
+            ]
             : []
         )}
         tags={[

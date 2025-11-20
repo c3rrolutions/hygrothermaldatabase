@@ -1,8 +1,8 @@
 import { Scalars } from "../../../__generated__/graphql";
 import { CalorimetricDataDocument } from "../../../queries/data.generated";
-import { Skeleton, Result, Descriptions } from "antd";
+import { Skeleton, Result, Descriptions, message } from "antd";
 import { useEffect } from "react";
-import { messageApolloError } from "../../../lib/apollo";
+import { stringifyApolloError } from "../../../lib/apollo";
 import DataPageHeader from "../DataPageHeader";
 import { useQuery } from "@apollo/client/react";
 
@@ -17,10 +17,11 @@ export default function CalorimetricData({ calorimetricDataId }: CalorimetricDat
     },
   });
   const calorimetricData = data?.calorimetricData;
+  const [messageApi, contextHolder] = message.useMessage();
 
   useEffect(() => {
     if (error) {
-      messageApolloError(error);
+      messageApi.error(stringifyApolloError(error));
     }
   }, [error]);
 
@@ -39,6 +40,8 @@ export default function CalorimetricData({ calorimetricDataId }: CalorimetricDat
   }
 
   return (
+    <>
+      {contextHolder}
     <DataPageHeader
       data={calorimetricData}
     // extra={[
@@ -55,5 +58,6 @@ export default function CalorimetricData({ calorimetricDataId }: CalorimetricDat
         {calorimetricData.uValues.map((x) => x.toLocaleString("en")).join(", ")}
       </Descriptions.Item>
     </DataPageHeader>
+      </>
   );
 }

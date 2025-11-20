@@ -1,8 +1,8 @@
 import { Scalars } from "../../../__generated__/graphql";
 import { GeometricDataDocument } from "../../../queries/data.generated";
-import { Skeleton, Result, Descriptions } from "antd";
+import { Skeleton, Result, Descriptions, message } from "antd";
 import { useEffect } from "react";
-import { messageApolloError } from "../../../lib/apollo";
+import { stringifyApolloError } from "../../../lib/apollo";
 import DataPageHeader from "../DataPageHeader";
 import { useQuery } from "@apollo/client/react";
 
@@ -19,10 +19,11 @@ export default function GeometricData({ geometricDataId }: GeometricDataProps) {
 
     const geometricData = data?.geometricData;
 
+  const [messageApi, contextHolder] = message.useMessage();
 
     useEffect(() => {
         if (error) {
-            messageApolloError(error);
+            messageApi.error(stringifyApolloError(error));
         }
     }, [error]);
 
@@ -41,6 +42,8 @@ export default function GeometricData({ geometricDataId }: GeometricDataProps) {
     }
 
     return (
+        <>
+            {contextHolder}
         <DataPageHeader
             data={geometricData}
         // extra={[
@@ -54,5 +57,6 @@ export default function GeometricData({ geometricDataId }: GeometricDataProps) {
                 {geometricData.thicknesses.map((x) => x.toLocaleString("en")).join(", ")}
             </Descriptions.Item>
         </DataPageHeader>
+        </>
     );
 }

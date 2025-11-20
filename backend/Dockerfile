@@ -371,6 +371,8 @@ RUN \
   mkdir --parents \
     ./src/files && \
   mkdir --parents \
+    ./src/logs && \
+  mkdir --parents \
     ./src/bin \
     ./src/obj && \
   mkdir --parents \

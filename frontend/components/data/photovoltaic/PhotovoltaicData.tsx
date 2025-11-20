@@ -10,7 +10,9 @@ export type PhotovoltaicDataProps = {
   photovoltaicDataId: Scalars["Uuid"]["input"];
 };
 
-export default function PhotovoltaicData({ photovoltaicDataId }: PhotovoltaicDataProps) {
+export default function PhotovoltaicData({
+  photovoltaicDataId,
+}: PhotovoltaicDataProps) {
   const { loading, error, data } = useQuery(PhotovoltaicDataDocument, {
     variables: {
       uuid: photovoltaicDataId,
@@ -42,16 +44,15 @@ export default function PhotovoltaicData({ photovoltaicDataId }: PhotovoltaicDat
   return (
     <>
       {contextHolder}
-    <DataPageHeader
-      data={photovoltaicData}
-    // extra={[
-    //   <UpdatePhotovoltaicData
-    //     key="updatePhotovoltaicData"
-    //     photovoltaicDataId={photovoltaicData.uuid}
-    //   />,
-    // ]}
-    >
-    </DataPageHeader>
+      <DataPageHeader
+        data={photovoltaicData}
+        // extra={[
+        //   <UpdatePhotovoltaicData
+        //     key="updatePhotovoltaicData"
+        //     photovoltaicDataId={photovoltaicData.uuid}
+        //   />,
+        // ]}
+      ></DataPageHeader>
     </>
   );
 }

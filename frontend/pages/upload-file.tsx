@@ -20,7 +20,7 @@ function Page() {
 
   const constructFileUploadAction = (_file: RcFile) =>
     `/api/upload-file?getHttpsResourceUuid=${encodeURIComponent(
-      form.getFieldValue("getHttpsResourceUuid")
+      form.getFieldValue("getHttpsResourceUuid"),
     )}`;
 
   return (

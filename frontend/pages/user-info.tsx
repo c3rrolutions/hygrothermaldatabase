@@ -1,4 +1,4 @@
-import { useQuery } from '@apollo/client/react';
+import { useQuery } from "@apollo/client/react";
 import Layout from "../components/Layout";
 import { CurrentUserInfoDocument } from "../queries/currentUser.generated";
 import { Skeleton, Result, Descriptions, Typography, message } from "antd";

@@ -1,4 +1,4 @@
-import { useQuery } from '@apollo/client/react';
+import { useQuery } from "@apollo/client/react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { Button, Menu } from "antd";
@@ -6,7 +6,7 @@ import { UserOutlined } from "@ant-design/icons";
 import paths from "../paths";
 import { CurrentUserDocument } from "../queries/currentUser.generated";
 import { getXsrfToken } from "../lib/apollo";
-import { Route } from 'next';
+import { Route } from "next";
 
 type NavItemProps = {
   path: Route;
@@ -40,7 +40,9 @@ export default function NavBar({ items }: NavBarProps) {
     <Menu mode="horizontal" selectedKeys={[router.pathname]} theme="dark">
       {items.map(({ path, label }) => (
         <Menu.Item key={path}>
-          <Link href={path} legacyBehavior>{label}</Link>
+          <Link href={path} legacyBehavior>
+            {label}
+          </Link>
         </Menu.Item>
       ))}
       {currentUser ? (
@@ -51,7 +53,9 @@ export default function NavBar({ items }: NavBarProps) {
         >
           {moderatorItems.map(({ path, label }) => (
             <Menu.Item key={path}>
-              <Link href={path} legacyBehavior>{label}</Link>
+              <Link href={path} legacyBehavior>
+                {label}
+              </Link>
             </Menu.Item>
           ))}
           <Menu.Item key={paths.logout}>
@@ -61,7 +65,7 @@ export default function NavBar({ items }: NavBarProps) {
                 type="hidden"
                 value={
                   typeof window !== "undefined"
-                    ? getXsrfToken() ?? undefined
+                    ? (getXsrfToken() ?? undefined)
                     : ""
                 }
               />

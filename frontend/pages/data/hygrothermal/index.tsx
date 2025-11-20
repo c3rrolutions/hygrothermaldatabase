@@ -39,7 +39,7 @@ enum Negator {
 
 const negateIfNecessary = (
   negator: Negator,
-  proposition: HygrothermalDataPropositionInput
+  proposition: HygrothermalDataPropositionInput,
 ): HygrothermalDataPropositionInput => {
   switch (negator) {
     case Negator.Is:
@@ -51,7 +51,7 @@ const negateIfNecessary = (
 };
 
 const conjunct = (
-  propositions: HygrothermalDataPropositionInput[]
+  propositions: HygrothermalDataPropositionInput[],
 ): HygrothermalDataPropositionInput => {
   if (propositions.length == 0) {
     return {};
@@ -78,7 +78,7 @@ function Page() {
   const [form] = Form.useForm();
   const [filtering, setFiltering] = useState(false);
   const [globalErrorMessages, setGlobalErrorMessages] = useState(
-    new Array<string>()
+    new Array<string>(),
   );
   const [messageApi, contextHolder] = message.useMessage();
   const [data, setData] = useState<HygrothermalData[]>([]);
@@ -99,19 +99,19 @@ function Page() {
     dataFormatIds,
   }: {
     componentIds:
-    | {
-      negator: Negator;
-      comparator: UuidPropositionComparator;
-      value: Scalars["Uuid"]["input"] | undefined;
-    }[]
-    | undefined;
+      | {
+          negator: Negator;
+          comparator: UuidPropositionComparator;
+          value: Scalars["Uuid"]["input"] | undefined;
+        }[]
+      | undefined;
     dataFormatIds:
-    | {
-      negator: Negator;
-      comparator: UuidPropositionComparator;
-      value: Scalars["Uuid"]["input"] | undefined;
-    }[]
-    | undefined;
+      | {
+          negator: Negator;
+          comparator: UuidPropositionComparator;
+          value: Scalars["Uuid"]["input"] | undefined;
+        }[]
+      | undefined;
   }) => {
     const filter = async () => {
       try {
@@ -123,7 +123,7 @@ function Page() {
             propositions.push(
               negateIfNecessary(negator, {
                 componentId: { [comparator]: value },
-              })
+              }),
             );
           }
         }
@@ -136,7 +136,7 @@ function Page() {
                     dataFormatId: { [comparator]: value },
                   },
                 },
-              })
+              }),
             );
           }
         }
@@ -144,8 +144,8 @@ function Page() {
           propositions.length == 0
             ? {}
             : {
-              where: conjunct(propositions),
-            }
+                where: conjunct(propositions),
+              },
         );
         if (error) {
           // TODO Handle properly.
@@ -153,7 +153,10 @@ function Page() {
           messageApi.error(error.message);
         }
         // TODO Casting to `HygrothermalData` is wrong and error prone!
-        setData((data?.allHygrothermalData?.edges?.map((x) => x.node) || []) as HygrothermalData[]);
+        setData(
+          (data?.allHygrothermalData?.edges?.map((x) => x.node) ||
+            []) as HygrothermalData[],
+        );
       } catch (error) {
         // TODO Handle properly.
         console.log("Failed:", error);
@@ -199,18 +202,18 @@ function Page() {
             ...getUuidColumnProps<(typeof data)[0]>(
               onFilterTextChange,
               (x) => filterText.get(x),
-              paths.hygrothermalDatum
+              paths.hygrothermalDatum,
             ),
           },
           {
             ...getNameColumnProps<(typeof data)[0]>(onFilterTextChange, (x) =>
-              filterText.get(x)
+              filterText.get(x),
             ),
           },
           {
             ...getDescriptionColumnProps<(typeof data)[0]>(
               onFilterTextChange,
-              (x) => filterText.get(x)
+              (x) => filterText.get(x),
             ),
           },
           {
@@ -219,7 +222,7 @@ function Page() {
           {
             ...getComponentUuidColumnProps<(typeof data)[0]>(
               onFilterTextChange,
-              (x) => filterText.get(x)
+              (x) => filterText.get(x),
             ),
           },
           // {
@@ -235,13 +238,13 @@ function Page() {
           {
             ...getAppliedMethodColumnProps<(typeof data)[0]>(
               onFilterTextChange,
-              (x) => filterText.get(x)
+              (x) => filterText.get(x),
             ),
           },
           {
             ...getResourceTreeColumnProps<(typeof data)[0]>(
               onFilterTextChange,
-              (x) => filterText.get(x)
+              (x) => filterText.get(x),
             ),
           },
         ]}

@@ -3,18 +3,18 @@ import GeometricData from "../../../components/data/geometric/GeometricData";
 import Layout from "../../../components/Layout";
 
 function Page() {
-    const router = useRouter();
+  const router = useRouter();
 
-    if (!router.isReady) {
-        return null;
-    }
+  if (!router.isReady) {
+    return null;
+  }
 
-    const { uuid } = router.query;
+  const { uuid } = router.query;
 
-    return (
-        <Layout>
-          <GeometricData geometricDataId = {uuid} />
-        </Layout>
-    );
+  return (
+    <Layout>
+      <GeometricData geometricDataId={uuid} />
+    </Layout>
+  );
 }
 export default Page;

@@ -51,7 +51,7 @@ enum Negator {
 
 const negateIfNecessary = (
   negator: Negator,
-  proposition: OpticalDataPropositionInput
+  proposition: OpticalDataPropositionInput,
 ): OpticalDataPropositionInput => {
   switch (negator) {
     case Negator.Is:
@@ -63,7 +63,7 @@ const negateIfNecessary = (
 };
 
 const conjunct = (
-  propositions: OpticalDataPropositionInput[]
+  propositions: OpticalDataPropositionInput[],
 ): OpticalDataPropositionInput => {
   if (propositions.length == 0) {
     return {};
@@ -90,7 +90,7 @@ function Page() {
   const [form] = Form.useForm();
   const [filtering, setFiltering] = useState(false);
   const [globalErrorMessages, setGlobalErrorMessages] = useState(
-    new Array<string>()
+    new Array<string>(),
   );
   const [messageApi, contextHolder] = message.useMessage();
   const [data, setData] = useState<OpticalData[]>([]);
@@ -116,54 +116,54 @@ function Page() {
     nearnormalHemisphericalVisibleTransmittances,
   }: {
     componentIds:
-    | {
-      negator: Negator;
-      comparator: UuidPropositionComparator;
-      value: Scalars["Uuid"]["input"] | undefined;
-    }[]
-    | undefined;
+      | {
+          negator: Negator;
+          comparator: UuidPropositionComparator;
+          value: Scalars["Uuid"]["input"] | undefined;
+        }[]
+      | undefined;
     dataFormatIds:
-    | {
-      negator: Negator;
-      comparator: UuidPropositionComparator;
-      value: Scalars["Uuid"]["input"] | undefined;
-    }[]
-    | undefined;
+      | {
+          negator: Negator;
+          comparator: UuidPropositionComparator;
+          value: Scalars["Uuid"]["input"] | undefined;
+        }[]
+      | undefined;
     infraredEmittances:
-    | {
-      negator: Negator;
-      comparator: FloatPropositionComparator;
-      value: number | undefined;
-    }[]
-    | undefined;
+      | {
+          negator: Negator;
+          comparator: FloatPropositionComparator;
+          value: number | undefined;
+        }[]
+      | undefined;
     nearnormalHemisphericalSolarReflectances:
-    | {
-      negator: Negator;
-      comparator: FloatPropositionComparator;
-      value: number | undefined;
-    }[]
-    | undefined;
+      | {
+          negator: Negator;
+          comparator: FloatPropositionComparator;
+          value: number | undefined;
+        }[]
+      | undefined;
     nearnormalHemisphericalSolarTransmittances:
-    | {
-      negator: Negator;
-      comparator: FloatPropositionComparator;
-      value: number | undefined;
-    }[]
-    | undefined;
+      | {
+          negator: Negator;
+          comparator: FloatPropositionComparator;
+          value: number | undefined;
+        }[]
+      | undefined;
     nearnormalHemisphericalVisibleReflectances:
-    | {
-      negator: Negator;
-      comparator: FloatPropositionComparator;
-      value: number | undefined;
-    }[]
-    | undefined;
+      | {
+          negator: Negator;
+          comparator: FloatPropositionComparator;
+          value: number | undefined;
+        }[]
+      | undefined;
     nearnormalHemisphericalVisibleTransmittances:
-    | {
-      negator: Negator;
-      comparator: FloatPropositionComparator;
-      value: number | undefined;
-    }[]
-    | undefined;
+      | {
+          negator: Negator;
+          comparator: FloatPropositionComparator;
+          value: number | undefined;
+        }[]
+      | undefined;
   }) => {
     const filter = async () => {
       try {
@@ -175,7 +175,7 @@ function Page() {
             propositions.push(
               negateIfNecessary(negator, {
                 componentId: { [comparator]: value },
-              })
+              }),
             );
           }
         }
@@ -188,7 +188,7 @@ function Page() {
                     dataFormatId: { [comparator]: value },
                   },
                 },
-              })
+              }),
             );
           }
         }
@@ -204,7 +204,7 @@ function Page() {
                       [comparator]: value,
                     },
                   },
-                })
+                }),
               );
             }
           }
@@ -223,7 +223,7 @@ function Page() {
                       [comparator]: value,
                     },
                   },
-                })
+                }),
               );
             }
           }
@@ -242,7 +242,7 @@ function Page() {
                       [comparator]: value,
                     },
                   },
-                })
+                }),
               );
             }
           }
@@ -261,7 +261,7 @@ function Page() {
                       [comparator]: value,
                     },
                   },
-                })
+                }),
               );
             }
           }
@@ -280,7 +280,7 @@ function Page() {
                       [comparator]: value,
                     },
                   },
-                })
+                }),
               );
             }
           }
@@ -289,8 +289,8 @@ function Page() {
           propositions.length == 0
             ? {}
             : {
-              where: conjunct(propositions),
-            }
+                where: conjunct(propositions),
+              },
         );
         if (error) {
           // TODO Handle properly.
@@ -298,7 +298,10 @@ function Page() {
           messageApi.error(error.message);
         }
         // TODO Casting to `OpticalData` is wrong and error prone!
-        setData((data?.allOpticalData?.edges?.map((x) => x.node) || []) as OpticalData[]);
+        setData(
+          (data?.allOpticalData?.edges?.map((x) => x.node) ||
+            []) as OpticalData[],
+        );
       } catch (error) {
         // TODO Handle properly.
         console.log("Failed:", error);
@@ -364,18 +367,18 @@ function Page() {
             ...getUuidColumnProps<(typeof data)[0]>(
               onFilterTextChange,
               (x) => filterText.get(x),
-              paths.opticalDatum
+              paths.opticalDatum,
             ),
           },
           {
             ...getNameColumnProps<(typeof data)[0]>(onFilterTextChange, (x) =>
-              filterText.get(x)
+              filterText.get(x),
             ),
           },
           {
             ...getDescriptionColumnProps<(typeof data)[0]>(
               onFilterTextChange,
-              (x) => filterText.get(x)
+              (x) => filterText.get(x),
             ),
           },
           {
@@ -384,7 +387,7 @@ function Page() {
           {
             ...getComponentUuidColumnProps<(typeof data)[0]>(
               onFilterTextChange,
-              (x) => filterText.get(x)
+              (x) => filterText.get(x),
             ),
           },
           // {
@@ -400,13 +403,13 @@ function Page() {
           {
             ...getAppliedMethodColumnProps<(typeof data)[0]>(
               onFilterTextChange,
-              (x) => filterText.get(x)
+              (x) => filterText.get(x),
             ),
           },
           {
             ...getResourceTreeColumnProps<(typeof data)[0]>(
               onFilterTextChange,
-              (x) => filterText.get(x)
+              (x) => filterText.get(x),
             ),
           },
           {

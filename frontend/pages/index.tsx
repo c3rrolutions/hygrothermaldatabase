@@ -54,40 +54,28 @@ function Page() {
             buildingenvelopedata.org
           </Typography.Link>
           , you can search there for example for{" "}
-          <Typography.Link
-            href={paths.metabase.allOpticalData}
-          >
+          <Typography.Link href={paths.metabase.allOpticalData}>
             optical data{" "}
           </Typography.Link>
           . You will find there also an overview about all building envelope{" "}
-          <Typography.Link
-            href={paths.metabase.components}
-          >
+          <Typography.Link href={paths.metabase.components}>
             {" "}
             components
           </Typography.Link>
           ,{" "}
-          <Typography.Link
-            href={paths.metabase.institutions}
-          >
+          <Typography.Link href={paths.metabase.institutions}>
             institutions
           </Typography.Link>
           ,{" "}
-          <Typography.Link
-            href={paths.metabase.dataFormats}
-          >
+          <Typography.Link href={paths.metabase.dataFormats}>
             data formats
           </Typography.Link>
           ,{" "}
-          <Typography.Link
-            href={paths.metabase.methods}
-          >
+          <Typography.Link href={paths.metabase.methods}>
             methods
           </Typography.Link>{" "}
           and{" "}
-          <Typography.Link
-            href={paths.metabase.databases}
-          >
+          <Typography.Link href={paths.metabase.databases}>
             databases
           </Typography.Link>{" "}
           of the Product Data Network{" "}
@@ -98,16 +86,12 @@ function Page() {
         </Typography.Paragraph>
         <Typography.Paragraph>
           This website is completely based on the
-          <Typography.Link
-            href={paths.graphQl}
-          >
+          <Typography.Link href={paths.graphQl}>
             {" "}
             GraphQL endpoint
           </Typography.Link>
           . The{" "}
-          <Typography.Link
-            href={paths.graphQl}
-          >
+          <Typography.Link href={paths.graphQl}>
             GraphQL endpoint
           </Typography.Link>{" "}
           is the Application Programming Interface (API) to the backend of the
@@ -119,9 +103,7 @@ function Page() {
           </Typography.Link>{" "}
           which is especially helpful if you develop software to plan buildings.
           The{" "}
-          <Typography.Link
-            href={paths.metabase.graphQl}
-          >
+          <Typography.Link href={paths.metabase.graphQl}>
             GraphQL endpoint of the metabase
           </Typography.Link>{" "}
           is then a convenient way to query for data, components, institutions,
@@ -130,7 +112,9 @@ function Page() {
         <Typography.Paragraph>
           The data format{" "}
           <Typography.Link
-            href={paths.metabase.dataFormat("9ca9e8f5-94bf-4fdd-81e3-31a58d7ca708")}
+            href={paths.metabase.dataFormat(
+              "9ca9e8f5-94bf-4fdd-81e3-31a58d7ca708",
+            )}
           >
             BED-JSON
           </Typography.Link>{" "}
@@ -140,9 +124,7 @@ function Page() {
             JSON Schemas of the API specification
           </Typography.Link>
           . Other{" "}
-          <Typography.Link
-            href={paths.metabase.dataFormats}
-          >
+          <Typography.Link href={paths.metabase.dataFormats}>
             data formats
           </Typography.Link>{" "}
           are available, too.
@@ -153,7 +135,8 @@ function Page() {
           style={{
             maxWidth: "100%",
             height: "auto",
-          }} />
+          }}
+        />
       </div>
     </Layout>
   );

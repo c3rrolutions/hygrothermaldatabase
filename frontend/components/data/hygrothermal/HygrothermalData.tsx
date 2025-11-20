@@ -10,7 +10,9 @@ export type HygrothermalDataProps = {
   hygrothermalDataId: Scalars["Uuid"]["input"];
 };
 
-export default function HygrothermalData({ hygrothermalDataId }: HygrothermalDataProps) {
+export default function HygrothermalData({
+  hygrothermalDataId,
+}: HygrothermalDataProps) {
   const { loading, error, data } = useQuery(HygrothermalDataDocument, {
     variables: {
       uuid: hygrothermalDataId,
@@ -42,16 +44,15 @@ export default function HygrothermalData({ hygrothermalDataId }: HygrothermalDat
   return (
     <>
       {contextHolder}
-    <DataPageHeader
-      data={hygrothermalData}
-    // extra={[
-    //   <UpdateHygrothermalData
-    //     key="updateHygrothermalData"
-    //     hygrothermalDataId={hygrothermalData.uuid}
-    //   />,
-    // ]}
-    >
-    </DataPageHeader>
+      <DataPageHeader
+        data={hygrothermalData}
+        // extra={[
+        //   <UpdateHygrothermalData
+        //     key="updateHygrothermalData"
+        //     hygrothermalDataId={hygrothermalData.uuid}
+        //   />,
+        // ]}
+      ></DataPageHeader>
     </>
   );
 }

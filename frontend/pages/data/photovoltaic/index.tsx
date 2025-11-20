@@ -39,7 +39,7 @@ enum Negator {
 
 const negateIfNecessary = (
   negator: Negator,
-  proposition: PhotovoltaicDataPropositionInput
+  proposition: PhotovoltaicDataPropositionInput,
 ): PhotovoltaicDataPropositionInput => {
   switch (negator) {
     case Negator.Is:
@@ -51,7 +51,7 @@ const negateIfNecessary = (
 };
 
 const conjunct = (
-  propositions: PhotovoltaicDataPropositionInput[]
+  propositions: PhotovoltaicDataPropositionInput[],
 ): PhotovoltaicDataPropositionInput => {
   if (propositions.length == 0) {
     return {};
@@ -78,7 +78,7 @@ function Page() {
   const [form] = Form.useForm();
   const [filtering, setFiltering] = useState(false);
   const [globalErrorMessages, setGlobalErrorMessages] = useState(
-    new Array<string>()
+    new Array<string>(),
   );
   const [messageApi, contextHolder] = message.useMessage();
   const [data, setData] = useState<PhotovoltaicData[]>([]);
@@ -123,7 +123,7 @@ function Page() {
             propositions.push(
               negateIfNecessary(negator, {
                 componentId: { [comparator]: value },
-              })
+              }),
             );
           }
         }
@@ -136,7 +136,7 @@ function Page() {
                     dataFormatId: { [comparator]: value },
                   },
                 },
-              })
+              }),
             );
           }
         }
@@ -145,7 +145,7 @@ function Page() {
             ? {}
             : {
                 where: conjunct(propositions),
-              }
+              },
         );
         if (error) {
           // TODO Handle properly.
@@ -153,7 +153,10 @@ function Page() {
           messageApi.error(error.message);
         }
         // TODO Casting to `PhotovoltaicData` is wrong and error prone!
-        setData((data?.allPhotovoltaicData?.edges?.map((x) => x.node) || []) as PhotovoltaicData[]);
+        setData(
+          (data?.allPhotovoltaicData?.edges?.map((x) => x.node) ||
+            []) as PhotovoltaicData[],
+        );
       } catch (error) {
         // TODO Handle properly.
         console.log("Failed:", error);
@@ -199,18 +202,18 @@ function Page() {
             ...getUuidColumnProps<(typeof data)[0]>(
               onFilterTextChange,
               (x) => filterText.get(x),
-              paths.photovoltaicDatum
+              paths.photovoltaicDatum,
             ),
           },
           {
             ...getNameColumnProps<(typeof data)[0]>(onFilterTextChange, (x) =>
-              filterText.get(x)
+              filterText.get(x),
             ),
           },
           {
             ...getDescriptionColumnProps<(typeof data)[0]>(
               onFilterTextChange,
-              (x) => filterText.get(x)
+              (x) => filterText.get(x),
             ),
           },
           {
@@ -219,7 +222,7 @@ function Page() {
           {
             ...getComponentUuidColumnProps<(typeof data)[0]>(
               onFilterTextChange,
-              (x) => filterText.get(x)
+              (x) => filterText.get(x),
             ),
           },
           // {
@@ -235,13 +238,13 @@ function Page() {
           {
             ...getAppliedMethodColumnProps<(typeof data)[0]>(
               onFilterTextChange,
-              (x) => filterText.get(x)
+              (x) => filterText.get(x),
             ),
           },
           {
             ...getResourceTreeColumnProps<(typeof data)[0]>(
               onFilterTextChange,
-              (x) => filterText.get(x)
+              (x) => filterText.get(x),
             ),
           },
         ]}

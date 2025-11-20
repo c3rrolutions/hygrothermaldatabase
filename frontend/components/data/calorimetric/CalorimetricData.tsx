@@ -10,7 +10,9 @@ export type CalorimetricDataProps = {
   calorimetricDataId: Scalars["Uuid"]["input"];
 };
 
-export default function CalorimetricData({ calorimetricDataId }: CalorimetricDataProps) {
+export default function CalorimetricData({
+  calorimetricDataId,
+}: CalorimetricDataProps) {
   const { loading, error, data } = useQuery(CalorimetricDataDocument, {
     variables: {
       uuid: calorimetricDataId,
@@ -42,22 +44,26 @@ export default function CalorimetricData({ calorimetricDataId }: CalorimetricDat
   return (
     <>
       {contextHolder}
-    <DataPageHeader
-      data={calorimetricData}
-    // extra={[
-    //   <UpdateCalorimetricData
-    //     key="updateCalorimetricData"
-    //     calorimetricDataId={calorimetricData.uuid}
-    //   />,
-    // ]}
-    >
-      <Descriptions.Item key="gValues" label="g Values">
-        {calorimetricData.gValues.map((x) => x.toLocaleString("en")).join(", ")}
-      </Descriptions.Item>
-      <Descriptions.Item key="uValues" label="u Values">
-        {calorimetricData.uValues.map((x) => x.toLocaleString("en")).join(", ")}
-      </Descriptions.Item>
-    </DataPageHeader>
-      </>
+      <DataPageHeader
+        data={calorimetricData}
+        // extra={[
+        //   <UpdateCalorimetricData
+        //     key="updateCalorimetricData"
+        //     calorimetricDataId={calorimetricData.uuid}
+        //   />,
+        // ]}
+      >
+        <Descriptions.Item key="gValues" label="g Values">
+          {calorimetricData.gValues
+            .map((x) => x.toLocaleString("en"))
+            .join(", ")}
+        </Descriptions.Item>
+        <Descriptions.Item key="uValues" label="u Values">
+          {calorimetricData.uValues
+            .map((x) => x.toLocaleString("en"))
+            .join(", ")}
+        </Descriptions.Item>
+      </DataPageHeader>
+    </>
   );
 }

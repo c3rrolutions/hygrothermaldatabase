@@ -32,6 +32,16 @@ public static partial class Log
         string? fileNameForDisplay,
         string filePath
     );
+
+    [LoggerMessage(
+        EventId = 1,
+        Level = LogLevel.Error,
+        Message = "Failed to create response approval for data with ID {DataId}.")]
+    public static partial void FailedToCreateResponseApproval(
+        this ILogger logger,
+        Guid dataId,
+        Exception exception
+    );
 }
 
 // Inspired by https://docs.microsoft.com/en-us/aspnet/core/mvc/models/file-uploads?view=aspnetcore-5.0#upload-large-files-with-streaming
@@ -46,7 +56,6 @@ public sealed class FileUploadController(
     // Get the default form options so that we can use them to set the default
     // limits for request body data.
     private static readonly FormOptions s_defaultFormOptions = new();
-    private readonly ILogger<FileUploadController> _logger = logger;
 
     private readonly string[] _permittedExtensions = [".json", ".xml", ".txt", ".csv", ".ifc", ".rad", ".svg", ".pdf", ".png"];
 
@@ -90,6 +99,7 @@ public sealed class FileUploadController(
     public async Task<IActionResult> UploadFile(
         [FromQuery] Guid getHttpsResourceUuid,
         [FromServices] ApplicationDbContext context,
+        [FromServices] ResponseApprovalService responseApprovalService,
         [FromServices] CommonAuthorization authorization,
         CancellationToken cancellationToken
     )
@@ -165,7 +175,7 @@ public sealed class FileUploadController(
                 await targetStream.WriteAsync(streamedFileContent, cancellationToken);
                 // Don't trust the file name sent by the client. To display the
                 // file name, HTML-encode the value.
-                _logger.SavedUploadedFile(
+                logger.SavedUploadedFile(
                     WebUtility.HtmlEncode(contentDisposition.FileName.Value),
                     getHttpsResource.FilePath
                 );
@@ -184,6 +194,15 @@ public sealed class FileUploadController(
         }
         await getHttpsResource.RecomputeHashValue(cancellationToken);
         await context.SaveChangesAsync(cancellationToken);
+        try
+        {
+            getHttpsResource.Data.Approval = await responseApprovalService.CreateResponseApproval(getHttpsResource.Data, cancellationToken);
+            await context.SaveChangesAsync(cancellationToken);
+        }
+        catch (Exception exception)
+        {
+            logger.FailedToCreateResponseApproval(getHttpsResource.Data.Id, exception);
+        }
         return Created(nameof(FileUploadController), null);
     }
 

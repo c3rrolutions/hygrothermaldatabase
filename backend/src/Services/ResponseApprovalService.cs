@@ -76,8 +76,7 @@ public sealed class ResponseApprovalService(
     /// <param name="cancellationToken"> <see cref="CancellationToken"/> </param>
     /// <exception cref="Exception"> Thows exception, when singing of data failed. </exception>
     /// <returns> <see cref="ResponseApproval"/> </returns>
-    public async Task<ResponseApproval> CreateResponseApproval<T>(T dataObject, CancellationToken cancellationToken)
-        where T : IData
+    public async Task<ResponseApproval> CreateResponseApproval(IData dataObject, CancellationToken cancellationToken)
     {
         var (query, variables, response) = await Query(dataObject, cancellationToken);
         logger.QueryAndVariablesAndResponse(query, variables, response);
@@ -99,8 +98,7 @@ public sealed class ResponseApprovalService(
         );
     }
 
-    private async Task<(string Query, JsonElement Variables, string Response)> Query<T>(T dataObject, CancellationToken cancellationToken)
-        where T : IData
+    private async Task<(string Query, JsonElement Variables, string Response)> Query(IData dataObject, CancellationToken cancellationToken)
     {
         logger.Query(dataObject.GetType(), dataObject.Id);
         return dataObject switch
@@ -110,7 +108,7 @@ public sealed class ResponseApprovalService(
             HygrothermalData data => await Query(data.Id, s_hygrothermalDataQueryFileNames, cancellationToken),
             OpticalData data => await Query(data.Id, s_opticalDataQueryFileNames, cancellationToken),
             PhotovoltaicData data => await Query(data.Id, s_photovoltaicDataQueryFileNames, cancellationToken),
-            _ => throw new ArgumentOutOfRangeException($"Unsupported data type {typeof(T)}"),
+            _ => throw new ArgumentOutOfRangeException($"Unsupported data type {dataObject.GetType()}"),
         };
     }
 

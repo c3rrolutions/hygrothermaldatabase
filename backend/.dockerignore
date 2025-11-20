@@ -3,6 +3,7 @@
 **/.*
 **/*.md
 **/*.bak
+**/*.gpg
 Dockerfile*
 
 **/core

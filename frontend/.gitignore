@@ -13,6 +13,7 @@
 
 # next.js
 /.next/
+/next-env.d.ts
 /out/
 
 # production
@@ -36,7 +37,6 @@ yarn-error.log*
 # vercel
 .vercel
 
-# graphql-let
+# graphql-codegen
 __generated__
-*.graphql.d.ts
-*.graphqls.d.ts
+*.generated.ts

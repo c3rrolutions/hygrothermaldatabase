@@ -53,7 +53,7 @@ public sealed class UpdateDatabase
         return (await apiRequestService.QueryGraphQl<UpdateDatabasePayload>(
             GetGraphQlEndpoint(appSettings),
             new GraphQLRequest(
-                await apiRequestService.ConstructGraphQlQuery(
+                await GraphQlQueryHelpers.Construct(
                     UpdateDatabaseFileName
                     ),
                 new

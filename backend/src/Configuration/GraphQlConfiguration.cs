@@ -31,6 +31,11 @@ public static class GraphQlConfiguration
         // GraphQL Server
         services
             .AddGraphQLServer()
+            // TODO add warmup task once we upgrade to version 16: https://chillicream.com/docs/hotchocolate/v16/server/warmup
+            // .AddWarmupTask(async (executor, cancellationToken) =>
+            // {
+            //     await executor.ExecuteAsync("{ __typename }", cancellationToken);
+            // })
             .DisableIntrospection(false) // if the introspection result becomes too big we need to disable it in production
             .BindRuntimeType<uint, NonNegativeIntType>()
             // Services https://chillicream.com/docs/hotchocolate/v13/integrations/entity-framework#registerdbcontext

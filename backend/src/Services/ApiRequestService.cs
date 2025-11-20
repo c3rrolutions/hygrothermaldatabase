@@ -24,32 +24,6 @@ public sealed class ApiRequestService(
 {
     public const string CustomHttpClient = "Custom";
 
-    public Task<string> ConstructGraphQlQuery(
-        string fileName
-    )
-    {
-        return ConstructGraphQlQuery([fileName]);
-    }
-
-    /// <summary>
-    /// Construct query from passed files.
-    /// </summary>
-    /// <param name="fileNames"> Name of files containung queries. </param>
-    /// <returns> Query from all files. </returns>
-    public async Task<string> ConstructGraphQlQuery(
-        string[] fileNames
-    )
-    {
-        return string.Join(
-            Environment.NewLine,
-            await Task.WhenAll(
-                fileNames.Select(fileName =>
-                    File.ReadAllTextAsync($"./ApiRequests/Queries/{fileName}")
-                )
-            )
-        );
-    }
-
     public Task<JsonElement> QueryGraphQlAsJson(
         Uri url,
         GraphQLRequest request,

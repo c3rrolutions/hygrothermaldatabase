@@ -45,7 +45,7 @@ public static class QueryByIdDataLoader
         return (await apiRequestService.QueryGraphQl<TData>(
             GetGraphQlEndpoint(appSettings),
             new GraphQLRequest(
-                await apiRequestService.ConstructGraphQlQuery(queryFileNames),
+                await GraphQlQueryHelpers.Construct(queryFileNames),
                 new
                 {
                     ids

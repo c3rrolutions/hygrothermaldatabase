@@ -33,7 +33,7 @@ public sealed class IsGnuPgFingerprintValid
         return (await apiRequestService.QueryGraphQl<Data>(
             GetGraphQlEndpoint(appSettings),
             new GraphQLRequest(
-                await apiRequestService.ConstructGraphQlQuery(QueryFileName),
+                await GraphQlQueryHelpers.Construct(QueryFileName),
                 new
                 {
                     fingerprint,

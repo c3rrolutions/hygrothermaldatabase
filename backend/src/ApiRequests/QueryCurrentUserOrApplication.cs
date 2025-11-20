@@ -115,7 +115,7 @@ public sealed class QueryCurrentUserOrApplication
         return (await apiRequestService.QueryGraphQl<CurrentUserOrApplication>(
             GetGraphQlEndpoint(appSettings),
             new GraphQLRequest(
-                await apiRequestService.ConstructGraphQlQuery(QueryFileName),
+                await GraphQlQueryHelpers.Construct(QueryFileName),
                 new
                 {
                     databaseId = appSettings.DatabaseId

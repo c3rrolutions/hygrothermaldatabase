@@ -51,7 +51,7 @@ public sealed class QueryDatabase
         return (await apiRequestService.QueryGraphQl<DatabaseData>(
             GetGraphQlEndpoint(appSettings),
             new GraphQLRequest(
-                await apiRequestService.ConstructGraphQlQuery(QueryFileName),
+                await GraphQlQueryHelpers.Construct(QueryFileName),
                 new
                 {
                     id = databaseId

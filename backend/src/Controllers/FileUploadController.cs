@@ -201,6 +201,7 @@ public sealed class FileUploadController(
         }
         catch (Exception exception)
         {
+            // TODO How can this be reported to the user?
             logger.FailedToCreateResponseApproval(getHttpsResource.Data.Id, exception);
         }
         return Created(nameof(FileUploadController), null);

@@ -1,0 +1,11 @@
+query Data($databaseId: Uuid!, $dataId: Uuid!, $dataKind: DataKind!) {
+    database(id: $databaseId)
+    {
+        uuid
+        data(id: $dataId, kind: $dataKind)
+        {
+            uuid
+            kind
+        }
+    }
+}

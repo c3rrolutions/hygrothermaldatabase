@@ -6,6 +6,8 @@ using Database.ApiRequests;
 using GraphQL.Client.Abstractions.Utilities;
 using Database.Extensions;
 using static Database.ApiRequests.DataFormatDataLoader;
+using System.Linq;
+using System.Globalization;
 
 namespace Database.GraphQl.DataX;
 
@@ -33,6 +35,9 @@ where TError : class
         TErrorCode unknownCreatorErrorCode,
         IMethodByIdDataLoader methodByIdDataLoader,
         TErrorCode unknownAppliedMethodErrorCode,
+        IDataByDatabaseAndIdAndKindDataLoader dataByDatabaseAndIdAndKindDataLoader,
+        TErrorCode unknownDatabase,
+        TErrorCode unknownCrossDatabaseData,
         IDataFormatByIdDataLoader dataFormatByIdDataLoader,
         TErrorCode unknownDataFormatErrorCode,
         CancellationToken cancellationToken
@@ -74,12 +79,56 @@ where TError : class
             errors.Add(
                 NewError(
                     unknownAppliedMethodErrorCode,
-                    "The applied method does not exist",
+                    "The applied method does not exist.",
                     [nameof(input), nameof(input.AppliedMethod).ToLowerFirst(), nameof(input.AppliedMethod.MethodId).ToLowerFirst()]
                 )
             );
         }
-        // TODO check applied method sources
+        // TODO check applied method argument and source names
+        var databases = await Task.WhenAll(
+            input.AppliedMethod.Sources.Select(source =>
+                dataByDatabaseAndIdAndKindDataLoader.LoadAsync(
+                    (source.Value.DatabaseId, source.Value.DataId, source.Value.DataKind),
+                    cancellationToken
+                )
+            )
+        );
+        foreach (var (database, index) in databases.WithIndex())
+        {
+            string[] valuePath = [
+                nameof(input),
+                nameof(input.AppliedMethod).ToLowerFirst(),
+                nameof(input.AppliedMethod.Sources).ToLowerFirst(),
+                index.ToString(CultureInfo.InvariantCulture),
+                nameof(NamedMethodSourceInput.Value)
+            ];
+            if (database is null)
+            {
+                errors.Add(
+                    NewError(
+                        unknownDatabase,
+                        "The database does not exist.",
+                        [
+                            ..valuePath,
+                            nameof(NamedMethodSourceInput.Value.DatabaseId),
+                        ]
+                    )
+                );
+            }
+            else if (database.Data is null)
+            {
+                errors.Add(
+                    NewError(
+                        unknownCrossDatabaseData,
+                        "The data does not exist with the given kind.",
+                        [
+                            ..valuePath,
+                            nameof(NamedMethodSourceInput.Value.DataId),
+                        ]
+                    )
+                );
+            }
+        }
         var validateRootResourceResult = await ValidateGetHttpsResourceAsync(
             input.RootResource,
             [nameof(input), nameof(input.RootResource)],

@@ -61,6 +61,8 @@ public enum CreateGeometricDataErrorCode
     ILLEGAL_CREATED_AT,
     UNKNOWN_CREATOR,
     UNKNOWN_APPLIED_METHOD,
+    UNKNOWN_DATABASE,
+    UNKNOWN_DATA,
     UNKNOWN_DATA_FORMAT,
     CREATING_RESPONSE_APPROVAL_FAILED
 }
@@ -101,6 +103,7 @@ public sealed class CreateGeometricDataMutation
         IComponentByIdDataLoader componentByIdDataLoader,
         IInstitutionByIdDataLoader institutionByIdDataLoader,
         IMethodByIdDataLoader methodByIdDataLoader,
+        IDataByDatabaseAndIdAndKindDataLoader dataByDatabaseAndIdAndKindDataLoader,
         IDataFormatByIdDataLoader dataFormatByIdDataLoader,
         ResponseApprovalService responseApprovalService,
         CancellationToken cancellationToken
@@ -127,6 +130,9 @@ public sealed class CreateGeometricDataMutation
                 CreateGeometricDataErrorCode.UNKNOWN_CREATOR,
                 methodByIdDataLoader,
                 CreateGeometricDataErrorCode.UNKNOWN_APPLIED_METHOD,
+                dataByDatabaseAndIdAndKindDataLoader,
+                CreateGeometricDataErrorCode.UNKNOWN_DATABASE,
+                CreateGeometricDataErrorCode.UNKNOWN_DATA,
                 dataFormatByIdDataLoader,
                 CreateGeometricDataErrorCode.UNKNOWN_DATA_FORMAT,
                 cancellationToken

@@ -80,6 +80,8 @@ public enum CreateOpticalDataErrorCode
     ILLEGAL_CREATED_AT,
     UNKNOWN_CREATOR,
     UNKNOWN_APPLIED_METHOD,
+    UNKNOWN_DATABASE,
+    UNKNOWN_DATA,
     UNKNOWN_DATA_FORMAT,
     CREATING_RESPONSE_APPROVAL_FAILED
 }
@@ -119,6 +121,7 @@ public sealed class CreateOpticalDataMutation
         IComponentByIdDataLoader componentByIdDataLoader,
         IInstitutionByIdDataLoader institutionByIdDataLoader,
         IMethodByIdDataLoader methodByIdDataLoader,
+        IDataByDatabaseAndIdAndKindDataLoader dataByDatabaseAndIdAndKindDataLoader,
         IDataFormatByIdDataLoader dataFormatByIdDataLoader,
         ResponseApprovalService responseApprovalService,
         CancellationToken cancellationToken
@@ -145,6 +148,9 @@ public sealed class CreateOpticalDataMutation
                 CreateOpticalDataErrorCode.UNKNOWN_CREATOR,
                 methodByIdDataLoader,
                 CreateOpticalDataErrorCode.UNKNOWN_APPLIED_METHOD,
+                dataByDatabaseAndIdAndKindDataLoader,
+                CreateOpticalDataErrorCode.UNKNOWN_DATABASE,
+                CreateOpticalDataErrorCode.UNKNOWN_DATA,
                 dataFormatByIdDataLoader,
                 CreateOpticalDataErrorCode.UNKNOWN_DATA_FORMAT,
                 cancellationToken

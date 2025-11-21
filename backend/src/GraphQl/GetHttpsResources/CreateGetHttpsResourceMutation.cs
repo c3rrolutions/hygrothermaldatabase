@@ -58,6 +58,7 @@ public enum CreateGetHttpsResourceErrorCode
     UNKNOWN_PARENT,
     ILLEGAL_PARENT,
     UNKNOWN_DATA_FORMAT,
+    UNKNOWN_METHOD,
     CREATING_RESPONSE_APPROVAL_FAILED
 }
 
@@ -102,6 +103,7 @@ public sealed class CreateGetHttpsResourceMutation
         CreateGetHttpsResourceInput input,
         ApplicationDbContext context,
         IDataFormatByIdDataLoader dataFormatByIdDataLoader,
+        IMethodByIdDataLoader methodByIdDataLoader,
         ResponseApprovalService responseApprovalService,
         CommonAuthorization authorization,
         CancellationToken cancellationToken
@@ -168,6 +170,16 @@ public sealed class CreateGetHttpsResourceMutation
         if (validateResourceResult.Failed(out var dataFormat, out var validateResourceErrors))
         {
             errors.AddRange(validateResourceErrors);
+        }
+        if (await methodByIdDataLoader.LoadAsync(input.AppliedConversionMethod.MethodId, cancellationToken) is null)
+        {
+            errors.Add(
+                NewError(
+                    CreateGetHttpsResourceErrorCode.UNKNOWN_METHOD,
+                    "The applied conversion method does not exist",
+                    [nameof(input), nameof(input.AppliedConversionMethod).ToLowerFirst(), nameof(input.AppliedConversionMethod.MethodId).ToLowerFirst()]
+                )
+            );
         }
         // Note that `dataFormat` is only `null`, when `validateResourceResult` failed.
         if (errors.Count >= 1 || dataFormat is null)

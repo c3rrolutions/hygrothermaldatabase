@@ -58,6 +58,8 @@ public enum CreateHygrothermalDataErrorCode
     ILLEGAL_CREATED_AT,
     UNKNOWN_CREATOR,
     UNKNOWN_APPLIED_METHOD,
+    UNKNOWN_DATABASE,
+    UNKNOWN_DATA,
     UNKNOWN_DATA_FORMAT,
     CREATING_RESPONSE_APPROVAL_FAILED
 }
@@ -97,6 +99,7 @@ public sealed class CreateHygrothermalDataMutation
         IComponentByIdDataLoader componentByIdDataLoader,
         IInstitutionByIdDataLoader institutionByIdDataLoader,
         IMethodByIdDataLoader methodByIdDataLoader,
+        IDataByDatabaseAndIdAndKindDataLoader dataByDatabaseAndIdAndKindDataLoader,
         IDataFormatByIdDataLoader dataFormatByIdDataLoader,
         ResponseApprovalService responseApprovalService,
         CancellationToken cancellationToken
@@ -123,6 +126,9 @@ public sealed class CreateHygrothermalDataMutation
                 CreateHygrothermalDataErrorCode.UNKNOWN_CREATOR,
                 methodByIdDataLoader,
                 CreateHygrothermalDataErrorCode.UNKNOWN_APPLIED_METHOD,
+                dataByDatabaseAndIdAndKindDataLoader,
+                CreateHygrothermalDataErrorCode.UNKNOWN_DATABASE,
+                CreateHygrothermalDataErrorCode.UNKNOWN_DATA,
                 dataFormatByIdDataLoader,
                 CreateHygrothermalDataErrorCode.UNKNOWN_DATA_FORMAT,
                 cancellationToken

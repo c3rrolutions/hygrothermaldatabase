@@ -60,6 +60,8 @@ public enum CreatePhotovoltaicDataErrorCode
     ILLEGAL_CREATED_AT,
     UNKNOWN_CREATOR,
     UNKNOWN_APPLIED_METHOD,
+    UNKNOWN_DATABASE,
+    UNKNOWN_DATA,
     UNKNOWN_DATA_FORMAT,
     CREATING_RESPONSE_APPROVAL_FAILED
 }
@@ -99,6 +101,7 @@ public sealed class CreatePhotovoltaicDataMutation
         IComponentByIdDataLoader componentByIdDataLoader,
         IInstitutionByIdDataLoader institutionByIdDataLoader,
         IMethodByIdDataLoader methodByIdDataLoader,
+        IDataByDatabaseAndIdAndKindDataLoader dataByDatabaseAndIdAndKindDataLoader,
         IDataFormatByIdDataLoader dataFormatByIdDataLoader,
         ResponseApprovalService responseApprovalService,
         CancellationToken cancellationToken
@@ -125,6 +128,9 @@ public sealed class CreatePhotovoltaicDataMutation
                 CreatePhotovoltaicDataErrorCode.UNKNOWN_CREATOR,
                 methodByIdDataLoader,
                 CreatePhotovoltaicDataErrorCode.UNKNOWN_APPLIED_METHOD,
+                dataByDatabaseAndIdAndKindDataLoader,
+                CreatePhotovoltaicDataErrorCode.UNKNOWN_DATABASE,
+                CreatePhotovoltaicDataErrorCode.UNKNOWN_DATA,
                 dataFormatByIdDataLoader,
                 CreatePhotovoltaicDataErrorCode.UNKNOWN_DATA_FORMAT,
                 cancellationToken

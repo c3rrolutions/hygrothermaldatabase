@@ -64,6 +64,8 @@ public enum CreateCalorimetricDataErrorCode
     ILLEGAL_CREATED_AT,
     UNKNOWN_CREATOR,
     UNKNOWN_APPLIED_METHOD,
+    UNKNOWN_DATABASE,
+    UNKNOWN_DATA,
     UNKNOWN_DATA_FORMAT,
     CREATING_RESPONSE_APPROVAL_FAILED
 }
@@ -103,6 +105,7 @@ public sealed class CreateCalorimetricDataMutation
         IComponentByIdDataLoader componentByIdDataLoader,
         IInstitutionByIdDataLoader institutionByIdDataLoader,
         IMethodByIdDataLoader methodByIdDataLoader,
+        IDataByDatabaseAndIdAndKindDataLoader dataByDatabaseAndIdAndKindDataLoader,
         IDataFormatByIdDataLoader dataFormatByIdDataLoader,
         ResponseApprovalService responseApprovalService,
         CancellationToken cancellationToken
@@ -129,6 +132,9 @@ public sealed class CreateCalorimetricDataMutation
                 CreateCalorimetricDataErrorCode.UNKNOWN_CREATOR,
                 methodByIdDataLoader,
                 CreateCalorimetricDataErrorCode.UNKNOWN_APPLIED_METHOD,
+                dataByDatabaseAndIdAndKindDataLoader,
+                CreateCalorimetricDataErrorCode.UNKNOWN_DATABASE,
+                CreateCalorimetricDataErrorCode.UNKNOWN_DATA,
                 dataFormatByIdDataLoader,
                 CreateCalorimetricDataErrorCode.UNKNOWN_DATA_FORMAT,
                 cancellationToken

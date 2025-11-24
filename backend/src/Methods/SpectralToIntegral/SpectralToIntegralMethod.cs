@@ -226,9 +226,9 @@ public sealed class SpectralToIntegralMethod
         ImmutableArray<(int wavelength, double weight, double deltaWavelength)> wavelengthsWeights
     )
     {
-        if (spectralDataPoints.Count == 0)
+        if (spectralDataPoints == null || spectralDataPoints.Count == 0)
         {
-            throw new ArgumentException("The list spectralDataPoints is empty.");
+            throw new ArgumentException("The list `spectralDataPoints` is empty.");
         }
         var sortedSpectralDataPoints =
             spectralDataPoints
@@ -260,6 +260,8 @@ public sealed class SpectralToIntegralMethod
                 {
                     spectralDataPointWavelengthAbove = spectralDataPoint;
                 }
+                if (spectralDataPointWavelengthBelow.Results.Transmittance == 99) { throw new ArgumentException("`spectralDataPoints` has no data point for the smallest wavelength of `wavelengthsWeights`."); }
+                if (spectralDataPointWavelengthAbove.Results.Transmittance == 99) { throw new ArgumentException("`spectralDataPoints` has no data point for the largest wavelength of `wavelengthsWeights`."); }
             }
             // Trapezoidal rule to calculate an integral
             var averageValue = (

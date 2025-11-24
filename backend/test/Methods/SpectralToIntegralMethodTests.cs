@@ -40,7 +40,7 @@ public sealed class SpectralToIntegralMethodTests
         // Assert
         act.Should()
            .Throw<ArgumentException>()
-           .WithMessage("The list spectralDataPoints is empty.");
+           .WithMessage("The list `spectralDataPoints` is empty.");
     }
 
     [Test]
@@ -53,13 +53,14 @@ public sealed class SpectralToIntegralMethodTests
             ])
         ]);
         var method = new SpectralToIntegralMethod();
-        var results = method.Calculate(spectralDataPoints);
-        using (new AssertionScope())
-        {
-            results.En410Visible.Should().BeApproximately(50.00000000000002, 0.000000000000001F);
-            results.En410Solar.Should().BeApproximately(49.95456161229, 0.00000001F);
-            results.Iso9050Solar.Should().BeApproximately(49.887486078556094, 0.00000001F);
-        }
+
+        // Act
+        Action act = () => method.Calculate(spectralDataPoints);
+
+        // Assert
+        act.Should()
+           .Throw<ArgumentException>()
+           .WithMessage("`spectralDataPoints` has no data point for the largest wavelength of `wavelengthsWeights`.");
     }
 
     [Test]

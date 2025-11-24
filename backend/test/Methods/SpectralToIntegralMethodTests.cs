@@ -43,11 +43,68 @@ public sealed class SpectralToIntegralMethodTests
 
     [Test]
     [SuppressMessage("Naming", "CA1707")]
-    public void Calculate_One()
+    public void Calculate_One_200()
     {
         var spectralDataPoints = new SpectralToIntegralInput([
             new SpectralToIntegralData([
                 new DataPoint(new Incidence(new Wavelengths(200)), new Results(1)),
+            ])
+        ]);
+        var method = new SpectralToIntegralMethod();
+        var results = method.Calculate(spectralDataPoints);
+        using (new AssertionScope())
+        {
+            results.En410Visible.Should().BeApproximately(50.00000000000002, 0.000000000000001F);
+            results.En410Solar.Should().BeApproximately(50.0, 0.00000001F);
+            results.Iso9050Solar.Should().BeApproximately(50.0, 0.00000001F);
+        }
+    }
+
+    [Test]
+    [SuppressMessage("Naming", "CA1707")]
+    public void Calculate_One_300()
+    {
+        var spectralDataPoints = new SpectralToIntegralInput([
+            new SpectralToIntegralData([
+                new DataPoint(new Incidence(new Wavelengths(300)), new Results(1)),
+            ])
+        ]);
+        var method = new SpectralToIntegralMethod();
+        var results = method.Calculate(spectralDataPoints);
+        using (new AssertionScope())
+        {
+            results.En410Visible.Should().BeApproximately(50.00000000000002, 0.000000000000001F);
+            results.En410Solar.Should().BeApproximately(50.0, 0.00000001F);
+            results.Iso9050Solar.Should().BeApproximately(50.0, 0.00000001F);
+        }
+    }
+
+    [Test]
+    [SuppressMessage("Naming", "CA1707")]
+    public void Calculate_One_400()
+    {
+        var spectralDataPoints = new SpectralToIntegralInput([
+            new SpectralToIntegralData([
+                new DataPoint(new Incidence(new Wavelengths(400)), new Results(1)),
+            ])
+        ]);
+        var method = new SpectralToIntegralMethod();
+        var results = method.Calculate(spectralDataPoints);
+        using (new AssertionScope())
+        {
+            results.En410Visible.Should().BeApproximately(50.00000000000002, 0.000000000000001F);
+            results.En410Solar.Should().BeApproximately(50.0, 0.00000001F);
+            results.Iso9050Solar.Should().BeApproximately(50.0, 0.00000001F);
+        }
+    }
+
+    [Test]
+    [SuppressMessage("Naming", "CA1707")]
+    public void Calculate_One_2500()
+    {
+        var spectralDataPoints = new SpectralToIntegralInput([
+            new SpectralToIntegralData([
+                new DataPoint(new Incidence(new Wavelengths(2500)), new Results(1)),
             ])
         ]);
         var method = new SpectralToIntegralMethod();
@@ -87,7 +144,7 @@ public sealed class SpectralToIntegralMethodTests
     public async Task Calculate_Some()
     {
         using var fileStream = File.OpenRead(
-            ConstructFilePath("./Methods/modification01_2d40b285-79d4-4ec6-8d46-767bd9b0f249.json")
+            ConstructFilePath("./Methods/modification02_2d40b285-79d4-4ec6-8d46-767bd9b0f249.json")
         );
         using var jsonDocument = await JsonDocument.ParseAsync(
             fileStream,

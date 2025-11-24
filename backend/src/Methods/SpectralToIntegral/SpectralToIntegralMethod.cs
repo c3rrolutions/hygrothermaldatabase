@@ -221,6 +221,46 @@ public sealed class SpectralToIntegralMethod
         );
     }
 
+    // public double Calculate(
+    //     IReadOnlyList<DataPoint> spectralDataPoints,
+    //     ImmutableArray<(int wavelength, double weight, double deltaWavelength)> wavelengthsWeights
+    // )
+    // {
+    //     var sortedSpectralDataPoints =
+    //         spectralDataPoints
+    //         .Where(dataPoint => !WavelengthOutOfBounds(dataPoint))
+    //         .OrderBy(dataPoint => dataPoint.Incidence.Wavelengths.Wavelength)
+    //         .ToList()
+    //         .AsReadOnly();
+    //     var numerator = 0.0D;
+    //     var denominator = 0.0D;
+    //     foreach (var wavelengthsWeight in wavelengthsWeights)
+    //     {
+    //         foreach (var spectralDataPoint in sortedSpectralDataPoints)
+    //         {
+    //             if (spectralDataPoint.Incidence.Wavelengths.Wavelength == wavelengthsWeight.wavelength)
+    //             {
+    //                 transmittance = spectralDataPoint.Results.Transmittance;
+    //             }
+    //             if (spectralDataPoint.Incidence.Wavelengths.Wavelength > wavelengthsWeight.wavelength
+    //                 && spectralDataPoint.Incidence.Wavelengths.Wavelength < spectralDataPointWavelengthAbove.Incidence.Wavelengths.Wavelength
+    //             )
+    //             {
+    //                 spectralDataPointWavelengthAbove = spectralDataPoint;
+    //             }
+    //         }
+    //         // Trapezoidal rule to calculate an integral
+    //         var averageValue = (
+    //             spectralDataPointWavelengthBelow.Results.Transmittance
+    //             + spectralDataPointWavelengthAbove.Results.Transmittance
+    //         ) / 2;
+    //         numerator += averageValue * wavelengthsWeight.deltaWavelength * wavelengthsWeight.weight;
+    //         denominator += wavelengthsWeight.deltaWavelength * wavelengthsWeight.weight;
+    //     }
+    //     return numerator / denominator;
+    // }
+
+    // public double CalculateInterpolationBetweenSpectralDataPoints(
     public double Calculate(
         IReadOnlyList<DataPoint> spectralDataPoints,
         ImmutableArray<(int wavelength, double weight, double deltaWavelength)> wavelengthsWeights
@@ -274,7 +314,7 @@ public sealed class SpectralToIntegralMethod
     // Search predicate returns true if the wavelength is smaller than 0 nm or larger than 3000 nm.
     private static bool WavelengthOutOfBounds(DataPoint dataPoint)
     {
-        return 
+        return
             dataPoint.Incidence.Wavelengths.Wavelength <= 0
             || dataPoint.Incidence.Wavelengths.Wavelength >= 3000;
     }

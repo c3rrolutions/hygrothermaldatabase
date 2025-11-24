@@ -141,7 +141,7 @@ public sealed class SpectralToIntegralMethodTests
 
     [Test]
     [SuppressMessage("Naming", "CA1707")]
-    public async Task Calculate_Some()
+    public async Task Calculate_modification02()
     {
         using var fileStream = File.OpenRead(
             ConstructFilePath("./Methods/modification02_2d40b285-79d4-4ec6-8d46-767bd9b0f249.json")
@@ -162,6 +162,31 @@ public sealed class SpectralToIntegralMethodTests
             results.Iso9050Solar.Should().BeApproximately(0.8593226930274324, 0.00000001F);
         }
     }
+
+    [Test]
+    [SuppressMessage("Naming", "CA1707")]
+    public async Task Calculate_modification03()
+    {
+        using var fileStream = File.OpenRead(
+            ConstructFilePath("./Methods/modification03_2d40b285-79d4-4ec6-8d46-767bd9b0f249.json")
+        );
+        using var jsonDocument = await JsonDocument.ParseAsync(
+            fileStream,
+            JsonDocumentSettings.Lax
+        );
+        var spectralDataPoints = jsonDocument.RootElement.Deserialize<SpectralToIntegralInput>(
+            MethodBase<SpectralToIntegralInput, SpectralToIntegralOutput>.JsonSerializerOptions
+        ) ?? throw new InvalidOperationException();
+        var method = new SpectralToIntegralMethod();
+        var results = method.Calculate(spectralDataPoints);
+        using (new AssertionScope())
+        {
+            results.En410Visible.Should().BeApproximately(0.9023789669000116, 0.000000000000001F);
+            results.En410Solar.Should().BeApproximately(0.9080345756086065, 0.00000001F);
+            results.Iso9050Solar.Should().BeApproximately(0.8593226930274324, 0.00000001F);
+        }
+    }
+
 
     [Test]
     [SuppressMessage("Naming", "CA1707")]

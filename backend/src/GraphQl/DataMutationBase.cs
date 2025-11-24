@@ -11,6 +11,7 @@ using Database.ApiRequests;
 using Database.Extensions;
 using System.Linq;
 using System.Globalization;
+using HotChocolate;
 
 namespace Database.GraphQl;
 
@@ -86,56 +87,46 @@ where TError : class
         CancellationToken cancellationToken
     )
     {
-        var validateDataFormats = new Task<Result<DataFormat, TError>>[1 + input.ArchivedFilesMetaInformation.Count];
-        validateDataFormats[0] = Task.Run<Result<DataFormat, TError>>(async () =>
-            {
-                var dataFormat = await dataFormatByIdDataLoader.LoadAsync(input.DataFormatId, cancellationToken);
-                if (dataFormat is null)
-                {
-                    return new Result<DataFormat, TError>.Error(
-                            NewError(
-                                unknownDataFormatErrorCode,
-                                "The data format does not exist",
-                                [.. getHttpsResourcePath, nameof(input.DataFormatId).ToLowerFirst()]
-                                )
-                            );
-                }
-                return new Result<DataFormat, TError>.Data(dataFormat);
-            },
-            cancellationToken
-        );
+        var validateDataFormats = new Task<DataFormat?>[1 + input.ArchivedFilesMetaInformation.Count];
+        // First eagerly execute all `LoadAsync`s on data loaders to make it know all keys.
+        validateDataFormats[0] = dataFormatByIdDataLoader.LoadAsync(input.DataFormatId, cancellationToken);
         foreach (var (archivedFileMetaInformation, index) in input.ArchivedFilesMetaInformation.WithIndex())
         {
-            validateDataFormats[index + 1] = Task.Run<Result<DataFormat, TError>>(async () =>
-                {
-                    var dataFormat = await dataFormatByIdDataLoader.LoadAsync(archivedFileMetaInformation.DataFormatId, cancellationToken);
-                    if (dataFormat is null)
-                    {
-                        // TODO Is the index in the path formated correctly or should it be enclosed in square brackets?
-                        return new Result<DataFormat, TError>.Error(
-                                NewError(
-                                    unknownDataFormatErrorCode,
-                                    "The data format does not exist",
-                                    [.. getHttpsResourcePath, nameof(input.ArchivedFilesMetaInformation).ToLowerFirst(), index.ToString(CultureInfo.InvariantCulture), nameof(archivedFileMetaInformation.DataFormatId).ToLowerFirst()]
-                                    )
-                                );
-                    }
-                    return new Result<DataFormat, TError>.Data(dataFormat);
-                },
-                cancellationToken
+            validateDataFormats[index + 1] = dataFormatByIdDataLoader.LoadAsync(archivedFileMetaInformation.DataFormatId, cancellationToken);
+        }
+        // Then await all "loads".
+        var dataFormats = await Task.WhenAll(validateDataFormats);
+        // Finally collect errors.
+        var errors = new List<TError>();
+        var dataFormat = dataFormats[1];
+        if (dataFormat is null)
+        {
+            errors.Add(
+                NewError(
+                    unknownDataFormatErrorCode,
+                    "The data format does not exist",
+                    [.. getHttpsResourcePath, nameof(input.DataFormatId).ToLowerFirst()]
+                )
             );
         }
-        var maybeDataFormats = await Task.WhenAll(validateDataFormats);
-        var errors = maybeDataFormats
-                .Select(_ => _.Failed(out var error) ? error : null)
-                .NotNull()
-                .ToList()
-                .AsReadOnly();
+        foreach (var (archivedFileDataFormat, index) in dataFormats[1..].WithIndex())
+        {
+            if (archivedFileDataFormat is null)
+            {
+                // TODO Is the index in the path formated correctly or should it be enclosed in square brackets?
+                errors.Add(
+                    NewError(
+                        unknownDataFormatErrorCode,
+                        "The data format does not exist",
+                        [.. getHttpsResourcePath, nameof(input.ArchivedFilesMetaInformation).ToLowerFirst(), index.ToString(CultureInfo.InvariantCulture), nameof(FileMetaInformationInput.DataFormatId).ToLowerFirst()]
+                    )
+                );
+            }
+        }
         if (errors.Count >= 1)
         {
             return new Result<DataFormat, IReadOnlyList<TError>>.Error(errors);
         }
-        maybeDataFormats[0].Succeeded(out var dataFormat);
         return new Result<DataFormat, IReadOnlyList<TError>>.Data(dataFormat ?? throw new InvalidOperationException("Impossible because there are no errors when this code line is being executed!"));
     }
 }

@@ -8,6 +8,7 @@ using Database.Extensions;
 using static Database.ApiRequests.DataFormatDataLoader;
 using System.Linq;
 using System.Globalization;
+using System.Collections.Immutable;
 
 namespace Database.GraphQl.DataX;
 
@@ -92,6 +93,7 @@ where TError : class
                     cancellationToken
                 )
             )
+            .ToImmutableArray() // Execute eagerly to have the data loader collect all keys first.
         );
         foreach (var (database, index) in databases.WithIndex())
         {

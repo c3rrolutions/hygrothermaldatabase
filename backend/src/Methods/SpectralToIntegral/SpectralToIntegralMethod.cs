@@ -221,6 +221,60 @@ public sealed class SpectralToIntegralMethod
         );
     }
 
+    public double Calculate(
+        IReadOnlyList<DataPoint> spectralDataPoints,
+        ImmutableArray<(int wavelength, double weight, double deltaWavelength)> wavelengthsWeights
+    )
+    {
+        if (spectralDataPoints.Count == 0)
+        {
+            throw new ArgumentException("The list spectralDataPoints is empty.");
+        }
+        var sortedSpectralDataPoints =
+            spectralDataPoints
+            .Where(dataPoint => !WavelengthOutOfBounds(dataPoint))
+            .OrderBy(dataPoint => dataPoint.Incidence.Wavelengths.Wavelength)
+            .ToList()
+            .AsReadOnly();
+        var numerator = 0.0D;
+        var denominator = 0.0D;
+        for (int i = 0; i < (wavelengthsWeights.Length - 1); i++)
+        {
+            var spectralDataPointWavelengthBelow = new DataPoint(new Incidence(new Wavelengths(0)), new Results(99));
+            var spectralDataPointWavelengthAbove = new DataPoint(
+                new Incidence(new Wavelengths(1000000)),
+                new Results(99)
+            );
+            foreach (var spectralDataPoint in sortedSpectralDataPoints)
+            {
+                // Find the spectralDataPoints with the wavelengths which are the closest to the wavelength of the weightingDataPoint
+                if (spectralDataPoint.Incidence.Wavelengths.Wavelength <= wavelengthsWeights[i].wavelength
+                    && spectralDataPoint.Incidence.Wavelengths.Wavelength > spectralDataPointWavelengthBelow.Incidence.Wavelengths.Wavelength
+                )
+                {
+                    spectralDataPointWavelengthBelow = spectralDataPoint;
+                }
+                if (spectralDataPoint.Incidence.Wavelengths.Wavelength > wavelengthsWeights[i].wavelength
+                    && spectralDataPoint.Incidence.Wavelengths.Wavelength < spectralDataPointWavelengthAbove.Incidence.Wavelengths.Wavelength
+                )
+                {
+                    spectralDataPointWavelengthAbove = spectralDataPoint;
+                }
+            }
+            // Trapezoidal rule to calculate an integral
+            var averageValue = (
+                spectralDataPointWavelengthBelow.Results.Transmittance
+                + spectralDataPointWavelengthAbove.Results.Transmittance
+            ) / 2;
+            numerator += averageValue * wavelengthsWeights[i].deltaWavelength * wavelengthsWeights[i].weight;
+            denominator += wavelengthsWeights[i].deltaWavelength * wavelengthsWeights[i].weight;
+        }
+        // Treat the last wavelengthWeight separately, because it has no spectralDataPointWavelengthAbove
+        numerator += spectralDataPoints[spectralDataPoints.Count() - 1].Results.Transmittance * wavelengthsWeights[wavelengthsWeights.Length - 1].deltaWavelength * wavelengthsWeights[wavelengthsWeights.Length - 1].weight;
+        denominator += wavelengthsWeights[wavelengthsWeights.Length - 1].deltaWavelength * wavelengthsWeights[wavelengthsWeights.Length - 1].weight;
+        return numerator / denominator;
+    }
+
     // public double Calculate(
     //     IReadOnlyList<DataPoint> spectralDataPoints,
     //     ImmutableArray<(int wavelength, double weight, double deltaWavelength)> wavelengthsWeights
@@ -236,11 +290,22 @@ public sealed class SpectralToIntegralMethod
     //     var denominator = 0.0D;
     //     foreach (var wavelengthsWeight in wavelengthsWeights)
     //     {
+    //         var spectralDataPointWavelengthBelow = new DataPoint(
+    //             new Incidence(new Wavelengths(0)),
+    //             new Results(99)
+    //         );
+    //         var spectralDataPointWavelengthAbove = new DataPoint(
+    //             new Incidence(new Wavelengths(1000000)),
+    //             new Results(99)
+    //         );
     //         foreach (var spectralDataPoint in sortedSpectralDataPoints)
     //         {
-    //             if (spectralDataPoint.Incidence.Wavelengths.Wavelength == wavelengthsWeight.wavelength)
+    //             // Find the spectralDataPoints with the wavelengths which are the closest to the wavelength of the weightingDataPoint
+    //             if (spectralDataPoint.Incidence.Wavelengths.Wavelength <= wavelengthsWeight.wavelength
+    //                 && spectralDataPoint.Incidence.Wavelengths.Wavelength > spectralDataPointWavelengthBelow.Incidence.Wavelengths.Wavelength
+    //             )
     //             {
-    //                 transmittance = spectralDataPoint.Results.Transmittance;
+    //                 spectralDataPointWavelengthBelow = spectralDataPoint;
     //             }
     //             if (spectralDataPoint.Incidence.Wavelengths.Wavelength > wavelengthsWeight.wavelength
     //                 && spectralDataPoint.Incidence.Wavelengths.Wavelength < spectralDataPointWavelengthAbove.Incidence.Wavelengths.Wavelength
@@ -259,57 +324,6 @@ public sealed class SpectralToIntegralMethod
     //     }
     //     return numerator / denominator;
     // }
-
-    // public double CalculateInterpolationBetweenSpectralDataPoints(
-    public double Calculate(
-        IReadOnlyList<DataPoint> spectralDataPoints,
-        ImmutableArray<(int wavelength, double weight, double deltaWavelength)> wavelengthsWeights
-    )
-    {
-        var sortedSpectralDataPoints =
-            spectralDataPoints
-            .Where(dataPoint => !WavelengthOutOfBounds(dataPoint))
-            .OrderBy(dataPoint => dataPoint.Incidence.Wavelengths.Wavelength)
-            .ToList()
-            .AsReadOnly();
-        var numerator = 0.0D;
-        var denominator = 0.0D;
-        foreach (var wavelengthsWeight in wavelengthsWeights)
-        {
-            var spectralDataPointWavelengthBelow = new DataPoint(
-                new Incidence(new Wavelengths(0)),
-                new Results(99)
-            );
-            var spectralDataPointWavelengthAbove = new DataPoint(
-                new Incidence(new Wavelengths(1000000)),
-                new Results(99)
-            );
-            foreach (var spectralDataPoint in sortedSpectralDataPoints)
-            {
-                // Find the spectralDataPoints with the wavelengths which are the closest to the wavelength of the weightingDataPoint
-                if (spectralDataPoint.Incidence.Wavelengths.Wavelength <= wavelengthsWeight.wavelength
-                    && spectralDataPoint.Incidence.Wavelengths.Wavelength > spectralDataPointWavelengthBelow.Incidence.Wavelengths.Wavelength
-                )
-                {
-                    spectralDataPointWavelengthBelow = spectralDataPoint;
-                }
-                if (spectralDataPoint.Incidence.Wavelengths.Wavelength > wavelengthsWeight.wavelength
-                    && spectralDataPoint.Incidence.Wavelengths.Wavelength < spectralDataPointWavelengthAbove.Incidence.Wavelengths.Wavelength
-                )
-                {
-                    spectralDataPointWavelengthAbove = spectralDataPoint;
-                }
-            }
-            // Trapezoidal rule to calculate an integral
-            var averageValue = (
-                spectralDataPointWavelengthBelow.Results.Transmittance
-                + spectralDataPointWavelengthAbove.Results.Transmittance
-            ) / 2;
-            numerator += averageValue * wavelengthsWeight.deltaWavelength * wavelengthsWeight.weight;
-            denominator += wavelengthsWeight.deltaWavelength * wavelengthsWeight.weight;
-        }
-        return numerator / denominator;
-    }
 
     // Search predicate returns true if the wavelength is smaller than 0 nm or larger than 3000 nm.
     private static bool WavelengthOutOfBounds(DataPoint dataPoint)

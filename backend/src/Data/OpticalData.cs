@@ -11,8 +11,6 @@ namespace Database.Data;
 public sealed class OpticalData
     : DataX
 {
-    public static readonly Guid BedJsonDataFormatId = new("9ca9e8f5-94bf-4fdd-81e3-31a58d7ca708");
-
     public OpticalData(
         Guid? userId,
         string locale,
@@ -112,43 +110,43 @@ public sealed class OpticalData
     public double[] ColorRenderingIndices { get; private set; }
     public ICollection<CielabColor> CielabColors { get; private set; } = [];
 
-    public async Task ExtractAndSetMirroredValuesFromFile(
+    public override async Task ExtractAndSetValuesFromFile(
         string filePath,
         Guid dataFormatId
     )
     {
-        if (dataFormatId == BedJsonDataFormatId)
+        if (dataFormatId == IData.BedJsonDataFormatId)
         {
             NearnormalHemisphericalVisibleTransmittances =
-                await new DoubleResultsJsonExtractor(
+                await new DoubleResultsOpticalDataJsonExtractor(
                     IncidenceDirection.NEARNORMAL,
                     WavelengthsIntegral.VISIBLE,
                     EmergenceDirection.HEMISPHERICAL,
                     DataPointResult.TRANSMITTANCE
                 ).Extract(filePath);
             NearnormalHemisphericalVisibleReflectances =
-                await new DoubleResultsJsonExtractor(
+                await new DoubleResultsOpticalDataJsonExtractor(
                     IncidenceDirection.NEARNORMAL,
                     WavelengthsIntegral.VISIBLE,
                     EmergenceDirection.HEMISPHERICAL,
                     DataPointResult.REFLECTANCE
                 ).Extract(filePath);
             NearnormalHemisphericalSolarTransmittances =
-                await new DoubleResultsJsonExtractor(
+                await new DoubleResultsOpticalDataJsonExtractor(
                     IncidenceDirection.NEARNORMAL,
                     WavelengthsIntegral.SOLAR,
                     EmergenceDirection.HEMISPHERICAL,
                     DataPointResult.TRANSMITTANCE
                 ).Extract(filePath);
             NearnormalHemisphericalSolarReflectances =
-                await new DoubleResultsJsonExtractor(
+                await new DoubleResultsOpticalDataJsonExtractor(
                     IncidenceDirection.NEARNORMAL,
                     WavelengthsIntegral.SOLAR,
                     EmergenceDirection.HEMISPHERICAL,
                     DataPointResult.REFLECTANCE
                 ).Extract(filePath);
             InfraredEmittances =
-                await new DoubleResultsJsonExtractor(
+                await new DoubleResultsOpticalDataJsonExtractor(
                     IncidenceDirection.HEMISPHERICAL,
                     WavelengthsIntegral.INFRARED,
                     EmergenceDirection.HEMISPHERICAL,

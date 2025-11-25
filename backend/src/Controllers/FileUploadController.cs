@@ -185,9 +185,9 @@ public sealed class FileUploadController(
             // read the headers for the next section.
             section = await reader.ReadNextSectionAsync(cancellationToken);
         }
-        if (getHttpsResource.IsRoot() && getHttpsResource.OpticalData is not null)
+        if (getHttpsResource.IsRoot())
         {
-            await getHttpsResource.OpticalData.ExtractAndSetMirroredValuesFromFile(
+            await getHttpsResource.Data.ExtractAndSetValuesFromFile(
                 getHttpsResource.FilePath,
                 getHttpsResource.DataFormatId
             );

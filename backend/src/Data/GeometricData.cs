@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Threading.Tasks;
+using Database.Extractors;
 
 namespace Database.Data;
 
@@ -17,6 +19,8 @@ public sealed class GeometricData
         Guid creatorId,
         DateTime createdAt,
         AppliedMethod appliedMethod,
+        double[] widths,
+        double[] heights,
         double[] thicknesses
     ) : base(
         userId,
@@ -30,6 +34,8 @@ public sealed class GeometricData
         appliedMethod
     )
     {
+        Widths = widths;
+        Heights = heights;
         Thicknesses = thicknesses;
     }
 
@@ -42,6 +48,8 @@ public sealed class GeometricData
         string[] warnings,
         Guid creatorId,
         DateTime createdAt,
+        double[] widths,
+        double[] heights,
         double[] thicknesses
     ) : base(
         userId,
@@ -54,11 +62,34 @@ public sealed class GeometricData
         createdAt
     )
     {
+        Widths = widths;
+        Heights = heights;
         Thicknesses = thicknesses;
     }
 
     [InverseProperty(nameof(GetHttpsResource.GeometricData))]
     public override ICollection<GetHttpsResource> Resources { get; } = [];
 
+    public double[] Widths { get; private set; }
+    public double[] Heights { get; private set; }
     public double[] Thicknesses { get; private set; }
+
+    public override async Task ExtractAndSetValuesFromFile(
+        string filePath,
+        Guid dataFormatId
+    )
+    {
+        if (dataFormatId == IData.BedJsonDataFormatId)
+        {
+            Widths = await new InstalledDimensionsGeometricDataJsonExtractor(
+                Dimension.WIDTH
+            ).Extract(filePath);
+            Heights = await new InstalledDimensionsGeometricDataJsonExtractor(
+                Dimension.HEIGHT
+            ).Extract(filePath);
+            Thicknesses = await new InstalledDimensionsGeometricDataJsonExtractor(
+                Dimension.THICKNESS
+            ).Extract(filePath);
+        }
+    }
 }

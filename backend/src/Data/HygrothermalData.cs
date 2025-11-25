@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Threading.Tasks;
 
 namespace Database.Data;
 
@@ -56,4 +57,15 @@ public sealed class HygrothermalData
 
     [InverseProperty(nameof(GetHttpsResource.HygrothermalData))]
     public override ICollection<GetHttpsResource> Resources { get; } = [];
+
+    public override Task ExtractAndSetValuesFromFile(
+        string filePath,
+        Guid dataFormatId
+    )
+    {
+        // if (dataFormatId == IData.BedJsonDataFormatId)
+        // {
+        // }
+        return Task.CompletedTask;
+    }
 }

@@ -37,7 +37,7 @@ public static class DataPointsEnumerationsExtensions
         };
     }
 
-    public static string ToJsonEnum(this DataPointResult result)
+    public static string ToJsonProperty(this DataPointResult result)
     {
         return result switch
         {

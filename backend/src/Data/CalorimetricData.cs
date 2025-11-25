@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Threading.Tasks;
+using Database.Extractors;
 
 namespace Database.Data;
 
@@ -67,4 +69,20 @@ public sealed class CalorimetricData
 
     public double[] GValues { get; private set; }
     public double[] UValues { get; private set; }
+
+    public override async Task ExtractAndSetValuesFromFile(
+        string filePath,
+        Guid dataFormatId
+    )
+    {
+        if (dataFormatId == IData.BedJsonDataFormatId)
+        {
+            GValues = await new DoubleResultsCalorimetricDataJsonExtractor(
+                CalorimetricResult.G_VALUE
+            ).Extract(filePath);
+            UValues = await new DoubleResultsCalorimetricDataJsonExtractor(
+                CalorimetricResult.U_VALUE
+            ).Extract(filePath);
+        }
+    }
 }

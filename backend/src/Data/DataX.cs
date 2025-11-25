@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Database.Enumerations;
 
 namespace Database.Data;
@@ -85,11 +86,16 @@ public abstract class DataX(
 
     // TODO Exactly one resource must not have a parent and each other resource must have one from
     // this list and the graph must be connected. In other words, the resources must form a tree.
-    public virtual ICollection<GetHttpsResource> Resources { get; } = [];
+    public abstract ICollection<GetHttpsResource> Resources { get; }
 
     public DataAccessRights DataAccessRights { get; private set; } = new DataAccessRights();
 
     public PublishingState PublishingState { get; private set; } = PublishingState.PENDING;
+
+    public abstract Task ExtractAndSetValuesFromFile(
+        string filePath,
+        Guid dataFormatId
+    );
 
     /// <inheritdoc/>
     public bool IsRestrictedByApplication(string applicationId)

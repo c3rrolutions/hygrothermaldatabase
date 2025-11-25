@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
+using System.Threading.Tasks;
 using Database.Enumerations;
 using Database.GraphQl;
 
@@ -14,6 +15,8 @@ namespace Database.Data;
 [JsonDerivedType(typeof(PhotovoltaicData), typeDiscriminator: nameof(PhotovoltaicData))]
 public interface IData : IEntity
 {
+    public static readonly Guid BedJsonDataFormatId = new("9ca9e8f5-94bf-4fdd-81e3-31a58d7ca708");
+
     Guid? UserId { get; }
     Guid ComponentId { get; }
     string? Name { get; }
@@ -64,4 +67,9 @@ public interface IData : IEntity
     void Publish();
 
     void Retract();
+
+    Task ExtractAndSetValuesFromFile(
+        string filePath,
+        Guid dataFormatId
+    );
 }

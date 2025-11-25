@@ -26,6 +26,8 @@ public sealed record CreateGeometricDataInput(
     Guid CreatorId,
     AppliedMethodInput AppliedMethod,
     RootGetHttpsResourceInput RootResource,
+    double[] Widths,
+    double[] Heights,
     double[] Thicknesses
 ) : IValidateCreateInput
 {
@@ -44,6 +46,8 @@ public sealed record CreateGeometricDataInput(
             CreatorId,
             CreatedAt,
             AppliedMethod.ToDomainModel(),
+            Widths,
+            Heights,
             Thicknesses
         );
         data.Resources.Add(RootResource.ToDomainModel(fileExtension));

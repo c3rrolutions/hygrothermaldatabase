@@ -1,10 +1,9 @@
 using Json.Path;
 using Database.Enumerations.DataPoints;
-using System.Text.Json;
 
 namespace Database.Extractors;
 
-public sealed class DoubleResultsJsonExtractor(
+public sealed class DoubleResultsOpticalDataJsonExtractor(
     IncidenceDirection incidenceDirection,
     WavelengthsIntegral incidenceWavelengthsIntegral,
     EmergenceDirection emergenceDirection,
@@ -15,7 +14,7 @@ public sealed class DoubleResultsJsonExtractor(
         $"@.incidence.direction{incidenceDirection.ToJsonPathQuery()} && " +
         $"@.incidence.wavelengths.integral=='{incidenceWavelengthsIntegral.ToJsonEnum()}' && " +
         $"@.emergence.direction=='{emergenceDirection.ToJsonEnum()}'" +
-        $")].results.{result.ToJsonEnum()}"
+        $")].results.{result.ToJsonProperty()}"
     ),
     ExtractNumberWithUncertainty
 )

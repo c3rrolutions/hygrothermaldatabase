@@ -60,7 +60,7 @@ public sealed class SpectralToIntegralMethodTests
         // Assert
         act.Should()
            .Throw<ArgumentException>()
-           .WithMessage("`spectralDataPoints` has no data point for the largest wavelength of `wavelengthsWeights`.");
+           .WithMessage("`spectralDataPoints` has no data point for the largest wavelength of `wavelengthsWeights`.\nwavelengthsWeights[i].wavelength 380\nspectralDataPointWavelengthBelow.Incidence.Wavelengths.Wavelength 200\nspectralDataPointWavelengthBelow.Results.Transmittance 1\nspectralDataPointWavelengthAbove.Incidence.Wavelengths.Wavelength 1000000\nspectralDataPointWavelengthAbove.Results.Transmittance 99\n");
     }
 
     [Test]
@@ -107,5 +107,6 @@ public sealed class SpectralToIntegralMethodTests
             results.En410Solar.Should().BeApproximately(0.8617466755155275, 0.00000001F);
             results.Iso9050Solar.Should().BeApproximately(0.8573906338464905, 0.00000001F);
         }
+
     }
 }

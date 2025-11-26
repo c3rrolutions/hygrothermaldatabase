@@ -60,7 +60,7 @@ public sealed class SpectralToIntegralMethodTests
         // Assert
         act.Should()
            .Throw<ArgumentException>()
-           .WithMessage("`spectralDataPoints` has no data point for the largest wavelength of `wavelengthsWeights`.");
+           .WithMessage("`spectralDataPoints` has no data point for the largest wavelength of `wavelengthsWeights`.\nwavelengthsWeights[i].wavelength 380\nspectralDataPointWavelengthBelow.Incidence.Wavelengths.Wavelength 200\nspectralDataPointWavelengthBelow.Results.Transmittance 1\nspectralDataPointWavelengthAbove.Incidence.Wavelengths.Wavelength 1000000\nspectralDataPointWavelengthAbove.Results.Transmittance 99\n");
     }
 
     [Test]

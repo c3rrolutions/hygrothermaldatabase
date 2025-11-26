@@ -100,19 +100,13 @@ public sealed class SpectralToIntegralMethodTests
             MethodBase<SpectralToIntegralInput, SpectralToIntegralOutput>.JsonSerializerOptions
         ) ?? throw new InvalidOperationException();
         var method = new SpectralToIntegralMethod();
-        try
+        var results = method.Calculate(spectralDataPoints);
+        using (new AssertionScope())
         {
-            var results = method.Calculate(spectralDataPoints);
-            using (new AssertionScope())
-            {
-                results.En410Visible.Should().BeApproximately(0.9023789669000116, 0.000000000000001F);
-                results.En410Solar.Should().BeApproximately(0.8617466755155275, 0.00000001F);
-                results.Iso9050Solar.Should().BeApproximately(0.8573906338464905, 0.00000001F);
-            }
+            results.En410Visible.Should().BeApproximately(0.9023789669000116, 0.000000000000001F);
+            results.En410Solar.Should().BeApproximately(0.8617466755155275, 0.00000001F);
+            results.Iso9050Solar.Should().BeApproximately(0.8573906338464905, 0.00000001F);
         }
-        catch (ArgumentException ex)
-        {
-            Console.WriteLine(ex.Message);
-        }
+
     }
 }

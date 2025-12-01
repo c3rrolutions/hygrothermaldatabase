@@ -7,7 +7,6 @@ using Database.Authorization;
 using Database.Enumerations;
 using HotChocolate.Types;
 using Database.Services;
-using Microsoft.Extensions.Logging;
 using Database.Utilities;
 using GreenDonut.Data;
 using System.Diagnostics.CodeAnalysis;
@@ -20,10 +19,10 @@ using Database.ApiRequests;
 namespace Database.GraphQl.GetHttpsResources;
 
 public sealed record CreateGetHttpsResourceInput(
-    string Description,
-    Guid DataFormatId,
     Guid DataId,
     DataKind DataKind,
+    string Description,
+    Guid DataFormatId,
     Guid ParentId,
     IReadOnlyList<FileMetaInformationInput> ArchivedFilesMetaInformation,
     ToTreeVertexAppliedConversionMethodInput AppliedConversionMethod
@@ -73,15 +72,6 @@ public sealed record CreateGetHttpsResourcePayload(
     GetHttpsResource? GetHttpsResource,
     IReadOnlyCollection<CreateGetHttpsResourceError>? Errors
 ) : Payload;
-
-public static partial class CreateGetHttpsResourceMutationLogging
-{
-    [LoggerMessage(
-        Level = LogLevel.Warning,
-        Message = "Recomputing the hash value of the GET HTTPS resource with ID {Id} failed."
-    )]
-    public static partial void FailedRecomputingHashValue(this ILogger<CreateGetHttpsResourceMutation> logger, Guid id, Exception exception);
-}
 
 [ExtendObjectType(nameof(Mutation))]
 public sealed class CreateGetHttpsResourceMutation

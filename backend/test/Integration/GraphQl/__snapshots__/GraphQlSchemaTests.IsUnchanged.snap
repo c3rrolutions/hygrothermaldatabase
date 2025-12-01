@@ -325,6 +325,7 @@ type GeometricData implements Node & Data {
   dataAccessRights: DataAccessRights!
   databaseId: Uuid!
   description: String
+  heights: [Float!]!
   id: ID!
   isRestrictedByApplication(applicationId: String!): Boolean!
   isRestrictedByInstitutions(institutions: [Uuid!]!): Boolean!
@@ -338,6 +339,7 @@ type GeometricData implements Node & Data {
   userId: Uuid
   uuid: Uuid! @cost(weight: "10")
   warnings: [String!]!
+  widths: [Float!]!
 }
 
 "A connection to a list of items."
@@ -490,11 +492,14 @@ type Mutation {
   recomputeGetHttpsResourceHashValues(where: RecomputeGetHttpsResourceHashValuesFilterInput @cost(weight: "10")): RecomputeGetHttpsResourceHashValuesPayload! @cost(weight: "10")
   removeDataApproval(input: RemoveDataApprovalInput!): RemoveDataApprovalPayload! @cost(weight: "10")
   retractData(input: RetractDataInput!): RetractDataPayload! @cost(weight: "10")
+  setGetHttpsResourceParent(input: SetGetHttpsResourceParentInput!): SetGetHttpsResourceParentPayload! @cost(weight: "10")
+  updateChildGetHttpsResource(input: UpdateChildGetHttpsResourceInput!): UpdateChildGetHttpsResourcePayload! @cost(weight: "10")
   updateData(input: UpdateDataInput!): UpdateDataPayload! @cost(weight: "10")
   updateDataAccessRights(input: UpdateDataAccessRightsInput!): UpdateDataAccessRightsPayload! @cost(weight: "10")
   updateDatabase(input: UpdateDatabaseInput!): UpdateDatabasePayload! @cost(weight: "10")
   updateInstitutionAccessRights(input: UpdateInstitutionAccessRightsInput!): UpdateInstitutionAccessRightsPayload! @cost(weight: "10")
   updateResponseApprovals(where: UpdateResponseApprovalsFilterInput @cost(weight: "10")): UpdateResponseApprovalsPayload! @cost(weight: "10")
+  updateRootGetHttpsResource(input: UpdateRootGetHttpsResourceInput!): UpdateRootGetHttpsResourcePayload! @cost(weight: "10")
 }
 
 type NamedMethodArgument {
@@ -735,6 +740,18 @@ type RetractDataPayload {
   query: Query!
 }
 
+type SetGetHttpsResourceParentError implements UserError {
+  code: SetGetHttpsResourceParentErrorCode!
+  message: String!
+  path: [String!]!
+}
+
+type SetGetHttpsResourceParentPayload {
+  errors: [SetGetHttpsResourceParentError!]
+  getHttpsResource: GetHttpsResource
+  query: Query!
+}
+
 "`ISO 52022` is an example of the abbreviation of a standardizer and the main number of the identifier."
 type Standard {
   abstract: String
@@ -752,6 +769,18 @@ type ToTreeVertexAppliedConversionMethod {
   arguments: [NamedMethodArgument!]!
   methodId: Uuid!
   sourceName: String!
+}
+
+type UpdateChildGetHttpsResourceError implements UserError {
+  code: UpdateChildGetHttpsResourceErrorCode!
+  message: String!
+  path: [String!]!
+}
+
+type UpdateChildGetHttpsResourcePayload {
+  errors: [UpdateChildGetHttpsResourceError!]
+  getHttpsResource: GetHttpsResource
+  query: Query!
 }
 
 type UpdateDataAccessRightsError implements UserError {
@@ -811,6 +840,18 @@ type UpdateResponseApprovalsError implements UserError {
 type UpdateResponseApprovalsPayload {
   data: [Data!]
   errors: [UpdateResponseApprovalsError!]
+  query: Query!
+}
+
+type UpdateRootGetHttpsResourceError implements UserError {
+  code: UpdateRootGetHttpsResourceErrorCode!
+  message: String!
+  path: [String!]!
+}
+
+type UpdateRootGetHttpsResourcePayload {
+  errors: [UpdateRootGetHttpsResourceError!]
+  getHttpsResource: GetHttpsResource
   query: Query!
 }
 
@@ -946,11 +987,13 @@ input CreateGeometricDataInput {
   createdAt: DateTime!
   creatorId: Uuid!
   description: String
+  heights: [Float!]!
   locale: String!
   name: String
   rootResource: RootGetHttpsResourceInput!
   thicknesses: [Float!]!
   warnings: [String!]!
+  widths: [Float!]!
 }
 
 input CreateGetHttpsResourceInput {
@@ -1612,6 +1655,12 @@ input RootGetHttpsResourceInput {
   description: String!
 }
 
+input SetGetHttpsResourceParentInput {
+  appliedConversionMethod: ToTreeVertexAppliedConversionMethodInput!
+  getHttpsResourceId: Uuid!
+  parentId: Uuid!
+}
+
 input StandardInput {
   abstract: String
   locator: Url
@@ -1697,6 +1746,14 @@ input ToTreeVertexAppliedConversionMethodSortInput {
   sourceName: SortEnumType @cost(weight: "10")
 }
 
+input UpdateChildGetHttpsResourceInput {
+  appliedConversionMethod: ToTreeVertexAppliedConversionMethodInput!
+  archivedFilesMetaInformation: [FileMetaInformationInput!]!
+  dataFormatId: Uuid!
+  description: String!
+  getHttpsResourceId: Uuid!
+}
+
 input UpdateDataAccessRightsInput {
   allowedApplications: [String!]
   allowedInstitutions: [Uuid!]
@@ -1746,6 +1803,13 @@ input UpdateResponseApprovalsFilterInput {
   approvals: ListFilterInputTypeOfDataApprovalPropositionInput
   resources: ListFilterInputTypeOfGetHttpsResourcePropositionInput
   warnings: StringsPropositionInput
+}
+
+input UpdateRootGetHttpsResourceInput {
+  archivedFilesMetaInformation: [FileMetaInformationInput!]!
+  dataFormatId: Uuid!
+  description: String!
+  getHttpsResourceId: Uuid!
 }
 
 input UriHostNameTypePropositionInput {
@@ -2078,6 +2142,17 @@ enum RetractDataErrorCode {
   NOT_PUBLISHED
 }
 
+enum SetGetHttpsResourceParentErrorCode {
+  UNKNOWN
+  UNAUTHORIZED
+  UNAUTHENTICATED
+  UNKNOWN_RESOURCE
+  UNKNOWN_PARENT
+  ILLEGAL_PARENT
+  UNKNOWN_METHOD
+  CREATING_RESPONSE_APPROVAL_FAILED
+}
+
 enum SortEnumType {
   ASC
   DESC
@@ -2108,6 +2183,16 @@ enum Standardizer {
   VDI
   VFF
   WELL
+}
+
+enum UpdateChildGetHttpsResourceErrorCode {
+  UNKNOWN
+  UNAUTHORIZED
+  UNAUTHENTICATED
+  UNKNOWN_RESOURCE
+  UNKNOWN_DATA_FORMAT
+  UNKNOWN_METHOD
+  CREATING_RESPONSE_APPROVAL_FAILED
 }
 
 enum UpdateDataAccessRightsErrorCode {
@@ -2142,6 +2227,15 @@ enum UpdateResponseApprovalsErrorCode {
   UNAUTHORIZED
   UNAUTHENTICATED
   UNKNOWN_DATABASE
+  CREATING_RESPONSE_APPROVAL_FAILED
+}
+
+enum UpdateRootGetHttpsResourceErrorCode {
+  UNKNOWN
+  UNAUTHORIZED
+  UNAUTHENTICATED
+  UNKNOWN_RESOURCE
+  UNKNOWN_DATA_FORMAT
   CREATING_RESPONSE_APPROVAL_FAILED
 }
 

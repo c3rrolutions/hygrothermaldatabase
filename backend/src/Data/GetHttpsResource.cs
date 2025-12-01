@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Database.Enumerations;
 using Database.Extensions;
+using Database.GraphQl;
 using Database.Utilities;
 using EntityFrameworkCore.Projectables;
 
@@ -207,7 +208,7 @@ public sealed class GetHttpsResource
     [InverseProperty(nameof(Parent))]
     public ICollection<GetHttpsResource> Children { get; } = [];
 
-    public void UpdateFileExtension(string fileExtension)
+    public void UpdateFileExtension(string? fileExtension)
     {
         var oldFilePath = FilePath;
         FileExtension = fileExtension;
@@ -242,5 +243,60 @@ public sealed class GetHttpsResource
     public static string ConstructVertexId(Guid id)
     {
         return id.ToString("D").Base64Encode();
+    }
+
+    internal void UpdateRoot(
+        string description,
+        Guid dataFormatId,
+        string? fileExtension,
+        FileMetaInformation[] archivedFilesMetaInformation
+    )
+    {
+        if (ParentId is not null)
+        {
+            throw new InvalidOperationException($"This resource with ID {Id} is not a root but the child of {ParentId}.");
+        }
+        Description = description;
+        DataFormatId = dataFormatId;
+        if (fileExtension != FileExtension)
+        {
+            UpdateFileExtension(fileExtension);
+        }
+        ArchivedFilesMetaInformation = archivedFilesMetaInformation;
+    }
+
+    internal void UpdateChild(
+        string description,
+        Guid dataFormatId,
+        string? fileExtension,
+        FileMetaInformation[] archivedFilesMetaInformation,
+        ToTreeVertexAppliedConversionMethod appliedConversionMethod
+    )
+    {
+        if (ParentId is null)
+        {
+            throw new InvalidOperationException($"This resource with ID {Id} is not a child.");
+        }
+        Description = description;
+        DataFormatId = dataFormatId;
+        if (fileExtension != FileExtension)
+        {
+            UpdateFileExtension(fileExtension);
+        }
+        ArchivedFilesMetaInformation = archivedFilesMetaInformation;
+        AppliedConversionMethod = appliedConversionMethod;
+    }
+
+    internal void SetParent(
+        Guid parentId,
+        ToTreeVertexAppliedConversionMethod appliedConversionMethod
+    )
+    {
+        if (ParentId is null)
+        {
+            throw new InvalidOperationException($"This resource with ID {Id} is not a child.");
+        }
+        ParentId = parentId;
+        AppliedConversionMethod = appliedConversionMethod;
     }
 }

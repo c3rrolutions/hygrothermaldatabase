@@ -20,6 +20,7 @@ public abstract class MethodBase<TInput, TOutput>
         ReadCommentHandling = JsonCommentHandling.Skip,
         RespectNullableAnnotations = true,
         UnmappedMemberHandling = JsonUnmappedMemberHandling.Skip,
+        AllowDuplicateProperties = false,
     };
 
     public JsonElement Calculate(JsonElement input)

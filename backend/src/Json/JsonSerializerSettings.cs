@@ -22,6 +22,7 @@ public static class JsonSerializerSettings
             ReadCommentHandling = JsonCommentHandling.Disallow,
             RespectNullableAnnotations = true,
             UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow,
+            AllowDuplicateProperties = false,
         };
 
     public static readonly JsonSerializerOptions GraphQl =

@@ -1,3 +1,4 @@
+using NodaTime;
 using System;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Hosting;
@@ -14,7 +15,6 @@ using HotChocolate.Execution;
 using Database.Data;
 using Database.GraphQl;
 using Database.GraphQl.DataX;
-using NodaTime;
 
 namespace Database.Configuration;
 
@@ -123,13 +123,13 @@ public static class GraphQlConfiguration
             // Register converters between NodaTime's `OffsetDateTime` and .NET's
             // `DateTimeOffset` to reuse the existing `DateTimeType`
             // https://chillicream.com/docs/hotchocolate/v15/defining-a-schema/scalars#custom-converters
-            .BindRuntimeType<OffsetDateTime, DateTimeType>()
-            .AddTypeConverter<OffsetDateTime, DateTimeOffset>(
-                _ => _.ToDateTimeOffset()
-            )
-            .AddTypeConverter<DateTimeOffset, OffsetDateTime>(
-                _ => OffsetDateTime.FromDateTimeOffset(_)
-            )
+            // .BindRuntimeType<OffsetDateTime, DateTimeType>()
+            // .AddTypeConverter<OffsetDateTime, DateTimeOffset>(
+            //     _ => _.ToDateTimeOffset()
+            // )
+            // .AddTypeConverter<DateTimeOffset, OffsetDateTime>(
+            //     _ => OffsetDateTime.FromDateTimeOffset(_)
+            // )
             // Object Types
             .AddType<DataConnection>()
             // Query, Mutation, Subscription, Object, and Input Types

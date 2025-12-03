@@ -1,27 +1,31 @@
 using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using NodaTime;
+using NodaTime.Serialization.SystemTextJson;
 
 namespace Database.Methods;
 
 public abstract class MethodBase<TInput, TOutput>
     : IMethod
 {
-    public static readonly JsonSerializerOptions JsonSerializerOptions = new()
-    {
-        AllowTrailingCommas = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-        IgnoreReadOnlyFields = true,
-        IgnoreReadOnlyProperties = false,
-        IncludeFields = false,
-        NumberHandling = JsonNumberHandling.Strict,
-        PropertyNameCaseInsensitive = false,
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        ReadCommentHandling = JsonCommentHandling.Skip,
-        RespectNullableAnnotations = true,
-        UnmappedMemberHandling = JsonUnmappedMemberHandling.Skip,
-        AllowDuplicateProperties = false,
-    };
+    public static readonly JsonSerializerOptions JsonSerializerOptions =
+        new JsonSerializerOptions()
+        {
+            AllowTrailingCommas = true,
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+            IgnoreReadOnlyFields = true,
+            IgnoreReadOnlyProperties = false,
+            IncludeFields = false,
+            NumberHandling = JsonNumberHandling.Strict,
+            PropertyNameCaseInsensitive = false,
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            ReadCommentHandling = JsonCommentHandling.Skip,
+            RespectNullableAnnotations = true,
+            UnmappedMemberHandling = JsonUnmappedMemberHandling.Skip,
+            AllowDuplicateProperties = false,
+        }
+        .ConfigureForNodaTime(DateTimeZoneProviders.Tzdb);
 
     public JsonElement Calculate(JsonElement input)
     {

@@ -1,6 +1,6 @@
+using NodaTime;
 using HotChocolate.Types;
 using NpgsqlTypes;
-using DateTime = System.DateTime;
 
 namespace Database.GraphQl.Common;
 
@@ -14,7 +14,7 @@ public sealed class OpenEndedDateTimeRangeType
         descriptor.BindFieldsExplicitly();
 
         var suffixedName = nameof(OpenEndedDateTimeRangeType);
-        descriptor.Name(suffixedName.Remove(suffixedName.Length - "Type".Length));
+        descriptor.Name(suffixedName[..^"Type".Length]);
 
         descriptor
             .Field("from")

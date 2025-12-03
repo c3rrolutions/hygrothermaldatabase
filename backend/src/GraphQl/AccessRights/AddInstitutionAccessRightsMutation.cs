@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Diagnostics.CodeAnalysis;
 using System.Collections.Generic;
 using Database.Extensions;
+using NodaTime;
 
 namespace Database.GraphQl.AccessRights;
 
@@ -99,7 +100,7 @@ public sealed class AddInstitutionAccessRightsMutation
             input.InstitutionId,
             input.AllowedUserCount,
             input.AllowedDatasetsPerTimeSpan,
-            TimeSpan.FromDays(input.PeriodInDays));
+            Duration.FromDays(input.PeriodInDays));
         context.InstitutionAccessRights.Add(accessRights);
         await context.SaveChangesAsync(cancellationToken);
         return NewPayload(accessRights, null);

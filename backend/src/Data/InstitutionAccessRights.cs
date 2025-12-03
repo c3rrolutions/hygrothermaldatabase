@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
+using Database.Extensions;
 using Database.Services;
 using EntityFrameworkCore.Projectables;
 using Microsoft.EntityFrameworkCore;
+using NodaTime;
 
 namespace Database.Data;
 
@@ -12,14 +14,14 @@ public sealed class InstitutionAccessRights(
     Guid institutionId,
     uint? allowedUserCount,
     uint? allowedDatasetsPerTime,
-    TimeSpan period
-        )
-        : Entity
+    Duration period
+)
+: Entity
 {
     public Guid InstitutionId { get; set; } = institutionId;
     public uint? AllowedUserCount { get; set; } = allowedUserCount;
     public uint? AllowedDatasetsPerTime { get; set; } = allowedDatasetsPerTime;
-    public TimeSpan Period { get; set; } = period;
+    public Duration Period { get; set; } = period;
     public List<Guid> UserAlreadyAccessed { get; private set; } = [];
 
     [NotMapped]
@@ -44,7 +46,7 @@ public sealed class InstitutionAccessRights(
         if (AllowedDatasetsPerTime is not null)
         {
             var accessesPerPeriod = cacheService.GetOrCreateAccessCountForPeriod(InstitutionId);
-            if (accessesPerPeriod.StartTime.Add(Period) < DateTime.Now)
+            if (accessesPerPeriod.StartTime + Period < OffsetDateTime.UtcNow)
             {
                 if (accessesPerPeriod.Count >= AllowedDatasetsPerTime)
                 {

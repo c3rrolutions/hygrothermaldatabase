@@ -1,6 +1,8 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using GraphQL.Client.Serializer.SystemTextJson;
+using NodaTime;
+using NodaTime.Serialization.SystemTextJson;
 
 namespace Database.Json;
 
@@ -10,7 +12,7 @@ namespace Database.Json;
 public static class JsonSerializerSettings
 {
     private static readonly JsonSerializerOptions s_common =
-        new()
+        new JsonSerializerOptions()
         {
             AllowOutOfOrderMetadataProperties = false,
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
@@ -23,7 +25,8 @@ public static class JsonSerializerSettings
             RespectNullableAnnotations = true,
             UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow,
             AllowDuplicateProperties = false,
-        };
+        }
+        .ConfigureForNodaTime(DateTimeZoneProviders.Tzdb);
 
     public static readonly JsonSerializerOptions GraphQl =
         new(s_common)

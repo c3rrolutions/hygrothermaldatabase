@@ -1,4 +1,4 @@
-using DateTime = System.DateTime;
+using NodaTime;
 
 namespace Database.GraphQl.Common;
 

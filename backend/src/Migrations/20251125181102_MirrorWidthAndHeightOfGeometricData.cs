@@ -16,7 +16,7 @@ namespace Database.Migrations
                 table: "geometric_data",
                 type: "double precision[]",
                 nullable: false,
-                defaultValue: new double[0]);
+                defaultValue: System.Array.Empty<double>());
 
             migrationBuilder.AddColumn<double[]>(
                 name: "Widths",
@@ -24,7 +24,7 @@ namespace Database.Migrations
                 table: "geometric_data",
                 type: "double precision[]",
                 nullable: false,
-                defaultValue: new double[0]);
+                defaultValue: System.Array.Empty<double>());
         }
 
         /// <inheritdoc />

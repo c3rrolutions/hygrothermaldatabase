@@ -10,16 +10,15 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using FluentAssertions;
-using IdentityModel.Client;
 using Json.Path;
 using NUnit.Framework;
 using Snapshooter;
-using TokenResponse = IdentityModel.Client.TokenResponse;
-using WebApplicationFactoryClientOptions = Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactoryClientOptions;
+using Microsoft.AspNetCore.Mvc.Testing;
 using Database.Data;
+using NodaTime.Serialization.SystemTextJson;
+using NodaTime;
 
 namespace Database.Tests.Integration;
 
@@ -28,11 +27,12 @@ public abstract partial class IntegrationTests
     : IDisposable
 {
     private static readonly JsonSerializerOptions s_customJsonSerializerOptions =
-        new()
+        new JsonSerializerOptions()
         {
             Converters = { new JsonStringEnumConverter() },
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-        };
+        }
+        .ConfigureForNodaTime(DateTimeZoneProviders.Tzdb);
 
     private bool _disposed;
 

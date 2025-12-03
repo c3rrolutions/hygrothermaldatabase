@@ -1,3 +1,4 @@
+using NodaTime;
 using System;
 using System.Text.Json;
 using System.Threading;
@@ -89,7 +90,7 @@ public sealed class ResponseApprovalService(
         }
         var (signature, fingerprint) = await signingService.SignData(response);
         return new ResponseApproval(
-            OffsetDateTime.UtcNow(),
+            OffsetDateTime.UtcNow,
             signature,
             fingerprint,
             query,

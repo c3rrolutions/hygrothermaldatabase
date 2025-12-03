@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Diagnostics.CodeAnalysis;
 using System.Collections.Generic;
 using Database.Extensions;
+using NodaTime;
 
 namespace Database.GraphQl.AccessRights;
 
@@ -97,7 +98,7 @@ public sealed class UpdateInstitutionAccessRightsMutation
 
         accessRights.AllowedUserCount = input.AllowedUserCount;
         accessRights.AllowedDatasetsPerTime = input.AllowedDatasetsPerTimeSpan;
-        accessRights.Period = TimeSpan.FromDays(input.PeriodInDays);
+        accessRights.Period = Duration.FromDays(input.PeriodInDays);
         await context.SaveChangesAsync(cancellationToken);
         return NewPayload(accessRights, null);
     }

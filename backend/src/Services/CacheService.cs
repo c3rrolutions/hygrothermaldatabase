@@ -1,6 +1,8 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
+using Database.Extensions;
 using Microsoft.Extensions.Caching.Memory;
+using NodaTime;
 using static Database.ApiRequests.QueryCurrentUserOrApplication;
 
 namespace Database.Services;
@@ -12,7 +14,8 @@ public sealed class CacheService(
 {
     public CurrentUserOrApplication? SetCurrentUserOrApplication(string token, CurrentUserOrApplication cachedUserOrApplication)
     {
-        var cacheEntryOptions = new MemoryCacheEntryOptions()
+        var cacheEntryOptions =
+            new MemoryCacheEntryOptions()
             .SetSlidingExpiration(TimeSpan.FromHours(1));
         return currentUserOrApplicationCache.Set(token, cachedUserOrApplication, cacheEntryOptions);
     }
@@ -36,24 +39,24 @@ public sealed class CacheService(
         return accessCountCache.Set(userId, count);
     }
 
-    public (DateTime StartTime, uint Count) GetOrCreateAccessCountForPeriod(Guid institutionId)
+    public (OffsetDateTime StartTime, uint Count) GetOrCreateAccessCountForPeriod(Guid institutionId)
     {
-        if (!timePeriodCountCache.TryGetValue(institutionId, out (DateTime StartTime, uint Count) accessesPerPeriod))
+        if (!timePeriodCountCache.TryGetValue(institutionId, out (OffsetDateTime StartTime, uint Count) accessesPerPeriod))
         {
-            return timePeriodCountCache.Set(institutionId, (DateTime.Now, (uint)0));
+            return timePeriodCountCache.Set(institutionId, (OffsetDateTime.UtcNow, (uint)0));
         }
         return accessesPerPeriod;
     }
 
-    public (DateTime StartTime, uint Count) AddAccessCountToPeriod(Guid institutionId)
+    public (OffsetDateTime StartTime, uint Count) AddAccessCountToPeriod(Guid institutionId)
     {
         var accessesPerPeriod = GetOrCreateAccessCountForPeriod(institutionId);
         accessesPerPeriod.Count++;
         return timePeriodCountCache.Set(institutionId, accessesPerPeriod);
     }
 
-    public (DateTime StartTime, uint Count) SetNewTimePeriod(Guid institutionId)
+    public (OffsetDateTime StartTime, uint Count) SetNewTimePeriod(Guid institutionId)
     {
-        return timePeriodCountCache.Set(institutionId, (DateTime.Now, (uint)0));
+        return timePeriodCountCache.Set(institutionId, (OffsetDateTime.UtcNow, (uint)0));
     }
 }

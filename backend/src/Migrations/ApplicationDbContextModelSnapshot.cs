@@ -7,6 +7,7 @@ using Database.Enumerations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using NodaTime;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
@@ -21,7 +22,7 @@ namespace Database.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasDefaultSchema("database")
-                .HasAnnotation("ProductVersion", "9.0.10")
+                .HasAnnotation("ProductVersion", "10.0.0")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "database", "calorimetric_observer", new[] { "ten_degrees", "two_degrees" });
@@ -45,7 +46,7 @@ namespace Database.Migrations
                     b.Property<Guid>("ComponentId")
                         .HasColumnType("uuid");
 
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<OffsetDateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid>("CreatorId")
@@ -100,7 +101,7 @@ namespace Database.Migrations
                     b.Property<Guid>("ComponentId")
                         .HasColumnType("uuid");
 
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<OffsetDateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid>("CreatorId")
@@ -247,7 +248,7 @@ namespace Database.Migrations
                     b.Property<Guid>("ComponentId")
                         .HasColumnType("uuid");
 
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<OffsetDateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid>("CreatorId")
@@ -300,7 +301,7 @@ namespace Database.Migrations
                     b.Property<Guid>("InstitutionId")
                         .HasColumnType("uuid");
 
-                    b.Property<TimeSpan>("Period")
+                    b.Property<Duration>("Period")
                         .HasColumnType("interval");
 
                     b.PrimitiveCollection<List<Guid>>("UserAlreadyAccessed")
@@ -338,7 +339,7 @@ namespace Database.Migrations
                     b.Property<Guid>("ComponentId")
                         .HasColumnType("uuid");
 
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<OffsetDateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid>("CreatorId")
@@ -411,7 +412,7 @@ namespace Database.Migrations
                     b.Property<Guid>("ComponentId")
                         .HasColumnType("uuid");
 
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<OffsetDateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid>("CreatorId")
@@ -780,7 +781,7 @@ namespace Database.Migrations
                                             b3.Property<DataKind>("DataKind")
                                                 .HasColumnType("database.data_kind");
 
-                                            b3.Property<DateTime>("DataTimestamp")
+                                            b3.Property<OffsetDateTime>("DataTimestamp")
                                                 .HasColumnType("timestamp with time zone");
 
                                             b3.Property<Guid>("DatabaseId")
@@ -827,7 +828,7 @@ namespace Database.Migrations
                                 .IsRequired()
                                 .HasColumnType("text");
 
-                            b1.Property<DateTime>("Timestamp")
+                            b1.Property<OffsetDateTime>("Timestamp")
                                 .HasColumnType("timestamp with time zone");
 
                             b1.Property<JsonElement>("Variables")
@@ -873,7 +874,7 @@ namespace Database.Migrations
                                 .IsRequired()
                                 .HasColumnType("text");
 
-                            b1.Property<DateTime>("Timestamp")
+                            b1.Property<OffsetDateTime>("Timestamp")
                                 .HasColumnType("timestamp with time zone");
 
                             b1.Property<JsonElement>("Variables")
@@ -1134,7 +1135,7 @@ namespace Database.Migrations
                                             b3.Property<DataKind>("DataKind")
                                                 .HasColumnType("database.data_kind");
 
-                                            b3.Property<DateTime>("DataTimestamp")
+                                            b3.Property<OffsetDateTime>("DataTimestamp")
                                                 .HasColumnType("timestamp with time zone");
 
                                             b3.Property<Guid>("DatabaseId")
@@ -1181,7 +1182,7 @@ namespace Database.Migrations
                                 .IsRequired()
                                 .HasColumnType("text");
 
-                            b1.Property<DateTime>("Timestamp")
+                            b1.Property<OffsetDateTime>("Timestamp")
                                 .HasColumnType("timestamp with time zone");
 
                             b1.Property<JsonElement>("Variables")
@@ -1227,7 +1228,7 @@ namespace Database.Migrations
                                 .IsRequired()
                                 .HasColumnType("text");
 
-                            b1.Property<DateTime>("Timestamp")
+                            b1.Property<OffsetDateTime>("Timestamp")
                                 .HasColumnType("timestamp with time zone");
 
                             b1.Property<JsonElement>("Variables")
@@ -1610,7 +1611,7 @@ namespace Database.Migrations
                                             b3.Property<DataKind>("DataKind")
                                                 .HasColumnType("database.data_kind");
 
-                                            b3.Property<DateTime>("DataTimestamp")
+                                            b3.Property<OffsetDateTime>("DataTimestamp")
                                                 .HasColumnType("timestamp with time zone");
 
                                             b3.Property<Guid>("DatabaseId")
@@ -1657,7 +1658,7 @@ namespace Database.Migrations
                                 .IsRequired()
                                 .HasColumnType("text");
 
-                            b1.Property<DateTime>("Timestamp")
+                            b1.Property<OffsetDateTime>("Timestamp")
                                 .HasColumnType("timestamp with time zone");
 
                             b1.Property<JsonElement>("Variables")
@@ -1703,7 +1704,7 @@ namespace Database.Migrations
                                 .IsRequired()
                                 .HasColumnType("text");
 
-                            b1.Property<DateTime>("Timestamp")
+                            b1.Property<OffsetDateTime>("Timestamp")
                                 .HasColumnType("timestamp with time zone");
 
                             b1.Property<JsonElement>("Variables")
@@ -2001,7 +2002,7 @@ namespace Database.Migrations
                                             b3.Property<DataKind>("DataKind")
                                                 .HasColumnType("database.data_kind");
 
-                                            b3.Property<DateTime>("DataTimestamp")
+                                            b3.Property<OffsetDateTime>("DataTimestamp")
                                                 .HasColumnType("timestamp with time zone");
 
                                             b3.Property<Guid>("DatabaseId")
@@ -2048,7 +2049,7 @@ namespace Database.Migrations
                                 .IsRequired()
                                 .HasColumnType("text");
 
-                            b1.Property<DateTime>("Timestamp")
+                            b1.Property<OffsetDateTime>("Timestamp")
                                 .HasColumnType("timestamp with time zone");
 
                             b1.Property<JsonElement>("Variables")
@@ -2094,7 +2095,7 @@ namespace Database.Migrations
                                 .IsRequired()
                                 .HasColumnType("text");
 
-                            b1.Property<DateTime>("Timestamp")
+                            b1.Property<OffsetDateTime>("Timestamp")
                                 .HasColumnType("timestamp with time zone");
 
                             b1.Property<JsonElement>("Variables")
@@ -2357,7 +2358,7 @@ namespace Database.Migrations
                                             b3.Property<DataKind>("DataKind")
                                                 .HasColumnType("database.data_kind");
 
-                                            b3.Property<DateTime>("DataTimestamp")
+                                            b3.Property<OffsetDateTime>("DataTimestamp")
                                                 .HasColumnType("timestamp with time zone");
 
                                             b3.Property<Guid>("DatabaseId")
@@ -2404,7 +2405,7 @@ namespace Database.Migrations
                                 .IsRequired()
                                 .HasColumnType("text");
 
-                            b1.Property<DateTime>("Timestamp")
+                            b1.Property<OffsetDateTime>("Timestamp")
                                 .HasColumnType("timestamp with time zone");
 
                             b1.Property<JsonElement>("Variables")
@@ -2450,7 +2451,7 @@ namespace Database.Migrations
                                 .IsRequired()
                                 .HasColumnType("text");
 
-                            b1.Property<DateTime>("Timestamp")
+                            b1.Property<OffsetDateTime>("Timestamp")
                                 .HasColumnType("timestamp with time zone");
 
                             b1.Property<JsonElement>("Variables")

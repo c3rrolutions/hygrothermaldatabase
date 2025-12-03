@@ -12,7 +12,7 @@ namespace Database.Data;
 [JsonDerivedType(typeof(DataApproval), typeDiscriminator: nameof(DataApproval))]
 public interface IApproval
 {
-    DateTime Timestamp { get; }
+    OffsetDateTime Timestamp { get; }
     string Signature { get; }
     string KeyFingerprint { get; }
     string Query { get; }

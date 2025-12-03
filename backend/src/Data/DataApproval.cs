@@ -6,7 +6,7 @@ namespace Database.Data;
 
 [Owned]
 public sealed class DataApproval(
-    DateTime timestamp,
+    OffsetDateTime timestamp,
     string signature,
     string keyFingerprint,
     string query,
@@ -19,7 +19,7 @@ public sealed class DataApproval(
 {
     // Constructor for EF Core because navigation properties cannot be set using a constructor: https://learn.microsoft.com/en-us/ef/core/modeling/constructors#binding-to-mapped-properties
     private DataApproval(
-        DateTime timestamp,
+        OffsetDateTime timestamp,
         string signature,
         string keyFingerprint,
         string query,
@@ -41,7 +41,7 @@ public sealed class DataApproval(
     }
 
     public Guid ApproverId { get; private set; } = approverId;
-    public DateTime Timestamp { get; private set; } = timestamp;
+    public OffsetDateTime Timestamp { get; private set; } = timestamp;
     public string Signature { get; private set; } = signature;
     public string KeyFingerprint { get; private set; } = keyFingerprint;
     public string Query { get; private set; } = query;

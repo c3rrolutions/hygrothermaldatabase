@@ -23,7 +23,7 @@ public sealed record CreateOpticalDataInput(
     string? Name,
     string? Description,
     string[] Warnings,
-    DateTime CreatedAt,
+    OffsetDateTime CreatedAt,
     Guid CreatorId,
     OpticalComponentType? Type,
     OpticalComponentSubtype? Subtype,

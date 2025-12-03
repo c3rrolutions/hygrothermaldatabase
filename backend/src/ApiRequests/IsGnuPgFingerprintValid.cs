@@ -24,7 +24,7 @@ public sealed class IsGnuPgFingerprintValid
     public static async Task<bool> Do(
         string fingerprint,
         Guid institutionId,
-        DateTime createdAt,
+        OffsetDateTime createdAt,
         AppSettings appSettings,
         ApiRequestService apiRequestService,
         CancellationToken cancellationToken

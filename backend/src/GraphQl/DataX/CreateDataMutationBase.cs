@@ -15,7 +15,7 @@ namespace Database.GraphQl.DataX;
 public interface IValidateCreateInput
 {
     Guid ComponentId { get; }
-    DateTime CreatedAt { get; }
+    OffsetDateTime CreatedAt { get; }
     Guid CreatorId { get; }
     AppliedMethodInput AppliedMethod { get; }
     RootGetHttpsResourceInput RootResource { get; }
@@ -55,7 +55,7 @@ where TError : class
                 )
             );
         }
-        if (input.CreatedAt > DateTime.UtcNow)
+        if (input.CreatedAt > OffsetDateTime.UtcNow)
         {
             errors.Add(
                 NewError(

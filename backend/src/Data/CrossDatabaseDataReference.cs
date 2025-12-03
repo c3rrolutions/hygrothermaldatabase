@@ -7,13 +7,13 @@ namespace Database.Data;
 [Owned]
 public sealed class CrossDatabaseDataReference(
     Guid dataId,
-    DateTime dataTimestamp,
+    OffsetDateTime dataTimestamp,
     DataKind dataKind,
     Guid databaseId
     )
 {
     public Guid DataId { get; private set; } = dataId;
-    public DateTime DataTimestamp { get; private set; } = dataTimestamp;
+    public OffsetDateTime DataTimestamp { get; private set; } = dataTimestamp;
     public DataKind DataKind { get; private set; } = dataKind;
     public Guid DatabaseId { get; private set; } = databaseId;
 }

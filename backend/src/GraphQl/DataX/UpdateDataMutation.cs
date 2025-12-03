@@ -21,7 +21,7 @@ public sealed record UpdateDataInput(
     string? Name,
     string? Description,
     string[] Warnings,
-    DateTime CreatedAt,
+    OffsetDateTime CreatedAt,
     Guid CreatorId
 ) : IIdentifyDataInput;
 

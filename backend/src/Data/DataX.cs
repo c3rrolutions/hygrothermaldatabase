@@ -14,7 +14,7 @@ public abstract class DataX(
     string? description,
     string[] warnings,
     Guid creatorId,
-    DateTime createdAt
+    OffsetDateTime createdAt
 ) : Entity, IData
 {
     protected DataX(
@@ -25,7 +25,7 @@ public abstract class DataX(
         string? description,
         string[] warnings,
         Guid creatorId,
-        DateTime createdAt,
+        OffsetDateTime createdAt,
         AppliedMethod appliedMethod
     )
         : this(
@@ -48,7 +48,7 @@ public abstract class DataX(
         string? name,
         string? description,
         string[] warnings,
-        DateTime createdAt,
+        OffsetDateTime createdAt,
         Guid creatorId
     )
     {
@@ -78,7 +78,7 @@ public abstract class DataX(
     public string? Description { get; private set; } = description;
     public string[] Warnings { get; private set; } = warnings;
     public Guid CreatorId { get; private set; } = creatorId;
-    public DateTime CreatedAt { get; private set; } = createdAt;
+    public OffsetDateTime CreatedAt { get; private set; } = createdAt;
     public AppliedMethod AppliedMethod { get; private set; } = default!;
 
     public ICollection<DataApproval> Approvals { get; } = [];

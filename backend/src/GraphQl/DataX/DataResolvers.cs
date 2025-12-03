@@ -37,8 +37,8 @@ public sealed class DataResolvers
         return new GetHttpsResourceTree(data);
     }
 
-    public DateTime GetTimestamp()
+    public OffsetDateTime GetTimestamp()
     {
-        return DateTime.UtcNow;
+        return OffsetDateTime.UtcNow;
     }
 }

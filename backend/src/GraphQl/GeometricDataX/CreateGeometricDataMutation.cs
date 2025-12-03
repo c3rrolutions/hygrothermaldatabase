@@ -22,7 +22,7 @@ public sealed record CreateGeometricDataInput(
     string? Name,
     string? Description,
     string[] Warnings,
-    DateTime CreatedAt,
+    OffsetDateTime CreatedAt,
     Guid CreatorId,
     AppliedMethodInput AppliedMethod,
     RootGetHttpsResourceInput RootResource,

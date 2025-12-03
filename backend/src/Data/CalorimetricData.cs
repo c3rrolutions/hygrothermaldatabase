@@ -17,7 +17,7 @@ public sealed class CalorimetricData
         string? description,
         string[] warnings,
         Guid creatorId,
-        DateTime createdAt,
+        OffsetDateTime createdAt,
         AppliedMethod appliedMethod,
         double[] gValues,
         double[] uValues
@@ -46,7 +46,7 @@ public sealed class CalorimetricData
         string? description,
         string[] warnings,
         Guid creatorId,
-        DateTime createdAt,
+        OffsetDateTime createdAt,
         double[] gValues,
         double[] uValues
     ) : base(

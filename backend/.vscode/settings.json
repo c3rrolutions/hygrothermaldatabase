@@ -4,5 +4,6 @@
         "editor.defaultFormatter": "ms-dotnettools.csharp"
     },
     "workbench.editor.enablePreview": false,
-    "workbench.editor.enablePreviewFromQuickOpen": false
+    "workbench.editor.enablePreviewFromQuickOpen": false,
+    "dotnet.backgroundAnalysis.compilerDiagnosticsScope": "fullSolution"
 }

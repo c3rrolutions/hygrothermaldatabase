@@ -12,7 +12,7 @@ public sealed class DataApprovalService(
     public Task<bool> IsGnuPgFingerprintValid(
         string fingerprint,
         Guid institutionId,
-        DateTime createdAt,
+        OffsetDateTime createdAt,
         CancellationToken cancellationToken
     )
     {

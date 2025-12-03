@@ -23,7 +23,7 @@ public interface IData : IEntity
     string? Description { get; }
     string[] Warnings { get; }
     Guid CreatorId { get; }
-    DateTime CreatedAt { get; }
+    OffsetDateTime CreatedAt { get; }
     AppliedMethod AppliedMethod { get; }
     ICollection<DataApproval> Approvals { get; }
     ICollection<GetHttpsResource> Resources { get; }
@@ -60,7 +60,7 @@ public interface IData : IEntity
         string? name,
         string? description,
         string[] warnings,
-        DateTime createdAt,
+        OffsetDateTime createdAt,
         Guid creatorId
     );
 

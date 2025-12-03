@@ -33,6 +33,7 @@
     <PackageReference Include="HotChocolate.PersistedOperations.InMemory" Version="15.1.11" />
     <PackageReference Include="HotChocolate.Stitching" Version="13.9.15" />
     <PackageReference Include="HotChocolate.Types.Analyzers" Version="15.1.11" />
+    <PackageReference Include="HotChocolate.Types.NodaTime" Version="15.1.11" />
     <PackageReference Include="HotChocolate.Types.Scalars" Version="15.1.11" />
     <PackageReference Include="JsonPath.Net" Version="2.1.1" />
     <PackageReference Include="Laraue.EfCoreTriggers.PostgreSql" Version="10.0.0" />
@@ -46,6 +47,7 @@
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="10.0.0" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.0" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL.NodaTime" Version="10.0.0" />
     <!-- <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL.NodaTime" Version="5.0.0" /> -->
     <!-- <PackageReference Include="StyleCop.Analyzers" Version="1.1.118"> -->
     <!--   <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets> -->

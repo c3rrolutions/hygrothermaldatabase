@@ -23,7 +23,7 @@ public sealed record CreateCalorimetricDataInput(
     string? Name,
     string? Description,
     string[] Warnings,
-    DateTime CreatedAt,
+    OffsetDateTime CreatedAt,
     Guid CreatorId,
     AppliedMethodInput AppliedMethod,
     RootGetHttpsResourceInput RootResource,

@@ -17,7 +17,7 @@ public sealed class GeometricData
         string? description,
         string[] warnings,
         Guid creatorId,
-        DateTime createdAt,
+        OffsetDateTime createdAt,
         AppliedMethod appliedMethod,
         double[] widths,
         double[] heights,
@@ -47,7 +47,7 @@ public sealed class GeometricData
         string? description,
         string[] warnings,
         Guid creatorId,
-        DateTime createdAt,
+        OffsetDateTime createdAt,
         double[] widths,
         double[] heights,
         double[] thicknesses

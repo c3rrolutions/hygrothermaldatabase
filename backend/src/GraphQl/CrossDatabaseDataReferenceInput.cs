@@ -6,7 +6,7 @@ namespace Database.GraphQl;
 
 public sealed record CrossDatabaseDataReferenceInput(
     Guid DataId,
-    DateTime DataTimestamp,
+    OffsetDateTime DataTimestamp,
     DataKind DataKind,
     Guid DatabaseId
 )

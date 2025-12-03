@@ -16,7 +16,7 @@ public sealed class PhotovoltaicData
         string? description,
         string[] warnings,
         Guid creatorId,
-        DateTime createdAt,
+        OffsetDateTime createdAt,
         AppliedMethod appliedMethod
     ) : base(
         userId,
@@ -41,7 +41,7 @@ public sealed class PhotovoltaicData
         string? description,
         string[] warnings,
         Guid creatorId,
-        DateTime createdAt
+        OffsetDateTime createdAt
     ) : base(
         userId,
         locale,

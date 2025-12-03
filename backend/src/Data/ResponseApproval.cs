@@ -6,7 +6,7 @@ namespace Database.Data;
 
 [Owned]
 public sealed class ResponseApproval(
-    DateTime timestamp,
+    OffsetDateTime timestamp,
     string signature,
     string keyFingerprint,
     string query,
@@ -16,7 +16,7 @@ public sealed class ResponseApproval(
     )
     : IApproval
 {
-    public DateTime Timestamp { get; private set; } = timestamp;
+    public OffsetDateTime Timestamp { get; private set; } = timestamp;
     public string Signature { get; private set; } = signature;
     public string KeyFingerprint { get; private set; } = keyFingerprint;
     public string Query { get; private set; } = query;

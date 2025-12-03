@@ -26,7 +26,7 @@ public sealed record AddDataApprovalInput
 (
     Guid DataId,
     DataKind DataKind,
-    DateTime Timestamp,
+    OffsetDateTime Timestamp,
     string Signature,
     string KeyFingerprint,
     string Query,

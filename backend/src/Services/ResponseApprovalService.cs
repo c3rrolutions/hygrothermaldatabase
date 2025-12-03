@@ -11,6 +11,7 @@ using System.Linq;
 using HotChocolate.Execution;
 using Database.ApiRequests;
 using System.Collections.Generic;
+using Database.Extensions;
 
 namespace Database.Services;
 
@@ -88,7 +89,7 @@ public sealed class ResponseApprovalService(
         }
         var (signature, fingerprint) = await signingService.SignData(response);
         return new ResponseApproval(
-            DateTime.UtcNow,
+            OffsetDateTime.UtcNow(),
             signature,
             fingerprint,
             query,

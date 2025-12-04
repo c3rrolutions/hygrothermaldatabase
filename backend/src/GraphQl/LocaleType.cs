@@ -42,7 +42,7 @@ public sealed class LocaleType(
     /// </summary>
     public LocaleType()
         : this(
-            nameof(LocaleType).Remove(nameof(LocaleType).Length - "Type".Length),
+            nameof(LocaleType)[..^"Type".Length],
             "BCP 47 compliant Language Tag string"
         )
     {

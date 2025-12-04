@@ -1,20 +1,21 @@
-using NodaTime;
 using System;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using HotChocolate.Configuration;
 using HotChocolate.Data;
 using HotChocolate.Data.Filters;
 using HotChocolate.Data.Sorting;
+using HotChocolate.Types.NodaTime;
+using HotChocolate.Execution;
 using HotChocolate.Language;
 using HotChocolate.Types;
-using HotChocolate.Configuration;
-using HotChocolate.Execution;
 using Database.Data;
 using Database.GraphQl;
 using Database.GraphQl.DataX;
+using NodaTime;
 
 namespace Database.Configuration;
 
@@ -119,17 +120,20 @@ public static class GraphQlConfiguration
             .AddType(new UuidType("Uuid", defaultFormat: 'D')) // https://chillicream.com/docs/hotchocolate/defining-a-schema/scalars#uuid-type
             .AddType(new UrlType("Url"))
             .AddType(new JsonType("Any", BindingBehavior.Implicit)) // https://chillicream.com/blog/2023/02/08/new-in-hot-chocolate-13#json-scalar
-            .AddType(new LocaleType())
+            .AddType<LocaleType>()
+            .AddType<DurationType>()
+            .AddType<DateTimeZoneType>()
+            // .AddType<OffsetDateTimeType>()
             // Register converters between NodaTime's `OffsetDateTime` and .NET's
             // `DateTimeOffset` to reuse the existing `DateTimeType`
             // https://chillicream.com/docs/hotchocolate/v15/defining-a-schema/scalars#custom-converters
-            // .BindRuntimeType<OffsetDateTime, DateTimeType>()
-            // .AddTypeConverter<OffsetDateTime, DateTimeOffset>(
-            //     _ => _.ToDateTimeOffset()
-            // )
-            // .AddTypeConverter<DateTimeOffset, OffsetDateTime>(
-            //     _ => OffsetDateTime.FromDateTimeOffset(_)
-            // )
+            .BindRuntimeType<OffsetDateTime, DateTimeType>()
+            .AddTypeConverter<OffsetDateTime, DateTimeOffset>(
+                _ => _.ToDateTimeOffset()
+            )
+            .AddTypeConverter<DateTimeOffset, OffsetDateTime>(
+                _ => OffsetDateTime.FromDateTimeOffset(_)
+            )
             // Object Types
             .AddType<DataConnection>()
             // Query, Mutation, Subscription, Object, and Input Types

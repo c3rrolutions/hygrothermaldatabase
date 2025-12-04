@@ -466,7 +466,7 @@ type InstitutionAccessRights {
   hasRestrictionsByUser: Boolean!
   id: Uuid!
   institutionId: Uuid!
-  period: TimeSpan!
+  period: Duration!
   userAlreadyAccessed: [Uuid!]!
   version: NonNegativeInt!
 }
@@ -919,6 +919,16 @@ input BooleanPropositionInput {
   notEqualTo: Boolean @cost(weight: "10")
 }
 
+input CalendarSystemPropositionInput {
+  and: [CalendarSystemPropositionInput!]
+  or: [CalendarSystemPropositionInput!]
+  id: StringPropositionInput
+  name: StringPropositionInput
+  minYear: Int32PropositionInput
+  maxYear: Int32PropositionInput
+  eras: ListFilterInputTypeOfEraPropositionInput
+}
+
 input CalorimetricDataPropositionInput {
   and: [CalorimetricDataPropositionInput!]
   or: [CalorimetricDataPropositionInput!]
@@ -929,7 +939,7 @@ input CalorimetricDataPropositionInput {
   description: StringPropositionInput
   componentId: UuidPropositionInput
   creatorId: UuidPropositionInput
-  createdAt: DateTimePropositionInput
+  createdAt: OffsetDateTimePropositionInput
   appliedMethod: AppliedMethodPropositionInput
   approvals: ListFilterInputTypeOfDataApprovalPropositionInput
   resources: ListFilterInputTypeOfGetHttpsResourcePropositionInput
@@ -974,7 +984,7 @@ input CreateCalorimetricDataInput {
   creatorId: Uuid!
   description: String
   gValues: [Float!]!
-  locale: String!
+  locale: Locale!
   name: String
   rootResource: RootGetHttpsResourceInput!
   uValues: [Float!]!
@@ -988,7 +998,7 @@ input CreateGeometricDataInput {
   creatorId: Uuid!
   description: String
   heights: [Float!]!
-  locale: String!
+  locale: Locale!
   name: String
   rootResource: RootGetHttpsResourceInput!
   thicknesses: [Float!]!
@@ -1012,7 +1022,7 @@ input CreateHygrothermalDataInput {
   createdAt: DateTime!
   creatorId: Uuid!
   description: String
-  locale: String!
+  locale: Locale!
   name: String
   rootResource: RootGetHttpsResourceInput!
   warnings: [String!]!
@@ -1028,7 +1038,7 @@ input CreateOpticalDataInput {
   creatorId: Uuid!
   description: String
   infraredEmittances: [Float!]!
-  locale: String!
+  locale: Locale!
   name: String
   nearnormalHemisphericalSolarReflectances: [Float!]!
   nearnormalHemisphericalSolarTransmittances: [Float!]!
@@ -1046,7 +1056,7 @@ input CreatePhotovoltaicDataInput {
   createdAt: DateTime!
   creatorId: Uuid!
   description: String
-  locale: String!
+  locale: Locale!
   name: String
   rootResource: RootGetHttpsResourceInput!
   warnings: [String!]!
@@ -1062,7 +1072,7 @@ input CreateResponseApprovalsFilterInput {
   description: StringPropositionInput
   componentId: UuidPropositionInput
   creatorId: UuidPropositionInput
-  createdAt: DateTimePropositionInput
+  createdAt: OffsetDateTimePropositionInput
   appliedMethod: AppliedMethodPropositionInput
   approvals: ListFilterInputTypeOfDataApprovalPropositionInput
   resources: ListFilterInputTypeOfGetHttpsResourcePropositionInput
@@ -1080,7 +1090,7 @@ input CrossDatabaseDataReferencePropositionInput {
   and: [CrossDatabaseDataReferencePropositionInput!]
   or: [CrossDatabaseDataReferencePropositionInput!]
   dataId: UuidPropositionInput
-  dataTimestamp: DateTimePropositionInput
+  dataTimestamp: OffsetDateTimePropositionInput
   dataKind: DataKindPropositionInput
   databaseId: UuidPropositionInput
 }
@@ -1089,7 +1099,7 @@ input DataApprovalPropositionInput {
   and: [DataApprovalPropositionInput!]
   or: [DataApprovalPropositionInput!]
   approverId: UuidPropositionInput
-  timestamp: DateTimePropositionInput
+  timestamp: OffsetDateTimePropositionInput
   signature: StringPropositionInput
   keyFingerprint: StringPropositionInput
   query: StringPropositionInput
@@ -1108,7 +1118,7 @@ input DataFilterInput {
   description: StringPropositionInput
   componentId: UuidPropositionInput
   creatorId: UuidPropositionInput
-  createdAt: DateTimePropositionInput
+  createdAt: OffsetDateTimePropositionInput
   appliedMethod: AppliedMethodPropositionInput
   approvals: ListFilterInputTypeOfDataApprovalPropositionInput
   resources: ListFilterInputTypeOfGetHttpsResourcePropositionInput
@@ -1133,21 +1143,6 @@ input DataSortInput {
   appliedMethod: AppliedMethodSortInput @cost(weight: "10")
 }
 
-input DateTimePropositionInput {
-  equalTo: DateTime @cost(weight: "10")
-  notEqualTo: DateTime @cost(weight: "10")
-  in: [DateTime!] @cost(weight: "10")
-  notIn: [DateTime!] @cost(weight: "10")
-  greaterThan: DateTime @cost(weight: "10")
-  notGreaterThan: DateTime @cost(weight: "10")
-  greaterThanOrEqualTo: DateTime @cost(weight: "10")
-  notGreaterThanOrEqualTo: DateTime @cost(weight: "10")
-  lessThan: DateTime @cost(weight: "10")
-  notLessThan: DateTime @cost(weight: "10")
-  lessThanOrEqualTo: DateTime @cost(weight: "10")
-  notLessThanOrEqualTo: DateTime @cost(weight: "10")
-}
-
 input DeleteDataInput {
   dataId: Uuid!
   dataKind: DataKind!
@@ -1155,6 +1150,12 @@ input DeleteDataInput {
 
 input DeleteGetHttpsResourceInput {
   getHttpsResourceId: Uuid!
+}
+
+input EraPropositionInput {
+  and: [EraPropositionInput!]
+  or: [EraPropositionInput!]
+  name: StringPropositionInput
 }
 
 input FileMetaInformationInput {
@@ -1201,7 +1202,7 @@ input GeometricDataPropositionInput {
   description: StringPropositionInput
   componentId: UuidPropositionInput
   creatorId: UuidPropositionInput
-  createdAt: DateTimePropositionInput
+  createdAt: OffsetDateTimePropositionInput
   appliedMethod: AppliedMethodPropositionInput
   approvals: ListFilterInputTypeOfDataApprovalPropositionInput
   resources: ListFilterInputTypeOfGetHttpsResourcePropositionInput
@@ -1277,7 +1278,7 @@ input HygrothermalDataPropositionInput {
   description: StringPropositionInput
   componentId: UuidPropositionInput
   creatorId: UuidPropositionInput
-  createdAt: DateTimePropositionInput
+  createdAt: OffsetDateTimePropositionInput
   appliedMethod: AppliedMethodPropositionInput
   approvals: ListFilterInputTypeOfDataApprovalPropositionInput
   resources: ListFilterInputTypeOfGetHttpsResourcePropositionInput
@@ -1310,6 +1311,28 @@ input Int32PropositionInput {
   notLessThanOrEqualTo: Int @cost(weight: "10")
 }
 
+input Int64PropositionInput {
+  equalTo: Long @cost(weight: "10")
+  notEqualTo: Long @cost(weight: "10")
+  in: [Long!] @cost(weight: "10")
+  notIn: [Long!] @cost(weight: "10")
+  greaterThan: Long @cost(weight: "10")
+  notGreaterThan: Long @cost(weight: "10")
+  greaterThanOrEqualTo: Long @cost(weight: "10")
+  notGreaterThanOrEqualTo: Long @cost(weight: "10")
+  lessThan: Long @cost(weight: "10")
+  notLessThan: Long @cost(weight: "10")
+  lessThanOrEqualTo: Long @cost(weight: "10")
+  notLessThanOrEqualTo: Long @cost(weight: "10")
+}
+
+input IsoDayOfWeekPropositionInput {
+  equalTo: IsoDayOfWeek @cost(weight: "10")
+  notEqualTo: IsoDayOfWeek @cost(weight: "10")
+  in: [IsoDayOfWeek!] @cost(weight: "10")
+  notIn: [IsoDayOfWeek!] @cost(weight: "10")
+}
+
 input JsonElementPropositionInput {
   and: [JsonElementPropositionInput!]
   or: [JsonElementPropositionInput!]
@@ -1339,6 +1362,13 @@ input ListFilterInputTypeOfDataApprovalPropositionInput {
   all: DataApprovalPropositionInput @cost(weight: "10")
   none: DataApprovalPropositionInput @cost(weight: "10")
   some: DataApprovalPropositionInput @cost(weight: "10")
+  any: Boolean @cost(weight: "10")
+}
+
+input ListFilterInputTypeOfEraPropositionInput {
+  all: EraPropositionInput @cost(weight: "10")
+  none: EraPropositionInput @cost(weight: "10")
+  some: EraPropositionInput @cost(weight: "10")
   any: Boolean @cost(weight: "10")
 }
 
@@ -1375,6 +1405,57 @@ input ListStandardizerPropositionInput {
   none: StandardizerPropositionInput @cost(weight: "10")
   some: StandardizerPropositionInput @cost(weight: "10")
   any: Boolean @cost(weight: "10")
+}
+
+input LocalDatePropositionInput {
+  and: [LocalDatePropositionInput!]
+  or: [LocalDatePropositionInput!]
+  calendar: CalendarSystemPropositionInput
+  year: Int32PropositionInput
+  month: Int32PropositionInput
+  day: Int32PropositionInput
+  dayOfWeek: IsoDayOfWeekPropositionInput
+  yearOfEra: Int32PropositionInput
+  era: EraPropositionInput
+  dayOfYear: Int32PropositionInput
+}
+
+input LocalDateTimePropositionInput {
+  and: [LocalDateTimePropositionInput!]
+  or: [LocalDateTimePropositionInput!]
+  calendar: CalendarSystemPropositionInput
+  year: Int32PropositionInput
+  yearOfEra: Int32PropositionInput
+  era: EraPropositionInput
+  month: Int32PropositionInput
+  dayOfYear: Int32PropositionInput
+  day: Int32PropositionInput
+  dayOfWeek: IsoDayOfWeekPropositionInput
+  hour: Int32PropositionInput
+  clockHourOfHalfDay: Int32PropositionInput
+  minute: Int32PropositionInput
+  second: Int32PropositionInput
+  millisecond: Int32PropositionInput
+  tickOfSecond: Int32PropositionInput
+  tickOfDay: Int64PropositionInput
+  nanosecondOfSecond: Int32PropositionInput
+  nanosecondOfDay: Int64PropositionInput
+  timeOfDay: LocalTimePropositionInput
+  date: LocalDatePropositionInput
+}
+
+input LocalTimePropositionInput {
+  and: [LocalTimePropositionInput!]
+  or: [LocalTimePropositionInput!]
+  hour: Int32PropositionInput
+  clockHourOfHalfDay: Int32PropositionInput
+  minute: Int32PropositionInput
+  second: Int32PropositionInput
+  millisecond: Int32PropositionInput
+  tickOfSecond: Int32PropositionInput
+  tickOfDay: Int64PropositionInput
+  nanosecondOfSecond: Int32PropositionInput
+  nanosecondOfDay: Int64PropositionInput
 }
 
 input NamedMethodArgumentInput {
@@ -1489,6 +1570,41 @@ input NumerationSortInput {
   suffix: SortEnumType @cost(weight: "10")
 }
 
+input OffsetDateTimePropositionInput {
+  and: [OffsetDateTimePropositionInput!]
+  or: [OffsetDateTimePropositionInput!]
+  calendar: CalendarSystemPropositionInput
+  year: Int32PropositionInput
+  month: Int32PropositionInput
+  day: Int32PropositionInput
+  dayOfWeek: IsoDayOfWeekPropositionInput
+  yearOfEra: Int32PropositionInput
+  era: EraPropositionInput
+  dayOfYear: Int32PropositionInput
+  hour: Int32PropositionInput
+  clockHourOfHalfDay: Int32PropositionInput
+  minute: Int32PropositionInput
+  second: Int32PropositionInput
+  millisecond: Int32PropositionInput
+  tickOfSecond: Int32PropositionInput
+  tickOfDay: Int64PropositionInput
+  nanosecondOfSecond: Int32PropositionInput
+  nanosecondOfDay: Int64PropositionInput
+  localDateTime: LocalDateTimePropositionInput
+  date: LocalDatePropositionInput
+  timeOfDay: LocalTimePropositionInput
+  offset: OffsetPropositionInput
+}
+
+input OffsetPropositionInput {
+  and: [OffsetPropositionInput!]
+  or: [OffsetPropositionInput!]
+  seconds: Int32PropositionInput
+  milliseconds: Int32PropositionInput
+  ticks: Int64PropositionInput
+  nanoseconds: Int64PropositionInput
+}
+
 input OpticalDataPropositionInput {
   and: [OpticalDataPropositionInput!]
   or: [OpticalDataPropositionInput!]
@@ -1499,7 +1615,7 @@ input OpticalDataPropositionInput {
   description: StringPropositionInput
   componentId: UuidPropositionInput
   creatorId: UuidPropositionInput
-  createdAt: DateTimePropositionInput
+  createdAt: OffsetDateTimePropositionInput
   appliedMethod: AppliedMethodPropositionInput
   approvals: ListFilterInputTypeOfDataApprovalPropositionInput
   resources: ListFilterInputTypeOfGetHttpsResourcePropositionInput
@@ -1537,7 +1653,7 @@ input PhotovoltaicDataPropositionInput {
   description: StringPropositionInput
   componentId: UuidPropositionInput
   creatorId: UuidPropositionInput
-  createdAt: DateTimePropositionInput
+  createdAt: OffsetDateTimePropositionInput
   appliedMethod: AppliedMethodPropositionInput
   approvals: ListFilterInputTypeOfDataApprovalPropositionInput
   resources: ListFilterInputTypeOfGetHttpsResourcePropositionInput
@@ -1798,7 +1914,7 @@ input UpdateResponseApprovalsFilterInput {
   description: StringPropositionInput
   componentId: UuidPropositionInput
   creatorId: UuidPropositionInput
-  createdAt: DateTimePropositionInput
+  createdAt: OffsetDateTimePropositionInput
   appliedMethod: AppliedMethodPropositionInput
   approvals: ListFilterInputTypeOfDataApprovalPropositionInput
   resources: ListFilterInputTypeOfGetHttpsResourcePropositionInput
@@ -2066,6 +2182,17 @@ enum Illuminant {
   D65
 }
 
+enum IsoDayOfWeek {
+  NONE
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
+}
+
 enum JsonValueKind {
   UNDEFINED
   OBJECT
@@ -2261,14 +2388,33 @@ scalar Any
 "The `DateTime` scalar represents an ISO-8601 compliant date time type."
 scalar DateTime @specifiedBy(url: "https:\/\/www.graphql-scalars.com\/date-time")
 
+"""
+Represents a time zone - a mapping between UTC and local time.
+A time zone maps UTC instants to local times - or, equivalently, to the offset from UTC at any particular instant.
+
+Example: `Europe/Zurich`
+"""
+scalar DateTimeZone
+
+"""
+Represents a fixed (and calendar-independent) length of time.
+
+Allowed patterns:
+- `-D:hh:mm:ss.sssssssss`
+
+Examples:
+- `-1:20:00:00.999999999`
+"""
+scalar Duration
+
 "BCP 47 compliant Language Tag string"
 scalar Locale
 
+"The `Long` scalar type represents non-fractional signed whole 64-bit numeric values. Long can represent values between -(2^63) and 2^63 - 1."
+scalar Long
+
 "The NonNegativeInt scalar type represents a unsigned 32-bit numeric non-fractional value equal to or greater than 0."
 scalar NonNegativeInt
-
-"The `TimeSpan` scalar represents an ISO-8601 compliant duration type."
-scalar TimeSpan
 
 "The `Upload` scalar type represents a file upload."
 scalar Upload

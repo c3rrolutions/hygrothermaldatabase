@@ -18,8 +18,7 @@ using Database.ApiRequests;
 namespace Database.GraphQl.OpticalDataX;
 
 public sealed record CreateOpticalDataInput(
-    // TODO Why does specifying the type with an attribute not work here?
-    [GraphQLType<NonNullType<LocaleType>>] string Locale,
+    [property: GraphQLType<NonNullType<LocaleType>>] string Locale,
     Guid ComponentId,
     string? Name,
     string? Description,

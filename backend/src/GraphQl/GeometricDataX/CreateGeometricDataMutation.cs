@@ -18,7 +18,7 @@ using Database.ApiRequests;
 namespace Database.GraphQl.GeometricDataX;
 
 public sealed record CreateGeometricDataInput(
-    [GraphQLType<NonNullType<LocaleType>>] string Locale,
+    [property: GraphQLType<NonNullType<LocaleType>>] string Locale,
     Guid ComponentId,
     string? Name,
     string? Description,

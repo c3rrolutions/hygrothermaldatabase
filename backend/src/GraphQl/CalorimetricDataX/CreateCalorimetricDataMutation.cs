@@ -1,13 +1,11 @@
 using NodaTime;
 using System;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using HotChocolate.Types;
 using Database.Authorization;
 using Database.Data;
 using Database.Services;
-using Database.Utilities;
 using HotChocolate;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -18,8 +16,7 @@ using Database.ApiRequests;
 namespace Database.GraphQl.CalorimetricDataX;
 
 public sealed record CreateCalorimetricDataInput(
-    // TODO Why does specifying the type with an attribute not work here?
-    [GraphQLType<NonNullType<LocaleType>>] string Locale,
+    [property: GraphQLType<NonNullType<LocaleType>>] string Locale,
     Guid ComponentId,
     string? Name,
     string? Description,

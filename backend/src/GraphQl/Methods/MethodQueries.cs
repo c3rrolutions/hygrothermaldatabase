@@ -63,7 +63,7 @@ public sealed class MethodQueries
 
     public async Task<CalculateMethodPayload> CalculateMethodWithDataUploadAsync(
         Guid methodId,
-        [GraphQLType(typeof(NonNullType<UploadType>))] IFile data,
+        [GraphQLType<NonNullType<UploadType>>] IFile data,
         MethodFactory methodFactory,
         CancellationToken cancellationToken
     )

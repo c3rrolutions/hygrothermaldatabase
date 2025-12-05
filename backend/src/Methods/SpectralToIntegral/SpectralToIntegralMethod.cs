@@ -277,7 +277,7 @@ public sealed class SpectralToIntegralMethod
             denominator += wavelengthsWeights[i].deltaWavelength * wavelengthsWeights[i].weight;
         }
         // Treat the last wavelengthWeight separately, because it has no spectralDataPointWavelengthAbove
-        numerator += spectralDataPoints[spectralDataPoints.Count() - 1].Results.Transmittance * wavelengthsWeights[wavelengthsWeights.Length - 1].deltaWavelength * wavelengthsWeights[wavelengthsWeights.Length - 1].weight;
+        numerator += spectralDataPoints[spectralDataPoints.Count - 1].Results.Transmittance * wavelengthsWeights[wavelengthsWeights.Length - 1].deltaWavelength * wavelengthsWeights[wavelengthsWeights.Length - 1].weight;
         denominator += wavelengthsWeights[wavelengthsWeights.Length - 1].deltaWavelength * wavelengthsWeights[wavelengthsWeights.Length - 1].weight;
         return numerator / denominator;
     }

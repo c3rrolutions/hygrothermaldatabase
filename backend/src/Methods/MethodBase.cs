@@ -1,36 +1,15 @@
-using System;
 using System.Text.Json;
-using System.Text.Json.Serialization;
-using NodaTime;
-using NodaTime.Serialization.SystemTextJson;
+using Database.Json;
 
 namespace Database.Methods;
 
 public abstract class MethodBase<TInput, TOutput>
     : IMethod
 {
-    public static readonly JsonSerializerOptions JsonSerializerOptions =
-        new JsonSerializerOptions()
-        {
-            AllowTrailingCommas = true,
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-            IgnoreReadOnlyFields = true,
-            IgnoreReadOnlyProperties = false,
-            IncludeFields = false,
-            NumberHandling = JsonNumberHandling.Strict,
-            PropertyNameCaseInsensitive = false,
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            ReadCommentHandling = JsonCommentHandling.Skip,
-            RespectNullableAnnotations = true,
-            UnmappedMemberHandling = JsonUnmappedMemberHandling.Skip,
-            AllowDuplicateProperties = false,
-        }
-        .ConfigureForNodaTime(DateTimeZoneProviders.Tzdb);
-
     public JsonElement Calculate(JsonElement input)
     {
-        var parsedInput = input.Deserialize<TInput>(JsonSerializerOptions)
-            ?? throw new InvalidOperationException();
+        var parsedInput = input.Deserialize<TInput>(JsonSerializerSettings.BedJson)
+            ?? throw new JsonException($"Failed to deserialize the JSON input into a {typeof(TInput)} instance.");
         var output = Calculate(parsedInput);
         using var document = JsonDocument.Parse(
             JsonSerializer.SerializeToUtf8Bytes(output)

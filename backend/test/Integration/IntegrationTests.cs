@@ -9,7 +9,6 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Json.Path;
@@ -17,8 +16,7 @@ using NUnit.Framework;
 using Snapshooter;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Database.Data;
-using NodaTime.Serialization.SystemTextJson;
-using NodaTime;
+using Database.Json;
 
 namespace Database.Tests.Integration;
 
@@ -26,14 +24,6 @@ namespace Database.Tests.Integration;
 public abstract partial class IntegrationTests
     : IDisposable
 {
-    private static readonly JsonSerializerOptions s_customJsonSerializerOptions =
-        new JsonSerializerOptions()
-        {
-            Converters = { new JsonStringEnumConverter() },
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-        }
-        .ConfigureForNodaTime(DateTimeZoneProviders.Tzdb);
-
     private bool _disposed;
 
     protected IntegrationTests()
@@ -419,7 +409,7 @@ public abstract partial class IntegrationTests
             new ByteArrayContent(
                 JsonSerializer.SerializeToUtf8Bytes(
                     content,
-                    s_customJsonSerializerOptions
+                    JsonSerializerSettings.GraphQl
                 )
             );
         result.Headers.ContentType =

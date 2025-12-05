@@ -97,8 +97,8 @@ public sealed class SpectralToIntegralMethodTests
             JsonDocumentSettings.Lax
         );
         var spectralDataPoints = jsonDocument.RootElement.Deserialize<SpectralToIntegralInput>(
-            MethodBase<SpectralToIntegralInput, SpectralToIntegralOutput>.JsonSerializerOptions
-        ) ?? throw new InvalidOperationException();
+            JsonSerializerSettings.BedJson
+        ) ?? throw new JsonException($"Failed to deserialize the root elemnt into {typeof(SpectralToIntegralInput)}");
         var method = new SpectralToIntegralMethod();
         var results = method.Calculate(spectralDataPoints);
         using (new AssertionScope())

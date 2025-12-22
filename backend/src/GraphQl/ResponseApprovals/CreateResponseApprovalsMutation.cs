@@ -36,7 +36,7 @@ public sealed record CreateResponseApprovalsError(
 )
 : UserErrorBase<CreateResponseApprovalsErrorCode>(Code, Message, Path);
 
-public static partial class CreateResponseApprovalsMutationLogging
+public static partial class Log
 {
     [LoggerMessage(
         Level = LogLevel.Warning,

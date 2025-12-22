@@ -54,7 +54,7 @@ public sealed class RecomputeGetHttpsResourceHashValuesFilterType
     }
 }
 
-public static partial class RecomputeGetHttpsResourceHashValuesMutationLogging
+public static partial class Log
 {
     [LoggerMessage(
         Level = LogLevel.Warning,

@@ -15,7 +15,7 @@ public enum SigantureVerificationResult
     BAD_SIGNATURE
 }
 
-public static partial class SigningServiceLogging
+public static partial class Log
 {
     [LoggerMessage(
         Level = LogLevel.Debug,

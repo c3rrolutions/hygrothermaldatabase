@@ -10,7 +10,7 @@ using static Database.ApiRequests.QueryCurrentUserOrApplication;
 
 namespace Database.Services;
 
-public static partial class AccessRightServiceLogging
+public static partial class Log
 {
     [LoggerMessage(
         Level = LogLevel.Information,

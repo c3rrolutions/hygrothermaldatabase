@@ -19,7 +19,7 @@ using Database.Services;
 
 namespace Database;
 
-public static partial class LoggerExtensions
+public static partial class Log
 {
     [LoggerMessage(
         EventId = 0,

@@ -12,7 +12,7 @@ using System;
 
 namespace Database.Services;
 
-public static partial class UserServiceLogging
+public static partial class Log
 {
     [LoggerMessage(
         Level = LogLevel.Debug,

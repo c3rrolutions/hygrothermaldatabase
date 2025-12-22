@@ -16,7 +16,7 @@ using Database.Extensions;
 
 namespace Database.Services;
 
-public static partial class ResponseApprovalServiceLogging
+public static partial class Log
 {
     [LoggerMessage(
         Level = LogLevel.Debug,

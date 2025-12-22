@@ -69,7 +69,7 @@ public sealed record AddDataApprovalPayload(
     IReadOnlyCollection<AddDataApprovalError>? Errors
 ) : Payload;
 
-public static partial class AddDataApprovalMutationLogging
+public static partial class Log
 {
     [LoggerMessage(
         Level = LogLevel.Warning,

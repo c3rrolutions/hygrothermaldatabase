@@ -160,8 +160,7 @@ public sealed class AuthenticationController(
         // Build an identity based on the external claims and that will be used to create the authentication cookie.
         var identity = new ClaimsIdentity(
             CookieAuthenticationDefaults.AuthenticationScheme,
-            ClaimTypes.Name,
-            ClaimTypes.Role
+            ClaimTypes.Name
         );
 
         // By default, OpenIddict will automatically try to map the email/name and name identifier claims from

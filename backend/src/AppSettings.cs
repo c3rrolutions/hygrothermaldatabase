@@ -8,23 +8,15 @@ public sealed class AppSettings
 {
     private const string GraphQlPathSegment = "/graphql/";
 
+    public string Host { get; private set; } = "";
+    public Uri HostUri => new(Host, UriKind.Absolute);
     // TODO Consider using [Flurl](https://flurl.dev) to construct URIs. For the pitfalls of
     // using `Uri` as below see the comments to https://stackoverflow.com/questions/372865/path-combine-for-urls/1527643#1527643
-    public Uri DatabaseGraphQlEndpoint
-    {
-        get => new UriBuilder(new Uri(Host, UriKind.Absolute)) { Path = GraphQlPathSegment }.Uri;
-    }
-
-    public Uri MetabaseGraphQlEndpoint
-    {
-        get => new UriBuilder(new Uri(MetabaseHost, UriKind.Absolute)) { Path = GraphQlPathSegment }.Uri;
-    }
-
-    public string Host { get; private set; } = "";
-    public Uri HostUri { get => new(Host, UriKind.Absolute); }
+    public Uri DatabaseGraphQlEndpoint => new UriBuilder(HostUri) { Path = GraphQlPathSegment }.Uri;
 
     public string MetabaseHost { get; private set; } = "";
-    public Uri MetabaseHostUri { get => new(MetabaseHost, UriKind.Absolute); }
+    public Uri MetabaseHostUri => new(MetabaseHost, UriKind.Absolute);
+    public Uri MetabaseGraphQlEndpoint => new UriBuilder(MetabaseHostUri) { Path = GraphQlPathSegment }.Uri;
 
     public Guid DatabaseId { get; private set; }
     public Guid OperatorId { get; private set; }
@@ -54,7 +46,7 @@ public sealed class AppSettings
     {
         // Keep file name {FINGERPRINT}.gpg in sync with the one in the GNU
         // Make target `gpg` in the `Makefile`
-        public string FileName { get => $"{Fingerprint}.gpg"; }
+        public string FileName => $"{Fingerprint}.gpg";
         public string Passphrase { get; private set; } = "";
         public string Fingerprint { get; private set; } = "";
     }

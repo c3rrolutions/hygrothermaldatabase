@@ -219,6 +219,7 @@ public abstract class AuthConfiguration
                         // https://auth0.com/docs/get-started/apis/scopes/openid-connect-scopes#standard-claims
                         Scopes =
                         {
+                            OpenIddictConstants.Scopes.Profile,
                             ReadApiScope,
                             WriteApiScope,
                             ManageDatabaseApiScope,

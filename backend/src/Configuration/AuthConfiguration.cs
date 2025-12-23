@@ -20,6 +20,7 @@ public abstract class AuthConfiguration
 {
     public const string ReadApiScope = "api:read";
     public const string WriteApiScope = "api:write";
+    public const string ManageDatabaseApiScope = "api:database:manage";
 
     public static void ConfigureServices(
         IServiceCollection services,
@@ -219,7 +220,8 @@ public abstract class AuthConfiguration
                         Scopes =
                         {
                             ReadApiScope,
-                            WriteApiScope
+                            WriteApiScope,
+                            ManageDatabaseApiScope,
                         },
 
                         // Note: to mitigate mix-up attacks, it's recommended to use a unique redirection endpoint

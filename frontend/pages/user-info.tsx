@@ -5,6 +5,7 @@ import { Skeleton, Result, Descriptions, Typography, message } from "antd";
 import { PageHeader } from "@ant-design/pro-layout";
 import { useEffect } from "react";
 import { stringifyApolloError } from "../lib/apollo";
+import paths from "../paths";
 
 function Page() {
   const { loading, error, data } = useQuery(CurrentUserInfoDocument);
@@ -40,6 +41,11 @@ function Page() {
         backIcon={false}
       >
         <Descriptions size="small" column={1}>
+          <Descriptions.Item label="Metabase">
+            <Typography.Link href={paths.metabase.user(currentUserInfo.sub)}>
+              {paths.metabase.user(currentUserInfo.sub)}
+            </Typography.Link>
+          </Descriptions.Item>
           {currentUserInfo.email && (
             <Descriptions.Item label="Email">
               {currentUserInfo.email} (

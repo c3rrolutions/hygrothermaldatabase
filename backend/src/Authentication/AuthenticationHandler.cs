@@ -34,7 +34,7 @@ public sealed class AuthenticationHandler(
     private static string? GetRefreshToken(AuthenticateResult authenticateResult) =>
         authenticateResult.Properties?.GetTokenValue(OpenIddictClientAspNetCoreConstants.Tokens.RefreshToken);
 
-    private static async Task SetAuthenticationTokensAsync(
+    private static async Task UpdateTokenValuesAsync(
           HttpContext httpContext,
           ClaimsPrincipal claimsPrincipal,
           AuthenticationProperties authenticationProperties,
@@ -125,7 +125,7 @@ public sealed class AuthenticationHandler(
                     CancellationToken = cancellationToken,
                 }
             );
-            await SetAuthenticationTokensAsync(
+            await UpdateTokenValuesAsync(
                 httpContext,
                 cookieAuthenticationResult.Principal,
                 cookieAuthenticationResult.Properties,
@@ -193,11 +193,6 @@ public sealed class AuthenticationHandler(
         // scheme is configured in
         // `AuthConfiguration#ConfigureOpenIddictServices` by
         // `OpenIddictBuilder#AddValidation`.
-        var bearerAuthenticateResult = await httpContext.AuthenticateAsync(OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme);
-        if (bearerAuthenticateResult is { Succeeded: true, Principal.Identity.IsAuthenticated: true })
-        {
-            return bearerAuthenticateResult;
-        }
-        return AuthenticateResult.Fail("All available authentication schemes failed or yielded no claims principal.");
+        return await httpContext.AuthenticateAsync(OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme);
     }
 }

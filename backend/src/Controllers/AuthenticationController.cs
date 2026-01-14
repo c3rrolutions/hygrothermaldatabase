@@ -158,7 +158,7 @@ public sealed class AuthenticationController(
             ?? throw new InvalidOperationException($"The external authorization data misses an access token.");
         var subject = result.Principal.GetClaim(ClaimTypes.NameIdentifier)
             ?? throw new InvalidOperationException($"The external authorization data misses the claim {ClaimTypes.NameIdentifier}.");
-        var name = result.Principal.GetClaim(ClaimTypes.NameIdentifier)
+        var name = result.Principal.GetClaim(ClaimTypes.Name)
             ?? throw new InvalidOperationException($"The external authorization data misses the claim {ClaimTypes.Name}.");
 
         // Build an identity based on the external claims and that will be used to create the authentication cookie.

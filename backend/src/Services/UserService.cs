@@ -12,14 +12,6 @@ using System;
 
 namespace Database.Services;
 
-public static partial class Log
-{
-    [LoggerMessage(
-        Level = LogLevel.Debug,
-        Message = "Extracted Bearer Token: {Token}")]
-    public static partial void ExtractedToken(this ILogger<UserService> logger, string? token);
-}
-
 /// <summary>
 /// Service to get current user from Metabase
 /// </summary>
@@ -32,8 +24,7 @@ public sealed class UserService(
     AppSettings appSettings,
     ApiRequestService apiRequestService,
     IHttpContextAccessor httpContextAccessor,
-    CacheService cacheService,
-    ILogger<UserService> logger
+    CacheService cacheService
 )
 {
     /// <summary>
@@ -68,27 +59,28 @@ public sealed class UserService(
         CancellationToken cancellationToken
     )
     {
-        // Extract token
-        var token = await httpContextAccessor.ExtractBearerToken();
-        logger.ExtractedToken(token);
+        var httpContext = httpContextAccessor.HttpContext;
+        // If there is no HTTP context or there is no authenticated user, return early.
+        if (httpContext is null || httpContext.User is null)
+        {
+            return new CurrentUserOrApplication(null, null);
+        }
+        // If there is an authenticated user, then the bearer token exists and is valid.
+        var token = httpContextAccessor.HttpContext?.ExtractBearerToken();
         if (token is null)
         {
-            return await QueryCurrentUserOrApplication.Do(
-                appSettings,
-                apiRequestService,
-                cancellationToken
-            );
+            return new CurrentUserOrApplication(null, null);
         }
-        // Check if there is already a user for token
+        // Try to get the cached user or application for the token.
         if (!cacheService.TryGetCurrentUserOrApplication(token, out var cachedUserOrApplication))
         {
-            // Get user from Metabase
+            // If it is not cached, fetch it from the metabase.
             cachedUserOrApplication = await QueryCurrentUserOrApplication.Do(
                 appSettings,
                 apiRequestService,
                 cancellationToken
             );
-            // Store user in cache
+            // And store it in the cache.
             cacheService.SetCurrentUserOrApplication(token, cachedUserOrApplication);
         }
         return cachedUserOrApplication;

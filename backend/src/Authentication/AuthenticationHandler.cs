@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
+using Database.Extensions;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http;
@@ -92,9 +93,6 @@ public sealed class AuthenticationHandler(
         );
     }
 
-    private static void SetBearerToken(HttpContext httpContext, string accessToken) =>
-        httpContext.Request.Headers.Authorization = $"{OpenIddictConstants.Schemes.Bearer} {accessToken}";
-
     private async Task<string?> FetchAndRefreshAccessTokenFromCookieAuthenticationAsync(
         HttpContext httpContext,
         CancellationToken cancellationToken
@@ -182,7 +180,7 @@ public sealed class AuthenticationHandler(
             );
             if (accessToken is not null)
             {
-                SetBearerToken(httpContext, accessToken);
+                httpContext.SetBearerToken(accessToken);
             }
         }
         // For third-party frontends, the database acts as resource server

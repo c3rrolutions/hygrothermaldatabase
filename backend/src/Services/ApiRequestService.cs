@@ -7,6 +7,7 @@ using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Database.Authentication;
 using Database.Extensions;
 using Database.Json;
 using GraphQL;
@@ -157,23 +158,28 @@ public sealed class ApiRequestService(
     )
     {
         using var httpClient = httpClientFactory.CreateClient(CustomHttpClient);
-        var bearerToken = await httpContextAccessor.ExtractBearerToken();
+        var bearerToken = httpContextAccessor.HttpContext?.ExtractBearerToken();
         using var httpRequestMessage = new HttpRequestMessage(
             httpMethod,
             uri
         );
-        httpRequestMessage.Content = httpContent;
         if (bearerToken is not null)
         {
-            httpRequestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", bearerToken);
+            httpRequestMessage.Headers.Authorization = new AuthenticationHeaderValue(
+                OpenIdConnectConstants.AuthorizationHeaderBearer,
+                bearerToken
+            );
         }
+        httpRequestMessage.Content = httpContent;
         using var httpResponseMessage =
             await httpClient.SendAsync(httpRequestMessage, cancellationToken);
-        if (httpResponseMessage.StatusCode != HttpStatusCode.OK)
+        if (httpResponseMessage.StatusCode is not HttpStatusCode.OK)
         {
             throw new HttpRequestException(
-                $"The status code is not {HttpStatusCode.OK} but {httpResponseMessage.StatusCode}.", null,
-                httpResponseMessage.StatusCode);
+                $"The status code is not {HttpStatusCode.OK} but {httpResponseMessage.StatusCode}.",
+                null,
+                httpResponseMessage.StatusCode
+            );
         }
         return await read(httpResponseMessage.Content);
     }
@@ -191,8 +197,7 @@ public sealed class ApiRequestService(
                     JsonSerializerSettings.GraphQl
                 )
             );
-        result.Headers.ContentType =
-            new MediaTypeHeaderValue("application/json");
+        result.Headers.ContentType = new MediaTypeHeaderValue("application/json");
         return result;
     }
 }

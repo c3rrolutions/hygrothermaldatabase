@@ -7,9 +7,17 @@ namespace Database;
 public sealed class AppSettings
 {
     private const string GraphQlPathSegment = "/graphql/";
+    private const string WwwSubdomain = "www.";
 
     public string Host { get; private set; } = "";
     public Uri HostUri => new(Host, UriKind.Absolute);
+    public Uri NonWwwHostUri =>
+        HostUri.Host.StartsWith(WwwSubdomain, StringComparison.OrdinalIgnoreCase)
+        ? new UriBuilder(HostUri)
+        {
+            Host = HostUri.Host[WwwSubdomain.Length..]
+        }.Uri
+        : HostUri;
     // TODO Consider using [Flurl](https://flurl.dev) to construct URIs. For the pitfalls of
     // using `Uri` as below see the comments to https://stackoverflow.com/questions/372865/path-combine-for-urls/1527643#1527643
     public Uri DatabaseGraphQlEndpoint => new UriBuilder(HostUri) { Path = GraphQlPathSegment }.Uri;

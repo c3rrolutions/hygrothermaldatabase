@@ -3,7 +3,8 @@ namespace Database.Data;
 public sealed class User(
     string subject,
     string name
-    ) : Entity
+)
+: Entity
 {
     public string Subject { get; private set; } = subject;
     public string Name { get; private set; } = name;

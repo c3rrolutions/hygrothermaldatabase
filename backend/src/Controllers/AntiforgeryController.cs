@@ -1,6 +1,7 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
-using Database.Configuration;
+using Database.Authentication;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -10,7 +11,11 @@ namespace Database.Controllers;
 
 // For gotchas regarding antiforgery tokens read
 // [Clarity around IAntiforgery and ValidateAntiForgeryToken](https://github.com/dotnet/aspnetcore/issues/2783)
-public sealed class AntiforgeryController(IAntiforgery antiforgeryService) : Controller
+public sealed class AntiforgeryController(
+    IAntiforgery antiforgeryService,
+    AuthenticationHandler authenticationHandler
+)
+: Controller
 {
     private const string XsrfCookieKey = "XSRF-TOKEN";
 
@@ -23,12 +28,18 @@ public sealed class AntiforgeryController(IAntiforgery antiforgeryService) : Con
             SameSite = SameSiteMode.Strict
         };
 
+    [HttpGet("~/antiforgery/token")]
     [EndpointName("AntiforgeryToken")]
     [EndpointDescription("Get an antiforgery token.")]
-    [HttpGet("~/antiforgery/token")]
-    public async Task<IActionResult> Token()
+    public async Task<IActionResult> Token(
+        CancellationToken cancellationToken
+    )
     {
-        await HttpContextAuthentication.Authenticate(HttpContext);
+        var authenticateResult = await authenticationHandler.AuthenticateAsync(HttpContext, cancellationToken);
+        if (authenticateResult.Principal is not null)
+        {
+            HttpContext.User = authenticateResult.Principal;
+        }
         var tokens = _antiforgeryService.GetAndStoreTokens(HttpContext);
         HttpContext.Response.Cookies.Append(
             XsrfCookieKey,

@@ -16,8 +16,22 @@ using Database.Data;
 using Database.GraphQl;
 using Database.GraphQl.DataX;
 using NodaTime;
+using Database.Authentication;
+using HotChocolate.AspNetCore;
 
 namespace Database.Configuration;
+
+public static partial class Log
+{
+    [LoggerMessage(
+        EventId = 0,
+        Level = LogLevel.Error,
+        Message = "Failed to authenticate the claims principal in the HTTP context.")]
+    public static partial void FailedToAuthenticate(
+        this ILogger logger,
+        Exception exception
+    );
+}
 
 public static class GraphQlConfiguration
 {
@@ -89,7 +103,10 @@ public static class GraphQlConfiguration
             )
             // Configure
             // `https://github.com/ChilliCream/hotchocolate/blob/main/src/HotChocolate/Core/src/Validation/Options/ValidationOptions.cs`.
-            // But how? Subscriptions
+            // .AddMaxExecutionDepthRule(5)
+            // .SetIntrospectionAllowedDepth(maxAllowedOfTypeDepth: 16, maxAllowedListRecursiveDepth: 1)
+            // .SetMaxAllowedValidationErrors(5)
+            // Subscriptions
             /* .AddInMemorySubscriptions() */
             // Persisted queries
             /* .AddFileSystemOperationDocumentStorage("./persisted_operations") */
@@ -103,12 +120,17 @@ public static class GraphQlConfiguration
             {
                 try
                 {
-                    await HttpContextAuthentication.Authenticate(httpContext);
+                    var authenticationHandler = httpContext.RequestServices.GetRequiredService<AuthenticationHandler>();
+                    var authenticateResult = await authenticationHandler.AuthenticateAsync(httpContext, cancellationToken);
+                    if (authenticateResult.Principal is not null)
+                    {
+                        httpContext.User = authenticateResult.Principal;
+                    }
                 }
-                catch (Exception e)
+                catch (Exception exception)
                 {
-                    // TODO Log to a `ILogger<GraphQlConfiguration>` instead.
-                    Console.WriteLine(e);
+                    var logger = httpContext.RequestServices.GetRequiredService<ILogger<IHttpRequestInterceptor>>();
+                    logger.FailedToAuthenticate(exception);
                 }
             })
             .AddDiagnosticEventListener(_ =>

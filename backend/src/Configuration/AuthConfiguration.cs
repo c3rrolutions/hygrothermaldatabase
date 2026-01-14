@@ -11,27 +11,22 @@ using OpenIddict.Abstractions;
 using OpenIddict.Client;
 using Quartz;
 using Database.Authorization;
+using Database.Authentication;
 
 namespace Database.Configuration;
 
-// Inspired by https://github.com/openiddict/openiddict-samples/blob/dev/samples/Velusia/Velusia.Client/Startup.cs
-// https://github.com/openiddict/openiddict-samples/blob/855c31f91d6bf5cde735ef3f96fcc3c015b51d79/samples/Velusia/Velusia.Client/Startup.cs
-public abstract class AuthConfiguration
+public static class AuthConfiguration
 {
-    public const string ReadApiScope = "api:read";
-    public const string WriteApiScope = "api:write";
-    public const string ManageDatabaseApiScope = "api:database:manage";
-
+    private static readonly TimeSpan s_cookieExpirationTimeSpan = TimeSpan.FromDays(1);
     public static void ConfigureServices(
         IServiceCollection services,
         IWebHostEnvironment environment,
         AppSettings appSettings
     )
     {
-        var encryptionCertificate = LoadCertificate("jwt-encryption-certificate.pfx",
-            appSettings.JsonWebToken.EncryptionCertificatePassword);
-        var signingCertificate = LoadCertificate("jwt-signing-certificate.pfx",
-            appSettings.JsonWebToken.SigningCertificatePassword);
+        var encryptionCertificate = LoadCertificate("jwt-encryption-certificate.pfx", appSettings.JsonWebToken.EncryptionCertificatePassword);
+        var signingCertificate = LoadCertificate("jwt-signing-certificate.pfx", appSettings.JsonWebToken.SigningCertificatePassword);
+        services.AddScoped<AuthenticationHandler>();
         ConfigureAuthenticationAndAuthorizationServices(services);
         ConfigureTaskScheduling(services, environment);
         ConfigureOpenIddictServices(services, environment, appSettings, encryptionCertificate, signingCertificate);
@@ -75,12 +70,10 @@ public abstract class AuthConfiguration
         // https://learn.microsoft.com/en-us/aspnet/core/security/authentication/?view=aspnetcore-7.0#defaultscheme
         AppContext.SetSwitch("Microsoft.AspNetCore.Authentication.SuppressAutoDefaultScheme", true);
         // Inspired by https://github.com/openiddict/openiddict-samples/blob/01cb2ce4600cab15867e34826b0287622e6dd71b/samples/Velusia/Velusia.Client/Startup.cs
-        services
-            .AddAuthentication(_ =>
+        services.AddAuthentication(_ =>
             {
-                // To make the various authentication control flows obvious, do
-                // not use default schemes for anything and always be explicit
-                // instead.
+                // To make the various authentication control flows obvious, do not use default
+                // schemes for anything and always be explicit instead.
                 _.DefaultAuthenticateScheme = null;
                 _.DefaultChallengeScheme = null;
                 _.DefaultForbidScheme = null;
@@ -88,15 +81,24 @@ public abstract class AuthConfiguration
                 _.DefaultSignInScheme = null;
                 _.DefaultSignOutScheme = null;
             })
+            // The cookie is used by the database acting as client application through the
+            // authentication scheme `CookieAuthenticationDefaults.AuthenticationScheme`, that is, "Cookies".
             .AddCookie(_ =>
             {
                 _.AccessDeniedPath = "/unauthorized";
                 _.LoginPath = "/connect/login";
                 _.LogoutPath = "/connect/logout";
                 _.ReturnUrlParameter = "returnTo";
-                _.ExpireTimeSpan = TimeSpan.FromMinutes(50);
-                _.SlidingExpiration = false;
-            });
+                _.ExpireTimeSpan = s_cookieExpirationTimeSpan;
+                _.SlidingExpiration = true;
+            })
+            .AddScheme<
+                CookieAndBearerTokenAuthenticationSchemeOptions,
+                CookieAndBearerTokenAuthenticationSchemeHandler
+            >(
+                AuthenticationConstants.CookieAndBearerTokenAuthenticationScheme,
+                _ => { }
+            );
     }
 
     private static void ConfigureTaskScheduling(
@@ -104,13 +106,12 @@ public abstract class AuthConfiguration
         IWebHostEnvironment environment
     )
     {
-        // OpenIddict offers native integration with Quartz.NET to perform scheduled tasks
-        // (like pruning orphaned authorizations/tokens from the database) at regular intervals.
-        // For configuring Quartz see
-        // https://www.quartz-scheduler.net/documentation/quartz-3.x/packages/hosted-services-integration.html
+        // OpenIddict offers native integration with Quartz.NET to perform scheduled tasks (like
+        // pruning orphaned authorizations/tokens from the database) at regular intervals. For
+        // configuring Quartz see https://www.quartz-scheduler.net/documentation/quartz-3.x/packages/hosted-services-integration.html
         services.AddQuartz(_ =>
         {
-            _.SchedulerId = "database";
+            _.SchedulerId = OpenIdConnectConstants.DatabaseQuartzSchedulerId;
             _.SchedulerName = "Database";
             _.UseSimpleTypeLoader();
             _.UseInMemoryStore();
@@ -119,8 +120,9 @@ public abstract class AuthConfiguration
             );
             if (environment.IsEnvironment(Program.TestEnvironment))
             {
-                // See https://gitter.im/MassTransit/MassTransit?at=5db2d058f6db7f4f856fb404
-                _.SchedulerName = Guid.NewGuid().ToString();
+                var probablyUniqueId = Guid.NewGuid().ToString();
+                _.SchedulerId = $"{OpenIdConnectConstants.DatabaseQuartzSchedulerId}-{probablyUniqueId}";
+                _.SchedulerName = $"Metabase-{probablyUniqueId}";
             }
         });
         // Register the Quartz.NET service and configure it to block shutdown until jobs are complete.
@@ -154,7 +156,7 @@ public abstract class AuthConfiguration
                 // retrieve the issuer signing keys used to validate tokens.
                 _.SetIssuer(appSettings.MetabaseHostUri);
                 // Configure the audience accepted by this resource server.
-                _.AddAudiences(appSettings.OpenIdConnectClient.Id);
+                _.AddAudiences(OpenIdConnectConstants.MetabaseClientId);
                 // Configure the validation handler to use introspection and
                 // register the client credentials used when communicating with
                 // the remote introspection endpoint.
@@ -164,6 +166,10 @@ public abstract class AuthConfiguration
                     .SetClientSecret(appSettings.OpenIdConnectClient.Secret);
                 // Register the ASP.NET Core host.
                 _.UseAspNetCore();
+                // Enable token entry validation: https://documentation.openiddict.com/configuration/token-storage.html#enabling-token-entry-validation-at-the-api-level
+                _.EnableTokenEntryValidation();
+                // Enable authorization entry validation: https://documentation.openiddict.com/configuration/authorization-storage.html#enabling-authorization-entry-validation-at-the-api-level
+                _.EnableAuthorizationEntryValidation();
                 // Register the System.Net.Http integration.
                 _.UseSystemNetHttp()
                     .ConfigureHttpClientHandler(handler =>
@@ -177,18 +183,18 @@ public abstract class AuthConfiguration
             })
             .AddClient(_ =>
             {
-                _.AllowAuthorizationCodeFlow();
+                _.AllowAuthorizationCodeFlow()
+                 .AllowRefreshTokenFlow();
 
-                // Register the signing and encryption credentials.
-                // See https://stackoverflow.com/questions/50862755/signing-keys-certificates-and-client-secrets-confusion/50932120#50932120
+                // Register the signing and encryption credentials. See https://stackoverflow.com/questions/50862755/signing-keys-certificates-and-client-secrets-confusion/50932120#50932120
                 _.AddEncryptionCertificate(encryptionCertificate)
-                    .AddSigningCertificate(signingCertificate);
+                 .AddSigningCertificate(signingCertificate);
 
                 // Register the ASP.NET Core host and configure the ASP.NET Core-specific options.
                 _.UseAspNetCore()
-                    .EnableStatusCodePagesIntegration() // https://documentation.openiddict.com/integrations/aspnet-core#status-code-pages-middleware-integration
-                    .EnableRedirectionEndpointPassthrough() // https://documentation.openiddict.com/integrations/aspnet-core#pass-through-mode
-                    .EnablePostLogoutRedirectionEndpointPassthrough();
+                 .EnableStatusCodePagesIntegration() // https://documentation.openiddict.com/integrations/aspnet-core#status-code-pages-middleware-integration
+                 .EnableRedirectionEndpointPassthrough() // https://documentation.openiddict.com/integrations/aspnet-core#pass-through-mode
+                 .EnablePostLogoutRedirectionEndpointPassthrough();
                 // .DisableTransportSecurityRequirement(); // https://documentation.openiddict.com/integrations/aspnet-core#transport-security-requirement
 
                 // Register the System.Net.Http integration and use the identity of the current
@@ -205,34 +211,31 @@ public abstract class AuthConfiguration
                         }
                     });
 
-                // Add a client registration matching the client application definition in the server project.
-                _.AddRegistration(
-                    new OpenIddictClientRegistration
-                    {
-                        Issuer = appSettings.MetabaseHostUri,
+                // Add a client registration matching the client application definition in the
+                // server project.
+                var clientRegistration = new OpenIddictClientRegistration
+                {
+                    RegistrationId = OpenIdConnectConstants.MetabaseRegistrationId,
+                    Issuer = appSettings.MetabaseHostUri,
 
-                        // Note: these settings must match the application details
-                        // inserted in the database at the server level.
-                        ClientId = appSettings.OpenIdConnectClient.Id,
-                        ClientSecret = appSettings.OpenIdConnectClient.Secret,
+                    // Note: these settings must match the application details inserted in the
+                    // database at the server level.
+                    ClientId = appSettings.OpenIdConnectClient.Id,
+                    ClientSecret = appSettings.OpenIdConnectClient.Secret,
 
-                        // https://auth0.com/docs/get-started/apis/scopes/openid-connect-scopes#standard-claims
-                        Scopes =
-                        {
-                            OpenIddictConstants.Scopes.Profile,
-                            ReadApiScope,
-                            WriteApiScope,
-                            ManageDatabaseApiScope,
-                        },
-
-                        // Note: to mitigate mix-up attacks, it's recommended to use a unique redirection endpoint
-                        // URI per provider, unless all the registered providers support returning a special "iss"
-                        // parameter containing their URL as part of authorization responses. For more information,
-                        // see https://datatracker.ietf.org/doc/html/draft-ietf-oauth-security-topics#section-4.4.
-                        RedirectUri = new Uri("connect/callback/login/metabase", UriKind.Relative),
-                        PostLogoutRedirectUri = new Uri("connect/callback/logout/metabase", UriKind.Relative)
-                    }
-                );
+                    // Note: to mitigate mix-up attacks, it's recommended to use a unique
+                    // redirection endpoint URI per provider, unless all the registered
+                    // providers support returning a special "iss" parameter containing their
+                    // URL as part of authorization responses. For more information, see https://datatracker.ietf.org/doc/html/draft-ietf-oauth-security-topics#section-4.4.
+                    RedirectUri = new Uri($"connect/callback/login/{OpenIdConnectConstants.MetabaseClientId}", UriKind.Relative),
+                    PostLogoutRedirectUri = new Uri($"connect/callback/logout/{OpenIdConnectConstants.MetabaseClientId}", UriKind.Relative)
+                };
+                clientRegistration.Scopes.UnionWith([
+                    OpenIddictConstants.Scopes.OfflineAccess,
+                    OpenIddictConstants.Scopes.OpenId,
+                    ..OpenIdConnectScope.Scopes
+                ]);
+                _.AddRegistration(clientRegistration);
             });
     }
 }

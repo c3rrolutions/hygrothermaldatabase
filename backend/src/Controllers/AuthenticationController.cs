@@ -9,14 +9,14 @@ using Database.Data;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
 using Microsoft.EntityFrameworkCore;
 using OpenIddict.Abstractions;
 using OpenIddict.Client.AspNetCore;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using Microsoft.AspNetCore.Routing;
+using Database.Authentication;
+using System.Globalization;
 
 namespace Database.Controllers;
 
@@ -25,13 +25,9 @@ namespace Database.Controllers;
 [EndpointGroupName("Authentication")]
 public sealed class AuthenticationController(
     AppSettings appSettings,
-    IOptions<IdentityOptions> identityOptions,
     ApplicationDbContext context
-    ) : Controller
+) : Controller
 {
-    private readonly IdentityOptions _identityOptions = identityOptions.Value ??
-                           throw new InvalidOperationException("There are no identity options.");
-    private readonly ApplicationDbContext _context = context;
     private readonly Uri _issuer = appSettings.MetabaseHostUri;
     private bool _disposed;
 
@@ -41,7 +37,7 @@ public sealed class AuthenticationController(
         if (!_disposed)
         {
             // Dispose of resources held by this instance.
-            _context.Dispose();
+            context.Dispose();
             _disposed = true;
         }
     }
@@ -73,8 +69,8 @@ public sealed class AuthenticationController(
         );
     }
 
+    [Authorize(AuthenticationSchemes = AuthenticationConstants.CookieAndBearerTokenAuthenticationScheme)]
     [HttpPost("~/connect/logout")]
-    [Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme)]
     [ValidateAntiForgeryToken]
     public async Task<ActionResult> LogOut(string? returnUrl)
     {
@@ -101,8 +97,7 @@ public sealed class AuthenticationController(
                     // While not required, the specification encourages sending an id_token_hint
                     // parameter containing an identity token returned by the server for this user.
                     [OpenIddictClientAspNetCoreConstants.Properties.IdentityTokenHint] =
-                        result.Properties.GetTokenValue(OpenIddictClientAspNetCoreConstants.Tokens
-                            .BackchannelIdentityToken)
+                        result.Properties.GetTokenValue(OpenIddictClientAspNetCoreConstants.Tokens.BackchannelIdentityToken)
                 }
             )
             {
@@ -120,7 +115,10 @@ public sealed class AuthenticationController(
     [HttpPost("~/connect/callback/login/{provider}")]
     [IgnoreAntiforgeryToken]
     [SuppressMessage("Style", "IDE0060")]
-    public async Task<ActionResult> LogInCallback(string provider, CancellationToken cancellationToken)
+    public async Task<ActionResult> LogInCallback(
+        string provider,
+        CancellationToken cancellationToken
+    )
     {
         // Retrieve the authorization data validated by OpenIddict as part of the callback handling.
         var result = await HttpContext.AuthenticateAsync(OpenIddictClientAspNetCoreDefaults.AuthenticationScheme);
@@ -151,22 +149,29 @@ public sealed class AuthenticationController(
         // Such identities cannot be used as-is to build an authentication cookie in ASP.NET Core (as the
         // antiforgery stack requires at least a name claim to bind CSRF cookies to the user's identity) but
         // the access/refresh tokens can be retrieved using result.Properties.GetTokens() to make API calls.
-        if (result.Principal is not ClaimsPrincipal { Identity.IsAuthenticated: true })
+        if (result is not { Succeeded: true, Principal.Identity.IsAuthenticated: true })
         {
-            throw new InvalidOperationException(
-                "The external authorization data cannot be used for authentication.");
+            throw new InvalidOperationException("The external authorization data cannot be used for authentication.");
         }
+
+        var accessToken = result.Properties.GetTokenValue(OpenIddictClientAspNetCoreConstants.Tokens.BackchannelAccessToken)
+            ?? throw new InvalidOperationException($"The external authorization data misses an access token.");
+        var subject = result.Principal.GetClaim(ClaimTypes.NameIdentifier)
+            ?? throw new InvalidOperationException($"The external authorization data misses the claim {ClaimTypes.NameIdentifier}.");
+        var name = result.Principal.GetClaim(ClaimTypes.NameIdentifier)
+            ?? throw new InvalidOperationException($"The external authorization data misses the claim {ClaimTypes.Name}.");
 
         // Build an identity based on the external claims and that will be used to create the authentication cookie.
         var identity = new ClaimsIdentity(
-            CookieAuthenticationDefaults.AuthenticationScheme,
-            ClaimTypes.Name,
-            ClaimTypes.Role
+            authenticationType: "ExternalLogin",
+            nameType: ClaimTypes.Name,
+            roleType: ClaimTypes.Role
         );
 
         // By default, OpenIddict will automatically try to map the email/name and name identifier claims from
         // their standard OpenID Connect or provider-specific equivalent, if available. If needed, additional
-        // claims can be resolved from the external identity and copied to the final authentication cookie. For example
+        // claims can be resolved from the external identity and copied to the final authentication cookie.
+        // For example
         // .SetClaim(ClaimTypes.Email, result.Principal.GetClaim(ClaimTypes.Email))
         // The claims are fetched from the userinfo endpoint of the authorization provider.
         // We add the claim `IdentityOptions.ClaimsIdentity.UserIdClaimType` to make
@@ -175,9 +180,8 @@ public sealed class AuthenticationController(
         // iss, exp, iat, aud, sub, role, name, preferred_username, email, azp, nonce, at_hash, email_verified,
         // phone_number_verified, as, oi_reg_id, http://schemas.xmlsoat.org/.../emailaddress,
         // http://schemas.xmlsoat.org/.../name, http://schemas.xmlsoat.org/.../nameidentifier
-        identity.SetClaim(_identityOptions.ClaimsIdentity.UserIdClaimType, result.Principal.GetClaim(ClaimTypes.NameIdentifier))
-                .SetClaim(ClaimTypes.Name, result.Principal.GetClaim(ClaimTypes.Name))
-                .SetClaim(ClaimTypes.NameIdentifier, result.Principal.GetClaim(ClaimTypes.NameIdentifier));
+        identity.SetClaim(ClaimTypes.Name, name)
+                .SetClaim(ClaimTypes.NameIdentifier, subject);
 
         // Preserve `client_id` for usage by access-rights service.
         identity.SetClaim(Claims.AuthorizedParty, result.Principal.GetClaim(Claims.AuthorizedParty));
@@ -186,43 +190,45 @@ public sealed class AuthenticationController(
         identity.SetClaim(Claims.Private.RegistrationId, result.Principal.GetClaim(Claims.Private.RegistrationId))
                 .SetClaim(Claims.Private.ProviderName, result.Principal.GetClaim(Claims.Private.ProviderName));
 
-        AuthenticationProperties properties;
-        if (result.Properties is null)
+        // Build the authentication properties based on the properties that were added when the challenge was triggered.
+        var properties = new AuthenticationProperties(result.Properties.Items)
         {
-            properties = new AuthenticationProperties();
-        }
-        else
-        {
-            // Build the authentication properties based on the properties that were added when the challenge was triggered.
-            properties = new AuthenticationProperties(result.Properties.Items);
-            // If needed, the tokens returned by the authorization server can be stored in the authentication cookie.
-            // To make cookies less heavy, tokens that are not used are filtered out before creating the cookie.
-            properties.StoreTokens(result.Properties.GetTokens().Where(token => token.Name is
+            RedirectUri = result.Properties.RedirectUri ?? "/",
+            // Set the creation and expiration dates of the ticket to null to decorrelate the lifetime
+            // of the resulting authentication cookie from the lifetime of the identity token returned by
+            // the authorization server (if applicable). In this case, the expiration date time will be
+            // automatically computed by the cookie handler using the lifetime configured in the options.
+            //
+            // Applications that prefer binding the lifetime of the ticket stored in the authentication cookie
+            // to the identity token returned by the identity provider can remove or comment these two lines:
+            IssuedUtc = null,
+            ExpiresUtc = null,
+            // Note: this flag controls whether the authentication cookie that will be returned to the
+            // browser will be treated as a session cookie (i.e destroyed when the browser is closed)
+            // or as a persistent cookie. In both cases, the lifetime of the authentication ticket is
+            // always stored as protected data, preventing malicious users from trying to use an
+            // authentication cookie beyond the lifetime of the authentication ticket itself.
+            IsPersistent = false
+        };
+        properties.StoreTokens(
+            result.Properties.GetTokens().Where(token => token.Name is
                 // Preserve the access, identity and refresh tokens returned in the token response, if available.
                 OpenIddictClientAspNetCoreConstants.Tokens.BackchannelAccessToken or
                 OpenIddictClientAspNetCoreConstants.Tokens.BackchannelAccessTokenExpirationDate or
                 OpenIddictClientAspNetCoreConstants.Tokens.RefreshToken
-            ));
-        }
+            )
+        );
 
         // Add the user to the database if he/she does not exist.
-        var subject =
-            identity.FindFirst(c => c.Type == ClaimTypes.NameIdentifier)?.Value
-            ?? throw new InvalidOperationException(
-                $"Impossible! The claim {ClaimTypes.NameIdentifier}, which is the subject of the token, is missing for the identity with name {identity.Name}.");
-        var name =
-            identity.FindFirst(c => c.Type == ClaimTypes.Name)?.Value
-            ?? throw new InvalidOperationException(
-                $"Impossible! The claim {ClaimTypes.Name} is missing for the identity with subject {subject}.");
         var user = await
-            _context.Users.AsQueryable()
+            context.Users.AsQueryable()
                 .SingleOrDefaultAsync(
                     u => u.Subject == subject,
                     cancellationToken
                 );
         if (user is null)
         {
-            _context.Users.Add(
+            context.Users.Add(
                 new User(
                     subject,
                     name
@@ -234,8 +240,9 @@ public sealed class AuthenticationController(
             user.Update(name);
         }
 
-        await _context.SaveChangesAsync(cancellationToken);
-        // Ask the cookie authentication handler to return a new cookie and redirect
+        await context.SaveChangesAsync(cancellationToken);
+
+        // Ask the cookie authentication sign-in handler to return a new cookie and redirect
         // the user agent to the return URL stored in the authentication properties.
         return SignIn(
             new ClaimsPrincipal(identity),

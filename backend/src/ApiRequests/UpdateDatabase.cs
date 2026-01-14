@@ -41,6 +41,8 @@ public sealed class UpdateDatabase
         IReadOnlyList<string> Path
     );
 
+    private sealed record UpdateDatabaseData(UpdateDatabasePayload? UpdateDatabase);
+
     public static async Task<UpdateDatabasePayload?> Do(
         UpdateDatabaseInput updateDatabaseInput,
         AppSettings appSettings,
@@ -48,19 +50,21 @@ public sealed class UpdateDatabase
         CancellationToken cancellationToken
         )
     {
-        return (await apiRequestService.QueryGraphQl<UpdateDatabasePayload>(
+        return (await apiRequestService.QueryGraphQl<UpdateDatabaseData>(
             GetGraphQlEndpoint(appSettings),
             new GraphQLRequest(
                 await GraphQlQueryHelpers.Construct(
                     UpdateDatabaseFileName
-                    ),
+                ),
                 new
                 {
                     input = updateDatabaseInput
                 },
                 "UpdateDatabase"
-                ),
+            ),
             cancellationToken
-        )).Data;
+        ))
+        .Data
+        .UpdateDatabase;
     }
 }

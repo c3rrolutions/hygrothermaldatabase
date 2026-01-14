@@ -15,7 +15,7 @@ public sealed class GetUserInfo
 
     public sealed record UserInfo(
         Address? Address,
-        string Email,
+        string? Email,
         bool EmailVerified,
         string Name,
         string? PhoneNumber,

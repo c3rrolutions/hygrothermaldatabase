@@ -28,7 +28,7 @@ public static partial class Log
         Level = LogLevel.Information,
         Message = "Uploaded file '{FileNameForDisplay}' to '{FilePath}'.")]
     public static partial void SavedUploadedFile(
-        this ILogger logger,
+        this ILogger<FileUploadController> logger,
         string? fileNameForDisplay,
         string filePath
     );
@@ -38,7 +38,7 @@ public static partial class Log
         Level = LogLevel.Error,
         Message = "Failed to create response approval for data with ID {DataId}.")]
     public static partial void FailedToCreateResponseApproval(
-        this ILogger logger,
+        this ILogger<FileUploadController> logger,
         Guid dataId,
         Exception exception
     );

@@ -12,7 +12,7 @@ public static partial class Log
         Level = LogLevel.Debug,
         Message = "Seeding the database")]
     public static partial void SeedingDatabase(
-        this ILogger logger
+        this ILogger<DbSeeder> logger
     );
 }
 

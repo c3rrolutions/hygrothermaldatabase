@@ -167,9 +167,9 @@ public static class AuthConfiguration
                 // Register the ASP.NET Core host.
                 _.UseAspNetCore();
                 // Enable token entry validation: https://documentation.openiddict.com/configuration/token-storage.html#enabling-token-entry-validation-at-the-api-level
-                _.EnableTokenEntryValidation();
+                // _.EnableTokenEntryValidation(); // Token entry validation cannot be enabled when using introspection.
                 // Enable authorization entry validation: https://documentation.openiddict.com/configuration/authorization-storage.html#enabling-authorization-entry-validation-at-the-api-level
-                _.EnableAuthorizationEntryValidation();
+                // _.EnableAuthorizationEntryValidation(); // Authorization entry validation cannot be enabled when using introspection.
                 // Register the System.Net.Http integration.
                 _.UseSystemNetHttp()
                     .ConfigureHttpClientHandler(handler =>

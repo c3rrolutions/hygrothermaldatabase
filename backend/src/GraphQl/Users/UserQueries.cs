@@ -22,14 +22,14 @@ public sealed class UserQueries
         CancellationToken cancellationToken
     )
     {
-        if (!claimsPrincipal.HasClaim(ClaimTypes.NameIdentifier))
+        if (!claimsPrincipal.HasClaim(OpenIddictConstants.Claims.Subject))
         {
             return null;
         }
         return
             await context.Users.AsNoTracking()
                 .SingleOrDefaultAsync(
-                    u => claimsPrincipal.GetClaims(ClaimTypes.NameIdentifier).Contains(u.Subject),
+                    u => claimsPrincipal.GetClaims(OpenIddictConstants.Claims.Subject).Contains(u.Subject),
                     cancellationToken
                 );
     }

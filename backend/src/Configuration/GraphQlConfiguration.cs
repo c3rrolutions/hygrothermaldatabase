@@ -21,18 +21,6 @@ using HotChocolate.AspNetCore;
 
 namespace Database.Configuration;
 
-public static partial class Log
-{
-    [LoggerMessage(
-        EventId = 0,
-        Level = LogLevel.Error,
-        Message = "Failed to authenticate the claims principal in the HTTP context.")]
-    public static partial void FailedToAuthenticate(
-        this ILogger<IHttpRequestInterceptor> logger,
-        Exception exception
-    );
-}
-
 public static class GraphQlConfiguration
 {
     public static void ConfigureServices(
@@ -118,24 +106,13 @@ public static class GraphQlConfiguration
             // flows.
             .AddHttpRequestInterceptor(async (httpContext, requestExecutor, requestBuilder, cancellationToken) =>
             {
-                try
-                {
-                    var authenticationHandler = httpContext.RequestServices.GetRequiredService<AuthenticationHandler>();
-                    var authenticateResult = await authenticationHandler.AuthenticateAsync(httpContext, cancellationToken);
-                    if (authenticateResult is { Succeeded: true, Principal.Identity.IsAuthenticated: true })
-                    {
-                        httpContext.User = authenticateResult.Principal;
-                    }
-                }
-                catch (Exception exception)
-                {
-                    var logger = httpContext.RequestServices.GetRequiredService<ILogger<IHttpRequestInterceptor>>();
-                    logger.FailedToAuthenticate(exception);
-                }
+                await httpContext.RequestServices
+                    .GetRequiredService<GraphQlAuthenticationAndAntiforgeryHandler>()
+                    .HandleAsync(httpContext, cancellationToken);
             })
             .AddDiagnosticEventListener(_ =>
                 new LoggingDiagnosticEventListener(
-                    _.GetApplicationService<ILogger<LoggingDiagnosticEventListener>>()
+                    _.GetRequiredService<ILogger<LoggingDiagnosticEventListener>>()
                 )
             )
             // Scalar Types

@@ -139,33 +139,12 @@ public sealed class AuthenticationHandler(
         return null;
     }
 
-    // Inspired by https://github.com/dotnet/aspnetcore/blob/85565dbb30d724c955179e1989c109c677e7b263/src/Http/Http.Extensions/src/RequestHeaders.cs#L338-L342
-    public static Uri? GetOrigin(RequestHeaders headers)
-    {
-        if (Uri.TryCreate(headers.Headers.Origin, UriKind.RelativeOrAbsolute, out var uri))
-        {
-            return uri;
-        }
-        return null;
-    }
-
-    private static bool IsSameOriginOrReferer(HttpRequest request)
-    {
-        var headers = request.GetTypedHeaders();
-        var originOrReferer = GetOrigin(headers) ?? headers.Referer;
-        if (originOrReferer is null)
-        {
-            return true;
-        }
-        return request.Host == HostString.FromUriComponent(originOrReferer);
-    }
-
     public async Task<AuthenticateResult> AuthenticateAsync(
         HttpContext httpContext,
         CancellationToken cancellationToken
     )
     {
-        if (IsSameOriginOrReferer(httpContext.Request))
+        if (AuthenticationHelpers.IsSameOriginOrReferer(httpContext.Request))
         {
             // For the Next.js Web frontend, the database acts as OpenId Connect
             // Client and uses the cookie scheme for authentication. See

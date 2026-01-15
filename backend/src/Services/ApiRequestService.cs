@@ -12,6 +12,7 @@ using Database.Extensions;
 using Database.Json;
 using GraphQL;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Net.Http.Headers;
 
 namespace Database.Services;
 
@@ -20,7 +21,8 @@ namespace Database.Services;
 /// </summary>
 public sealed class ApiRequestService(
     IHttpClientFactory httpClientFactory,
-    IHttpContextAccessor httpContextAccessor
+    IHttpContextAccessor httpContextAccessor,
+    AppSettings appSettings
 )
 {
     public const string CustomHttpClient = "Custom";
@@ -163,6 +165,10 @@ public sealed class ApiRequestService(
             httpMethod,
             uri
         );
+        httpRequestMessage.Headers.Add(
+            HeaderNames.Origin,
+            appSettings.Host
+        );
         if (bearerToken is not null)
         {
             httpRequestMessage.Headers.Authorization = new AuthenticationHeaderValue(
@@ -197,7 +203,7 @@ public sealed class ApiRequestService(
                     JsonSerializerSettings.GraphQl
                 )
             );
-        result.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+        result.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
         return result;
     }
 }

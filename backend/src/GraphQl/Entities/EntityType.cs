@@ -33,6 +33,7 @@ public abstract class EntityType<TEntity, TEntityByIdDataLoader>
         descriptor
             .Field(t => t.Version)
             .Type<NonNullType<NonNegativeIntType>>()
+            .Name(GraphQlConstants.VersionFieldName)
             .Ignore();
     }
 }

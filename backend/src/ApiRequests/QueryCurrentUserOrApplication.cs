@@ -14,6 +14,8 @@ public sealed class QueryCurrentUserOrApplication
 {
     private const string QueryFileName = "CurrentUserOrApplication.graphql";
 
+    public static readonly CurrentUserOrApplication Empty = new(null, null);
+
     public static Uri GetGraphQlEndpoint(AppSettings appSettings) =>
         appSettings.MetabaseGraphQlEndpoint;
 

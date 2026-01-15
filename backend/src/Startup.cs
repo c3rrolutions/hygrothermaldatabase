@@ -5,6 +5,12 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using HotChocolate.AspNetCore;
+using Database.Configuration;
+using Database.Data;
+using Database.Data.Extensions;
+using Database.Enumerations;
+using Database.Services;
+using Laraue.EfCoreTriggers.PostgreSql.Extensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
@@ -21,12 +27,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi;
 using Scalar.AspNetCore;
 using Serilog;
-using Database.Configuration;
-using Database.Data;
-using Database.Data.Extensions;
-using Database.Enumerations;
-using Database.Services;
-using Laraue.EfCoreTriggers.PostgreSql.Extensions;
+using Database.GraphQl;
 
 namespace Database;
 
@@ -35,13 +36,6 @@ public sealed class Startup(
     IConfiguration configuration
     )
 {
-    private const string GraphQlCorsPolicy = "GraphQlCorsPolicy";
-    private const string AntiforgeryHeaderName = "X-XSRF-TOKEN";
-
-    private const string OpenApiDocumentName = "v1";
-    private const string OpenApiRoutePattern = "/openapi/{documentName}.json";
-    private const string OpenApiDocsRoute = "/openapi/docs";
-
     private readonly AppSettings _appSettings =
         configuration.Get<AppSettings>(_ =>
         {
@@ -60,7 +54,10 @@ public sealed class Startup(
         ConfigureMessageSenderServices(services);
         ConfigureRequestResponseServices(services);
         // ConfigureSessionServices(services, _environment); // Not used
-        services.AddAntiforgery(_ => { _.HeaderName = AntiforgeryHeaderName; });
+        services.AddAntiforgery(_ =>
+        {
+            _.HeaderName = AntiforgeryConstants.HeaderName;
+        });
         services
             .AddDataProtection()
             .PersistKeysToDbContext<ApplicationDbContext>();
@@ -89,7 +86,7 @@ public sealed class Startup(
         );
         services.AddCors(_ =>
             _.AddPolicy(
-                GraphQlCorsPolicy,
+                GraphQlConstants.CorsPolicy,
                 policy =>
                     policy
                         .AllowAnyOrigin()
@@ -125,7 +122,7 @@ public sealed class Startup(
                 // TODO I consider the flattened structure a bug. How can we solve this?
             }
         );
-        services.AddOpenApi(OpenApiDocumentName, _ =>
+        services.AddOpenApi(OpenApiConstants.DocumentName, _ =>
         {
             _.OpenApiVersion = OpenApiSpecVersion.OpenApi3_0;
             _.AddScalarTransformers();
@@ -298,12 +295,12 @@ public sealed class Startup(
         // app.UseResponseCompression(); // Done by Nginx
         // app.UseResponseCaching(); // Done by Nginx
         // app.UseWebSockets();
-        app.MapOpenApi(OpenApiRoutePattern);
-        app.MapScalarApiReference(OpenApiDocsRoute, _ =>
+        app.MapOpenApi(OpenApiConstants.RoutePattern);
+        app.MapScalarApiReference(OpenApiConstants.DocsRoute, _ =>
         {
             _.Servers = []; // https://github.com/dotnet/aspnetcore/issues/57332#issuecomment-2480939916
-            _.AddDocument(OpenApiDocumentName); // For multiple documents see https://guides.scalar.com/scalar/scalar-api-references/integrations/net-aspnet-core/integration#configuration-options__multiple-openapi-documents
-            _.WithOpenApiRoutePattern(OpenApiRoutePattern);
+            _.AddDocument(OpenApiConstants.DocumentName); // For multiple documents see https://guides.scalar.com/scalar/scalar-api-references/integrations/net-aspnet-core/integration#configuration-options__multiple-openapi-documents
+            _.WithOpenApiRoutePattern(OpenApiConstants.RoutePattern);
         });
         app.MapGraphQL()
             .WithOptions(
@@ -319,13 +316,13 @@ public sealed class Startup(
                         DisableTelemetry = true,
                         Enable = true, // _environment.IsDevelopment()
                         IncludeCookies = false,
-                        GraphQLEndpoint = "/graphql",
+                        GraphQLEndpoint = GraphQlConstants.EndpointPath,
                         HttpMethod = DefaultHttpMethod.Post,
                         Title = "GraphQL"
                     }
                 }
             )
-            .RequireCors(GraphQlCorsPolicy);
+            .RequireCors(GraphQlConstants.CorsPolicy);
         app.MapControllers();
         app.MapHealthChecks("/health",
             new HealthCheckOptions

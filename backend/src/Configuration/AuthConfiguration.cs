@@ -27,6 +27,7 @@ public static class AuthConfiguration
         var encryptionCertificate = LoadCertificate("jwt-encryption-certificate.pfx", appSettings.JsonWebToken.EncryptionCertificatePassword);
         var signingCertificate = LoadCertificate("jwt-signing-certificate.pfx", appSettings.JsonWebToken.SigningCertificatePassword);
         services.AddScoped<AuthenticationHandler>();
+        services.AddScoped<GraphQlAuthenticationAndAntiforgeryHandler>();
         ConfigureAuthenticationAndAuthorizationServices(services);
         ConfigureTaskScheduling(services, environment);
         ConfigureOpenIddictServices(services, environment, appSettings, encryptionCertificate, signingCertificate);

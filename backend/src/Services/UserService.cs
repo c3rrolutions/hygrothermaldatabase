@@ -4,10 +4,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using OpenIddict.Abstractions;
-using static OpenIddict.Abstractions.OpenIddictConstants;
 using Database.ApiRequests;
 using Database.Extensions;
-using static Database.ApiRequests.QueryCurrentUserOrApplication;
 using System;
 
 namespace Database.Services;
@@ -32,55 +30,64 @@ public sealed class UserService(
     /// </summary>
     public string? GetOpenIdConnectClientId()
     {
-        return httpContextAccessor.HttpContext?.User.GetClaim(Claims.AuthorizedParty);
+        return httpContextAccessor.HttpContext?.User.GetClaim(OpenIddictConstants.Claims.AuthorizedParty);
     }
 
     public async Task<T> UserOrApplicationAsync<T>(
-        Func<CurrentUser?, Task<T>> authorizeUser,
-        Func<CurrentOpenIdConnectApplication?, Task<T>> authorizeApplication,
+        Func<QueryCurrentUserOrApplication.CurrentUser?, Task<T>> handleUser,
+        Func<QueryCurrentUserOrApplication.CurrentOpenIdConnectApplication, Task<T>> handleApplication,
         CancellationToken cancellationToken
     )
     {
         var userOrApplication = await GetCurrentUserOrApplicationAsync(cancellationToken);
         if (userOrApplication.CurrentApplication is not null)
         {
-            return await authorizeApplication(userOrApplication.CurrentApplication);
+            return await handleApplication(userOrApplication.CurrentApplication);
         }
         else
         {
-            return await authorizeUser(userOrApplication.CurrentUser);
+            return await handleUser(userOrApplication.CurrentUser);
         }
     }
 
     /// <summary>
     /// Get current user or OpenId Connect application from Metabase (or the local cache).
     /// </summary>
-    public async Task<CurrentUserOrApplication> GetCurrentUserOrApplicationAsync(
+    public async Task<QueryCurrentUserOrApplication.CurrentUserOrApplication> GetCurrentUserOrApplicationAsync(
         CancellationToken cancellationToken
     )
     {
         var httpContext = httpContextAccessor.HttpContext;
-        // If there is no HTTP context or there is no authenticated user, return early.
-        if (httpContext is null || httpContext.User is null)
+        if (httpContext is null)
         {
-            return new CurrentUserOrApplication(null, null);
+            return QueryCurrentUserOrApplication.Empty;
         }
-        // If there is an authenticated user, then the bearer token exists and is valid.
-        var token = httpContextAccessor.HttpContext?.ExtractBearerToken();
+        var token = httpContext.ExtractBearerToken();
         if (token is null)
         {
-            return new CurrentUserOrApplication(null, null);
+            return QueryCurrentUserOrApplication.Empty;
         }
-        // Try to get the cached user or application for the token.
+        // If there is no authenticated user, then the bearer token may be
+        // invalid or expired, so we cannot trust a possibly-cached result.
+        if (httpContext.User is null)
+        {
+            return await QueryCurrentUserOrApplication.Do(
+                appSettings,
+                apiRequestService,
+                cancellationToken
+            );
+        }
+        // If there is an authenticated user, then the bearer token is valid and
+        // we try to get the cached user or application.
         if (!cacheService.TryGetCurrentUserOrApplication(token, out var cachedUserOrApplication))
         {
-            // If it is not cached, fetch it from the metabase.
+            // If it is not cached, fetch it ...
             cachedUserOrApplication = await QueryCurrentUserOrApplication.Do(
                 appSettings,
                 apiRequestService,
                 cancellationToken
             );
-            // And store it in the cache.
+            // ... and store it in the cache.
             cacheService.SetCurrentUserOrApplication(token, cachedUserOrApplication);
         }
         return cachedUserOrApplication;

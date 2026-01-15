@@ -5,7 +5,7 @@ import { Button, Menu } from "antd";
 import { UserOutlined } from "@ant-design/icons";
 import paths from "../paths";
 import { CurrentUserDocument } from "../queries/currentUser.generated";
-import { getXsrfToken } from "../lib/apollo";
+import { extractXsrfTokenFromCookie } from "../lib/apollo";
 import { Route } from "next";
 
 type NavItemProps = {
@@ -65,7 +65,7 @@ export default function NavBar({ items }: NavBarProps) {
                 type="hidden"
                 value={
                   typeof window !== "undefined"
-                    ? (getXsrfToken() ?? undefined)
+                    ? (extractXsrfTokenFromCookie() ?? "")
                     : ""
                 }
               />

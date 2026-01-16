@@ -1,5 +1,4 @@
 using System;
-using System.Globalization;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
@@ -7,12 +6,8 @@ using Database.Extensions;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Headers;
-using OpenIddict.Abstractions;
 using OpenIddict.Client;
-using OpenIddict.Client.AspNetCore;
 using OpenIddict.Validation.AspNetCore;
-using static OpenIddict.Client.OpenIddictClientModels;
 
 namespace Database.Authentication;
 
@@ -20,21 +15,6 @@ public sealed class AuthenticationHandler(
     OpenIddictClientService openIddictClientService
 )
 {
-    private static string? GetBackchannelAccessToken(AuthenticateResult authenticateResult) =>
-        authenticateResult.Properties?.GetTokenValue(OpenIddictClientAspNetCoreConstants.Tokens.BackchannelAccessToken);
-
-    private static DateTimeOffset? GetBackchannelAccessTokenExpirationDate(AuthenticateResult authenticateResult) =>
-        DateTimeOffset.TryParse(
-            authenticateResult.Properties?.GetTokenValue(OpenIddictClientAspNetCoreConstants.Tokens.BackchannelAccessTokenExpirationDate),
-            CultureInfo.InvariantCulture,
-            out var date
-        )
-        ? date
-        : null;
-
-    private static string? GetRefreshToken(AuthenticateResult authenticateResult) =>
-        authenticateResult.Properties?.GetTokenValue(OpenIddictClientAspNetCoreConstants.Tokens.RefreshToken);
-
     private static async Task UpdateTokenValuesAsync(
           HttpContext httpContext,
           ClaimsPrincipal claimsPrincipal,
@@ -44,24 +24,19 @@ public sealed class AuthenticationHandler(
     {
         // Override the tokens using the values returned in the token response.
         var properties = authenticationProperties.Clone();
-        // Keep in sync with `GetTokenValue` in `AddRequestTransform` above
         properties.UpdateTokenValue(
-            OpenIddictClientAspNetCoreConstants.Tokens.BackchannelAccessToken,
+            AuthenticationTokens.AccessTokenName,
             freshTokens.AccessToken
         );
         properties.UpdateTokenValue(
-            OpenIddictClientAspNetCoreConstants.Tokens.BackchannelAccessTokenExpirationDate,
-            freshTokens.AccessTokenExpirationDate?.ToString(CultureInfo.InvariantCulture) ?? string.Empty
-        );
-        properties.UpdateTokenValue(
-            OpenIddictClientAspNetCoreConstants.Tokens.BackchannelIdentityToken,
-            freshTokens.IdentityToken
+            AuthenticationTokens.AccessTokenExpirationDateName,
+            freshTokens.AccessTokenExpirationDateAsString ?? string.Empty
         );
         // Note: if no refresh token was returned, preserve the refresh token initially returned.
         if (!string.IsNullOrEmpty(freshTokens.RefreshToken))
         {
             properties.UpdateTokenValue(
-                OpenIddictClientAspNetCoreConstants.Tokens.RefreshToken,
+                AuthenticationTokens.RefreshTokenName,
                 freshTokens.RefreshToken
             );
         }
@@ -103,20 +78,20 @@ public sealed class AuthenticationHandler(
         {
             return null;
         }
-        var accessToken = GetBackchannelAccessToken(cookieAuthenticationResult);
-        var expirationDate = GetBackchannelAccessTokenExpirationDate(cookieAuthenticationResult);
+        var accessToken = AuthenticationTokens.ExtractAccessToken(cookieAuthenticationResult);
+        var expirationDate = AuthenticationTokens.ExtractAccessTokenExpirationDate(cookieAuthenticationResult);
         if (accessToken is not null
             && expirationDate is not null
-            && TimeProvider.System.GetUtcNow() <= expirationDate?.Subtract(OpenIdConnectConstants.AccessAndIdentityTokenLifetime.Divide(3))
+            && TimeProvider.System.GetUtcNow() <= expirationDate?.Subtract(OpenIdConnectConstants.AccessTokenLifetime.Divide(3))
         )
         {
             return accessToken;
         }
-        var refreshToken = GetRefreshToken(cookieAuthenticationResult);
+        var refreshToken = AuthenticationTokens.ExtractRefreshToken(cookieAuthenticationResult);
         if (refreshToken is not null)
         {
             var refreshTokenAuthenticationResult = await openIddictClientService.AuthenticateWithRefreshTokenAsync(
-                new RefreshTokenAuthenticationRequest
+                new OpenIddictClientModels.RefreshTokenAuthenticationRequest
                 {
                     DisableUserInfo = true,
                     RefreshToken = refreshToken,
@@ -130,7 +105,6 @@ public sealed class AuthenticationHandler(
                 new AuthenticationTokens(
                     AccessToken: refreshTokenAuthenticationResult.AccessToken,
                     AccessTokenExpirationDate: refreshTokenAuthenticationResult.AccessTokenExpirationDate,
-                    IdentityToken: refreshTokenAuthenticationResult.IdentityToken,
                     RefreshToken: refreshTokenAuthenticationResult.RefreshToken
                 )
             );

@@ -16,7 +16,6 @@ using OpenIddict.Client.AspNetCore;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using Microsoft.AspNetCore.Routing;
 using Database.Authentication;
-using System.Globalization;
 
 namespace Database.Controllers;
 
@@ -96,8 +95,7 @@ public sealed class AuthenticationController(
                     [OpenIddictClientAspNetCoreConstants.Properties.Issuer] = _issuer.AbsoluteUri,
                     // While not required, the specification encourages sending an id_token_hint
                     // parameter containing an identity token returned by the server for this user.
-                    [OpenIddictClientAspNetCoreConstants.Properties.IdentityTokenHint] =
-                        result.Properties.GetTokenValue(OpenIddictClientAspNetCoreConstants.Tokens.BackchannelIdentityToken)
+                    [OpenIddictClientAspNetCoreConstants.Properties.IdentityTokenHint] = AuthenticationTokens.ExtractIdentityToken(result)
                 }
             )
             {
@@ -154,7 +152,7 @@ public sealed class AuthenticationController(
             throw new InvalidOperationException("The external authorization data cannot be used for authentication.");
         }
 
-        var accessToken = result.Properties.GetTokenValue(OpenIddictClientAspNetCoreConstants.Tokens.BackchannelAccessToken)
+        var accessToken = AuthenticationTokens.ExtractAccessToken(result)
             ?? throw new InvalidOperationException($"The external authorization data misses an access token.");
         var subject = result.Principal.GetClaim(ClaimTypes.NameIdentifier)
             ?? throw new InvalidOperationException($"The external authorization data misses the claim {ClaimTypes.NameIdentifier}.");
@@ -171,24 +169,8 @@ public sealed class AuthenticationController(
         // By default, OpenIddict will automatically try to map the email/name and name identifier claims from
         // their standard OpenID Connect or provider-specific equivalent, if available. If needed, additional
         // claims can be resolved from the external identity and copied to the final authentication cookie.
-        // For example
-        // .SetClaim(ClaimTypes.Email, result.Principal.GetClaim(ClaimTypes.Email))
         // The claims are fetched from the userinfo endpoint of the authorization provider.
-        // We add the claim `IdentityOptions.ClaimsIdentity.UserIdClaimType` to make
-        // `UserManager.GetUserAsync(claimsPrincipal)` return the authenticated user.
-        // You can use the debugger to see which claims are present. Just now it were:
-        // iss, exp, iat, aud, sub, role, name, preferred_username, email, azp, nonce, at_hash, email_verified,
-        // phone_number_verified, as, oi_reg_id, http://schemas.xmlsoat.org/.../emailaddress,
-        // http://schemas.xmlsoat.org/.../name, http://schemas.xmlsoat.org/.../nameidentifier
-        identity.SetClaim(ClaimTypes.Name, name)
-                .SetClaim(ClaimTypes.NameIdentifier, subject);
-
-        // Preserve `client_id` for usage by access-rights service.
-        identity.SetClaim(Claims.AuthorizedParty, result.Principal.GetClaim(Claims.AuthorizedParty));
-
-        // Preserve the registration details to be able to resolve them later.
-        identity.SetClaim(Claims.Private.RegistrationId, result.Principal.GetClaim(Claims.Private.RegistrationId))
-                .SetClaim(Claims.Private.ProviderName, result.Principal.GetClaim(Claims.Private.ProviderName));
+        identity.SetClaim(ClaimTypes.NameIdentifier, subject);
 
         // Build the authentication properties based on the properties that were added when the challenge was triggered.
         var properties = new AuthenticationProperties(result.Properties.Items)
@@ -210,13 +192,12 @@ public sealed class AuthenticationController(
             // authentication cookie beyond the lifetime of the authentication ticket itself.
             IsPersistent = false
         };
+
+        // If needed, the tokens returned by the authorization server can be stored in the authentication cookie.
+        // To make cookies less heavy, tokens that are not used are filtered out before creating the cookie.
         properties.StoreTokens(
-            result.Properties.GetTokens().Where(token => token.Name is
-                // Preserve the access, identity and refresh tokens returned in the token response, if available.
-                OpenIddictClientAspNetCoreConstants.Tokens.BackchannelAccessToken or
-                OpenIddictClientAspNetCoreConstants.Tokens.BackchannelAccessTokenExpirationDate or
-                OpenIddictClientAspNetCoreConstants.Tokens.RefreshToken
-            )
+            // Preserve the access, identity and refresh tokens returned in the token response, if available.
+            AuthenticationTokens.From(accessToken, result).AsEnumerable()
         );
 
         // Add the user to the database if he/she does not exist.
@@ -239,7 +220,6 @@ public sealed class AuthenticationController(
         {
             user.Update(name);
         }
-
         await context.SaveChangesAsync(cancellationToken);
 
         // Ask the cookie authentication sign-in handler to return a new cookie and redirect

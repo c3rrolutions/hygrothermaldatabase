@@ -1,5 +1,5 @@
 import Layout from "../../../components/Layout";
-import { Table, message, Form, Button, Alert, Typography } from "antd";
+import { Table, App, Form, Button, Alert, Typography } from "antd";
 import { AllPhotovoltaicDataDocument } from "../../../queries/data.generated";
 import {
   PhotovoltaicData,
@@ -80,7 +80,7 @@ function Page() {
   const [globalErrorMessages, setGlobalErrorMessages] = useState(
     new Array<string>(),
   );
-  const [messageApi, contextHolder] = message.useMessage();
+  const { message } = App.useApp();
   const [data, setData] = useState<PhotovoltaicData[]>([]);
   // Using `skip` is inspired by https://github.com/apollographql/apollo-client/issues/5268#issuecomment-749501801
   // An alternative would be `useLazy...` as told in https://github.com/apollographql/apollo-client/issues/5268#issuecomment-527727653
@@ -150,7 +150,7 @@ function Page() {
         if (error) {
           // TODO Handle properly.
           console.log(error);
-          messageApi.error(error.message);
+          message.error(error.message);
         }
         // TODO Casting to `PhotovoltaicData` is wrong and error prone!
         setData(
@@ -173,7 +173,6 @@ function Page() {
 
   return (
     <Layout>
-      {contextHolder}
       <Typography.Title>Photovoltaic Data</Typography.Title>
       {/* TODO Display error messages in a list? */}
       {globalErrorMessages.length > 0 && (

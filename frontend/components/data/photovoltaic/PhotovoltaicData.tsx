@@ -1,6 +1,6 @@
 import { Scalars } from "../../../__generated__/graphql";
 import { PhotovoltaicDataDocument } from "../../../queries/data.generated";
-import { Skeleton, Result, message } from "antd";
+import { Skeleton, Result, App } from "antd";
 import { useEffect } from "react";
 import { stringifyApolloError } from "../../../lib/apollo";
 import DataPageHeader from "../DataPageHeader";
@@ -19,11 +19,11 @@ export default function PhotovoltaicData({
     },
   });
   const photovoltaicData = data?.photovoltaicData;
-  const [messageApi, contextHolder] = message.useMessage();
+  const { message } = App.useApp();
 
   useEffect(() => {
     if (error) {
-      messageApi.error(stringifyApolloError(error));
+      message.error(stringifyApolloError(error));
     }
   }, [error]);
 
@@ -43,7 +43,6 @@ export default function PhotovoltaicData({
 
   return (
     <>
-      {contextHolder}
       <DataPageHeader
         data={photovoltaicData}
         // extra={[

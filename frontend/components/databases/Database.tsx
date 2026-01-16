@@ -1,6 +1,6 @@
 import { useQuery } from "@apollo/client/react";
 import { DatabaseDocument } from "../../queries/databases.generated";
-import { Skeleton, Result, Descriptions, Typography, Tag, message } from "antd";
+import { Skeleton, Result, Descriptions, Typography, Tag, App } from "antd";
 import { PageHeader } from "@ant-design/pro-layout";
 import { ReactNode, useEffect } from "react";
 import { stringifyApolloError } from "../../lib/apollo";
@@ -12,11 +12,11 @@ export type DatabaseProps = {};
 export default function Database({}: DatabaseProps) {
   const { loading, error, data } = useQuery(DatabaseDocument);
   const database = data?.database;
-  const [messageApi, contextHolder] = message.useMessage();
+  const { message } = App.useApp();
 
   useEffect(() => {
     if (error) {
-      messageApi.error(stringifyApolloError(error));
+      message.error(stringifyApolloError(error));
     }
   }, [error]);
 
@@ -36,7 +36,6 @@ export default function Database({}: DatabaseProps) {
 
   return (
     <>
-      {contextHolder}
       <PageHeader
         title={database.name}
         subTitle={database.description}

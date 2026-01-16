@@ -1,6 +1,6 @@
 import { Scalars } from "../../../__generated__/graphql";
 import { OpticalDataDocument } from "../../../queries/data.generated";
-import { Skeleton, Result, Descriptions, message } from "antd";
+import { Skeleton, Result, Descriptions, App } from "antd";
 import { useEffect } from "react";
 import { stringifyApolloError } from "../../../lib/apollo";
 import DataPageHeader from "../DataPageHeader";
@@ -17,11 +17,11 @@ export default function OpticalData({ opticalDataId }: OpticalDataProps) {
     },
   });
   const opticalData = data?.opticalData;
-  const [messageApi, contextHolder] = message.useMessage();
+  const { message } = App.useApp();
 
   useEffect(() => {
     if (error) {
-      messageApi.error(stringifyApolloError(error));
+      message.error(stringifyApolloError(error));
     }
   }, [error]);
 
@@ -41,7 +41,6 @@ export default function OpticalData({ opticalDataId }: OpticalDataProps) {
 
   return (
     <>
-      {contextHolder}
       <DataPageHeader
         data={opticalData}
         // extra={[

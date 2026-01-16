@@ -1,7 +1,7 @@
 import { useQuery } from "@apollo/client/react";
 import Layout from "../components/Layout";
 import { CurrentUserInfoDocument } from "../queries/currentUser.generated";
-import { Skeleton, Result, Descriptions, Typography, message } from "antd";
+import { Skeleton, Result, Descriptions, Typography, App } from "antd";
 import { PageHeader } from "@ant-design/pro-layout";
 import { useEffect } from "react";
 import { stringifyApolloError } from "../lib/apollo";
@@ -10,11 +10,11 @@ import paths from "../paths";
 function Page() {
   const { loading, error, data } = useQuery(CurrentUserInfoDocument);
   const currentUserInfo = data?.currentUserInfo;
-  const [messageApi, contextHolder] = message.useMessage();
+  const { message } = App.useApp();
 
   useEffect(() => {
     if (error) {
-      messageApi.error(stringifyApolloError(error));
+      message.error(stringifyApolloError(error));
     }
   }, [error]);
 
@@ -34,7 +34,6 @@ function Page() {
 
   return (
     <Layout>
-      {contextHolder}
       <PageHeader
         title={currentUserInfo.name}
         subTitle={currentUserInfo.sub}

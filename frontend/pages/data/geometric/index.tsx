@@ -1,7 +1,7 @@
 import Layout from "../../../components/Layout";
 import {
   Table,
-  message,
+  App,
   Form,
   Button,
   Alert,
@@ -80,7 +80,7 @@ function Page() {
   const [globalErrorMessages, setGlobalErrorMessages] = useState(
     new Array<string>(),
   );
-  const [messageApi, contextHolder] = message.useMessage();
+  const { message } = App.useApp();
   const [data, setData] = useState<GeometricData[]>([]);
 
   const allGeometricDataQuery = useQuery(AllGeometricDataDocument, {
@@ -168,7 +168,7 @@ function Page() {
         );
         if (error) {
           console.log(error);
-          messageApi.error(error.message);
+          message.error(error.message);
         }
         setData(
           (data?.allGeometricData?.edges?.map((x) => x.node) ||
@@ -188,7 +188,6 @@ function Page() {
 
   return (
     <Layout>
-      {contextHolder}
       <Typography.Title>Geometric Data</Typography.Title>
       {globalErrorMessages.length > 0 && (
         <Alert type="error" message={globalErrorMessages.join(" ")} />

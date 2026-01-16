@@ -1,4 +1,4 @@
-import { message, Skeleton, Typography } from "antd";
+import { App, Skeleton, Typography } from "antd";
 import { useEffect, useState } from "react";
 import Layout from "../components/Layout";
 
@@ -10,6 +10,7 @@ function Page() {
   // Inspired by https://www.robinwieruch.de/react-hooks-fetch-data
   const [data, setData] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const { message } = App.useApp();
 
   useEffect(() => {
     const fetchData = async () => {

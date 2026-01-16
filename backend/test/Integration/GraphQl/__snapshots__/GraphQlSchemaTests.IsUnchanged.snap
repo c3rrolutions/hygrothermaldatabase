@@ -864,11 +864,11 @@ type User implements Node {
 
 type UserInfo {
   address: Address
-  email: String!
-  emailVerified: Boolean!
+  email: String
+  emailVerified: Boolean
   name: String!
   phoneNumber: String
-  phoneNumberVerified: Boolean!
+  phoneNumberVerified: Boolean
   roles: [String!]
   sub: String!
   website: String

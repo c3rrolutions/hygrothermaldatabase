@@ -16,10 +16,10 @@ public sealed class GetUserInfo
     public sealed record UserInfo(
         Address? Address,
         string? Email,
-        bool EmailVerified,
-        string Name,
+        bool? EmailVerified,
+        string Name, // is not null because the OpenId Connect client asks for the scope `Profile`
         string? PhoneNumber,
-        bool PhoneNumberVerified,
+        bool? PhoneNumberVerified,
         IReadOnlyList<string>? Roles,
         string Sub, // Subject
         string? Website

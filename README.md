@@ -306,7 +306,7 @@ and the pages following it.
         end session, revocation, token;
       - grant types: authorization code and refresh token;
       - response types: code;
-      - scopes: address, email, phone, profile, roles, read:api, write:api;
+      - scopes: profile, read:api, write:api, api:database:manage;
       - requirements: proof key for code exchange and pushed authorization
         requests;
       - post logout redirect URI: `https://${HOST}/connect/callback/logout/metabase`

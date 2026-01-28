@@ -16,6 +16,7 @@ SHELL=/bin/bash -eux -o pipefail
 docker_compose = \
 	docker compose \
 		--file docker-compose.production.yml \
+		--env-file ./.env \
 		--project-name ${NAME}
 
 dump_archive_name = postgresql_dumpall.gz

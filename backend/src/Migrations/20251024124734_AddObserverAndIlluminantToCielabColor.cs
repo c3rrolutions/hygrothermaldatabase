@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using Database.Enumerations;
 using Microsoft.EntityFrameworkCore.Migrations;
 

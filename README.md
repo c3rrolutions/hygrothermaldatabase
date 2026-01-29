@@ -315,6 +315,34 @@ and the pages following it.
         for example, `staging.solarbuildingenvelopes.com` or
         `www.solarbuildingenvelopes.com` for the product-data database of the
         TestLab Solar Facades.
+      Alternatively, after logging in, open
+      `https://www.buildingenvelopedata.org/graphql/` and run the following
+      mutation with your institution ID and host filled-in:
+      ```
+      mutation {
+        createOpenIdConnectApplication(
+          input: {
+            institutionId: "00000000-0000-0000-0000-000000000000"
+            clientId: "my-client"
+            consentType: EXPLICIT
+            displayName: "My Client"
+            endpoints: [AUTHORIZATION, PUSHED_AUTHORIZATION, INTROSPECTION, END_SESSION, REVOCATION, TOKEN]
+            grantTypes: [AUTHORIZATION_CODE, REFRESH_TOKEN]
+            postLogoutRedirectUri: "https://${HOST}/connect/callback/logout/metabase"
+            redirectUri: "https://${HOST}/connect/callback/login/metabase"
+            responseTypes: [CODE]
+            scopes: [PROFILE, READ_API]
+          }
+        ) {
+          clientSecret
+          errors {
+            code
+            message
+            path
+          }
+        }
+      }
+      ```
    1. Prepare the environment by running
       `cp ./.env.${environment}.sample ./.env && chmod 600 ./.env`,
       `cp ./frontend/.env.local.${environment}.sample ./frontend/.env.local && chmod 600 ./.env`,

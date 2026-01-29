@@ -1,5 +1,5 @@
-using HotChocolate.Data.Sorting;
 using Database.Data;
+using HotChocolate.Data.Sorting;
 
 namespace Database.GraphQl.References;
 

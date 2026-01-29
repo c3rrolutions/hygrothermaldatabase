@@ -1,9 +1,9 @@
-using NodaTime;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Threading.Tasks;
 using Database.Extractors;
+using NodaTime;
 
 namespace Database.Data;
 

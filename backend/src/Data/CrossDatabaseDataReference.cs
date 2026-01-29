@@ -1,7 +1,7 @@
-using NodaTime;
 using System;
 using Database.Enumerations;
 using Microsoft.EntityFrameworkCore;
+using NodaTime;
 
 namespace Database.Data;
 

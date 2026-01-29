@@ -1,10 +1,10 @@
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
-using GraphQL;
 using Database.Services;
-using System;
+using GraphQL;
 
 namespace Database.ApiRequests;
 

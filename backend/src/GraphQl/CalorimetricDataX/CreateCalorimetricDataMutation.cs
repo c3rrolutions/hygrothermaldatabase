@@ -1,17 +1,17 @@
-using NodaTime;
 using System;
-using System.Threading;
-using System.Threading.Tasks;
-using HotChocolate.Types;
-using Database.Authorization;
-using Database.Data;
-using Database.Services;
-using HotChocolate;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Threading;
+using System.Threading.Tasks;
+using Database.ApiRequests;
+using Database.Authorization;
+using Database.Data;
 using Database.Extensions;
 using Database.GraphQl.DataX;
-using Database.ApiRequests;
+using Database.Services;
+using HotChocolate;
+using HotChocolate.Types;
+using NodaTime;
 
 namespace Database.GraphQl.CalorimetricDataX;
 

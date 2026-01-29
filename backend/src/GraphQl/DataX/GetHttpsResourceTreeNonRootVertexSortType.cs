@@ -1,6 +1,6 @@
-using HotChocolate.Data.Sorting;
 using Database.Data;
 using Database.GraphQl.GetHttpsResources;
+using HotChocolate.Data.Sorting;
 
 namespace Database.GraphQl.DataX;
 

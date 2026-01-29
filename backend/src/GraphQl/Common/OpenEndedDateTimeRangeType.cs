@@ -1,5 +1,5 @@
-using NodaTime;
 using HotChocolate.Types;
+using NodaTime;
 using NpgsqlTypes;
 
 namespace Database.GraphQl.Common;

@@ -1,17 +1,17 @@
 using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using GraphQL.Client.Abstractions.Utilities;
+using Database.ApiRequests;
 using Database.Data;
 using Database.Enumerations;
-using Database.Services;
-using System.Collections.Generic;
-using static Database.ApiRequests.DataFormatDataLoader;
-using Database.ApiRequests;
 using Database.Extensions;
-using System.Linq;
-using System.Globalization;
+using Database.Services;
+using GraphQL.Client.Abstractions.Utilities;
 using HotChocolate;
+using static Database.ApiRequests.DataFormatDataLoader;
 
 namespace Database.GraphQl;
 

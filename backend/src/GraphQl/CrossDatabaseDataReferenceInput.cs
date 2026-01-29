@@ -1,7 +1,7 @@
-using NodaTime;
 using System;
 using Database.Data;
 using Database.Enumerations;
+using NodaTime;
 
 namespace Database.GraphQl;
 

@@ -4,12 +4,13 @@ using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
-using HotChocolate.AspNetCore;
 using Database.Configuration;
 using Database.Data;
 using Database.Data.Extensions;
 using Database.Enumerations;
+using Database.GraphQl;
 using Database.Services;
+using HotChocolate.AspNetCore;
 using Laraue.EfCoreTriggers.PostgreSql.Extensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection;
@@ -27,7 +28,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi;
 using Scalar.AspNetCore;
 using Serilog;
-using Database.GraphQl;
 
 namespace Database;
 

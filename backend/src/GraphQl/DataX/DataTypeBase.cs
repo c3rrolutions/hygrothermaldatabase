@@ -1,7 +1,7 @@
-using HotChocolate.Types;
-using GreenDonut;
 using System;
 using Database.Data;
+using GreenDonut;
+using HotChocolate.Types;
 
 namespace Database.GraphQl.DataX;
 

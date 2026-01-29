@@ -1,7 +1,7 @@
 using System.Linq;
-using HotChocolate.Data.Sorting;
 using Database.Data;
 using GreenDonut.Data;
+using HotChocolate.Data.Sorting;
 
 namespace Database.GraphQl.Extensions;
 

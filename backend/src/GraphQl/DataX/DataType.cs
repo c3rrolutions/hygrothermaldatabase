@@ -1,5 +1,5 @@
-using HotChocolate.Types;
 using Database.Data;
+using HotChocolate.Types;
 
 namespace Database.GraphQl.DataX;
 

@@ -4,9 +4,9 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Database.Data;
 using GreenDonut;
 using GreenDonut.Data;
-using Database.Data;
 
 namespace Database.GraphQl;
 

@@ -2,12 +2,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Database.Data;
+using Database.GraphQl.Extensions;
 using GreenDonut;
 using GreenDonut.Data;
-using Database.Data;
 using HotChocolate.Data;
 using HotChocolate.Resolvers;
-using Database.GraphQl.Extensions;
 
 namespace Database.GraphQl.DataX;
 

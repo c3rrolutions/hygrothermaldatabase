@@ -1,17 +1,17 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Database.Authorization;
 using Database.Data;
+using Database.Enumerations;
+using Database.Extensions;
 using Database.Services;
 using GraphQL.Client.Abstractions.Utilities;
 using GreenDonut.Data;
 using HotChocolate.Types;
-using System.Diagnostics.CodeAnalysis;
-using Database.Enumerations;
-using Database.Extensions;
 
 namespace Database.GraphQl.DataApprovals;
 

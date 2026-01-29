@@ -20,7 +20,8 @@ public sealed class GetHttpsResourceTreeNonRootVertex(
     public ToTreeVertexAppliedConversionMethod AppliedConversionMethod { get; } =
         value.AppliedConversionMethod ?? throw new InvalidOperationException("Each non-root vertex has an applied conversion method.");
 
-    [GraphQLType<NonNullType<IdType>>] public string VertexId =>
+    [GraphQLType<NonNullType<IdType>>]
+    public string VertexId =>
         GetHttpsResource.ConstructVertexId(Value.Id);
 
     public GetHttpsResource Value { get; } = value;

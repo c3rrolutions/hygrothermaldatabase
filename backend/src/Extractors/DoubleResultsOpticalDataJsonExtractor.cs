@@ -1,5 +1,5 @@
-using Json.Path;
 using Database.Enumerations.DataPoints;
+using Json.Path;
 
 namespace Database.Extractors;
 

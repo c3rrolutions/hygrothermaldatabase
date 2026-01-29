@@ -1,15 +1,14 @@
 using System;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Database.Authorization;
 using Database.Data;
+using Database.Enumerations;
+using Database.Extensions;
 using Database.Services;
 using HotChocolate.Types;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using Database.Extensions;
-
-using Database.Enumerations;
 
 namespace Database.GraphQl.AccessRights;
 

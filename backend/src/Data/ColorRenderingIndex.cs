@@ -1,8 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
-using Microsoft.EntityFrameworkCore;
 using Database.Enumerations;
 using Database.Json;
+using Microsoft.EntityFrameworkCore;
 
 namespace Database.Data;
 

@@ -1,16 +1,16 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using HotChocolate.Types;
 using Database.Authorization;
 using Database.Data;
 using Database.Enumerations;
 using Database.Extensions;
 using Database.Services;
+using HotChocolate.Types;
 using Microsoft.EntityFrameworkCore;
-using System.Linq;
 
 namespace Database.GraphQl.DataX;
 

@@ -2,14 +2,14 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
+using Database.Authorization;
+using Database.Data;
+using Database.Enumerations;
+using Database.GraphQl.Extensions;
 using HotChocolate.Data;
 using HotChocolate.Data.Sorting;
 using HotChocolate.Types;
-using Database.Data;
-using Database.GraphQl.Extensions;
-using Database.Enumerations;
-using Database.Authorization;
+using Microsoft.EntityFrameworkCore;
 
 namespace Database.GraphQl.GetHttpsResources;
 

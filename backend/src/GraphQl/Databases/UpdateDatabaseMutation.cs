@@ -1,9 +1,9 @@
 using System.Threading;
 using System.Threading.Tasks;
-using HotChocolate.Resolvers;
-using HotChocolate.Types;
 using Database.ApiRequests;
 using Database.Services;
+using HotChocolate.Resolvers;
+using HotChocolate.Types;
 using static Database.ApiRequests.UpdateDatabase;
 
 namespace Database.GraphQl.Databases;

@@ -1,8 +1,10 @@
 using System;
 using System.IO;
-using System.Reflection;
 using System.Net.Http;
+using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
+using Database.Authentication;
+using Database.Authorization;
 using Database.Data;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
@@ -10,8 +12,6 @@ using Microsoft.Extensions.Hosting;
 using OpenIddict.Abstractions;
 using OpenIddict.Client;
 using Quartz;
-using Database.Authorization;
-using Database.Authentication;
 
 namespace Database.Configuration;
 

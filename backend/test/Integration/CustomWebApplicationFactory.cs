@@ -5,11 +5,11 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Database.Data;
+using Database.Services;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
-using Database.Data;
-using Database.Services;
 
 namespace Database.Tests.Integration;
 

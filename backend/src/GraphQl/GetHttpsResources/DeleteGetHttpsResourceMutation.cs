@@ -1,16 +1,16 @@
 using System;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Database.Data;
 using Database.Authorization;
+using Database.Data;
 using Database.Enumerations;
-using HotChocolate.Types;
-using Database.Services;
-using System.Diagnostics.CodeAnalysis;
-using System.Collections.Generic;
 using Database.Extensions;
+using Database.Services;
 using GraphQL.Client.Abstractions.Utilities;
+using HotChocolate.Types;
 using Microsoft.EntityFrameworkCore;
 
 namespace Database.GraphQl.GetHttpsResources;

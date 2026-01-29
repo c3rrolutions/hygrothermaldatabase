@@ -1,6 +1,6 @@
-using HotChocolate.Types;
 using Database.Data;
 using Database.GraphQl.References;
+using HotChocolate.Types;
 
 namespace Database.GraphQl.DataApprovals;
 

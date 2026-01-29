@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
-using HotChocolate.Types;
 using Database.Authorization;
 using Database.Data;
 using Database.Enumerations;
 using Database.Extensions;
 using Database.Services;
+using HotChocolate.Types;
 
 namespace Database.GraphQl.DataX;
 

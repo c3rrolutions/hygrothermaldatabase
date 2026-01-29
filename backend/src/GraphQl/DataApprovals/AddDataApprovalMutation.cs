@@ -1,6 +1,6 @@
-using NodaTime;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
@@ -8,7 +8,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using Database.Authorization;
 using Database.Data;
+using Database.Enumerations;
+using Database.Extensions;
 using Database.GraphQl.Publications;
+using Database.GraphQl.References;
 using Database.GraphQl.Standards;
 using Database.Json;
 using Database.Services;
@@ -16,10 +19,7 @@ using GraphQL;
 using GraphQL.Client.Abstractions.Utilities;
 using HotChocolate.Types;
 using Microsoft.Extensions.Logging;
-using System.Diagnostics.CodeAnalysis;
-using Database.Enumerations;
-using Database.GraphQl.References;
-using Database.Extensions;
+using NodaTime;
 
 namespace Database.GraphQl.DataApprovals;
 

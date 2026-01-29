@@ -1,10 +1,10 @@
 using System.Threading;
 using System.Threading.Tasks;
+using Database.ApiRequests;
+using Database.Services;
 using HotChocolate;
 using HotChocolate.Resolvers;
 using HotChocolate.Types;
-using Database.ApiRequests;
-using Database.Services;
 
 namespace Database.GraphQl.Databases;
 

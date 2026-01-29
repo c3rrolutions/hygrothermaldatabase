@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,8 +13,6 @@ using GraphQL.Client.Abstractions.Utilities;
 using HotChocolate;
 using HotChocolate.Resolvers;
 using HotChocolate.Types;
-using System.Diagnostics.CodeAnalysis;
-using System.Collections.Generic;
 
 namespace Database.GraphQl.Methods;
 

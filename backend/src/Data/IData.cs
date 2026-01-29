@@ -1,10 +1,10 @@
-using NodaTime;
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Database.Enumerations;
 using Database.GraphQl;
+using NodaTime;
 
 namespace Database.Data;
 

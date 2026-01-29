@@ -5,17 +5,17 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using GreenDonut.Data;
 using Database.Authorization;
 using Database.Data;
-using Database.Services;
-using HotChocolate.Data;
-using HotChocolate.Types;
-using Microsoft.Extensions.Logging;
 using Database.Extensions;
 using Database.GraphQl.Extensions;
-using HotChocolate.Resolvers;
+using Database.Services;
+using GreenDonut.Data;
+using HotChocolate.Data;
 using HotChocolate.Data.Filters;
+using HotChocolate.Resolvers;
+using HotChocolate.Types;
+using Microsoft.Extensions.Logging;
 
 namespace Database.GraphQl.ResponseApprovals;
 

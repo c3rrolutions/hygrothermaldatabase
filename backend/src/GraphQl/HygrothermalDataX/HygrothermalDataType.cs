@@ -1,6 +1,6 @@
 using Database.Data;
-using HotChocolate.Types;
 using Database.GraphQl.DataX;
+using HotChocolate.Types;
 
 namespace Database.GraphQl.HygrothermalDataX;
 

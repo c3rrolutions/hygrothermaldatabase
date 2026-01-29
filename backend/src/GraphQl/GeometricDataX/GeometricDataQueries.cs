@@ -2,9 +2,10 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Database.Authorization;
 using Database.Data;
-using Database.GraphQl.Extensions;
 using Database.GraphQl.DataX;
+using Database.GraphQl.Extensions;
 using Database.Services;
 using HotChocolate;
 using HotChocolate.Data;
@@ -12,7 +13,6 @@ using HotChocolate.Data.Sorting;
 using HotChocolate.Resolvers;
 using HotChocolate.Types;
 using Microsoft.EntityFrameworkCore;
-using Database.Authorization;
 
 namespace Database.GraphQl.GeometricDataX;
 

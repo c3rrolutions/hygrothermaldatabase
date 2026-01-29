@@ -1,15 +1,15 @@
-using NUnit.Framework;
-using FluentAssertions;
-using Database.Methods.SpectralToIntegral;
-using System.Threading.Tasks;
-using System.Text.Json;
-using Database.Methods;
-using System.IO;
 using System;
-using System.Reflection;
-using FluentAssertions.Execution;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
+using System.Reflection;
+using System.Text.Json;
+using System.Threading.Tasks;
 using Database.Json;
+using Database.Methods;
+using Database.Methods.SpectralToIntegral;
+using FluentAssertions;
+using FluentAssertions.Execution;
+using NUnit.Framework;
 
 namespace Database.Tests.Methods;
 

@@ -1,9 +1,9 @@
-using NodaTime;
 using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using HotChocolate.Types;
 using Database.GraphQl;
+using HotChocolate.Types;
+using NodaTime;
 
 namespace Database.Data;
 

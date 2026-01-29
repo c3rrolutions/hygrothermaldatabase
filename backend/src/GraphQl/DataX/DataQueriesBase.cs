@@ -2,16 +2,16 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
+using Database.Authorization;
+using Database.Data;
+using Database.GraphQl.Entities;
+using Database.GraphQl.Extensions;
+using Database.Services;
 using HotChocolate;
 using HotChocolate.Data;
 using HotChocolate.Data.Sorting;
 using HotChocolate.Resolvers;
-using Database.Data;
-using Database.GraphQl.Extensions;
-using Database.Services;
-using Database.GraphQl.Entities;
-using Database.Authorization;
+using Microsoft.EntityFrameworkCore;
 
 namespace Database.GraphQl.DataX;
 

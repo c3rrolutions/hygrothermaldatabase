@@ -1,12 +1,12 @@
+using System;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Database.ApiRequests;
+using Database.Extensions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using OpenIddict.Abstractions;
-using Database.ApiRequests;
-using Database.Extensions;
-using System;
 
 namespace Database.Services;
 

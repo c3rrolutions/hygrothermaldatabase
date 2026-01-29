@@ -1,5 +1,5 @@
-using HotChocolate.Data.Filters;
 using Database.Data;
+using HotChocolate.Data.Filters;
 
 namespace Database.GraphQl.Publications;
 

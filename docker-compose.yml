@@ -49,7 +49,7 @@ services:
       - "emails:/smtp4dev"
     environment:
       ServerOptions__BasePath: "/email"
-      ServerOptions__HostName: "${HOST:?error}"
+      ServerOptions__HostName: "${HOST:?required}"
       ServerOptions__Database: "database.db"
       ServerOptions__NumberOfMessagesToKeep: "100"
       ServerOptions__NumberOfSessionsToKeep: "100"
@@ -61,8 +61,8 @@ services:
       context: "./backend"
       dockerfile: "./Dockerfile"
       args:
-        CERTIFICATE_AUTHORITY_BASE_FILE_NAME: "${CERTIFICATE_AUTHORITY_BASE_FILE_NAME:?error}"
-        CERTIFICATE_AUTHORITY_PASSWORD: "${CERTIFICATE_AUTHORITY_PASSWORD:?error}"
+        CERTIFICATE_AUTHORITY_BASE_FILE_NAME: "${CERTIFICATE_AUTHORITY_BASE_FILE_NAME:?required}"
+        CERTIFICATE_AUTHORITY_PASSWORD: "${CERTIFICATE_AUTHORITY_PASSWORD:?required}"
     # user: "1000:1000"
     command: [
       "dotnet", "watch",
@@ -106,19 +106,19 @@ services:
       # https://docs.microsoft.com/en-us/aspnet/core/fundamentals/configuration/?view=aspnetcore-3.1#environment-variables
       ASPNETCORE_URLS: "http://0.0.0.0:8080"
       ASPNETCORE_ENVIRONMENT: "development"
-      XBASE_Host: "https://${HOST:?error}:${HTTPS_PORT:?error}"
-      XBASE_MetabaseHost: "https://${METABASE_HOST:?error}:${METABASE_HTTPS_PORT:?error}"
-      XBASE_DatabaseId: "${DATABASE_ID:?error}"
-      XBASE_OperatorId: "${OPERATOR_ID:?error}"
-      XBASE_OpenIdConnectClient__Id: "${OPEN_ID_CONNECT_CLIENT_ID:?error}"
-      XBASE_OpenIdConnectClient__Secret: "${OPEN_ID_CONNECT_CLIENT_SECRET:?error}"
-      XBASE_VerificationCode: "${VERIFICATION_CODE:?error}"
-      XBASE_JsonWebToken__EncryptionCertificatePassword: "${JSON_WEB_TOKEN_ENCRYPTION_CERTIFICATE_PASSWORD:?error}"
-      XBASE_JsonWebToken__SigningCertificatePassword: "${JSON_WEB_TOKEN_SIGNING_CERTIFICATE_PASSWORD:?error}"
-      XBASE_Email__SmtpHost: "${SMTP_HOST:?error}"
-      XBASE_Email__SmtpPort: "${SMTP_PORT:?error}"
-      XBASE_GnupgSecretSigningKey__Fingerprint: "${GNUPG_SECRET_SIGNING_KEY_FINGERPRINT:?error}"
-      XBASE_GnupgSecretSigningKey__Passphrase: "${GNUPG_SECRET_SIGNING_KEY_PASSPHRASE:?error}"
+      XBASE_Host: "https://${HOST:?required}:${HTTPS_PORT:?required}"
+      XBASE_MetabaseHost: "https://${METABASE_HOST:?required}:${METABASE_HTTPS_PORT:?required}"
+      XBASE_DatabaseId: "${DATABASE_ID:?required}"
+      XBASE_OperatorId: "${OPERATOR_ID:?required}"
+      XBASE_OpenIdConnectClient__Id: "${OPEN_ID_CONNECT_CLIENT_ID:?required}"
+      XBASE_OpenIdConnectClient__Secret: "${OPEN_ID_CONNECT_CLIENT_SECRET:?required}"
+      XBASE_VerificationCode: "${VERIFICATION_CODE:?required}"
+      XBASE_JsonWebToken__EncryptionCertificatePassword: "${JSON_WEB_TOKEN_ENCRYPTION_CERTIFICATE_PASSWORD:?required}"
+      XBASE_JsonWebToken__SigningCertificatePassword: "${JSON_WEB_TOKEN_SIGNING_CERTIFICATE_PASSWORD:?required}"
+      XBASE_Email__SmtpHost: "${SMTP_HOST:?required}"
+      XBASE_Email__SmtpPort: "${SMTP_PORT:?required}"
+      XBASE_GnupgSecretSigningKey__Fingerprint: "${GNUPG_SECRET_SIGNING_KEY_FINGERPRINT:?required}"
+      XBASE_GnupgSecretSigningKey__Passphrase: "${GNUPG_SECRET_SIGNING_KEY_PASSPHRASE:?required}"
       # https://learn.microsoft.com/en-us/dotnet/core/tools/dotnet-watch#environment-variables
       DOTNET_USE_POLLING_FILE_WATCHER: "true"
       # https://github.com/dotnet/sdk/issues/50965#issuecomment-3649670760
@@ -130,8 +130,8 @@ services:
       # https://www.gnupg.org/documentation/manuals/gnupg/Invoking-GPG_002dAGENT.html
       GPG_TTY: "/dev/pts/0"
     extra_hosts:
-      - "${HOST:?error}:host-gateway"
-      - "${METABASE_HOST:?error}:host-gateway"
+      - "${HOST:?required}:host-gateway"
+      - "${METABASE_HOST:?required}:host-gateway"
     depends_on:
       database:
         condition: "service_healthy"
@@ -143,7 +143,7 @@ services:
       context: "./frontend"
       dockerfile: "./Dockerfile"
       args:
-        CERTIFICATE_AUTHORITY_BASE_FILE_NAME: "${CERTIFICATE_AUTHORITY_BASE_FILE_NAME:?error}"
+        CERTIFICATE_AUTHORITY_BASE_FILE_NAME: "${CERTIFICATE_AUTHORITY_BASE_FILE_NAME:?required}"
     # user: "1000:1000"
     # ports:
     #   - "8081:8080"
@@ -165,7 +165,7 @@ services:
       - "/app/__generated__"
       - "/app/node_modules"
     extra_hosts:
-      - "${HOST:?error}:host-gateway"
+      - "${HOST:?required}:host-gateway"
     environment:
       NODE_ENV: "development"
     depends_on:
@@ -193,11 +193,11 @@ services:
       # - /var/cache/nginx # ...
       # - /var/run # ...
     ports:
-      - "${HTTP_PORT:?error}:80"
-      - "${HTTPS_PORT:?error}:443"
+      - "${HTTP_PORT:?required}:80"
+      - "${HTTPS_PORT:?required}:443"
     environment:
-      SERVER_NAME: "${HOST:?error}"
-      SSL_CERTIFICATE_BASE_FILE_NAME: "${SSL_CERTIFICATE_BASE_FILE_NAME:?error}"
+      SERVER_NAME: "${HOST:?required}"
+      SSL_CERTIFICATE_BASE_FILE_NAME: "${SSL_CERTIFICATE_BASE_FILE_NAME:?required}"
     depends_on:
       frontend:
         condition: "service_healthy"

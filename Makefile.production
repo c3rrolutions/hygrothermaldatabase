@@ -3,6 +3,10 @@
 
 include ./.env
 
+SHELL := /bin/bash
+.SHELLFLAGS := -o errexit -o errtrace -o nounset -o pipefail -c
+MAKEFLAGS += --warn-undefined-variables
+
 # Use bash with pipefail to have backup and restore fail when whatever comes
 # before the pipe fails. The options given to bash below are described in
 # https://explainshell.com/explain?cmd=set+-eux+-o+pipefail

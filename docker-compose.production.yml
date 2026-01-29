@@ -1,43 +1,35 @@
 # Keep setup in sync with the one in ./docker-compose.yml
+name: "${NAME}"
+
 services:
-  database: # https://hub.docker.com/_/postgres
-    restart: "always"
+  database:
     # Keep version in sync with the one in ./backend/src/Startup.cs set by calling `SetPostgresVersion`
     image: "postgres:13.23-trixie"
-    # For possible command-line arguments see
-    # https://www.postgresql.org/docs/current/app-postgres.html
-    # and for possible configuration parameters like `max_connections` see
-    # https://www.postgresql.org/docs/current/runtime-config.html
-    command: [
-      "-c", "max_connections=100"
-    ]
-    healthcheck:
-      # pg_isready: https://www.postgresql.org/docs/13/app-pg-isready.html
-      test: ["CMD-SHELL", "pg_isready --username=postgres"]
-      interval: "5s"
-      timeout: "5s"
-      retries: "5"
+    volumes:
+      - data:/var/lib/postgresql/data
+      - ./secrets:/run/secrets:ro
     environment:
       POSTGRES_USER: "postgres"
       POSTGRES_PASSWORD_FILE: "/run/secrets/postgres_password"
       POSTGRES_DB: "postgres"
       PGPASSFILE: "/run/secrets/postgres_passwords"
-    volumes:
-      - "data:/var/lib/postgresql/data"
-      - "./secrets:/run/secrets:ro"
-
-  email: # https://hub.docker.com/r/rnwood/smtp4dev
+    # For possible command-line arguments see
+    # https://www.postgresql.org/docs/current/app-postgres.html
+    # and for possible configuration parameters like `max_connections` see
+    # https://www.postgresql.org/docs/current/runtime-config.html
+    command: [ "-c", "max_connections=100" ]
     restart: "always"
-    image: "rnwood/smtp4dev:v3.10"
-    # For all configuration options see
-    # https://github.com/rnwood/smtp4dev/blob/master/docker-compose.yml
     healthcheck:
-      test: ["CMD-SHELL", "curl --silent --fail --output /dev/null http://email:80 || exit 1"]
-      interval: "30s"
-      timeout: "30s"
-      retries: "3"
+      # pg_isready: https://www.postgresql.org/docs/13/app-pg-isready.html
+      test: [ "CMD-SHELL", "pg_isready --username=postgres" ]
+      interval: "5s"
+      timeout: "5s"
+      retries: "5"
+
+  email:
+    image: "rnwood/smtp4dev:v3.10"
     volumes:
-      - "emails:/smtp4dev"
+      - emails:/smtp4dev
     environment:
       ServerOptions__BasePath: "/email"
       ServerOptions__HostName: "${HOST:?required}"
@@ -49,21 +41,30 @@ services:
       RelayOptions__SmtpServer: "${RELAY_SMTP_HOST:?required}"
       RelayOptions__SmtpPort: "${RELAY_SMTP_PORT:?required}"
       RelayOptions__AllowedEmailsString: "${RELAY_ALLOWED_EMAILS:?required}"
-
-  backend:
     restart: "always"
-    build:
-      context: "./backend"
-      dockerfile: "./Dockerfile-production"
-    # https://docs.microsoft.com/en-us/aspnet/core/fundamentals/configuration/?view=aspnetcore-5.0#command-line
-    # command: ["dotnet", "App.dll", "/Serilog:MinimumLevel:Default=Debug", "/Serilog:MinimumLevel:Microsoft=Debug", "/Serilog:MinimumLevel:Microsoft.Hosting.Lifetime=Debug", "/Serilog:MinimumLevel:Override:Microsoft=Debug", "/Serilog:MinimumLevel:Override:Microsoft.AspNetCore=Debug", "/Serilog:MinimumLevel:Override:System=Debug"]
-    command: ["dotnet", "/app/App.dll"]
+    # For all configuration options see
+    # https://github.com/rnwood/smtp4dev/blob/master/docker-compose.yml
     healthcheck:
-      # https://docs.microsoft.com/en-us/aspnet/core/host-and-deploy/health-checks?view=aspnetcore-5.0#docker-example
-      test: ["CMD-SHELL", "curl --silent --fail --output /dev/null http://backend:8080/health || exit 1"]
+      test: [ "CMD-SHELL", "curl --silent --fail --output /dev/null http://email:80 || exit 1" ]
       interval: "30s"
       timeout: "30s"
       retries: "3"
+
+  backend:
+    build:
+      context: "./backend"
+      dockerfile: "./Dockerfile-production"
+    depends_on:
+      database:
+        condition: "service_healthy"
+      email:
+        condition: "service_healthy"
+    volumes:
+      - backend_logs:/app/logs
+      - files:/app/files
+      - ./secrets:/run/secrets:ro
+      # Create volume for GnuPG
+      - gnupg:/root/.gnupg
     environment:
       ASPNETCORE_URLS: "http://0.0.0.0:8080"
       ASPNETCORE_ENVIRONMENT: "production"
@@ -83,61 +84,57 @@ services:
       # The value `/dev/pts/0` is the output of running `tty` within `shellb`
       # https://www.gnupg.org/documentation/manuals/gnupg/Invoking-GPG_002dAGENT.html
       GPG_TTY: "/dev/pts/0"
-    volumes:
-      - "backend_logs:/app/logs"
-      - "files:/app/files"
-      - "./secrets:/run/secrets:ro"
-      # Create volume for GnuPG
-      - "gnupg:/root/.gnupg"
-    depends_on:
-      database:
-        condition: "service_healthy"
-      email:
-        condition: "service_healthy"
+    # https://docs.microsoft.com/en-us/aspnet/core/fundamentals/configuration/?view=aspnetcore-5.0#command-line
+    # command: ["dotnet", "App.dll", "/Serilog:MinimumLevel:Default=Debug", "/Serilog:MinimumLevel:Microsoft=Debug", "/Serilog:MinimumLevel:Microsoft.Hosting.Lifetime=Debug", "/Serilog:MinimumLevel:Override:Microsoft=Debug", "/Serilog:MinimumLevel:Override:Microsoft.AspNetCore=Debug", "/Serilog:MinimumLevel:Override:System=Debug"]
+    command: [ "dotnet", "/app/App.dll" ]
+    restart: "always"
+    healthcheck:
+      # https://docs.microsoft.com/en-us/aspnet/core/host-and-deploy/health-checks?view=aspnetcore-5.0#docker-example
+      test: [ "CMD-SHELL", "curl --silent --fail --output /dev/null http://backend:8080/health || exit 1" ]
+      interval: "30s"
+      timeout: "30s"
+      retries: "3"
 
   frontend:
-    restart: "always"
     build:
       context: "./frontend"
       dockerfile: "./Dockerfile-production"
-    command: ["yarn", "start"]
-    healthcheck:
-      test: ["CMD-SHELL", "wget --quiet --output-document /dev/null http://frontend:8080 || exit 1"]
-      interval: "30s"
-      timeout: "30s"
-      retries: "3"
-    environment:
-      NODE_ENV: "production"
     depends_on:
       backend:
         condition: "service_healthy"
-
-  nginx: # https://hub.docker.com/_/nginx
+    environment:
+      NODE_ENV: "production"
+    command: [ "yarn", "start" ]
     restart: "always"
-    image: "nginx:1.29-trixie-otel"
-    command: [
-      "nginx",
-      "-g", "daemon off;"
-      ]
     healthcheck:
-      test: ["CMD-SHELL", "service nginx status || exit 1"]
+      test: [ "CMD-SHELL", "wget --quiet --output-document /dev/null http://frontend:8080 || exit 1" ]
       interval: "30s"
       timeout: "30s"
       retries: "3"
-    ports:
-      - "${HTTP_PORT:?required}:80"
-    volumes:
-      - "./nginx/templates/production:/etc/nginx/templates:ro"
-      - "./nginx/nginx.conf:/etc/nginx/nginx.conf:ro"
-      - "./nginx/html:/etc/nginx/html:ro"
-      - "files:/data/files:ro"
+
+  nginx:
+    image: "nginx:1.29-trixie-otel"
     depends_on:
-      frontend:
-        condition: "service_healthy"
       backend:
         condition: "service_healthy"
       email:
         condition: "service_healthy"
+      frontend:
+        condition: "service_healthy"
+    volumes:
+      - ./nginx/templates/production:/etc/nginx/templates:ro
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/html:/etc/nginx/html:ro
+      - files:/data/files:ro
+    ports:
+      - "127.0.0.1:${HTTP_PORT:?required}:80"
+    command: [ "nginx", "-g", "daemon off;" ]
+    restart: "always"
+    healthcheck:
+      test: [ "CMD-SHELL", "service nginx status || exit 1" ]
+      interval: "30s"
+      timeout: "30s"
+      retries: "3"
 
 volumes:
   data:

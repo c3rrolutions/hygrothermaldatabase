@@ -127,7 +127,7 @@ services:
       - ./nginx/html:/etc/nginx/html:ro
       - files:/data/files:ro
     ports:
-      - "127.0.0.1:${HTTP_PORT:?required}:80"
+      - "0.0.0.0:${HTTP_PORT:?required}:80"
     command: [ "nginx", "-g", "daemon off;" ]
     restart: "always"
     healthcheck:

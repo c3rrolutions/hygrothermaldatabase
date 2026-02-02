@@ -173,7 +173,8 @@ public sealed class Startup(
             .UseNpgsql(
                 appSettings.Database.ConnectionString,
                 _ => _
-                    .SetPostgresVersion(13, 13)
+                    // Keep version in sync with the one in ./docker-compose.*.yml
+                    .SetPostgresVersion(13, 23)
                     .UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery) // https://learn.microsoft.com/en-us/ef/core/querying/single-split-queries#enabling-split-queries-globally
                     .UseNodaTime()
                     .MapEnum<CalorimetricObserver>(ApplicationDbContext.CalorimetricObserverTypeName, appSettings.Database.SchemaName)

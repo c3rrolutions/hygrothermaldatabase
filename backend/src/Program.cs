@@ -12,16 +12,16 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Serilog;
+using Serilog.Enrichers.Span;
 using Serilog.Events;
 using Serilog.Formatting.Compact;
-using ILogger = Microsoft.Extensions.Logging.ILogger;
+using Serilog.Sinks.OpenTelemetry;
 
 namespace Database;
 
 public static partial class Log
 {
     [LoggerMessage(
-        EventId = 0,
         Level = LogLevel.Error,
         Message = "An error occurred creating the database.")]
     public static partial void FailedToCreateDatabase(
@@ -32,7 +32,6 @@ public static partial class Log
     );
 
     [LoggerMessage(
-        EventId = 1,
         Level = LogLevel.Error,
         Message = "An error occurred seeding the database.")]
     public static partial void FailedToSeedDatabase(
@@ -46,6 +45,8 @@ public static partial class Log
 public sealed class Program
 {
     public const string TestEnvironment = "test";
+    private const string ProductionEnvironment = "production";
+    private const string LogsPath = "./logs/serilog.json";
 
     public static async Task<int> Main(
         string[] commandLineArguments
@@ -54,13 +55,24 @@ public sealed class Program
         var environment =
             Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")
             ?? throw new ArgumentException("Unknown enrivornment.");
+        var openTelemetryHost = new UriBuilder(
+            scheme: "http",
+            host: Environment.GetEnvironmentVariable("XBASE_OpenTelemetry__Host")
+                ?? throw new ArgumentException("Unknown OpenTelemetry host."),
+            portNumber: int.Parse(
+                Environment.GetEnvironmentVariable("XBASE_OpenTelemetry__GrpcPort")
+                ?? throw new ArgumentException("Unknown OpenTelemetry gRPC port."),
+                CultureInfo.InvariantCulture
+            )
+        )
+        .Uri;
         // https://github.com/serilog/serilog-aspnetcore#two-stage-initialization
-        ConfigureBootstrapLogging(environment);
+        ConfigureBootstrapLogging(environment, openTelemetryHost);
         try
         {
             Serilog.Log.Information("Starting web host");
             // https://learn.microsoft.com/en-us/aspnet/core/fundamentals/minimal-apis/webapplication
-            var builder = CreateWebApplicationBuilder(commandLineArguments);
+            var builder = CreateWebApplicationBuilder(commandLineArguments, openTelemetryHost);
             var startup = new Startup(builder.Environment, builder.Configuration);
             startup.ConfigureServices(builder.Services);
             var application = builder.Build();
@@ -95,33 +107,42 @@ public sealed class Program
     }
 
     private static void ConfigureBootstrapLogging(
-        string environment
+        string environment,
+        Uri openTelemetryHost
     )
     {
         var configuration = new LoggerConfiguration()
             .MinimumLevel.Override("Microsoft", LogEventLevel.Information);
-        ConfigureLogging(configuration, environment);
+        ConfigureLogging(configuration, environment, openTelemetryHost);
         Serilog.Log.Logger = configuration.CreateBootstrapLogger();
     }
 
     private static void ConfigureLogging(
         LoggerConfiguration configuration,
-        string environment
+        string environment,
+        Uri openTelemetryHost
     )
     {
         configuration
             .Enrich.FromLogContext()
             .Enrich.WithMachineName()
             .Enrich.WithProperty("Environment", environment)
+            .Enrich.WithSpan() // add trace context
             .WriteTo.Console(formatProvider: CultureInfo.InvariantCulture)
+            // inspired by https://last9.io/blog/serilog-and-opentelemetry/
+            .WriteTo.OpenTelemetry(
+                endpoint: openTelemetryHost.AbsoluteUri,
+                protocol: OtlpProtocol.Grpc
+            )
             .WriteTo.File(
                 new CompactJsonFormatter(),
-                "./logs/serilog.json",
+                LogsPath,
                 fileSizeLimitBytes: 1073741824, // 1 GB
                 rollingInterval: RollingInterval.Day,
                 rollOnFileSizeLimit: true,
-                retainedFileCountLimit: 7);
-        if (environment != "production")
+                retainedFileCountLimit: 7
+            );
+        if (environment != ProductionEnvironment)
         {
             configuration.WriteTo.Debug(formatProvider: CultureInfo.InvariantCulture);
         }
@@ -185,7 +206,8 @@ public sealed class Program
 
     // https://docs.microsoft.com/en-us/aspnet/core/fundamentals/host/generic-host
     private static WebApplicationBuilder CreateWebApplicationBuilder(
-        string[] commandLineArguments
+        string[] commandLineArguments,
+        Uri openTelemetryHost
     )
     {
         var builder = WebApplication.CreateBuilder(
@@ -213,7 +235,8 @@ public sealed class Program
         {
             ConfigureLogging(
                 loggerConfiguration,
-                webHostBuilderContext.HostingEnvironment.EnvironmentName
+                webHostBuilderContext.HostingEnvironment.EnvironmentName,
+                openTelemetryHost
             );
             loggerConfiguration
                 .ReadFrom.Configuration(webHostBuilderContext.Configuration);

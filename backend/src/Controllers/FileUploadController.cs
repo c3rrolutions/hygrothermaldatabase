@@ -24,7 +24,6 @@ namespace Database.Controllers;
 public static partial class Log
 {
     [LoggerMessage(
-        EventId = 0,
         Level = LogLevel.Information,
         Message = "Uploaded file '{FileNameForDisplay}' to '{FilePath}'.")]
     public static partial void SavedUploadedFile(
@@ -34,7 +33,6 @@ public static partial class Log
     );
 
     [LoggerMessage(
-        EventId = 1,
         Level = LogLevel.Error,
         Message = "Failed to create response approval for data with ID {DataId}.")]
     public static partial void FailedToCreateResponseApproval(

@@ -110,6 +110,8 @@ services:
       XBASE_Email__SmtpPort: "${SMTP_PORT:?required}"
       XBASE_GnupgSecretSigningKey__Fingerprint: "${GNUPG_SECRET_SIGNING_KEY_FINGERPRINT:?required}"
       XBASE_GnupgSecretSigningKey__Passphrase: "${GNUPG_SECRET_SIGNING_KEY_PASSPHRASE:?required}"
+      XBASE_OpenTelemetry__Host: "${OPEN_TELEMETRY_HOST:?required}"
+      XBASE_OpenTelemetry__GrpcPort: "${OPEN_TELEMETRY_GRPC_PORT:?required}"
       # https://learn.microsoft.com/en-us/dotnet/core/tools/dotnet-watch#environment-variables
       DOTNET_USE_POLLING_FILE_WATCHER: "true"
       # https://github.com/dotnet/sdk/issues/50965#issuecomment-3649670760
@@ -121,6 +123,7 @@ services:
       # https://www.gnupg.org/documentation/manuals/gnupg/Invoking-GPG_002dAGENT.html
       GPG_TTY: "/dev/pts/0"
     extra_hosts:
+      - "host.docker.internal:host-gateway"
       - "${HOST:?required}:host-gateway"
       - "${METABASE_HOST:?required}:host-gateway"
     # user: "1000:1000"
@@ -128,6 +131,7 @@ services:
       [
         "dotnet",
         "watch",
+        "--verbose",
         "--non-interactive",
         "--no-hot-reload", # As of this writing, HotChocolate does not work with hot reload, see https://github.com/ChilliCream/graphql-platform/issues/5803#issuecomment-2689242812 However, `--no-hot-reload` fails to release the port when the clean-up timeout is 0, thus I set it to 5ms below via `DOTNET_WATCH_PROCESS_CLEANUP_TIMEOUT_MS`, which should be the default as of https://github.com/dotnet/sdk/issues/50965#issuecomment-3656670112 in version 10.0.2xx
         "--project",
@@ -144,6 +148,7 @@ services:
       interval: "5s"
       timeout: "5s"
       retries: "20"
+    stdin_open: true
 
   frontend:
     build:

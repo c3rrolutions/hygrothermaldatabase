@@ -80,9 +80,13 @@ services:
       XBASE_Email__SmtpPort: "${SMTP_PORT:?required}"
       XBASE_GnupgSecretSigningKey__Fingerprint: "${GNUPG_SECRET_SIGNING_KEY_FINGERPRINT:?required}"
       XBASE_GnupgSecretSigningKey__Passphrase: "${GNUPG_SECRET_SIGNING_KEY_PASSPHRASE:?required}"
+      XBASE_OpenTelemetry__Host: "${OPEN_TELEMETRY_HOST:?required}"
+      XBASE_OpenTelemetry__GrpcPort: "${OPEN_TELEMETRY_GRPC_PORT:?required}"
       # The value `/dev/pts/0` is the output of running `tty` within `shellb`
       # https://www.gnupg.org/documentation/manuals/gnupg/Invoking-GPG_002dAGENT.html
       GPG_TTY: "/dev/pts/0"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     # https://docs.microsoft.com/en-us/aspnet/core/fundamentals/configuration/?view=aspnetcore-5.0#command-line
     # command: ["dotnet", "App.dll", "/Serilog:MinimumLevel:Default=Debug", "/Serilog:MinimumLevel:Microsoft=Debug", "/Serilog:MinimumLevel:Microsoft.Hosting.Lifetime=Debug", "/Serilog:MinimumLevel:Override:Microsoft=Debug", "/Serilog:MinimumLevel:Override:Microsoft.AspNetCore=Debug", "/Serilog:MinimumLevel:Override:System=Debug"]
     command: [ "dotnet", "/app/App.dll" ]

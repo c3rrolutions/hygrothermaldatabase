@@ -26,6 +26,10 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi;
+using OpenTelemetry.Exporter;
+using OpenTelemetry.Logs;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Trace;
 using Scalar.AspNetCore;
 using Serilog;
 
@@ -44,16 +48,15 @@ public sealed class Startup(
         })
         ?? throw new InvalidOperationException("Failed to get application settings from configuration.");
 
-    private readonly IWebHostEnvironment _environment = environment;
-
     public void ConfigureServices(IServiceCollection services)
     {
-        AuthConfiguration.ConfigureServices(services, _environment, _appSettings);
-        GraphQlConfiguration.ConfigureServices(services, _environment);
+        AuthConfiguration.ConfigureServices(services, environment, _appSettings);
+        GraphQlConfiguration.ConfigureServices(services, environment);
         ConfigureDatabaseServices(services);
         ConfigureMessageSenderServices(services);
         ConfigureRequestResponseServices(services);
-        // ConfigureSessionServices(services, _environment); // Not used
+        // ConfigureSessionServices(services); // Not used
+        ConfigureTelemetryServices(services);
         services.AddAntiforgery(_ =>
         {
             _.HeaderName = AntiforgeryConstants.HeaderName;
@@ -61,13 +64,13 @@ public sealed class Startup(
         services
             .AddDataProtection()
             .PersistKeysToDbContext<ApplicationDbContext>();
-        ConfigureHttpClientServices(services, _environment);
+        ConfigureHttpClientServices(services);
         services.AddHttpContextAccessor();
         services
             .AddHealthChecks()
             .AddDbContextCheck<ApplicationDbContext>();
         services.AddSingleton(_appSettings);
-        services.AddSingleton(_environment);
+        services.AddSingleton(environment);
         // services.AddDatabaseDeveloperPageExceptionFilter();
         ConfigureCustomServices(services);
     }
@@ -142,8 +145,7 @@ public sealed class Startup(
     }
 
     // private static void ConfigureSessionServices(
-    //         IServiceCollection services,
-    //         IWebHostEnvironment environment
+    //         IServiceCollection services
     //         )
     // {
     //     // https://docs.microsoft.com/en-us/aspnet/core/fundamentals/app-state#session-state
@@ -162,31 +164,68 @@ public sealed class Startup(
     //     });
     // }
 
-    private static void ConfigureDatabaseContext(
-        DbContextOptionsBuilder options,
-        IWebHostEnvironment environment,
-        AppSettings appSettings
+    private void ConfigureTelemetryServices(
+        IServiceCollection services
+    )
+    {
+        services.AddOpenTelemetry()
+            // .WithTracing(_ =>
+            // {
+            //     _.AddAspNetCoreInstrumentation();
+            //     _.AddHttpClientInstrumentation();
+            //     _.AddOtlpExporter(_ =>
+            //     {
+            //         _.Endpoint = _appSettings.OpenTelemetry.GrpcUri;
+            //         _.Protocol = OtlpExportProtocol.Grpc;
+            //     }
+            //     );
+            //     if (!environment.IsProduction())
+            //     {
+            //         _.AddConsoleExporter();
+            //     }
+            // }
+            // )
+            .WithMetrics(_ =>
+            {
+                _.AddAspNetCoreInstrumentation(); // inbound requests
+                _.AddHttpClientInstrumentation(); // outbound requests
+                _.AddOtlpExporter(_ =>
+                {
+                    _.Endpoint = _appSettings.OpenTelemetry.GrpcUri;
+                    _.Protocol = OtlpExportProtocol.Grpc;
+                }
+                );
+                // if (!environment.IsProduction())
+                // {
+                //     _.AddConsoleExporter();
+                // }
+            }
+            );
+    }
+
+    private void ConfigureDatabaseContext(
+        DbContextOptionsBuilder options
         )
     {
         // https://www.npgsql.org/efcore/mapping/enum.html
         options
             .UseNpgsql(
-                appSettings.Database.ConnectionString,
+                _appSettings.Database.ConnectionString,
                 _ => _
                     // Keep version in sync with the one in ./docker-compose.*.yml
                     .SetPostgresVersion(13, 23)
                     .UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery) // https://learn.microsoft.com/en-us/ef/core/querying/single-split-queries#enabling-split-queries-globally
                     .UseNodaTime()
-                    .MapEnum<CalorimetricObserver>(ApplicationDbContext.CalorimetricObserverTypeName, appSettings.Database.SchemaName)
-                    .MapEnum<CoatedSide>(ApplicationDbContext.CoatedSideTypeName, appSettings.Database.SchemaName)
-                    .MapEnum<DataKind>(ApplicationDbContext.DataKindTypeName, appSettings.Database.SchemaName)
-                    .MapEnum<Illuminant>(ApplicationDbContext.IlluminantTypeName, appSettings.Database.SchemaName)
-                    .MapEnum<OpticalComponentSubtype>(ApplicationDbContext.OpticalComponentSubtypeTypeName, appSettings.Database.SchemaName)
-                    .MapEnum<OpticalComponentType>(ApplicationDbContext.OpticalComponentTypeTypeName, appSettings.Database.SchemaName)
-                    .MapEnum<PublishingState>(ApplicationDbContext.PublishingStateTypeName, appSettings.Database.SchemaName)
-                    .MapEnum<Standardizer>(ApplicationDbContext.StandardizerTypeName, appSettings.Database.SchemaName)
+                    .MapEnum<CalorimetricObserver>(ApplicationDbContext.CalorimetricObserverTypeName, _appSettings.Database.SchemaName)
+                    .MapEnum<CoatedSide>(ApplicationDbContext.CoatedSideTypeName, _appSettings.Database.SchemaName)
+                    .MapEnum<DataKind>(ApplicationDbContext.DataKindTypeName, _appSettings.Database.SchemaName)
+                    .MapEnum<Illuminant>(ApplicationDbContext.IlluminantTypeName, _appSettings.Database.SchemaName)
+                    .MapEnum<OpticalComponentSubtype>(ApplicationDbContext.OpticalComponentSubtypeTypeName, _appSettings.Database.SchemaName)
+                    .MapEnum<OpticalComponentType>(ApplicationDbContext.OpticalComponentTypeTypeName, _appSettings.Database.SchemaName)
+                    .MapEnum<PublishingState>(ApplicationDbContext.PublishingStateTypeName, _appSettings.Database.SchemaName)
+                    .MapEnum<Standardizer>(ApplicationDbContext.StandardizerTypeName, _appSettings.Database.SchemaName)
             )
-            .UseSchemaName(appSettings.Database.SchemaName)
+            .UseSchemaName(_appSettings.Database.SchemaName)
             .UseOpenIddict()
             .UseProjectables()
             .UsePostgreSqlTriggers();
@@ -209,9 +248,7 @@ public sealed class Startup(
     {
         // Configure the database-context options only once as suggested in
         // https://github.com/npgsql/efcore.pg/issues/3375#issuecomment-2509746639
-        services.AddPooledDbContextFactory<ApplicationDbContext>(options =>
-            ConfigureDatabaseContext(options, _environment, _appSettings)
-        );
+        services.AddPooledDbContextFactory<ApplicationDbContext>(ConfigureDatabaseContext);
         // Database context as services are used by `OpenIddict`, see in
         // particular `AuthConfiguration`.
         services.AddDbContext<ApplicationDbContext>(options =>
@@ -219,13 +256,13 @@ public sealed class Startup(
             contextLifetime: ServiceLifetime.Transient,
             optionsLifetime: ServiceLifetime.Singleton
         );
-        // services.ConfigureDbContext<ApplicationDbContext>(options =>
-        //     ConfigureDatabaseContext(options, _environment, _appSettings),
+        // services.ConfigureDbContext<ApplicationDbContext>(
+        //     ConfigureDatabaseContext,
         //     optionsLifetime: ServiceLifetime.Singleton
         // );
     }
 
-    private static void ConfigureHttpClientServices(IServiceCollection services, IWebHostEnvironment environment)
+    private void ConfigureHttpClientServices(IServiceCollection services)
     {
         services.AddHttpClient();
         var httpClientBuilder = services.AddHttpClient(ApiRequestService.CustomHttpClient);
@@ -255,7 +292,7 @@ public sealed class Startup(
     public void Configure(WebApplication app)
     {
         // https://docs.microsoft.com/en-us/aspnet/core/fundamentals/middleware/
-        if (_environment.IsDevelopment() || _environment.IsEnvironment(Program.TestEnvironment))
+        if (environment.IsDevelopment() || environment.IsEnvironment(Program.TestEnvironment))
         {
             app.UseDeveloperExceptionPage();
             // app.UseMigrationsEndPoint();
@@ -315,7 +352,7 @@ public sealed class Startup(
                     Tool =
                     {
                         DisableTelemetry = true,
-                        Enable = true, // _environment.IsDevelopment()
+                        Enable = true, // environment.IsDevelopment()
                         IncludeCookies = false,
                         GraphQLEndpoint = GraphQlConstants.EndpointPath,
                         HttpMethod = DefaultHttpMethod.Post,

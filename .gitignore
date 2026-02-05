@@ -1,13 +1,15 @@
+/Makefile
+/docker-compose.yaml
+*/Dockerfile
 /examples/*.json
 /secrets
 /ssl
 /machine/*.retry
 /nginx/html/maintenance.html
-/commit
-/backup
 /tags*
+/commit
 
-.env
+/.env
 
 # Compiled output
 dist
@@ -25,6 +27,8 @@ coverage
 
 # Backups
 *.bak
+/backup
+/backups
 
 # Image Diagrams
 /diagrams/*.png

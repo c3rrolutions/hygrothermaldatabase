@@ -75,6 +75,8 @@ services:
       XBASE_MetabaseHost: "https://${METABASE_HOST:?required}"
       XBASE_DatabaseId: "${DATABASE_ID:?required}"
       XBASE_OperatorId: "${OPERATOR_ID:?required}"
+      XBASE_Database__SchemaName: "metabase"
+      XBASE_Database__ConnectionString: "Host=database; Port=5432; Database=xbase; User Id=postgres; Passfile=/run/secrets/postgres_passwords; Maximum Pool Size=90;"
       XBASE_OpenIdConnectClient__Id: "${OPEN_ID_CONNECT_CLIENT_ID:?required}"
       XBASE_OpenIdConnectClient__Secret: "${OPEN_ID_CONNECT_CLIENT_SECRET:?required}"
       XBASE_VerificationCode: "${VERIFICATION_CODE:?required}"

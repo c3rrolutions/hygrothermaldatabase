@@ -13,12 +13,12 @@ public sealed class CommonAuthorization(
 {
     public Task<CurrentUserOrApplication> GetCurrentUserOrApplicationAsync(CancellationToken cancellationToken)
     {
-        return userService.GetCurrentUserOrApplicationAsync(cancellationToken);
+        return userService.FetchCurrentUserOrApplicationAsync(cancellationToken);
     }
 
     public Task<bool> IsAuthenticated(CancellationToken cancellationToken)
     {
-        return userService.UserOrApplicationAsync(
+        return userService.SwitchUserOrApplicationAsync(
             user => Task.FromResult(user is not null),
             application => Task.FromResult(application is not null),
             cancellationToken
@@ -27,7 +27,7 @@ public sealed class CommonAuthorization(
 
     public Task<bool> IsDatabaseOperator(CancellationToken cancellationToken)
     {
-        return userService.UserOrApplicationAsync(
+        return userService.SwitchUserOrApplicationAsync(
             user => Task.FromResult(
                 user is not null
                 && user.IsAtLeastAssistantManagerOfDatabaseOperator()

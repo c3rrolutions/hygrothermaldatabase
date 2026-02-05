@@ -1,23 +1,16 @@
 using System;
-using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Database.ApiRequests;
 using Database.Extensions;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
 using OpenIddict.Abstractions;
 
 namespace Database.Services;
 
 /// <summary>
-/// Service to get current user from Metabase
+/// Service to fetch current user or application from the metabase
 /// </summary>
-/// <param name="appSettings">         <see cref="AppSettings"/> </param>
-/// <param name="httpContextAccessor"> <see cref="IHttpContextAccessor"/> </param>
-/// <param name="httpClientFactory">   <see cref="IHttpClientFactory"/> </param>
-/// <param name="cacheService">        <see cref="CacheService"/> to store already known users. </param>
-/// <param name="logger">              Instance of <see cref="ILogger"/> </param>
 public sealed class UserService(
     AppSettings appSettings,
     ApiRequestService apiRequestService,
@@ -33,13 +26,13 @@ public sealed class UserService(
         return httpContextAccessor.HttpContext?.User.GetClaim(OpenIddictConstants.Claims.AuthorizedParty);
     }
 
-    public async Task<T> UserOrApplicationAsync<T>(
+    public async Task<T> SwitchUserOrApplicationAsync<T>(
         Func<QueryCurrentUserOrApplication.CurrentUser?, Task<T>> handleUser,
         Func<QueryCurrentUserOrApplication.CurrentOpenIdConnectApplication, Task<T>> handleApplication,
         CancellationToken cancellationToken
     )
     {
-        var userOrApplication = await GetCurrentUserOrApplicationAsync(cancellationToken);
+        var userOrApplication = await FetchCurrentUserOrApplicationAsync(cancellationToken);
         if (userOrApplication.CurrentApplication is not null)
         {
             return await handleApplication(userOrApplication.CurrentApplication);
@@ -53,7 +46,7 @@ public sealed class UserService(
     /// <summary>
     /// Get current user or OpenId Connect application from Metabase (or the local cache).
     /// </summary>
-    public async Task<QueryCurrentUserOrApplication.CurrentUserOrApplication> GetCurrentUserOrApplicationAsync(
+    public async Task<QueryCurrentUserOrApplication.CurrentUserOrApplication> FetchCurrentUserOrApplicationAsync(
         CancellationToken cancellationToken
     )
     {

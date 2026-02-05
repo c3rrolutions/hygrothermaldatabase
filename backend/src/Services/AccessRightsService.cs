@@ -48,7 +48,7 @@ public sealed class AccessRightsService(
         IReadOnlyList<Guid>? institutionIds = null;
         IReadOnlyList<InstitutionAccessRights>? institutionAccessRights = null;
 
-        var currentUserOrApplication = await userService.GetCurrentUserOrApplicationAsync(cancellationToken);
+        var currentUserOrApplication = await userService.FetchCurrentUserOrApplicationAsync(cancellationToken);
         var openIdConnectClientId = userService.GetOpenIdConnectClientId();
 
         if (currentUserOrApplication.CurrentUser is not null)

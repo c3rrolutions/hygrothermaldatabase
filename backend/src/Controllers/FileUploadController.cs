@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Mime;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -45,6 +46,7 @@ public static partial class Log
 // Inspired by https://docs.microsoft.com/en-us/aspnet/core/mvc/models/file-uploads?view=aspnetcore-5.0#upload-large-files-with-streaming
 // and https://github.com/dotnet/AspNetCore.Docs/blob/b4599432690b8753fc2eac23d52957f47e01997a/aspnetcore/mvc/models/file-uploads/samples/3.x/SampleApp/
 [EndpointGroupName("FileUpload")]
+[ApiController]
 public sealed class FileUploadController(
     ILogger<FileUploadController> logger
 ) : Controller
@@ -87,13 +89,14 @@ public sealed class FileUploadController(
 
     [HttpPost("~/api/upload-file")]
     [DisableFormValueModelBinding]
-    // TODO Add this `[ValidateAntiForgeryToken]` once we know where to set the generation token cookie!
+    // TODO Add this `[RequireAntiforgeryToken]` once we know where to set the generation token cookie!
     // TODO Where to put: [GenerateAntiforgeryTokenCookie] ?
     // TODO Are both RequestFormLimits and RequestSizeLimit needed?
     // See https://docs.microsoft.com/en-us/aspnet/core/mvc/models/file-uploads?view=aspnetcore-5.0#multipart-body-length-limit
     [RequestFormLimits(MultipartBodyLengthLimit = 10737418240)] // 10 GiB
     // See https://docs.microsoft.com/en-us/aspnet/core/mvc/models/file-uploads?view=aspnetcore-5.0#kestrel-maximum-request-body-size
     [RequestSizeLimit(10737418240)] // 10 GiB
+    [Produces(MediaTypeNames.Application.Json)]
     public async Task<IActionResult> UploadFile(
         [FromQuery] Guid getHttpsResourceUuid,
         [FromServices] ApplicationDbContext context,

@@ -73,8 +73,9 @@ public static class AuthConfiguration
         // Inspired by https://github.com/openiddict/openiddict-samples/blob/01cb2ce4600cab15867e34826b0287622e6dd71b/samples/Velusia/Velusia.Client/Startup.cs
         services.AddAuthentication(_ =>
             {
-                // To make the various authentication control flows obvious, do not use default
-                // schemes for anything and always be explicit instead.
+                // To make the various authentication control flows obvious, do
+                // not use default schemes for anything and always be explicit
+                // instead.
                 _.DefaultAuthenticateScheme = null;
                 _.DefaultChallengeScheme = null;
                 _.DefaultForbidScheme = null;

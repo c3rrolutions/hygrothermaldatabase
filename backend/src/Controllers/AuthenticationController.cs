@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Database.Authentication;
 using Database.Data;
+using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
@@ -15,7 +16,6 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using OpenIddict.Abstractions;
 using OpenIddict.Client.AspNetCore;
-using static OpenIddict.Abstractions.OpenIddictConstants;
 
 namespace Database.Controllers;
 
@@ -68,9 +68,9 @@ public sealed class AuthenticationController(
         );
     }
 
-    [Authorize(AuthenticationSchemes = AuthenticationConstants.CookieAndBearerTokenAuthenticationScheme)]
     [HttpPost("~/connect/logout")]
-    [ValidateAntiForgeryToken]
+    [Authorize(AuthenticationSchemes = AuthenticationConstants.CookieAndBearerTokenAuthenticationScheme)]
+    [RequireAntiforgeryToken]
     public async Task<ActionResult> LogOut(string? returnUrl)
     {
         // Retrieve the identity stored in the local authentication cookie. If it's not available,

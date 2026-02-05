@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Net.Mime;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -203,7 +204,8 @@ public sealed class ApiRequestService(
                     JsonSerializerSettings.GraphQl
                 )
             );
-        result.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
+        result.Headers.ContentType =
+            new System.Net.Http.Headers.MediaTypeHeaderValue(MediaTypeNames.Application.Json);
         return result;
     }
 }

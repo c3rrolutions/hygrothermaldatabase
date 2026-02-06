@@ -67,11 +67,9 @@ Conduct](https://github.com/building-envelope-data/database/blob/develop/CODE_OF
    `cp ./frontend/.env.local.development.sample ./frontend/.env.local && chmod 600 ./frontend/.env.local`,
    and adding the line `127.0.0.1 local.solarbuildingenvelopes.com` to your
    `/etc/hosts` file.
-1. Prepare your remote controls GNU Make, Docker Compose, and Docker by running
-   - `ln --symbolic ./Makefile.development ./Makefile`,
+1. Prepare your remote controls GNU Make and Docker Compose by running
+   - `ln --symbolic ./docker.mk ./Makefile` and
    - `ln --symbolic ./docker-compose.development.yaml ./docker-compose.yaml`.
-   - `ln --symbolic ./backend/Dockerfile.development ./backend/Dockerfile`, and
-   - `ln --symbolic ./frontend/Dockerfile.development ./frontend/Dockerfile`.
 1. Install [Docker Desktop](https://www.docker.com/products/docker-desktop), and
    [GNU Make](https://www.gnu.org/software/make/).
 1. List all GNU Make targets by running `make help`.
@@ -121,7 +119,8 @@ Conduct](https://github.com/building-envelope-data/database/blob/develop/CODE_OF
       the `./.env` file to the remembered fingerprint in your favorite editor.
 1. Create the PostgreSQL database and schema by running
    `./database.mk createdb migrate`.
-1. Start all services and follow their logs by running `make up logs`.
+1. Build and start all services and follow their logs by running
+   `make build up logs`.
 1. In your web browser, navigate to the
    - web frontend at `https://local.solarbuildingenvelopes.com:5051`,
    - GraphQL API at `https://local.solarbuildingenvelopes.com:5051/graphql/`,
@@ -252,8 +251,8 @@ manually or upgrading Npgsql, the service `backend` may throw exceptions
 regarding the object-relational mapping (Npgsql or EF Core). In that case it
 may be necessary to restart the service `backend`, for example, by running
 `make down up` and it may even be necessary recreate the database from scratch
-by running `make down remove-data up`. Note that the latter will remove all
-data from PostgreSQL, recreate the database and its schema, and seed it
+by running `make down remove-data-volume up`. Note that the latter will remove
+all data from PostgreSQL, recreate the database and its schema, and seed it
 freshly.
 
 When your hard-disk starts to grow full, it may be the case that Docker does
@@ -394,11 +393,9 @@ and the pages following it.
       - `RELAY_SMTP_HOST`, `RELAY_SMTP_PORT`, and `RELAY_ALLOWED_EMAILS` are
         host and port of the message transfer agent and a list of allowed
         email addresses to send emails to even in the staging environment.
-   1. Prepare your remote controls GNU Make, Docker Compose, and Docker by running
-      - `ln --symbolic ./Makefile.${environment} ./Makefile`,
-      - `ln --symbolic ./docker-compose.${environment}.yaml ./docker-compose.yaml`.
-      - `ln --symbolic ./backend/Dockerfile.${environment} ./backend/Dockerfile`, and
-      - `ln --symbolic ./frontend/Dockerfile.${environment} ./frontend/Dockerfile`.
+   1. Prepare your remote controls GNU Make and Docker Compose by running
+      - `ln --symbolic ./docker.mk ./Makefile` and
+      - `ln --symbolic ./docker-compose.production.yaml ./docker-compose.yaml`.
    1. Generate JSON Web Token (JWT) encryption and signing certificates by running
       `./certificates.mk jwt`.
    1. Generate and export a GnuPG key with the passphrase

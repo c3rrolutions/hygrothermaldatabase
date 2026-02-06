@@ -430,10 +430,7 @@ and the pages following it.
          `gpg --armor --export-secret-keys ${fingerprint} > ./backend/src/gpg-keys/${fingerprint}.gpg`,
       1. Set the value of the variable `GNUPG_SECRET_SIGNING_KEY_FINGERPRINT` in
          the `./.env` file to the remembered fingerprint in your favorite editor.
-   1. Prepare PostgreSQL by generating new password files by running
-      `./database.mk postgres_passwords`
-      and creating the database by running
-      `./database.mk createdb`.
+   1. Create the PostgreSQL database by running `./database.mk createdb`.
 
 ### Creating a release
 

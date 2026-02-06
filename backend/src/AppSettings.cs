@@ -1,7 +1,6 @@
 // Inspired by https://weblog.west-wind.com/posts/2017/dec/12/easy-configuration-binding-in-aspnet-core-revisited
 
 using System;
-using Microsoft.Extensions.Hosting;
 
 namespace Database;
 
@@ -9,8 +8,8 @@ public sealed record AppSettings
 {
     private const string GraphQlPathSegment = "/graphql/";
 
-    public string Host { get; init; } = "";
-    public string Subdomain { get; init; } = "";
+    public string Host { private get; init; } = "";
+    public string Subdomain { private get; init; } = "";
     public Uri Uri => new($"https://{Subdomain}.{Host}", UriKind.Absolute);
     // TODO Consider using [Flurl](https://flurl.dev) to construct URIs. For the pitfalls of
     // using `Uri` as below see the comments to https://stackoverflow.com/questions/372865/path-combine-for-urls/1527643#1527643

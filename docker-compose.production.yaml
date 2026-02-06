@@ -40,7 +40,7 @@ services:
       - emails:/smtp4dev
     environment:
       ServerOptions__BasePath: "/email"
-      ServerOptions__HostName: "${HOST:?required}"
+      ServerOptions__HostName: "${SUBDOMAIN:?required}.${HOST:?required}"
       ServerOptions__Database: "database.db"
       ServerOptions__NumberOfMessagesToKeep: "100"
       ServerOptions__NumberOfSessionsToKeep: "100"
@@ -90,7 +90,7 @@ services:
       XBASE_MetabaseHost: "${METABASE_HOST:?required}"
       XBASE_DatabaseId: "${DATABASE_ID:?required}"
       XBASE_OperatorId: "${OPERATOR_ID:?required}"
-      XBASE_Database__SchemaName: "metabase"
+      XBASE_Database__SchemaName: "database"
       XBASE_Database__ConnectionString: "Host=database; Port=5432; Database='${POSTGRES_DATABASE_NAME}'; User Id='${POSTGRES_USER}'; Password='${POSTGRES_PASSWORD}'; Maximum Pool Size=90;"
       XBASE_OpenIdConnectClient__Id: "${OPEN_ID_CONNECT_CLIENT_ID:?required}"
       XBASE_OpenIdConnectClient__Secret: "${OPEN_ID_CONNECT_CLIENT_SECRET:?required}"

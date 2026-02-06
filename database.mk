@@ -71,12 +71,12 @@ dropdb : ## Drop database with name `${POSTGRES_DATABASE_NAME}`
 .PHONY : dropdb
 
 sql : CONTAINER_NAME = sql_${NAME}_database
-sql : ## Run the SQL script in the file `${SQL}` in the database service, for example, `make SQL=./my.sql sql` (down-ing and up-ing the database service before and after to prevent race conditions. In general, note that other PostgreSQL instances using the same data volume must not be used while migrating and need to be restarted afterwards to make migration results visible)
+sql : ## Run the SQL script in the file `${SCRIPT}` in the database service, for example, `./database.mk sql SCRIPT=./my.sql` (down-ing and up-ing the database service before and after to prevent race conditions. In general, note that other PostgreSQL instances using the same data volume must not be used while migrating and need to be restarted afterwards to make migration results visible)
 	${docker_compose} up \
 		--remove-orphans \
 		--wait \
 		database
-	cat ${SQL} \
+	cat ${SCRIPT} \
 	| ${docker_compose} exec \
 		--no-tty \
 		database \
@@ -96,7 +96,7 @@ sql : ## Run the SQL script in the file `${SQL}` in the database service, for ex
 		--detach \
 		database
 	while [ $$(docker inspect -f {{.State.Health.Status}} ${CONTAINER_NAME}) != "healthy" ]; do sleep 1; done
-	cat ${SQL} \
+	cat ${SCRIPT} \
 	| docker exec \
 		--no-tty \
 		${CONTAINER_NAME} \
@@ -114,7 +114,7 @@ sql : ## Run the SQL script in the file `${SQL}` in the database service, for ex
 		database
 .PHONY : sql
 
-migrate : SQL = ./backend/src/Migrations/migrate.sql
+migrate : SCRIPT = ./backend/src/Migrations/migrate.sql
 migrate : sql ## Migrate database  by running the idempotent SQL script ./backend/src/Migrations/migrate.sql (down-ing and up-ing the database service before and after to prevent race conditions. In general, note that other PostgreSQL instances using the same data volume must not be used while migrating and need to be restarted afterwards to make migration results visible)
 .PHONY : migrate
 
@@ -124,8 +124,8 @@ migrate : sql ## Migrate database  by running the idempotent SQL script ./backen
 # We could have used `docker cp` as explained in https://docs.docker.com/engine/reference/commandline/cp/
 backup : DATABASE_CONTAINER_NAME = backup_${NAME}_database
 backup : FILES_CONTAINER_NAME = backup_${NAME}_files
-backup : ## Backup database and related data to directory with absolute path `${BACKUP_DIRECTORY}` (down-ing and up-ing the database service before and after to prevent race conditions), for example, `make BACKUP_DIRECTORY=/app/data/backups/$(date +"%Y-%m-%d_%H_%M_%S") backup`
-	mkdir --parents ${BACKUP_DIRECTORY}
+backup : ## Backup database and related data to directory with absolute path `${DIR}` (down-ing and up-ing the database service before and after to prevent race conditions), for example, `./database.mk backup DIR=/app/data/backups/$(date +"%Y-%m-%d_%H_%M_%S")`
+	mkdir --parents ${DIR}
 	${docker_compose} down \
 		--remove-orphans \
 		database
@@ -142,7 +142,7 @@ backup : ## Backup database and related data to directory with absolute path `${
 			--clean \
 			--username="${POSTGRES_USER}" \
 		| gzip \
-		> ${BACKUP_DIRECTORY}/${dump_archive_name}
+		> ${DIR}/${dump_archive_name}
 	docker container stop ${DATABASE_CONTAINER_NAME}
 	docker container rm --volumes ${DATABASE_CONTAINER_NAME}
 	-docker container stop ${FILES_CONTAINER_NAME}
@@ -154,7 +154,7 @@ backup : ## Backup database and related data to directory with absolute path `${
 	docker run \
 		--rm \
 		--volumes-from ${FILES_CONTAINER_NAME} \
-		--volume ${BACKUP_DIRECTORY}:/backup \
+		--volume ${DIR}:/backup \
 		debian:bullseye-slim \
 		tar \
 			--verbose \
@@ -173,7 +173,7 @@ backup : ## Backup database and related data to directory with absolute path `${
 
 restore : DATABASE_CONTAINER_NAME = restore_${NAME}_database
 restore : FILES_CONTAINER_NAME = restore_${NAME}_files
-restore : ## Restore database and related data from directory with absolute path `${BACKUP_DIRECTORY}` (down-ing and up-ing the database service before and after to prevent race conditions and removing and recreating the data volume before to start cleanly), for example, `make BACKUP_DIRECTORY=/app/data/backups/2021-04-22_15_43_35 restore (note that after restoring a database it is usually necessary to restart the backend service for the object-relational mapper Npgsql to work seamlessly, for example, by restarting all services with `make restart`)`
+restore : ## Restore database and related data from directory with absolute path `${DIR}` (down-ing and up-ing the database service before and after to prevent race conditions and removing and recreating the data volume before to start cleanly), for example, `./database.mk restore DIR=/app/data/backups/2021-04-22_15_43_35` (note that after restoring a database it is usually necessary to restart the backend service for the object-relational mapper Npgsql to work seamlessly, for example, by restarting all services with `make restart`)`
 	${docker_compose} down \
 		--remove-orphans \
 		database
@@ -186,7 +186,7 @@ restore : ## Restore database and related data from directory with absolute path
 		--detach \
 		database
 	while [ $$(docker inspect -f {{.State.Health.Status}} ${DATABASE_CONTAINER_NAME}) != "healthy" ]; do sleep 1; done
-	gunzip --stdout ${BACKUP_DIRECTORY}/${dump_archive_name} \
+	gunzip --stdout ${DIR}/${dump_archive_name} \
 	| docker exec \
 		--interactive \
 		${DATABASE_CONTAINER_NAME} \
@@ -207,7 +207,7 @@ restore : ## Restore database and related data from directory with absolute path
 	docker run \
 		--rm \
 		--volumes-from ${FILES_CONTAINER_NAME} \
-		--volume ${BACKUP_DIRECTORY}:/backup \
+		--volume ${DIR}:/backup \
 		debian:bullseye-slim \
 		bash -cx " \
 			cd /app/files && \

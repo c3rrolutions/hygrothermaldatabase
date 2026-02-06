@@ -24,6 +24,7 @@ the tag `question`! All ways to contribute are presented by
 [CONTRIBUTING.md](https://github.com/building-envelope-data/database/blob/develop/CONTRIBUTING.md).
 The basis for our collaboration is decribed by our [Code of
 Conduct](https://github.com/building-envelope-data/database/blob/develop/CODE_OF_CONDUCT.md).
+
 ## Contents
 
 [Getting started](#getting-started)
@@ -50,6 +51,7 @@ Conduct](https://github.com/building-envelope-data/database/blob/develop/CODE_OF
    [Z shell, aka, `zsh`](https://www.zsh.org/),
    or shiny new
    [`fish`](https://fishshell.com/).
+
 1. Install [Git](https://git-scm.com/) by running
    `sudo apt install git-all` on [Debian](https://www.debian.org/)-based
    distributions like [Ubuntu](https://ubuntu.com/), or
@@ -57,22 +59,30 @@ Conduct](https://github.com/building-envelope-data/database/blob/develop/CODE_OF
    [RPM-Package-Manager](https://rpm.org/)-based distributions like
    [CentOS](https://www.centos.org/). For further information see
    [Installing Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git).
+
 1. Clone the source code by running
    `git clone git@github.com:building-envelope-data/database.git` and navigate
    into the new directory `database` by running `cd ./database`.
+
 1. Initialize, fetch, and checkout possibly-nested submodules by running
    `git submodule update --init --recursive`. An alternative would have been
    passing `--recurse-submodules` to `git clone` above.
+
 1. Prepare your environment by running `cp ./.env.development.sample ./.env && chmod 600 ./.env`,
    `cp ./frontend/.env.local.development.sample ./frontend/.env.local && chmod 600 ./frontend/.env.local`,
    and adding the line `127.0.0.1 local.solarbuildingenvelopes.com` to your
    `/etc/hosts` file.
+
 1. Prepare your remote controls GNU Make and Docker Compose by running
+
    - `ln --symbolic ./docker.mk ./Makefile` and
    - `ln --symbolic ./docker-compose.development.yaml ./docker-compose.yaml`.
+
 1. Install [Docker Desktop](https://www.docker.com/products/docker-desktop), and
    [GNU Make](https://www.gnu.org/software/make/).
+
 1. List all GNU Make targets by running `make help`.
+
 1. Generate and trust a self-signed certificate authority and SSL certificates
    by running `./certificates.mk ssl`. If you are locally working on the metabase and the
    database and if you need them to communicate over HTTPS, then instead of
@@ -82,22 +92,23 @@ Conduct](https://github.com/building-envelope-data/database/blob/develop/CODE_OF
    authority files from the directories `./ssl`, `./backend/ssl`, and
    `./frontend/ssl` of the metabase project into the respective directories in
    the database project (if the repository reside alongside each other by
-   running `mkdir ./ssl ./backend/ssl ./frontend/ssl && cp ../metabase/ssl/ca.*
-   ./ssl && cp ../metabase/backend/ssl/ca.* ./backend/ssl && cp
-   ../metabase/frontend/ssl/ca.* ./frontend/ssl`), and run the command
+   running `mkdir ./ssl ./backend/ssl ./frontend/ssl && cp ../metabase/ssl/ca.* ./ssl && cp ../metabase/backend/ssl/ca.* ./backend/ssl && cp ../metabase/frontend/ssl/ca.* ./frontend/ssl`), and run the command
    `./certificates.mk generate-ssl-certificate`.
+
 1. Generate JSON Web Token (JWT) encryption and signing certificates by running
    `./certificates.mk jwt`.
+
 1. Generate and export a GnuPG key with the passphrase
    `${GNUPG_SECRET_SIGNING_KEY_PASSPHRASE}` set in the `./.env` file to the
-   file `./backend/src/gpg-keys/<KEY_FINGERPRINT>.gpg` by running `./gpg.mk
-   PERSON=${name} COMMENT=${comment} EMAIL=${email} key` with your information
-   filled in, for example, `./gpg.mk NAME="Anna Smith" COMMENT=first
-   EMAIL=anna.smith@fraunhofer.de key`. Then copy the key's fingerprint which
+   file `./backend/src/gpg-keys/<KEY_FINGERPRINT>.gpg` by running
+   `./gpg.mk key PERSON=${name} COMMENT=${comment} EMAIL=${email}` with your information
+   filled in, for example,
+   `./gpg.mk key NAME="Anna Smith" COMMENT=first EMAIL=anna.smith@fraunhofer.de`. Then copy the key's fingerprint which
    is output by the command and set it as the value of the
    `GNUPG_SECRET_SIGNING_KEY_FINGERPRINT` variable in the `./.env` file.
 
    Instead of using the GNU Make target `key`, you may
+
    1. install [GnuPG](https://gnupg.org) as described on
       [Download GnuPG](https://gnupg.org/download/index.html) or
       [GnuPG Package Repositories](https://www.gnupg.org/blog/20250827-new-repository.html),
@@ -117,11 +128,15 @@ Conduct](https://github.com/building-envelope-data/database/blob/develop/CODE_OF
       `gpg --armor --export-secret-keys ${fingerprint} > ./backend/src/gpg-keys/${fingerprint}.gpg`,
    1. Set the value of the variable `GNUPG_SECRET_SIGNING_KEY_FINGERPRINT` in
       the `./.env` file to the remembered fingerprint in your favorite editor.
+
 1. Create the PostgreSQL database and schema by running
    `./database.mk createdb migrate`.
+
 1. Build and start all services and follow their logs by running
    `make build up logs`.
+
 1. In your web browser, navigate to the
+
    - web frontend at `https://local.solarbuildingenvelopes.com:5051`,
    - GraphQL API at `https://local.solarbuildingenvelopes.com:5051/graphql/`,
    - REST API `https://local.solarbuildingenvelopes.com:5051/openapi/docs//`,
@@ -129,6 +144,7 @@ Conduct](https://github.com/building-envelope-data/database/blob/develop/CODE_OF
      (to view for example the confirmation email sent during registration),
    - OpenId Connect configuration navigate to
      `https://local.solarbuildingenvelopes.com:5051/.well-known/openid-configuration`
+
    Note that the port is `5051` by default. If you set the variable
    `HTTPS_PORT` within the `./.env` to some other value though, you need to use
    that value instead within the URLs.
@@ -137,33 +153,32 @@ In another shell
 
 1. Drop into `bash` with the working directory `/app`, which is mounted to the
    host's `./backend` directory, inside a fresh Docker container based on
-   `./backend/Dockerfile` by running `make shellb`. If necessary, the Docker
-   image is (re)built automatically, which takes a while the first time. Note
-   that the Docker image and containers try to use the same user and group IDs
-   as the ones on the host machine. This has the upside that files created
-   within containers in mounted directories are owned by the host user. It has
-   the downside that the Docker image may fail to build because the IDs may
-   already be taken by other users and groups in the base image. This happens
-   for example if you are `root` on the host machine with the user and group
-   IDs 0. If there is an ID collision, then you can either change the user and
-   group ID on the host machine (for example by logging in as another user) or
-   you can replace all occurrences of `shell id --group` and `shell id --user`
-   in `Makefile` by fixed non-colliding IDs like 1000. If you know a better
-   way, please
+   `./backend/Dockerfile` by running `make shell SERVICE=backend`. If
+   necessary, the Docker image is (re)built automatically, which takes a while
+   the first time. Note that the Docker image and containers try to use the
+   same user and group IDs as the ones on the host machine. This has the upside
+   that files created within containers in mounted directories are owned by the
+   host user. It has the downside that the Docker image may fail to build
+   because the IDs may already be taken by other users and groups in the base
+   image. This happens for example if you are `root` on the host machine with
+   the user and group IDs 0. If there is an ID collision, then you can either
+   change the user and group ID on the host machine (for example by logging in
+   as another user) or you can replace all occurrences of `shell id --group`
+   and `shell id --user` in `Makefile` by fixed non-colliding IDs like 1000. If
+   you know a better way, please
    [let use know on GitHub](https://github.com/building-envelope-data/database/issues/new).
 1. List all backend GNU Make targets by running `make help`.
 1. For example, update packages and tools by running `make update`.
 1. Drop out of the container by running `exit` or pressing `Ctrl-D`.
 
-The same works for frontend containers by running `make shellf`.
-
 ### Migrating the Database
 
 After changing the domain model in `./backend/src/data`, you need to migrate
-the database by dropping into `make shellb`, adding a migration with `make
-NAME=${MIGRATION_NAME} migration`, verifying and if necessary adapting the new
-migration C# code and SQL scripts, exiting the container with `exit`, and
-applying the new migration to the PostgreSQL database with `./database.mk migrate`. See
+the database by dropping into `make shell SERVICE=backend`, adding a migration
+with `make migration NAME=${MIGRATION_NAME}`, verifying and if necessary
+adapting the new migration C# code and SQL scripts, exiting the container with
+`exit`, and applying the new migration to the PostgreSQL database with
+`./database.mk migrate`. See
 [Migrations Overview](https://docs.microsoft.com/en-us/ef/core/managing-schemas/migrations/)
 and the following pages for details.
 
@@ -274,12 +289,10 @@ typescript: {
 },
 ```
 
-The same can happen in development when running `make build` (or `yarn run
-build`) in the shell entered by `make shellf`. In that case, remove the
-offending import manually in the file and try again, for example using tail
-like so `tail -n +5 ./__generated__/queries/... > x.tmp && mv x.tmp ...` . Do
-not disable build errors in development because when you do so, build errors in
-non-generated files may leak into the code base.
+The same can happen in development when running `make build` (or `yarn run build`) in the shell entered by `make shell SERVICE=frontend`. In that case,
+remove the offending import manually in the file and try again, for example
+using tail like so `tail -n +5 ./__generated__/queries/... > x.tmp && mv x.tmp ...` . Do not disable build errors in development because when you do so, build
+errors in non-generated files may leak into the code base.
 
 ## Deployment
 
@@ -303,11 +316,14 @@ and the pages following it.
    `${environment}` below:
    1. Set the variable `environment` by running `environment=staging` or
       `environment=production`.
+
    1. Change into the clone `${environment}` by running `cd /app/${environment}`.
+
    1. Open `https://www.buildingenvelopedata.org` in your favorite web browser,
       log into your account, navigate to the institution operating this
       database (which you should be a representative of), add an OpenId Connect
       Application with
+
       - client ID and display name of your choice;
       - consent type: explicit;
       - endpoints: authorization, pushed authorization, introspection,
@@ -323,9 +339,11 @@ and the pages following it.
         for example, `staging.solarbuildingenvelopes.com` or
         `www.solarbuildingenvelopes.com` for the product-data database of the
         TestLab Solar Facades.
+
       Alternatively, after logging in, open
       `https://www.buildingenvelopedata.org/graphql/` and run the following
       mutation with your institution ID and host filled-in:
+
       ```
       mutation {
         createOpenIdConnectApplication(
@@ -351,6 +369,7 @@ and the pages following it.
         }
       }
       ```
+
    1. Prepare the environment by running
       `cp ./.env.${environment}.sample ./.env && chmod 600 ./.env`,
       `cp ./frontend/.env.local.${environment}.sample ./frontend/.env.local && chmod 600 ./frontend/.env.local`,
@@ -358,6 +377,7 @@ and the pages following it.
       particular, by setting passwords to newly generated ones, where random
       passwords may be generated by running `openssl rand -base64 32`. Here is
       some information on what the variables mean
+
       - `NAME` is the name Docker project name, in particular, it is the prefix
         of the Docker container names listed by `docker ps --all`;
       - `HOST` is the domain name with sub-domain of the deployment, in
@@ -393,21 +413,24 @@ and the pages following it.
       - `RELAY_SMTP_HOST`, `RELAY_SMTP_PORT`, and `RELAY_ALLOWED_EMAILS` are
         host and port of the message transfer agent and a list of allowed
         email addresses to send emails to even in the staging environment.
+
    1. Prepare your remote controls GNU Make and Docker Compose by running
+
       - `ln --symbolic ./docker.mk ./Makefile` and
       - `ln --symbolic ./docker-compose.production.yaml ./docker-compose.yaml`.
+
    1. Generate JSON Web Token (JWT) encryption and signing certificates by running
       `./certificates.mk jwt`.
+
    1. Generate and export a GnuPG key with the passphrase
       `${GNUPG_SECRET_SIGNING_KEY_PASSPHRASE}` set in the `./.env` file to the
-      file `./backend/src/gpg-keys/<KEY_FINGERPRINT>.gpg` by running `./gpg.mk
-      PERSON=${name} COMMENT=${comment} EMAIL=${email} key` with your information
-      filled in, for example, `make NAME="Anna Smith" COMMENT=first
-      EMAIL=anna.smith@fraunhofer.de gpg`. Then copy the key's fingerprint which
+      file `./backend/src/gpg-keys/<KEY_FINGERPRINT>.gpg` by running `./gpg.mk PERSON=${name} COMMENT=${comment} EMAIL=${email} key` with your information
+      filled in, for example, `make NAME="Anna Smith" COMMENT=first EMAIL=anna.smith@fraunhofer.de gpg`. Then copy the key's fingerprint which
       is output by the command and set it as the value of the
       `GNUPG_SECRET_SIGNING_KEY_FINGERPRINT` variable in the `./.env` file.
 
       Instead of using the GNU Make target `gpg`, you may
+
       1. install [GnuPG](https://gnupg.org) as described on
          [Download GnuPG](https://gnupg.org/download/index.html) or
          [GnuPG Package Repositories](https://www.gnupg.org/blog/20250827-new-repository.html),
@@ -427,6 +450,7 @@ and the pages following it.
          `gpg --armor --export-secret-keys ${fingerprint} > ./backend/src/gpg-keys/${fingerprint}.gpg`,
       1. Set the value of the variable `GNUPG_SECRET_SIGNING_KEY_FINGERPRINT` in
          the `./.env` file to the remembered fingerprint in your favorite editor.
+
    1. Create the PostgreSQL database by running `./database.mk createdb`.
 
 ### Creating a release
@@ -455,10 +479,10 @@ and the pages following it.
 1. Enter a shell on the production machine using `ssh`.
 1. Navigate into `/app/production` by running `cd /app/production`.
 1. Back up the production database by running
-   `./database.mk BACKUP_DIRECTORY=/app/production/backup backup`.
+   `./database.mk backup DIR=/app/production/backup`.
 1. Change to the staging environment by running `cd /app/staging`.
 1. Restore the staging database from the production backup by running
-   `./database.mk BACKUP_DIRECTORY=/app/production/backup restore`.
+   `./database.mk restore DIR=/app/production/backup`.
 1. Adapt the environment file `./.env` if necessary by comparing it with the
    `./.env.staging.sample` file of the release to be deployed.
 1. Deploy the new release in the staging environment by running
@@ -491,10 +515,10 @@ and the pages following it.
 
 ### Troubleshooting
 
-The files `Makefile.*` contain GNU Make targets to manage Docker containers
+The file `docker.mk` contain GNU Make targets to manage Docker containers
 like `up` and `down`, to follow Docker container logs with `logs`, to drop into
-shells inside running Docker containers like `shellb` for the backend service
-and `shellf` for the frontend service, and to list information about Docker
+shells inside running Docker containers like `shell SERVICE=backend` for the backend service
+and `shell SERVICE=frontend` for the frontend service, and to list information about Docker
 like `list` and `list-services`.
 
 The Makefile `./deploy.mk` contains GNU Make targets to deploy a new release or
@@ -521,14 +545,13 @@ If the database container restarts indefinitely and its logs say
 PANIC:  could not locate a valid checkpoint record
 ```
 
-for example preceded by `LOG: invalid resource manager ID in primary checkpoint
-record` or `LOG: invalid primary checkpoint record`, then the database is
+for example preceded by `LOG: invalid resource manager ID in primary checkpoint record` or `LOG: invalid primary checkpoint record`, then the database is
 corrupt. For example, the write-ahead log (WAL) may be corrupt because the
 database was not shut down cleanly. One solution is to restore the database
 from a backup by running
 
 ```
-./database.mk BACKUP_DIRECTORY=/app/data/backups/20XX-XX-XX_XX_XX_XX/ restore
+./database.mk restore DIR=/app/data/backups/20XX-XX-XX_XX_XX_XX/
 ```
 
 where the `X`s need to be replaced by proper values. Another solution is to
@@ -563,14 +586,13 @@ under /app/staging before doing it in `production` under /app/production.
    `ssh -CvX -A cloud@IpAdressOfCloudServer`.
 1. Navigate to the production environment by running `cd /app/production`.
 1. Make a database backup by running `DATE=$(date +"%Y-%m-%d_%H_%M_%S")` and
-   `./database.mk BACKUP_DIRECTORY=/app/data/backups/${DATE} backup`
+   `./database.mk backup DIR=/app/data/backups/${DATE}`
 1. Navigate to the staging environment by running `cd /app/staging`.
 1. Load the backup into the staging database by running
-   `./database.mk BACKUP_DIRECTORY=/app/data/backups/${DATE} restore`.
+   `./database.mk restore DIR=/app/data/backups/${DATE}`.
 1. Drop into `psql` by running `./database.mk psql`.
 1. List all tables in the schema `database` by running `\dt database.*`.
-1. List all optical data records by running `select * from
-   database.optical_data;` and remember for example one identifier of a record
+1. List all optical data records by running `select * from database.optical_data;` and remember for example one identifier of a record
    that you want to update.
 1. Update a single field by running `update database.optical_data set "Description" = '...' where "Id" = 'f07499ab-f119-471f-8aad-d3c016676bce';`.
 1. Delete a faulty record by running `delete from database.optical_data where "Id" = 'f07499ab-f119-471f-8aad-d3c016676bce';`.

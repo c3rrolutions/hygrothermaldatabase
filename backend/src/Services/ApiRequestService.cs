@@ -168,7 +168,7 @@ public sealed class ApiRequestService(
         );
         httpRequestMessage.Headers.Add(
             HeaderNames.Origin,
-            appSettings.Host
+            appSettings.Uri.AbsoluteUri
         );
         if (bearerToken is not null)
         {

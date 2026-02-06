@@ -71,8 +71,9 @@ services:
     environment:
       ASPNETCORE_URLS: "http://0.0.0.0:8080"
       ASPNETCORE_ENVIRONMENT: "production"
-      XBASE_Host: "https://${HOST:?required}"
-      XBASE_MetabaseHost: "https://${METABASE_HOST:?required}"
+      XBASE_Host: "${HOST:?required}"
+      XBASE_Subdomain: "${SUBDOMAIN:?required}"
+      XBASE_MetabaseHost: "${METABASE_HOST:?required}"
       XBASE_DatabaseId: "${DATABASE_ID:?required}"
       XBASE_OperatorId: "${OPERATOR_ID:?required}"
       XBASE_Database__SchemaName: "metabase"

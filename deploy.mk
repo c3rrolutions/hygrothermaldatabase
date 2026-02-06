@@ -6,6 +6,8 @@ SHELL := /usr/bin/env bash
 .SHELLFLAGS := -o errexit -o errtrace -o nounset -o pipefail -c
 MAKEFLAGS += --warn-undefined-variables
 
+COMPOSE_BAKE=true
+
 docker_compose = \
 	docker compose \
 		--file ./docker-compose.yaml \
@@ -105,7 +107,7 @@ checkout-target : ## Fetch and checkout `${TARGET}`
 # Note that NGINX is because of its dependencies taken down and up last and in
 # one go so the maintenance page is only down very shortly.
 deploy-services : ## Deploy services
-	$(MAKE) build
+	$(MAKE) --file=./docker.mk build
 	${docker_compose} up \
 		--force-recreate \
 		--renew-anon-volumes \

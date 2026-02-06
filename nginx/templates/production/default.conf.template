@@ -28,7 +28,6 @@ limit_req_zone $binary_remote_addr zone=antiforgery:10m rate=30r/s;
 limit_req_zone $binary_remote_addr zone=api:10m rate=30r/s;
 limit_req_zone $binary_remote_addr zone=openapi:10m rate=30r/s;
 limit_req_zone $binary_remote_addr zone=health:10m rate=30r/s;
-limit_req_zone $binary_remote_addr zone=email:10m rate=30r/s;
 
 server_tokens  off;
 
@@ -50,10 +49,6 @@ upstream backend {
 
 upstream frontend {
   server frontend:8080;
-}
-
-upstream email {
-  server email:80;
 }
 
 server {
@@ -121,19 +116,6 @@ server {
   location /health {
     proxy_pass http://backend;
     limit_req  zone=health burst=2 nodelay;
-  }
-
-  location /email {
-    proxy_pass http://email;
-    limit_req  zone=email burst=20 nodelay;
-  }
-
-  location /email/hubs {
-    proxy_pass http://email;
-    proxy_set_header Upgrade $http_upgrade;
-    proxy_set_header Connection $connection_upgrade;
-    proxy_cache_bypass $http_upgrade;
-    limit_req zone=email burst=20 nodelay;
   }
 
   error_page 503 @maintenance;

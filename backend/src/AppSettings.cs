@@ -15,7 +15,7 @@ public sealed record AppSettings
     // using `Uri` as below see the comments to https://stackoverflow.com/questions/372865/path-combine-for-urls/1527643#1527643
     public Uri DatabaseGraphQlEndpoint => new UriBuilder(Uri) { Path = GraphQlPathSegment }.Uri;
 
-    public string MetabaseHost { get; init; } = "";
+    public string MetabaseHost { private get; init; } = "";
     public Uri MetabaseHostUri => new($"https://{MetabaseHost}", UriKind.Absolute);
     public Uri MetabaseGraphQlEndpoint => new UriBuilder(MetabaseHostUri) { Path = GraphQlPathSegment }.Uri;
 
@@ -26,9 +26,7 @@ public sealed record AppSettings
 
     public OpenIdConnectClientSettings OpenIdConnectClient { get; init; } = new();
     public GnupgSecretSigningKeySettings GnupgSecretSigningKey { get; init; } = new();
-    public LoggingSettings Logging { get; init; } = new();
     public JsonWebTokenSettings JsonWebToken { get; init; } = new();
-    public EmailSettings Email { get; init; } = new();
     public DatabaseSettings Database { get; init; } = new();
     public OpenTelemetrySettings OpenTelemetry { get; init; } = new();
 
@@ -47,21 +45,10 @@ public sealed record AppSettings
         public string Fingerprint { get; init; } = "";
     };
 
-    public sealed record LoggingSettings
-    {
-        public bool EnableSensitiveDataLogging { get; init; }
-    };
-
     public sealed record JsonWebTokenSettings
     {
         public string EncryptionCertificatePassword { get; init; } = "";
         public string SigningCertificatePassword { get; init; } = "";
-    };
-
-    public sealed record EmailSettings
-    {
-        public string SmtpHost { get; init; } = "";
-        public int SmtpPort { get; init; }
     };
 
     public sealed record DatabaseSettings

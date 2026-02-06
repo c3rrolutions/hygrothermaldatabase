@@ -34,47 +34,12 @@ services:
     labels:
       autoheal: "true"
 
-  email:
-    image: "rnwood/smtp4dev:v3.10"
-    volumes:
-      - emails:/smtp4dev
-    environment:
-      ServerOptions__BasePath: "/email"
-      ServerOptions__HostName: "${SUBDOMAIN:?required}.${HOST:?required}"
-      ServerOptions__Database: "database.db"
-      ServerOptions__NumberOfMessagesToKeep: "100"
-      ServerOptions__NumberOfSessionsToKeep: "100"
-      ServerOptions__TlsMode: "None"
-      ServerOptions__TlsCertificate: ""
-      RelayOptions__SmtpServer: "${RELAY_SMTP_HOST?required}"
-      RelayOptions__SmtpPort: "${RELAY_SMTP_PORT:?required}"
-      RelayOptions__AllowedEmailsString: "${RELAY_ALLOWED_EMAILS?required}"
-    restart: "unless-stopped"
-    # For all configuration options see
-    # https://github.com/rnwood/smtp4dev/blob/master/docker-compose.yaml
-    # ports:
-    # Web interface
-    # - "0.0.0.0:4042:80"
-    # SMTP server
-    # - "0.0.0.0:25:25"
-    # Imap server
-    # - "0.0.0.0:143:143"
-    healthcheck:
-      test: [ "CMD-SHELL", "curl --silent --fail --output /dev/null http://email:80 || exit 1" ]
-      interval: "5s"
-      timeout: "5s"
-      retries: "20"
-    labels:
-      autoheal: "true"
-
   backend:
     build:
       context: "./backend"
       dockerfile: "./Dockerfile.production"
     depends_on:
       database:
-        condition: "service_healthy"
-      email:
         condition: "service_healthy"
     volumes:
       - backend_logs:/app/logs
@@ -97,8 +62,6 @@ services:
       XBASE_VerificationCode: "${VERIFICATION_CODE:?required}"
       XBASE_JsonWebToken__EncryptionCertificatePassword: "${JSON_WEB_TOKEN_ENCRYPTION_CERTIFICATE_PASSWORD:?required}"
       XBASE_JsonWebToken__SigningCertificatePassword: "${JSON_WEB_TOKEN_SIGNING_CERTIFICATE_PASSWORD:?required}"
-      XBASE_Email__SmtpHost: "${SMTP_HOST:?required}"
-      XBASE_Email__SmtpPort: "${SMTP_PORT:?required}"
       XBASE_GnupgSecretSigningKey__Fingerprint: "${GNUPG_SECRET_SIGNING_KEY_FINGERPRINT:?required}"
       XBASE_GnupgSecretSigningKey__Passphrase: "${GNUPG_SECRET_SIGNING_KEY_PASSPHRASE:?required}"
       XBASE_OpenTelemetry__Host: "${OPEN_TELEMETRY_HOST:?required}"
@@ -155,8 +118,6 @@ services:
     depends_on:
       backend:
         condition: "service_started"
-      email:
-        condition: "service_started"
       frontend:
         condition: "service_started"
     volumes:
@@ -178,7 +139,6 @@ services:
 
 volumes:
   data:
-  emails:
   files:
   gnupg:
   backend_logs:

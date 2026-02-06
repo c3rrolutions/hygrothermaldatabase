@@ -407,12 +407,6 @@ and the pages following it.
       - `JSON_WEB_TOKEN_ENCRYPTION_CERTIFICATE_PASSWORD` and
         `JSON_WEB_TOKEN_SIGNING_CERTIFICATE_PASSWORD` are passwords used to
         encrypt and sign JSON web tokens (JWT) used by OpenId Connect;
-      - `SMTP_HOST` and `SMTP_PORT` are host and port of the message transfer
-        agent to be used to send emails through the Simple Mail Transfer
-        Protocol (SMTP);
-      - `RELAY_SMTP_HOST`, `RELAY_SMTP_PORT`, and `RELAY_ALLOWED_EMAILS` are
-        host and port of the message transfer agent and a list of allowed
-        email addresses to send emails to even in the staging environment.
 
    1. Prepare your remote controls GNU Make and Docker Compose by running
 

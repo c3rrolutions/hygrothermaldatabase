@@ -425,7 +425,7 @@ and the pages following it.
    1. Generate and export a GnuPG key with the passphrase
       `${GNUPG_SECRET_SIGNING_KEY_PASSPHRASE}` set in the `./.env` file to the
       file `./backend/src/gpg-keys/<KEY_FINGERPRINT>.gpg` by running `./gpg.mk PERSON=${name} COMMENT=${comment} EMAIL=${email} key` with your information
-      filled in, for example, `make NAME="Anna Smith" COMMENT=first EMAIL=anna.smith@fraunhofer.de gpg`. Then copy the key's fingerprint which
+      filled in, for example, `make gpg NAME="Anna Smith" COMMENT=first EMAIL=anna.smith@fraunhofer.de`. Then copy the key's fingerprint which
       is output by the command and set it as the value of the
       `GNUPG_SECRET_SIGNING_KEY_FINGERPRINT` variable in the `./.env` file.
 

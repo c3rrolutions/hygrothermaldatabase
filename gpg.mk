@@ -16,7 +16,7 @@ help : ## Print this help
 
 # Keep file name <FINGERPRINT>.gpg in sync with the one in `AppSettings.cs`
 key : COMMENT =
-key : build-bootstrap ## Generate GnuPG key with the passphrase `${GNUPG_SECRET_SIGNING_KEY_PASSPHRASE}`, for example, `make PERSON="Simon Wacker" COMMENT=solarbuildingenvelopes EMAIL=simon.wacker@ise.fraunhofer.de gpg`
+key : build-bootstrap ## Generate GnuPG key with the passphrase `${GNUPG_SECRET_SIGNING_KEY_PASSPHRASE}`, for example, `make gpg PERSON="Simon Wacker" COMMENT=solarbuildingenvelopes EMAIL=simon.wacker@ise.fraunhofer.de`
 	docker run \
 		--rm \
 		--user $(shell id --user):$(shell id --group) \

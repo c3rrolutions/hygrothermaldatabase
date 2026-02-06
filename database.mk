@@ -10,7 +10,6 @@ COMPOSE_BAKE=true
 
 docker_compose = \
 	docker compose \
-		--file ./docker-compose.yaml \
 		--env-file ./.env
 
 dump_archive_name = postgresql_dumpall.gz
@@ -182,7 +181,7 @@ restore : ## Restore database and related data from directory with absolute path
 			--set=ON_ERROR_STOP=1 \
 			--file=- \
 			--username="${POSTGRES_USER}" \
-			--dbname="${POSTGRES_DATABASE_NAME}"
+			--dbname=postgres
 	docker container stop ${DATABASE_CONTAINER_NAME}
 	docker container rm --volumes ${DATABASE_CONTAINER_NAME}
 	-docker container stop ${FILES_CONTAINER_NAME}

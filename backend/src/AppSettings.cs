@@ -16,7 +16,7 @@ public sealed record AppSettings
     public Uri DatabaseGraphQlEndpoint => new UriBuilder(Uri) { Path = GraphQlPathSegment }.Uri;
 
     public string MetabaseHost { get; init; } = "";
-    public Uri MetabaseHostUri => new(MetabaseHost, UriKind.Absolute);
+    public Uri MetabaseHostUri => new($"https://{MetabaseHost}", UriKind.Absolute);
     public Uri MetabaseGraphQlEndpoint => new UriBuilder(MetabaseHostUri) { Path = GraphQlPathSegment }.Uri;
 
     public Guid DatabaseId { get; init; }
@@ -72,8 +72,8 @@ public sealed record AppSettings
 
     public sealed record OpenTelemetrySettings
     {
-        public string Host { get; init; } = "";
-        public int GrpcPort { get; init; }
+        public string Host { private get; init; } = "";
+        public int GrpcPort { private get; init; }
         public Uri GrpcUri =>
             new UriBuilder(
                 scheme: "http",

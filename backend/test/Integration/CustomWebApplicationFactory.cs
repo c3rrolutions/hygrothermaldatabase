@@ -20,10 +20,7 @@ public sealed class CustomWebApplicationFactory
 
     public CustomWebApplicationFactory()
     {
-        EmailSender = new CollectingEmailSender();
     }
-
-    public CollectingEmailSender EmailSender { get; }
 
     private T Get<T>(Func<IServiceProvider, T> what)
     {
@@ -114,16 +111,6 @@ public sealed class CustomWebApplicationFactory
                 //     serviceCollection.Remove(appSettingsServiceDescriptor);
                 // }
                 // serviceCollection.AddSingleton(newAppSettings);
-                // Configure `IEmailSender`
-                var emailSenderServiceDescriptor =
-                    serviceCollection.SingleOrDefault(d =>
-                        d.ServiceType == typeof(IEmailSender)
-                    );
-                if (emailSenderServiceDescriptor is not null)
-                {
-                    serviceCollection.Remove(emailSenderServiceDescriptor);
-                }
-                serviceCollection.AddTransient<IEmailSender>(_ => EmailSender);
             }
         );
     }

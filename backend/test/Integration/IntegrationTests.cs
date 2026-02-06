@@ -35,8 +35,6 @@ public abstract partial class IntegrationTests
 
     private CustomWebApplicationFactory Factory { get; }
 
-    protected CollectingEmailSender EmailSender => Factory.EmailSender;
-
     protected AppSettings AppSettings => Factory.AppSettings;
 
     protected HttpClient HttpClient { get; }
@@ -387,19 +385,6 @@ public abstract partial class IntegrationTests
         return Encoding.UTF8.GetString(
             Convert.FromBase64String(text)
         );
-    }
-
-    protected void EmailsShouldContainSingle(
-        (string name, string address) recipient,
-        string subject,
-        string bodyRegEx
-    )
-    {
-        EmailSender.Emails.Should().ContainSingle();
-        var email = EmailSender.Emails.First();
-        email.Recipient.Should().Be(recipient);
-        email.Subject.Should().Be(subject);
-        email.Body.Should().MatchRegex(bodyRegEx);
     }
 
     private static ByteArrayContent MakeJsonHttpContent<TContent>(

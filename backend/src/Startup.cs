@@ -53,7 +53,6 @@ public sealed class Startup(
         AuthConfiguration.ConfigureServices(services, environment, _appSettings);
         GraphQlConfiguration.ConfigureServices(services, environment);
         ConfigureDatabaseServices(services);
-        services.AddTransient<IEmailSender>();
         ConfigureRequestResponseServices(services);
         // ConfigureSessionServices(services); // Not used
         ConfigureTelemetryServices(services);

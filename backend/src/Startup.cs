@@ -81,7 +81,10 @@ public sealed class Startup(
         services.Configure<ForwardedHeadersOptions>(_ =>
             {
                 // TODO _.AllowedHosts = ...
-                _.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+                _.ForwardedHeaders =
+                    ForwardedHeaders.XForwardedFor |
+                    ForwardedHeaders.XForwardedProto |
+                    ForwardedHeaders.XForwardedHost;
                 // https://docs.microsoft.com/en-us/aspnet/core/host-and-deploy/proxy-load-balancer#forward-the-scheme-for-linux-and-non-iis-reverse-proxies
                 _.KnownIPNetworks.Clear();
                 _.KnownProxies.Clear();

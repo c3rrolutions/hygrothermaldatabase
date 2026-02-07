@@ -81,6 +81,7 @@ sql : ## Run the SQL script in the file `${SCRIPT}` in the database service, for
 	while [ $$(docker inspect -f {{.State.Health.Status}} ${CONTAINER_NAME}) != "healthy" ]; do sleep 1; done
 	cat ${SCRIPT} \
 	| docker exec \
+		--interactive \
 		${CONTAINER_NAME} \
 		psql \
 			--echo-all \
@@ -122,6 +123,7 @@ backup : ## Backup database and related data to directory with absolute path `${
 		${DATABASE_CONTAINER_NAME} \
 		pg_dumpall \
 			--clean \
+			--if-exists \
 			--username="${POSTGRES_USER}" \
 		| gzip \
 		> ${DIR}/${dump_archive_name}
@@ -169,6 +171,8 @@ restore : ## Restore database and related data from directory with absolute path
 		database
 	while [ $$(docker inspect -f {{.State.Health.Status}} ${DATABASE_CONTAINER_NAME}) != "healthy" ]; do sleep 1; done
 	gunzip --stdout ${DIR}/${dump_archive_name} \
+	| grep --invert-match --extended-regexp \
+		"^CREATE ROLE ${POSTGRES_USER};|^ALTER ROLE ${POSTGRES_USER}" \
 	| docker exec \
 		--interactive \
 		${DATABASE_CONTAINER_NAME} \

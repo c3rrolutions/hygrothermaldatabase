@@ -83,18 +83,6 @@ Conduct](https://github.com/building-envelope-data/database/blob/develop/CODE_OF
 
 1. List all GNU Make targets by running `make help`.
 
-1. Generate and trust a self-signed certificate authority and SSL certificates
-   by running `./certificates.mk ssl`. If you are locally working on the metabase and the
-   database and if you need them to communicate over HTTPS, then instead of
-   running `./certificates.mk ssl`, make the `CERTIFICATE_AUTHORITY_*` variable
-   values in the `.env` file match the ones from the metabase (these variables
-   match in the `.env.development.sample` files), copy the certificate
-   authority files from the directories `./ssl`, `./backend/ssl`, and
-   `./frontend/ssl` of the metabase project into the respective directories in
-   the database project (if the repository reside alongside each other by
-   running `mkdir ./ssl ./backend/ssl ./frontend/ssl && cp ../metabase/ssl/ca.* ./ssl && cp ../metabase/backend/ssl/ca.* ./backend/ssl && cp ../metabase/frontend/ssl/ca.* ./frontend/ssl`), and run the command
-   `./certificates.mk generate-ssl-certificate`.
-
 1. Generate JSON Web Token (JWT) encryption and signing certificates by running
    `./certificates.mk jwt`.
 

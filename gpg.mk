@@ -16,12 +16,16 @@ help : ## Print this help
 
 # Keep file name <FINGERPRINT>.gpg in sync with the one in `AppSettings.cs`
 key : COMMENT =
-key : build-bootstrap ## Generate GnuPG key with the passphrase `${GNUPG_SECRET_SIGNING_KEY_PASSPHRASE}`, for example, `make gpg PERSON="Simon Wacker" COMMENT=solarbuildingenvelopes EMAIL=simon.wacker@ise.fraunhofer.de`
-	docker run \
+key : ## Generate GnuPG key with the passphrase `${GNUPG_SECRET_SIGNING_KEY_PASSPHRASE}`, for example, `make gpg PERSON="Simon Wacker" COMMENT=solarbuildingenvelopes EMAIL=simon.wacker@ise.fraunhofer.de`
+	docker compose pull \
+		bootstrap
+	docker compose build \
+		--build-arg GROUP_ID=$(shell id --group) \
+		--build-arg USER_ID=$(shell id --user) \
+		bootstrap
+	docker compose run \
 		--rm \
-		--user $(shell id --user):$(shell id --group) \
-		--mount type=bind,source="$(shell pwd)/backend",target=/app \
-		${NAME}_bootstrap \
+		bootstrap \
 		bash -ceuxo pipefail " \
 			gpg \
 				--quick-generate-key \

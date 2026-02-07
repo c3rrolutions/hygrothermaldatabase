@@ -229,8 +229,8 @@ public static class AuthConfiguration
                     // redirection endpoint URI per provider, unless all the registered
                     // providers support returning a special "iss" parameter containing their
                     // URL as part of authorization responses. For more information, see https://datatracker.ietf.org/doc/html/draft-ietf-oauth-security-topics#section-4.4.
-                    RedirectUri = new Uri($"connect/callback/login/{OpenIdConnectConstants.MetabaseClientId}", UriKind.Relative),
-                    PostLogoutRedirectUri = new Uri($"connect/callback/logout/{OpenIdConnectConstants.MetabaseClientId}", UriKind.Relative)
+                    RedirectUri = new UriBuilder(appSettings.Uri) { Path = $"connect/callback/login/{OpenIdConnectConstants.MetabaseClientId}" }.Uri,
+                    PostLogoutRedirectUri = new UriBuilder(appSettings.Uri) { Path = $"connect/callback/logout/{OpenIdConnectConstants.MetabaseClientId}" }.Uri
                 };
                 clientRegistration.Scopes.UnionWith([
                     OpenIddictConstants.Scopes.OfflineAccess,

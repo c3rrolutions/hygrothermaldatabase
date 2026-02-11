@@ -2,9 +2,7 @@
 # check=error=true
 # Available versions are listed on https://hub.docker.com/r/docker/dockerfile
 
-# https://hub.docker.com/_/microsoft-dotnet-sdk
-# https://mcr.microsoft.com/artifact/mar/dotnet/sdk/tags
-FROM mcr.microsoft.com/dotnet/sdk:10.0-noble-amd64
+FROM debian:bookworm
 SHELL ["/bin/bash", "-o", "errexit", "-o", "nounset", "-o", "pipefail", "-c"]
 
 ARG GROUP_ID
@@ -15,7 +13,7 @@ RUN \
   if [ -z "$USER_ID" ]; then echo "required 'USER_ID'"; exit 1; fi
 
 # Create non-root user to run commands in (see https://medium.com/@mccode/processes-in-containers-should-not-run-as-root-2feae3f0df3b)
-# id --user --name ${USER_ID} 2>/dev/null
+# id --user --name "${USER_ID}" 2>/dev/null
 RUN \
   apt-get update && \
   apt-get install \
@@ -40,9 +38,6 @@ RUN \
     --uid "${USER_ID}" \
     --ingroup us \
     me && \
-  apt-get remove \
-    --assume-yes \
-    adduser && \
   rm \
     --recursive \
     --force \
@@ -63,6 +58,7 @@ RUN \
   apt-get install \
     --assume-yes \
     --no-install-recommends \
+    ca-certificates \
     curl \
     gnupg2 && \
   curl \
@@ -94,17 +90,34 @@ RUN \
     --force \
     /var/lib/apt/lists/*
 
+RUN apt-get update \
+  && apt-get install \
+    --assume-yes \
+    --no-install-recommends \
+    make \
+  && rm \
+    --recursive \
+    --force \
+    /var/lib/apt/lists/*
+
 ENV HOME=/home/me
-RUN mkdir --parents "${HOME}" \
+RUN mkdir --parents "${HOME}/app" \
   && chown \
     me:us \
-    "${HOME}"
+    "${HOME}" \
+  && chown \
+    me:us \
+    "${HOME}/app" \
+  && ln --symbolic "${HOME}/app" /app
 
 USER me
 WORKDIR /app
 
-RUN mkdir --parents "${HOME}/.dotnet"
-
-ENV PATH=$PATH:/home/me/.dotnet/tools
-RUN dotnet tool install --global \
-  dotnet-script
+RUN mkdir --parents \
+    "${HOME}/.gnupg" \
+  && chmod u=rwx,g=,o= \
+    "${HOME}/.gnupg" \
+  && echo "no-use-keyboxd" \
+    >"${HOME}/.gnupg/common.conf" \
+  && echo "allow-loopback-pinentry" \
+    >"${HOME}/.gnupg/gpg-agent.conf"

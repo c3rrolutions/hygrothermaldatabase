@@ -39,7 +39,6 @@ public sealed record AppSettings
     {
         // Keep file name {FINGERPRINT}.gpg in sync with the one in the GNU
         // Make target `gpg` in the `Makefile`
-        public string FileName => $"{Fingerprint}.gpg";
         public string Passphrase { get; init; } = "";
         public string Fingerprint { get; init; } = "";
     };

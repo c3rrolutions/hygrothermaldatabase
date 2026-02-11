@@ -90,7 +90,7 @@ public sealed class Program
                     await CreateDatabase(scope.ServiceProvider);
                 }
                 await SeedDatabase(scope.ServiceProvider);
-                await InitializeSigningService(scope.ServiceProvider);
+                await AssertGnuPgKeyExistence(scope.ServiceProvider);
             }
 
             await application.RunAsync();
@@ -203,13 +203,13 @@ public sealed class Program
         }
     }
 
-    private static async Task InitializeSigningService(
+    private static async Task AssertGnuPgKeyExistence(
         IServiceProvider services
     )
     {
         await services
             .GetRequiredService<SigningService>()
-            .Initialize();
+            .AssertGnuPgKeyExistence();
     }
 
     // https://docs.microsoft.com/en-us/aspnet/core/fundamentals/host/generic-host

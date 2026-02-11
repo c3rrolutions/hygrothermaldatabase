@@ -236,6 +236,8 @@ RUN mkdir --parents \
     "${HOME}/.gnupg" \
   && chmod u=rwx,g=,o= \
     "${HOME}/.gnupg" \
+  && echo "no-use-keyboxd" \
+    >"${HOME}/.gnupg/common.conf" \
   && echo "allow-loopback-pinentry" \
     >"${HOME}/.gnupg/gpg-agent.conf"
 

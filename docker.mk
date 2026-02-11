@@ -159,3 +159,16 @@ list-services : ## List all services specified in the docker-compose file (used 
 	docker compose config \
 		--services
 .PHONY : list-services
+
+bootstrap : COMMAND = bash
+bootstrap : ## Run a one-time command in a fresh bootstrap service or enter a shell within, for example, `make bootstrap COMMAND='./gpg.mk key NAME="Anna Smith" COMMENT=first EMAIL=anna.smith@fraunhofer.de'` or simply `make bootstrap`
+	docker compose pull \
+		bootstrap
+	docker compose build \
+		--build-arg GROUP_ID=$(shell id --group) \
+		--build-arg USER_ID=$(shell id --user) \
+		bootstrap
+	docker compose run \
+		--rm \
+		bootstrap \
+		${COMMAND}

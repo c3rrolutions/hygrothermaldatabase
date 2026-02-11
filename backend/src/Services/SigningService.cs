@@ -64,14 +64,14 @@ public sealed class SigningService(
 {
     public static readonly Uri KeyServerUrl = new("hkps://keys.openpgp.org/", UriKind.Absolute);
 
-    public async Task Initialize()
+    public async Task AssertGnuPgKeyExistence()
     {
         var (success, output, diagnostics) = await ExecuteCommand(
-            $"gpg --batch --passphrase '{appSettings.GnupgSecretSigningKey.Passphrase}' --import './gpg-keys/{appSettings.GnupgSecretSigningKey.FileName}'"
+            $"gpg --batch --with-colons --list-keys | grep '{appSettings.GnupgSecretSigningKey.Fingerprint}'"
         );
         if (!success)
         {
-            throw new InvalidOperationException($"Failed to import GnuPG secret key for signing with passphrase '{appSettings.GnupgSecretSigningKey.Passphrase}' and file name '{appSettings.GnupgSecretSigningKey.FileName}'. The command gave the standard output '{output}' and the diagnostic information '{diagnostics}'.");
+            throw new InvalidOperationException($"There is no GnuPG key with the fingerprint '{appSettings.GnupgSecretSigningKey.Fingerprint}'. The command gave the standard output '{output}' and the diagnostic information '{diagnostics}'.");
         }
     }
 
@@ -140,12 +140,17 @@ public sealed class SigningService(
     )
     {
         logger.ExecuteCommand(command);
-        var escapedCommand = command.Replace("\"", "\\\"");
         var process = Process.Start(
             new ProcessStartInfo()
             {
                 FileName = "bash",
-                Arguments = $"-c \"{escapedCommand}\"",
+                ArgumentList = {
+                    "-o", "errexit",
+                    "-o", "errtrace",
+                    "-o", "nounset",
+                    "-o", "pipefail",
+                    "-c", command
+                },
                 ErrorDialog = false,
                 UseShellExecute = false,
                 CreateNoWindow = true,

@@ -26,7 +26,6 @@ public sealed record AppSettings
 
     public OpenIdConnectClientSettings OpenIdConnectClient { get; init; } = new();
     public GnupgSecretSigningKeySettings GnupgSecretSigningKey { get; init; } = new();
-    public JsonWebTokenSettings JsonWebToken { get; init; } = new();
     public DatabaseSettings Database { get; init; } = new();
     public OpenTelemetrySettings OpenTelemetry { get; init; } = new();
 
@@ -43,12 +42,6 @@ public sealed record AppSettings
         public string FileName => $"{Fingerprint}.gpg";
         public string Passphrase { get; init; } = "";
         public string Fingerprint { get; init; } = "";
-    };
-
-    public sealed record JsonWebTokenSettings
-    {
-        public string EncryptionCertificatePassword { get; init; } = "";
-        public string SigningCertificatePassword { get; init; } = "";
     };
 
     public sealed record DatabaseSettings

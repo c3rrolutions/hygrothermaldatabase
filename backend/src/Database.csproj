@@ -3,16 +3,19 @@
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <LangVersion>14.0</LangVersion>
-    <UserSecretsId>31666837686487542159</UserSecretsId>
-    <!-- <GenerateDocumentationFile>true</GenerateDocumentationFile> -->
     <Nullable>enable</Nullable>
+    <!-- <GenerateDocumentationFile>true</GenerateDocumentationFile> -->
+    <UserSecretsId>31666837686487542159</UserSecretsId>
+    <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
+  </PropertyGroup>
+
+  <PropertyGroup>
     <!-- https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/overview -->
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
     <RunAnalyzersDuringBuild>true</RunAnalyzersDuringBuild>
     <RunAnalyzersDuringLiveAnalysis>true</RunAnalyzersDuringLiveAnalysis>
     <AnalysisLevel>latest-Recommended</AnalysisLevel>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
-    <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -63,7 +66,7 @@
     <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.15.0" />
     <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.15.0" />
     <PackageReference Include="Quartz" Version="3.15.1" />
-    <PackageReference Include="Quartz.Extensions.Hosting" Version="3.15.1" />
+    <PackageReference Include="Quartz.AspNetCore" Version="3.15.1" />
     <PackageReference Include="Scalar.AspNetCore" Version="2.12.32" />
     <PackageReference Include="Scalar.AspNetCore.Microsoft" Version="2.12.32" />
     <PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
@@ -75,26 +78,33 @@
     <PackageReference Include="System.Linq.Async" Version="7.0.0" />
   </ItemGroup>
 
+  <PropertyGroup>
+    <EnableDefaultItems>false</EnableDefaultItems>
+    <!-- '%5C' is the hexcode of the backslash '\' -->
+    <DefaultItemExcludes>$(DefaultItemExcludes);**/obj/**;**/bin/**;**/obj%5CDebug/**;**/bin%5CDebug/**;**/logs/**;**/files/**</DefaultItemExcludes>
+  </PropertyGroup>
+
   <ItemGroup>
-    <EmbeddedResource Include="./jwt-encryption-certificate.pfx" />
-    <EmbeddedResource Include="./jwt-signing-certificate.pfx" />
+    <Compile Include="**/*.cs" />
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="**/*.cshtml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="**/*.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="**/*.graphql">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="./gpg-keys/*">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-
-  <ItemGroup>
     <!-- list watched files with `dotnet watch - -list` -->
-    <Watch Remove="**/*.json" />
-    <Watch Include="**/*.json" Exclude="logs/**/*;files/**/*;obj/**/*;bin/**/*" />
+    <Watch Include="**/*.json" Exclude="**/obj/**;**/bin/**;**/obj%5CDebug/**;**/bin%5CDebug/**;**/logs/**;**/files/**" />
+    <Watch Include="**/*.cs" Exclude="**/obj/**;**/bin/**;**/obj%5CDebug/**;**/bin%5CDebug/**;**/logs/**;**/files/**" />
+    <Watch Include="**/*.cshtml" Exclude="**/obj/**;**/bin/**;**/obj%5CDebug/**;**/bin%5CDebug/**;**/logs/**;**/files/**" />
+    <Watch Include="**/*.graphql" Exclude="**/obj/**;**/bin/**;**/obj%5CDebug/**;**/bin%5CDebug/**;**/logs/**;**/files/**" />
   </ItemGroup>
 </Project>

@@ -1,5 +1,5 @@
 # Keep setup in sync with the one in ./docker-compose.development.yaml
-name: "${NAME}"
+name: "${NAME:?required}_${ENVIRONMENT:?required}"
 
 services:
   database:
@@ -7,8 +7,8 @@ services:
     volumes:
       - data:/var/lib/postgresql/data
     environment:
-      POSTGRES_USER: "${POSTGRES_USER}"
-      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+      POSTGRES_USER: "${POSTGRES_USER:?required}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:?required}"
       POSTGRES_DB: "postgres" # default database used to run `./database.mk dropdb`
     # ports:
     #   - "0.0.0.0:5432:5432"
@@ -20,14 +20,15 @@ services:
     # https://betterstack.com/community/guides/logging/how-to-start-logging-with-postgresql/
     command:
       [
-        "-c", "max_connections=100"
-        # "-c", "log_statement=all",
-        # "-c", "log_duration=1"
+        "-c",
+        "max_connections=100"
+          # "-c", "log_statement=all",
+          # "-c", "log_duration=1"
       ]
     restart: "unless-stopped"
     healthcheck:
       # pg_isready: https://www.postgresql.org/docs/13/app-pg-isready.html
-      test: [ "CMD-SHELL", "pg_isready --username='${POSTGRES_USER}'" ]
+      test: [ "CMD-SHELL", "pg_isready --username='${POSTGRES_USER:?required}'" ]
       interval: "5s"
       timeout: "5s"
       retries: "5"
@@ -35,18 +36,16 @@ services:
       autoheal: "true"
 
   backend:
-    build:
-      context: "./backend"
-      dockerfile: "./Dockerfile.production"
+    image: "${NAME:?required}-backend:${TARGET:?required}"
     depends_on:
       database:
         condition: "service_started"
     volumes:
       - backend_logs:/app/logs
       - files:/app/files
-      - ./secrets:/run/secrets:ro
-      # Create volume for GnuPG
       - gnupg:/root/.gnupg
+      # persist certificates in the [`X509Store`](https://learn.microsoft.com/en-us/dotnet/api/system.security.cryptography.x509certificates.x509store)
+      - certificates:/root/.dotnet/corefx/cryptography/x509stores
     environment:
       # https://docs.microsoft.com/en-us/aspnet/core/fundamentals/configuration/?view=aspnetcore-3.1#environment-variables
       ASPNETCORE_URLS: "http://0.0.0.0:8080"
@@ -57,12 +56,10 @@ services:
       XBASE_DatabaseId: "${DATABASE_ID:?required}"
       XBASE_OperatorId: "${OPERATOR_ID:?required}"
       XBASE_Database__SchemaName: "database"
-      XBASE_Database__ConnectionString: "Host=database; Port=5432; Database='${POSTGRES_DATABASE_NAME}'; User Id='${POSTGRES_USER}'; Password='${POSTGRES_PASSWORD}'; Maximum Pool Size=90;"
+      XBASE_Database__ConnectionString: "Host=database; Port=5432; Database='${POSTGRES_DATABASE_NAME:?required}'; User Id='${POSTGRES_USER:?required}'; Password='${POSTGRES_PASSWORD:?required}'; Maximum Pool Size=90;"
       XBASE_OpenIdConnectClient__Id: "${OPEN_ID_CONNECT_CLIENT_ID:?required}"
       XBASE_OpenIdConnectClient__Secret: "${OPEN_ID_CONNECT_CLIENT_SECRET:?required}"
       XBASE_VerificationCode: "${VERIFICATION_CODE:?required}"
-      XBASE_JsonWebToken__EncryptionCertificatePassword: "${JSON_WEB_TOKEN_ENCRYPTION_CERTIFICATE_PASSWORD:?required}"
-      XBASE_JsonWebToken__SigningCertificatePassword: "${JSON_WEB_TOKEN_SIGNING_CERTIFICATE_PASSWORD:?required}"
       XBASE_GnupgSecretSigningKey__Fingerprint: "${GNUPG_SECRET_SIGNING_KEY_FINGERPRINT:?required}"
       XBASE_GnupgSecretSigningKey__Passphrase: "${GNUPG_SECRET_SIGNING_KEY_PASSPHRASE:?required}"
       XBASE_OpenTelemetry__Host: "${OPEN_TELEMETRY_HOST:?required}"
@@ -77,12 +74,12 @@ services:
       [
         "dotnet",
         "/app/App.dll"
-        # "/Serilog:MinimumLevel:Default=Debug",
-        # "/Serilog:MinimumLevel:Microsoft=Debug",
-        # "/Serilog:MinimumLevel:Microsoft.Hosting.Lifetime=Debug",
-        # "/Serilog:MinimumLevel:Override:Microsoft=Debug",
-        # "/Serilog:MinimumLevel:Override:Microsoft.AspNetCore=Debug",
-        # "/Serilog:MinimumLevel:Override:System=Debug"
+          # "/Serilog:MinimumLevel:Default=Debug",
+          # "/Serilog:MinimumLevel:Microsoft=Debug",
+          # "/Serilog:MinimumLevel:Microsoft.Hosting.Lifetime=Debug",
+          # "/Serilog:MinimumLevel:Override:Microsoft=Debug",
+          # "/Serilog:MinimumLevel:Override:Microsoft.AspNetCore=Debug",
+          # "/Serilog:MinimumLevel:Override:System=Debug"
       ]
     restart: "unless-stopped"
     healthcheck:
@@ -93,12 +90,11 @@ services:
       retries: "20"
     labels:
       autoheal: "true"
+    pull_policy: "never"
     stdin_open: true
 
   frontend:
-    build:
-      context: "./frontend"
-      dockerfile: "./Dockerfile.production"
+    image: "${NAME:?required}-frontend:${TARGET:?required}"
     depends_on:
       backend:
         condition: "service_started"
@@ -113,6 +109,7 @@ services:
       retries: "20"
     labels:
       autoheal: "true"
+    pull_policy: "never"
 
   nginx:
     image: "nginx:1.29-trixie-otel"
@@ -138,17 +135,9 @@ services:
     labels:
       autoheal: "true"
 
-  bootstrap:
-    build:
-      context: "./backend"
-      dockerfile: "./Dockerfile.bootstrap"
-    volumes:
-      - ./backend:/app
-    profiles:
-      - "manual"
-
 volumes:
   data:
   files:
   gnupg:
+  certificates:
   backend_logs:

@@ -1,5 +1,7 @@
 import { Route } from "next";
 
+const metabaseUrl = "https://www.buildingenvelopedata.org"
+
 export default {
   home: "/" as Route,
   legalNotice: "/legal-notice" as Route,
@@ -31,79 +33,78 @@ export default {
   uploadFile: "/upload-file" as Route,
   login: "/connect/login" as Route,
   logout: "/connect/logout" as Route,
-  graphQl: new URL("/graphql/", process.env.NEXT_PUBLIC_DATABASE_URL)
-    .href as Route,
+  graphQl: "/graphql/" as Route,
   metabase: {
-    home: process.env.NEXT_PUBLIC_METABASE_URL,
-    components: new URL("/components", process.env.NEXT_PUBLIC_METABASE_URL)
+    home: metabaseUrl,
+    components: new URL("/components", metabaseUrl)
       .href as Route,
     component(uuid: string) {
       return new URL(
         `/components/${encodeURIComponent(uuid)}`,
-        process.env.NEXT_PUBLIC_METABASE_URL,
+        metabaseUrl,
       ).href as Route;
     },
-    databases: new URL("/databases", process.env.NEXT_PUBLIC_METABASE_URL)
+    databases: new URL("/databases", metabaseUrl)
       .href as Route,
     database(uuid: string) {
       return new URL(
         `/databases/${encodeURIComponent(uuid)}`,
-        process.env.NEXT_PUBLIC_METABASE_URL,
+        metabaseUrl,
       ).href as Route;
     },
-    dataFormats: new URL(`/data-formats`, process.env.NEXT_PUBLIC_METABASE_URL)
+    dataFormats: new URL(`/data-formats`, metabaseUrl)
       .href as Route,
     dataFormat(uuid: string) {
       return new URL(
         `/data-formats/${encodeURIComponent(uuid)}`,
-        process.env.NEXT_PUBLIC_METABASE_URL,
+        metabaseUrl,
       ).href as Route;
     },
-    institutions: new URL("/institutions", process.env.NEXT_PUBLIC_METABASE_URL)
+    institutions: new URL("/institutions", metabaseUrl)
       .href as Route,
     institution(uuid: string) {
       return new URL(
         `/institutions/${encodeURIComponent(uuid)}`,
-        process.env.NEXT_PUBLIC_METABASE_URL,
+        metabaseUrl,
       ).href as Route;
     },
-    methods: new URL("/methods", process.env.NEXT_PUBLIC_METABASE_URL)
+    methods: new URL("/methods", metabaseUrl)
       .href as Route,
     method(uuid: string) {
       return new URL(
         `/methods/${encodeURIComponent(uuid)}`,
-        process.env.NEXT_PUBLIC_METABASE_URL,
+        metabaseUrl,
       ).href as Route;
     },
-    users: new URL("/users", process.env.NEXT_PUBLIC_METABASE_URL)
+    users: new URL("/users", metabaseUrl)
       .href as Route,
     user(uuid: string) {
       return new URL(
         `/users/${encodeURIComponent(uuid)}`,
-        process.env.NEXT_PUBLIC_METABASE_URL,
+        metabaseUrl,
       ).href as Route;
     },
     allCalorimetricData: new URL(
       `/data/calorimetric`,
-      process.env.NEXT_PUBLIC_METABASE_URL,
+      metabaseUrl,
     ).href as Route,
     allGeometricData: new URL(
       `/data/geometric`,
-      process.env.NEXT_PUBLIC_METABASE_URL,
+      metabaseUrl,
     ).href as Route,
     allHygrothermalData: new URL(
       `/data/hygrothermal`,
-      process.env.NEXT_PUBLIC_METABASE_URL,
+      metabaseUrl,
     ).href as Route,
     allOpticalData: new URL(
       `/data/optical`,
-      process.env.NEXT_PUBLIC_METABASE_URL,
+      metabaseUrl,
     ).href as Route,
     allPhotovoltaicData: new URL(
       `/data/photovoltaic`,
-      process.env.NEXT_PUBLIC_METABASE_URL,
+      metabaseUrl,
     ).href as Route,
-    graphQl: new URL("/graphql/", process.env.NEXT_PUBLIC_METABASE_URL)
+    graphQl: new URL("/graphql/", metabaseUrl)
       .href as Route,
   },
 };

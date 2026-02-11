@@ -1,36 +1,107 @@
 using System;
-using System.IO;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 using Database.Authentication;
 using Database.Authorization;
 using Database.Data;
+using Database.Jobs;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using OpenIddict.Abstractions;
 using OpenIddict.Client;
 using Quartz;
+using Quartz.AspNetCore;
 
 namespace Database.Configuration;
 
 public static class AuthConfiguration
 {
     private static readonly TimeSpan s_cookieExpirationTimeSpan = TimeSpan.FromDays(1);
+
+    private static void BootstrapCertificates()
+    {
+        using var store = new X509Store(OpenIdConnectConstants.CertificateStoreName, OpenIdConnectConstants.CertificateStoreLocation);
+        try
+        {
+            store.Open(OpenFlags.ReadWrite);
+            {
+                var distinguishedName = OpenIdConnectConstants.SigningSubjectDistinguishedName;
+                var certificates = store.Certificates.Find(
+                    X509FindType.FindBySubjectDistinguishedName,
+                    distinguishedName,
+                    validOnly: true
+                );
+                if (certificates.Count == 0)
+                {
+                    store.Add(
+                        JwtSigningAndEncryptionCertificateRotationJob.CreateSigningCertificate(
+                            distinguishedName
+                        )
+                    );
+                }
+            }
+            {
+                var distinguishedName = OpenIdConnectConstants.EncryptionSubjectDistinguishedName;
+                var certificates = store.Certificates.Find(
+                    X509FindType.FindBySubjectDistinguishedName,
+                    distinguishedName,
+                    validOnly: true
+                );
+                if (certificates.Count == 0)
+                {
+                    store.Add(
+                        JwtSigningAndEncryptionCertificateRotationJob.CreateEncryptionCertificate(
+                            distinguishedName
+                        )
+                    );
+                }
+            }
+        }
+        finally
+        {
+            store.Close();
+        }
+    }
+
+    private static IEnumerable<X509Certificate2> FindCertificates(string distinguishedName)
+    {
+        using var store = new X509Store(OpenIdConnectConstants.CertificateStoreName, OpenIdConnectConstants.CertificateStoreLocation);
+        try
+        {
+            store.Open(OpenFlags.ReadOnly);
+            var certificates = store.Certificates.Find(
+                X509FindType.FindBySubjectDistinguishedName,
+                distinguishedName,
+                // OpenIddict automatically prioritizes the cert with the latest expiration
+                // Expired keys are needed for tokens signed and encrypted before it expired
+                validOnly: false
+            );
+            foreach (var certificate in certificates)
+            {
+                yield return certificate;
+            }
+        }
+        finally
+        {
+            store.Close();
+        }
+    }
+
     public static void ConfigureServices(
         IServiceCollection services,
         IWebHostEnvironment environment,
         AppSettings appSettings
     )
     {
-        var encryptionCertificate = LoadCertificate("jwt-encryption-certificate.pfx", appSettings.JsonWebToken.EncryptionCertificatePassword);
-        var signingCertificate = LoadCertificate("jwt-signing-certificate.pfx", appSettings.JsonWebToken.SigningCertificatePassword);
+        BootstrapCertificates();
         services.AddScoped<AuthenticationHandler>();
         services.AddScoped<GraphQlAuthenticationAndAntiforgeryHandler>();
         ConfigureAuthenticationAndAuthorizationServices(services);
         ConfigureTaskScheduling(services, environment);
-        ConfigureOpenIddictServices(services, environment, appSettings, encryptionCertificate, signingCertificate);
+        ConfigureOpenIddictServices(services, environment, appSettings);
         AddAuthorizationServices(services);
     }
 
@@ -41,27 +112,6 @@ public static class AuthConfiguration
         services.AddScoped<CommonAuthorization>();
     }
 
-    private static X509Certificate2 LoadCertificate(
-        string fileName,
-        string password
-    )
-    {
-        if (string.IsNullOrEmpty(password))
-        {
-            throw new ArgumentException($"Empty password for certificate {fileName}.");
-        }
-
-        var stream =
-            Assembly.GetExecutingAssembly().GetManifestResourceStream($"Database.{fileName}")
-            ?? throw new ArgumentException($"Missing certificate {fileName}.");
-        using var buffer = new MemoryStream();
-        stream.CopyTo(buffer);
-        return X509CertificateLoader.LoadPkcs12(
-            buffer.ToArray(),
-            password,
-            X509KeyStorageFlags.EphemeralKeySet
-        );
-    }
 
     private static void ConfigureAuthenticationAndAuthorizationServices(
         IServiceCollection services
@@ -115,20 +165,32 @@ public static class AuthConfiguration
         {
             _.SchedulerId = OpenIdConnectConstants.DatabaseQuartzSchedulerId;
             _.SchedulerName = "Database";
-            _.UseSimpleTypeLoader();
-            _.UseInMemoryStore();
-            _.UseDefaultThreadPool(_ =>
-                _.MaxConcurrency = 10
-            );
             if (environment.IsEnvironment(Program.TestEnvironment))
             {
                 var probablyUniqueId = Guid.NewGuid().ToString();
                 _.SchedulerId = $"{OpenIdConnectConstants.DatabaseQuartzSchedulerId}-{probablyUniqueId}";
                 _.SchedulerName = $"Metabase-{probablyUniqueId}";
             }
+            _.UseSimpleTypeLoader();
+            _.UseInMemoryStore();
+            _.UseDefaultThreadPool(_ =>
+                _.MaxConcurrency = 10
+            );
+            var jwtSigningAndEncryptionKeyRotationJobKey = new JobKey(JwtSigningAndEncryptionCertificateRotationJob.KeyName);
+            _.AddJob<JwtSigningAndEncryptionCertificateRotationJob>(_ => _.WithIdentity(jwtSigningAndEncryptionKeyRotationJobKey));
+            _.AddTrigger(_ => _
+                .ForJob(jwtSigningAndEncryptionKeyRotationJobKey)
+                .WithIdentity(JwtSigningAndEncryptionCertificateRotationJob.TriggerIdentityName)
+                .StartNow()
+                .WithSimpleSchedule(_ => _
+                    .WithIntervalInHours(24)
+                    .RepeatForever()
+                    .WithMisfireHandlingInstructionFireNow()
+                )
+            );
         });
         // Register the Quartz.NET service and configure it to block shutdown until jobs are complete.
-        services.AddQuartzHostedService(_ =>
+        services.AddQuartzServer(_ =>
             _.WaitForJobsToComplete = true
         );
     }
@@ -136,9 +198,7 @@ public static class AuthConfiguration
     private static void ConfigureOpenIddictServices(
         IServiceCollection services,
         IWebHostEnvironment environment,
-        AppSettings appSettings,
-        X509Certificate2 encryptionCertificate,
-        X509Certificate2 signingCertificate
+        AppSettings appSettings
     )
     {
         services.AddOpenIddict()
@@ -189,8 +249,14 @@ public static class AuthConfiguration
                  .AllowRefreshTokenFlow();
 
                 // Register the signing and encryption credentials. See https://stackoverflow.com/questions/50862755/signing-keys-certificates-and-client-secrets-confusion/50932120#50932120
-                _.AddEncryptionCertificate(encryptionCertificate)
-                 .AddSigningCertificate(signingCertificate);
+                foreach (var encryptionCertificate in FindCertificates(OpenIdConnectConstants.EncryptionSubjectDistinguishedName))
+                {
+                    _.AddEncryptionCertificate(encryptionCertificate);
+                }
+                foreach (var signingCertificate in FindCertificates(OpenIdConnectConstants.SigningSubjectDistinguishedName))
+                {
+                    _.AddSigningCertificate(signingCertificate);
+                }
 
                 // Register the ASP.NET Core host and configure the ASP.NET Core-specific options.
                 _.UseAspNetCore()

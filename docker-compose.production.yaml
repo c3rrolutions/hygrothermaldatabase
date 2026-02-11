@@ -45,8 +45,8 @@ services:
       - files:/app/files
       # persist certificates in the [`X509Store`](https://learn.microsoft.com/en-us/dotnet/api/system.security.cryptography.x509certificates.x509store)
       - certificates:/root/.dotnet/corefx/cryptography/x509stores
-      - /home/cloud/.gnupg:/home/me/.gnupg
-      - ${GNUPG_AGENT_SOCKET}:/home/me/.gnupg/S.gpg-agent
+      - /home/cloud/.gnupg:/root/.gnupg
+      - ${GNUPG_AGENT_SOCKET}:/root/.gnupg/S.gpg-agent
     environment:
       # https://docs.microsoft.com/en-us/aspnet/core/fundamentals/configuration/?view=aspnetcore-3.1#environment-variables
       ASPNETCORE_URLS: "http://0.0.0.0:8080"

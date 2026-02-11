@@ -122,11 +122,7 @@ RUN mkdir --parents \
   && mkdir --parents \
     /root/.gnupg \
   && chmod u=rwx,g=,o= \
-    /root/.gnupg \
-  && echo "no-use-keyboxd" \
-    >/root/.gnupg/common.conf \
-  && echo "allow-loopback-pinentry" \
-    >/root/.gnupg/gpg-agent.conf
+    /root/.gnupg
 
 RUN ln --symbolic ./Database.dll ./App.dll
 

@@ -10,6 +10,7 @@ MAKEFLAGS += --warn-undefined-variables
 COMPOSE_BAKE=true
 
 dump_archive_name = postgresql_dumpall.gz
+files_archive_name = files.gz
 
 # Taken from https://www.client9.com/self-documenting-makefiles/
 help : ## Print this help
@@ -128,7 +129,7 @@ backup : ## Backup database and related data to directory with absolute path `${
 		database
 	while [ $$(docker inspect -f {{.State.Health.Status}} ${DATABASE_CONTAINER_NAME}) != "healthy" ]; do sleep 1; done
 	docker exec \
-		${CONTAINER_NAME} \
+		${DATABASE_CONTAINER_NAME} \
 		pg_dump \
 			--clean \
 			--if-exists \
@@ -152,7 +153,7 @@ backup : ## Backup database and related data to directory with absolute path `${
 			--verbose \
 			--create \
 			--gzip \
-			--file=/backup/${files_archive_name} \
+			--file="/backup/${files_archive_name}" \
 			--directory=/app \
 			./files
 	docker container stop ${FILES_CONTAINER_NAME}
@@ -222,7 +223,7 @@ restore : ## Restore database and related data from directory with absolute path
 				--extract \
 				--gunzip \
 				--strip-components=2 \
-				--file=/backup/${files_archive_name} \
+				--file='/backup/${files_archive_name}' \
 		"
 	docker container stop ${FILES_CONTAINER_NAME}
 	docker container rm --volumes ${FILES_CONTAINER_NAME}

@@ -5,7 +5,7 @@ SHELL := /usr/bin/env bash
 .SHELLFLAGS := -o errexit -o errtrace -o nounset -o pipefail -c
 MAKEFLAGS += --warn-undefined-variables
 
-NAME = metabase
+NAME = database
 TARGET = $(shell git rev-parse --verify HEAD)
 
 # Taken from https://www.client9.com/self-documenting-makefiles/

@@ -114,7 +114,7 @@ USER me
 WORKDIR /app
 
 RUN mkdir --parents \
-    "${HOME}/.gnupg" \
+  "${HOME}/.gnupg" \
   && chmod u=rwx,g=,o= \
     "${HOME}/.gnupg" \
   && echo "no-use-keyboxd" \

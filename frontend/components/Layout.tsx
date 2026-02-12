@@ -50,7 +50,6 @@ export default function Layout({ children }: LayoutProps) {
   const [cookies, setCookie] = useCookies([cookieConsentName]);
   const shouldShowCookieConsent =
     cookies[cookieConsentName] != cookieConsentValue;
-  const [loadedAntiforgeryToken, setLoadedAntiforgeryToken] = useState(false);
 
   useEffect(() => {
     if (shouldShowCookieConsent) {
@@ -70,16 +69,6 @@ export default function Layout({ children }: LayoutProps) {
       });
     }
   }, [shouldShowCookieConsent, setCookie]);
-
-  useEffect(() => {
-    fetch(paths.antiforgeryToken).then((_) => {
-      setLoadedAntiforgeryToken(true);
-    });
-  }, []);
-
-  if (!loadedAntiforgeryToken) {
-    return null;
-  }
 
   return (
     <AntLayout>

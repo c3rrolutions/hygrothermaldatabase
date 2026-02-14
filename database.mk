@@ -20,7 +20,7 @@ help : ## Print this help
 .PHONY : help
 .DEFAULT_GOAL := help
 
-psql : ## Enter PostgreSQL interactive terminal in the running `database` container
+psql : ## Enter PostgreSQL interactive terminal in the `database` container
 	docker compose up \
 		--remove-orphans \
 		--wait \
@@ -39,58 +39,36 @@ remove-volume : ## Remove data and files volumes
 		"${NAME}_${ENVIRONMENT}_files"
 .PHONY : remove-volume
 
-create : CONTAINER_NAME = create_${NAME}_database
 create : ## Create database with name `${POSTGRES_DATABASE_NAME}`
-	-docker container stop "${CONTAINER_NAME}"
-	-docker container rm --volumes "${CONTAINER_NAME}"
-	docker compose run \
-		--name "${CONTAINER_NAME}" \
-		--detach \
+	docker compose up \
+		--wait \
 		database
-	while [[ "$$(docker inspect -f {{.State.Health.Status}} '${CONTAINER_NAME}')" != "healthy" ]]; do sleep 1; done
-	docker exec \
-		"${CONTAINER_NAME}" \
+	docker compose exec \
+		database \
 		createdb \
 			--username="${POSTGRES_USER}" \
 			"${POSTGRES_DATABASE_NAME}"
-	docker container stop "${CONTAINER_NAME}"
-	docker container rm --volumes "${CONTAINER_NAME}"
 .PHONY : create
 
-drop : CONTAINER_NAME = drop_${NAME}_database
 drop : ## Drop database with name `${POSTGRES_DATABASE_NAME}`
-	-docker container stop "${CONTAINER_NAME}"
-	-docker container rm --volumes "${CONTAINER_NAME}"
-	docker compose run \
-		--name "${CONTAINER_NAME}" \
-		--detach \
+	docker compose up \
+		--wait \
 		database
-	while [[ "$$(docker inspect -f {{.State.Health.Status}} '${CONTAINER_NAME}')" != "healthy" ]]; do sleep 1; done
-	docker exec \
-		"${CONTAINER_NAME}" \
+	docker compose exec \
+		database \
 		dropdb \
 			--username="${POSTGRES_USER}" \
 			"${POSTGRES_DATABASE_NAME}"
-	docker container stop "${CONTAINER_NAME}"
-	docker container rm --volumes "${CONTAINER_NAME}"
 .PHONY : drop
 
-sql : CONTAINER_NAME = sql_${NAME}_database
-sql : ## Run the SQL script in the file `${SCRIPT}` in the database service, for example, `make sql SCRIPT=./my.sql ` (down-ing and up-ing the database service before and after to prevent race conditions. In general, note that other PostgreSQL instances using the same data volume must not be used while migrating and need to be restarted afterwards to make migration results visible)
-	docker compose down \
-		--remove-orphans \
+sql : ## Run the SQL script in the file `${SCRIPT}` in the database service, for example, `make sql SCRIPT=./my.sql ` (note that after schema changes the backend service needs to be restarted with `make restart SERVICE=backend`)
+	docker compose up \
+		--wait \
 		database
-	-docker container stop "${CONTAINER_NAME}"
-	-docker container rm --volumes "${CONTAINER_NAME}"
-	docker compose run \
-		--name "${CONTAINER_NAME}" \
-		--detach \
-		database
-	while [[ "$$(docker inspect -f {{.State.Health.Status}} '${CONTAINER_NAME}')" != "healthy" ]]; do sleep 1; done
 	cat "${SCRIPT}" \
-	| docker exec \
-		--interactive \
-		"${CONTAINER_NAME}" \
+	| docker compose exec \
+		--no-tty \
+		database \
 		psql \
 			--echo-all \
 			--no-psqlrc \
@@ -98,38 +76,23 @@ sql : ## Run the SQL script in the file `${SCRIPT}` in the database service, for
 			--file=- \
 			--username="${POSTGRES_USER}" \
 			--dbname="${POSTGRES_DATABASE_NAME}"
-	docker container stop "${CONTAINER_NAME}"
-	docker container rm --volumes "${CONTAINER_NAME}"
-	docker compose up \
-		--remove-orphans \
-		--wait \
-		database
 .PHONY : sql
 
 migrate : SCRIPT = ./backend/src/Migrations/migrate.sql
-migrate : sql ## Migrate database  by running the idempotent SQL script ./backend/src/Migrations/migrate.sql (down-ing and up-ing the database service before and after to prevent race conditions. In general, note that other PostgreSQL instances using the same data volume must not be used while migrating and need to be restarted afterwards to make migration results visible)
+migrate : sql ## Migrate database  by running the idempotent SQL script ./backend/src/Migrations/migrate.sql (note that after schema changes the backend service needs to be restarted with `make restart SERVICE=backend`)
 .PHONY : migrate
 
 # Backup with `pg_dump`: https://www.postgresql.org/docs/current/backup-dump.html
 # Command `pg_dump`: https://www.postgresql.org/docs/current/app-pgdump.html
 # Backup files with `tar` and `gzip` as suggested in https://docs.docker.com/storage/volumes/#backup-restore-or-migrate-data-volumes
 # We could have used `docker cp` as explained in https://docs.docker.com/engine/reference/commandline/cp/
-backup : DATABASE_CONTAINER_NAME = backup_${NAME}_database
-backup : FILES_CONTAINER_NAME = backup_${NAME}_files
-backup : ## Backup database and related data to directory with absolute path `${DIR}` (down-ing and up-ing the database service before and after to prevent race conditions), for example, `./database.mk backup DIR=/app/data/backups/$(date +"%Y-%m-%d_%H_%M_%S")`
+backup : ## Backup database and related data to directory with absolute path `${DIR}`, for example, `./database.mk backup DIR=/app/data/backups/$(date +"%Y-%m-%d_%H_%M_%S")`
 	mkdir --parents "${DIR}"
-	docker compose down \
-		--remove-orphans \
+	docker compose up \
+		--wait \
 		database
-	-docker container stop "${DATABASE_CONTAINER_NAME}"
-	-docker container rm --volumes "${DATABASE_CONTAINER_NAME}"
-	docker compose run \
-		--name "${DATABASE_CONTAINER_NAME}" \
-		--detach \
-		database
-	while [[ "$$(docker inspect -f {{.State.Health.Status}} '${DATABASE_CONTAINER_NAME}')" != "healthy" ]]; do sleep 1; done
-	docker exec \
-		"${DATABASE_CONTAINER_NAME}" \
+	docker compose exec \
+		database \
 		pg_dump \
 			--clean \
 			--if-exists \
@@ -137,19 +100,10 @@ backup : ## Backup database and related data to directory with absolute path `${
 			--dbname="${POSTGRES_DATABASE_NAME}" \
 		| gzip \
 		> "${DIR}/${dump_archive_name}"
-	docker container stop "${DATABASE_CONTAINER_NAME}"
-	docker container rm --volumes "${DATABASE_CONTAINER_NAME}"
-	-docker container stop "${FILES_CONTAINER_NAME}"
-	-docker container rm --volumes "${FILES_CONTAINER_NAME}"
 	docker compose run \
-		--name "${FILES_CONTAINER_NAME}" \
-		--detach \
-		backend
-	docker run \
 		--rm \
-		--volumes-from "${FILES_CONTAINER_NAME}" \
 		--volume "${DIR}":/backup \
-		debian:bullseye-slim \
+		backend \
 		tar \
 			--verbose \
 			--create \
@@ -157,41 +111,26 @@ backup : ## Backup database and related data to directory with absolute path `${
 			--file="/backup/${files_archive_name}" \
 			--directory=/app \
 			./files
-	docker container stop "${FILES_CONTAINER_NAME}"
-	docker container rm --volumes "${FILES_CONTAINER_NAME}"
-	docker compose up \
-		--remove-orphans \
-		--wait \
-		database
 .PHONY : backup
 
-restore : DATABASE_CONTAINER_NAME = restore_${NAME}_database
-restore : FILES_CONTAINER_NAME = restore_${NAME}_files
-restore : ## Restore database and related data from directory with absolute path `${DIR}` (down-ing and up-ing the database service before and after to prevent race conditions and dropping and recreating the database and clearing related files before to start cleanly), for example, `./database.mk restore DIR=/app/data/backups/2021-04-22_15_43_35` (note that after restoring a database it is usually necessary to restart the backend service for the object-relational mapper Npgsql to work seamlessly, for example, by restarting all services with `make restart`)`
-	docker compose down \
-		--remove-orphans \
+restore : ## Restore database and related data from directory with absolute path `${DIR}` (dropping and recreating the database and clearing related files before to start cleanly), for example, `./database.mk restore DIR=/app/data/backups/2021-04-22_15_43_35` (note that after restoring a database it is necessary to restart the backend service for the object-relational mapper Npgsql to work seamlessly, for example, by restarting the backend service with `./docker.mk restart SERVICE=backend`)`
+	docker compose up \
+		--wait \
 		database
-	-docker container stop "${DATABASE_CONTAINER_NAME}"
-	-docker container rm --volumes "${DATABASE_CONTAINER_NAME}"
-	docker compose run \
-		--name "${DATABASE_CONTAINER_NAME}" \
-		--detach \
-		database
-	while [[ "$$(docker inspect -f {{.State.Health.Status}} '${DATABASE_CONTAINER_NAME}')" != "healthy" ]]; do sleep 1; done
-	-docker exec \
-		"${CONTAINER_NAME}" \
+	-docker compose exec \
+		database \
 		dropdb \
 			--username="${POSTGRES_USER}" \
 			"${POSTGRES_DATABASE_NAME}"
-	docker exec \
-		"${CONTAINER_NAME}" \
+	docker compose exec \
+		database \
 		createdb \
 			--username="${POSTGRES_USER}" \
 			"${POSTGRES_DATABASE_NAME}"
 	gunzip --stdout "${DIR}/${dump_archive_name}" \
-	| docker exec \
-		--interactive \
-		"${DATABASE_CONTAINER_NAME}" \
+	| docker compose exec \
+		--no-tty \
+		database \
 		psql \
 			--echo-all \
 			--no-psqlrc \
@@ -199,19 +138,10 @@ restore : ## Restore database and related data from directory with absolute path
 			--file=- \
 			--username="${POSTGRES_USER}" \
 			--dbname="${POSTGRES_DATABASE_NAME}"
-	docker container stop "${DATABASE_CONTAINER_NAME}"
-	docker container rm --volumes "${DATABASE_CONTAINER_NAME}"
-	-docker container stop "${FILES_CONTAINER_NAME}"
-	-docker container rm --volumes "${FILES_CONTAINER_NAME}"
 	docker compose run \
-		--name "${FILES_CONTAINER_NAME}" \
-		--detach \
-		backend
-	docker run \
 		--rm \
-		--volumes-from "${FILES_CONTAINER_NAME}" \
 		--volume "${DIR}":/backup \
-		debian:bullseye-slim \
+		backend \
 		bash -o errexit -o errtrace -o nounset -o pipefail -c " \
 			cd /app/files \
 			&& rm \
@@ -226,10 +156,4 @@ restore : ## Restore database and related data from directory with absolute path
 				--strip-components=2 \
 				--file='/backup/${files_archive_name}' \
 		"
-	docker container stop "${FILES_CONTAINER_NAME}"
-	docker container rm --volumes "${FILES_CONTAINER_NAME}"
-	docker compose up \
-		--remove-orphans \
-		--wait \
-		database
 .PHONY : restore

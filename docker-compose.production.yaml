@@ -137,16 +137,6 @@ services:
     labels:
       autoheal: "true"
 
-  bootstrap:
-    image: "${NAME:?required}-backend:${TARGET:?required}"
-    volumes:
-      - .:/app
-      - gnupg:/root/.gnupg
-      - ./gnupg.conf:/root/.gnupg/common.conf
-      - ./gpg-agent.conf:/root/.gnupg/gpg-agent.conf
-    profiles:
-      - "manual"
-
 volumes:
   data:
   files:

@@ -141,4 +141,5 @@ volumes:
   data:
   files:
   certificates:
+  gnupg:
   backend_logs:

@@ -137,6 +137,18 @@ services:
     labels:
       autoheal: "true"
 
+  bootstrap:
+    build:
+      context: "."
+      dockerfile: "./Dockerfile.bootstrap"
+    volumes:
+      - .:/app
+      - gnupg:/root/.gnupg
+      - ./gnupg.conf:/root/.gnupg/common.conf
+      - ./gpg-agent.conf:/root/.gnupg/gpg-agent.conf
+    profiles:
+      - "manual"
+
 volumes:
   data:
   files:

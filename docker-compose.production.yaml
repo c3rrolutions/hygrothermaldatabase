@@ -140,12 +140,12 @@ services:
   bootstrap:
     build:
       context: "."
-      dockerfile: "./Dockerfile.bootstrap"
+      dockerfile: "./Dockerfile.bootstrap.${ENVIRONMENT:?required}"
     volumes:
       - .:/app
-      - gnupg:/root/.gnupg
-      - ./gnupg.conf:/root/.gnupg/common.conf
-      - ./gpg-agent.conf:/root/.gnupg/gpg-agent.conf
+      - gnupg:/home/me/.gnupg
+      - ./gnupg.conf:/home/me/.gnupg/common.conf
+      - ./gpg-agent.conf:/home/me/.gnupg/gpg-agent.conf
     profiles:
       - "manual"
 

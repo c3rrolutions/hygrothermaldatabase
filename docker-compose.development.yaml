@@ -189,8 +189,8 @@ services:
 
   bootstrap:
     build:
-      context: "."
-      dockerfile: "./Dockerfile.bootstrap.${ENVIRONMENT:?required}"
+      context: "./backend"
+      dockerfile: "./Dockerfile.${ENVIRONMENT:?required}"
     volumes:
       - .:/app
       - gnupg:/home/me/.gnupg

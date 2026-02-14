@@ -138,14 +138,12 @@ services:
       autoheal: "true"
 
   bootstrap:
-    build:
-      context: "."
-      dockerfile: "./Dockerfile.bootstrap.${ENVIRONMENT:?required}"
+    image: "${NAME:?required}-backend:${TARGET:?required}"
     volumes:
       - .:/app
-      - gnupg:/home/me/.gnupg
-      - ./gnupg.conf:/home/me/.gnupg/common.conf
-      - ./gpg-agent.conf:/home/me/.gnupg/gpg-agent.conf
+      - gnupg:/root/.gnupg
+      - ./gnupg.conf:/root/.gnupg/common.conf
+      - ./gpg-agent.conf:/root/.gnupg/gpg-agent.conf
     profiles:
       - "manual"
 

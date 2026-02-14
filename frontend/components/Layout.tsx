@@ -1,5 +1,5 @@
 import Head from "next/head";
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, useEffect } from "react";
 import Footer from "./Footer";
 import NavBar from "./NavBar";
 import { App, Layout as AntLayout, Typography } from "antd";

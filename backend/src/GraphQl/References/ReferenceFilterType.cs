@@ -10,7 +10,9 @@ public sealed class ReferenceFilterType
         IFilterInputTypeDescriptor<Reference> descriptor
     )
     {
+
         descriptor.BindFieldsExplicitly();
+        descriptor.Name(nameof(ReferenceFilterType)[..^"FilterType".Length] + GraphQlConstants.FilterInputSuffix);
         descriptor.Field(x => x.Standard);
         descriptor.Field(x => x.Publication);
     }

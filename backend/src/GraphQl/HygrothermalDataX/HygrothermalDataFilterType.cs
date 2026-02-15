@@ -12,5 +12,6 @@ public sealed class HygrothermalDataFilterType
     )
     {
         base.Configure(descriptor);
+        descriptor.Name(nameof(HygrothermalDataFilterType)[..^"FilterType".Length] + GraphQlConstants.FilterInputSuffix);
     }
 }

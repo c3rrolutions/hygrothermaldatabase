@@ -12,6 +12,7 @@ public abstract class ResponseApprovalFilterType
     )
     {
         base.Configure(descriptor);
+        descriptor.Name(nameof(ResponseApprovalFilterType)[..^"FilterType".Length] + GraphQlConstants.FilterInputSuffix);
         descriptor.Field(x => x.UserId);
         descriptor.Field(x => x.Locale);
         descriptor.Field(x => x.Name);

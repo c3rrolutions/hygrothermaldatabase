@@ -12,6 +12,7 @@ public sealed class GeometricDataFilterType
     )
     {
         base.Configure(descriptor);
+        descriptor.Name(nameof(GeometricDataFilterType)[..^"FilterType".Length] + GraphQlConstants.FilterInputSuffix);
         descriptor.Field(x => x.Thicknesses);
     }
 }

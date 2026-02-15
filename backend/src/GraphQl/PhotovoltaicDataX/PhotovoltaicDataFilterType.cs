@@ -12,5 +12,6 @@ public sealed class PhotovoltaicDataFilterType
     )
     {
         base.Configure(descriptor);
+        descriptor.Name(nameof(PhotovoltaicDataFilterType)[..^"FilterType".Length] + GraphQlConstants.FilterInputSuffix);
     }
 }

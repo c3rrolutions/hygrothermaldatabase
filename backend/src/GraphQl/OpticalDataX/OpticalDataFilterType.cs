@@ -12,6 +12,7 @@ public sealed class OpticalDataFilterType
     )
     {
         base.Configure(descriptor);
+        descriptor.Name(nameof(OpticalDataFilterType)[..^"FilterType".Length] + GraphQlConstants.FilterInputSuffix);
         descriptor.Field(x => x.Type);
         descriptor.Field(x => x.Subtype);
         descriptor.Field(x => x.CoatedSide);

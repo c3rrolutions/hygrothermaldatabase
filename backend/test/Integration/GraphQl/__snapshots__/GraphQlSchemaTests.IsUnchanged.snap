@@ -396,7 +396,7 @@ type GetHttpsResourceEdge {
 }
 
 type GetHttpsResourceTree {
-  nonRootVertices(order: [GetHttpsResourceTreeNonRootVertSortInput!] @cost(weight: "10") where: GetHttpsResourceTreeNonRootVertexFilterInput @cost(weight: "10")): [GetHttpsResourceTreeNonRootVertex!]! @cost(weight: "10")
+  nonRootVertices(order: [GetHttpsResourceTreeNonRootVertSortInput!] @cost(weight: "10") where: GetHttpsResourceTreeNonRootVertexPropositionInput @cost(weight: "10")): [GetHttpsResourceTreeNonRootVertex!]! @cost(weight: "10")
   root: GetHttpsResourceTreeRoot! @cost(weight: "10")
 }
 
@@ -485,11 +485,11 @@ type Mutation {
   createHygrothermalData(input: CreateHygrothermalDataInput!): CreateHygrothermalDataPayload! @cost(weight: "10")
   createOpticalData(input: CreateOpticalDataInput!): CreateOpticalDataPayload! @cost(weight: "10")
   createPhotovoltaicData(input: CreatePhotovoltaicDataInput!): CreatePhotovoltaicDataPayload! @cost(weight: "10")
-  createResponseApprovals(where: CreateResponseApprovalsFilterInput @cost(weight: "10")): CreateResponseApprovalsPayload! @cost(weight: "10")
+  createResponseApprovals(where: CreateResponseApprovalsPropositionInput @cost(weight: "10")): CreateResponseApprovalsPayload! @cost(weight: "10")
   deleteData(input: DeleteDataInput!): DeleteDataPayload! @cost(weight: "10")
   deleteGetHttpsResource(input: DeleteGetHttpsResourceInput!): DeleteGetHttpsResourcePayload! @cost(weight: "10")
   publishData(input: PublishDataInput!): PublishDataPayload! @cost(weight: "10")
-  recomputeGetHttpsResourceHashValues(where: RecomputeGetHttpsResourceHashValuesFilterInput @cost(weight: "10")): RecomputeGetHttpsResourceHashValuesPayload! @cost(weight: "10")
+  recomputeGetHttpsResourceHashValues(where: RecomputeGetHttpsResourceHashValuesPropositionInput @cost(weight: "10")): RecomputeGetHttpsResourceHashValuesPayload! @cost(weight: "10")
   removeDataApproval(input: RemoveDataApprovalInput!): RemoveDataApprovalPayload! @cost(weight: "10")
   retractData(input: RetractDataInput!): RetractDataPayload! @cost(weight: "10")
   setGetHttpsResourceParent(input: SetGetHttpsResourceParentInput!): SetGetHttpsResourceParentPayload! @cost(weight: "10")
@@ -498,7 +498,7 @@ type Mutation {
   updateDataAccessRights(input: UpdateDataAccessRightsInput!): UpdateDataAccessRightsPayload! @cost(weight: "10")
   updateDatabase(input: UpdateDatabaseInput!): UpdateDatabasePayload! @cost(weight: "10")
   updateInstitutionAccessRights(input: UpdateInstitutionAccessRightsInput!): UpdateInstitutionAccessRightsPayload! @cost(weight: "10")
-  updateResponseApprovals(where: UpdateResponseApprovalsFilterInput @cost(weight: "10")): UpdateResponseApprovalsPayload! @cost(weight: "10")
+  updateResponseApprovals(where: UpdateResponseApprovalsPropositionInput @cost(weight: "10")): UpdateResponseApprovalsPayload! @cost(weight: "10")
   updateRootGetHttpsResource(input: UpdateRootGetHttpsResourceInput!): UpdateRootGetHttpsResourcePayload! @cost(weight: "10")
 }
 
@@ -906,8 +906,8 @@ input AppliedMethodPropositionInput {
   and: [AppliedMethodPropositionInput!]
   or: [AppliedMethodPropositionInput!]
   methodId: UuidPropositionInput
-  arguments: ListFilterInputTypeOfNamedMethodArgumentPropositionInput
-  sources: ListFilterInputTypeOfNamedMethodSourcePropositionInput
+  arguments: FilterInputTypeOfNamedMethodArgumentsPropositionInput
+  sources: FilterInputTypeOfNamedMethodSourcesPropositionInput
 }
 
 input AppliedMethodSortInput {
@@ -919,21 +919,36 @@ input BooleanPropositionInput {
   notEqualTo: Boolean @cost(weight: "10")
 }
 
+input BytePropositionInput {
+  equalTo: Byte @cost(weight: "10")
+  notEqualTo: Byte @cost(weight: "10")
+  in: [Byte] @cost(weight: "10")
+  notIn: [Byte] @cost(weight: "10")
+  greaterThan: Byte @cost(weight: "10")
+  notGreaterThan: Byte @cost(weight: "10")
+  greaterThanOrEqualTo: Byte @cost(weight: "10")
+  notGreaterThanOrEqualTo: Byte @cost(weight: "10")
+  lessThan: Byte @cost(weight: "10")
+  notLessThan: Byte @cost(weight: "10")
+  lessThanOrEqualTo: Byte @cost(weight: "10")
+  notLessThanOrEqualTo: Byte @cost(weight: "10")
+}
+
 input CalendarSystemPropositionInput {
   and: [CalendarSystemPropositionInput!]
   or: [CalendarSystemPropositionInput!]
   id: StringPropositionInput
   name: StringPropositionInput
-  minYear: Int32PropositionInput
-  maxYear: Int32PropositionInput
-  eras: ListFilterInputTypeOfEraPropositionInput
+  minYear: IntPropositionInput
+  maxYear: IntPropositionInput
+  eras: FilterInputTypeOfErasPropositionInput
 }
 
 input CalorimetricDataPropositionInput {
   and: [CalorimetricDataPropositionInput!]
   or: [CalorimetricDataPropositionInput!]
   id: UuidPropositionInput
-  userId: NullableOfUuidPropositionInput
+  userId: UuidPropositionInput
   locale: StringPropositionInput
   name: StringPropositionInput
   description: StringPropositionInput
@@ -941,8 +956,8 @@ input CalorimetricDataPropositionInput {
   creatorId: UuidPropositionInput
   createdAt: OffsetDateTimePropositionInput
   appliedMethod: AppliedMethodPropositionInput
-  approvals: ListFilterInputTypeOfDataApprovalPropositionInput
-  resources: ListFilterInputTypeOfGetHttpsResourcePropositionInput
+  approvals: FilterInputTypeOfDataApprovalsPropositionInput
+  resources: FilterInputTypeOfGetHttpsResourcesPropositionInput
   warnings: StringsPropositionInput
   gValues: FloatsPropositionInput
   uValues: FloatsPropositionInput
@@ -975,6 +990,11 @@ input CielabColorPropositionInput {
   bStar: FloatPropositionInput
   observer: NullableOfCalorimetricObserverPropositionInput
   illuminant: NullableOfIlluminantPropositionInput
+}
+
+input ClosedIntervalInput {
+  lowerBound: Float!
+  upperBound: Float!
 }
 
 input CreateCalorimetricDataInput {
@@ -1062,11 +1082,11 @@ input CreatePhotovoltaicDataInput {
   warnings: [String!]!
 }
 
-input CreateResponseApprovalsFilterInput {
-  and: [CreateResponseApprovalsFilterInput!]
-  or: [CreateResponseApprovalsFilterInput!]
+input CreateResponseApprovalsPropositionInput {
+  and: [CreateResponseApprovalsPropositionInput!]
+  or: [CreateResponseApprovalsPropositionInput!]
   id: UuidPropositionInput
-  userId: NullableOfUuidPropositionInput
+  userId: UuidPropositionInput
   locale: StringPropositionInput
   name: StringPropositionInput
   description: StringPropositionInput
@@ -1074,8 +1094,8 @@ input CreateResponseApprovalsFilterInput {
   creatorId: UuidPropositionInput
   createdAt: OffsetDateTimePropositionInput
   appliedMethod: AppliedMethodPropositionInput
-  approvals: ListFilterInputTypeOfDataApprovalPropositionInput
-  resources: ListFilterInputTypeOfGetHttpsResourcePropositionInput
+  approvals: FilterInputTypeOfDataApprovalsPropositionInput
+  resources: FilterInputTypeOfGetHttpsResourcesPropositionInput
   warnings: StringsPropositionInput
 }
 
@@ -1108,11 +1128,18 @@ input DataApprovalPropositionInput {
   statement: ReferencePropositionInput
 }
 
-input DataFilterInput {
-  and: [DataFilterInput!]
-  or: [DataFilterInput!]
+input DataKindPropositionInput {
+  equalTo: DataKind @cost(weight: "10")
+  notEqualTo: DataKind @cost(weight: "10")
+  in: [DataKind!] @cost(weight: "10")
+  notIn: [DataKind!] @cost(weight: "10")
+}
+
+input DataPropositionInput {
+  and: [DataPropositionInput!]
+  or: [DataPropositionInput!]
   id: UuidPropositionInput
-  userId: NullableOfUuidPropositionInput
+  userId: UuidPropositionInput
   locale: StringPropositionInput
   name: StringPropositionInput
   description: StringPropositionInput
@@ -1120,16 +1147,9 @@ input DataFilterInput {
   creatorId: UuidPropositionInput
   createdAt: OffsetDateTimePropositionInput
   appliedMethod: AppliedMethodPropositionInput
-  approvals: ListFilterInputTypeOfDataApprovalPropositionInput
-  resources: ListFilterInputTypeOfGetHttpsResourcePropositionInput
+  approvals: FilterInputTypeOfDataApprovalsPropositionInput
+  resources: FilterInputTypeOfGetHttpsResourcesPropositionInput
   warnings: StringsPropositionInput
-}
-
-input DataKindPropositionInput {
-  equalTo: DataKind @cost(weight: "10")
-  notEqualTo: DataKind @cost(weight: "10")
-  in: [DataKind!] @cost(weight: "10")
-  notIn: [DataKind!] @cost(weight: "10")
 }
 
 input DataSortInput {
@@ -1141,6 +1161,36 @@ input DataSortInput {
   creatorId: SortEnumType @cost(weight: "10")
   createdAt: SortEnumType @cost(weight: "10")
   appliedMethod: AppliedMethodSortInput @cost(weight: "10")
+}
+
+input DateTimePropositionInput {
+  equalTo: DateTime @cost(weight: "10")
+  notEqualTo: DateTime @cost(weight: "10")
+  in: [DateTime] @cost(weight: "10")
+  notIn: [DateTime] @cost(weight: "10")
+  greaterThan: DateTime @cost(weight: "10")
+  notGreaterThan: DateTime @cost(weight: "10")
+  greaterThanOrEqualTo: DateTime @cost(weight: "10")
+  notGreaterThanOrEqualTo: DateTime @cost(weight: "10")
+  lessThan: DateTime @cost(weight: "10")
+  notLessThan: DateTime @cost(weight: "10")
+  lessThanOrEqualTo: DateTime @cost(weight: "10")
+  notLessThanOrEqualTo: DateTime @cost(weight: "10")
+}
+
+input DecimalPropositionInput {
+  equalTo: Decimal @cost(weight: "10")
+  notEqualTo: Decimal @cost(weight: "10")
+  in: [Decimal] @cost(weight: "10")
+  notIn: [Decimal] @cost(weight: "10")
+  greaterThan: Decimal @cost(weight: "10")
+  notGreaterThan: Decimal @cost(weight: "10")
+  greaterThanOrEqualTo: Decimal @cost(weight: "10")
+  notGreaterThanOrEqualTo: Decimal @cost(weight: "10")
+  lessThan: Decimal @cost(weight: "10")
+  notLessThan: Decimal @cost(weight: "10")
+  lessThanOrEqualTo: Decimal @cost(weight: "10")
+  notLessThanOrEqualTo: Decimal @cost(weight: "10")
 }
 
 input DeleteDataInput {
@@ -1170,11 +1220,60 @@ input FileMetaInformationPropositionInput {
   dataFormatId: UuidPropositionInput
 }
 
+input FilterInputTypeOfCielabColorsPropositionInput {
+  all: CielabColorPropositionInput @cost(weight: "10")
+  none: CielabColorPropositionInput @cost(weight: "10")
+  some: CielabColorPropositionInput @cost(weight: "10")
+  any: Boolean @cost(weight: "10")
+}
+
+input FilterInputTypeOfDataApprovalsPropositionInput {
+  all: DataApprovalPropositionInput @cost(weight: "10")
+  none: DataApprovalPropositionInput @cost(weight: "10")
+  some: DataApprovalPropositionInput @cost(weight: "10")
+  any: Boolean @cost(weight: "10")
+}
+
+input FilterInputTypeOfErasPropositionInput {
+  all: EraPropositionInput @cost(weight: "10")
+  none: EraPropositionInput @cost(weight: "10")
+  some: EraPropositionInput @cost(weight: "10")
+  any: Boolean @cost(weight: "10")
+}
+
+input FilterInputTypeOfFileMetaInformationsPropositionInput {
+  all: FileMetaInformationPropositionInput @cost(weight: "10")
+  none: FileMetaInformationPropositionInput @cost(weight: "10")
+  some: FileMetaInformationPropositionInput @cost(weight: "10")
+  any: Boolean @cost(weight: "10")
+}
+
+input FilterInputTypeOfGetHttpsResourcesPropositionInput {
+  all: GetHttpsResourceTreeNonRootVertexPropositionInput @cost(weight: "10")
+  none: GetHttpsResourceTreeNonRootVertexPropositionInput @cost(weight: "10")
+  some: GetHttpsResourceTreeNonRootVertexPropositionInput @cost(weight: "10")
+  any: Boolean @cost(weight: "10")
+}
+
+input FilterInputTypeOfNamedMethodArgumentsPropositionInput {
+  all: NamedMethodArgumentPropositionInput @cost(weight: "10")
+  none: NamedMethodArgumentPropositionInput @cost(weight: "10")
+  some: NamedMethodArgumentPropositionInput @cost(weight: "10")
+  any: Boolean @cost(weight: "10")
+}
+
+input FilterInputTypeOfNamedMethodSourcesPropositionInput {
+  all: NamedMethodSourcePropositionInput @cost(weight: "10")
+  none: NamedMethodSourcePropositionInput @cost(weight: "10")
+  some: NamedMethodSourcePropositionInput @cost(weight: "10")
+  any: Boolean @cost(weight: "10")
+}
+
 input FloatPropositionInput {
   equalTo: Float @cost(weight: "10")
   notEqualTo: Float @cost(weight: "10")
-  in: [Float!] @cost(weight: "10")
-  notIn: [Float!] @cost(weight: "10")
+  in: [Float] @cost(weight: "10")
+  notIn: [Float] @cost(weight: "10")
   greaterThan: Float @cost(weight: "10")
   notGreaterThan: Float @cost(weight: "10")
   greaterThanOrEqualTo: Float @cost(weight: "10")
@@ -1183,6 +1282,7 @@ input FloatPropositionInput {
   notLessThan: Float @cost(weight: "10")
   lessThanOrEqualTo: Float @cost(weight: "10")
   notLessThanOrEqualTo: Float @cost(weight: "10")
+  inClosedInterval: ClosedIntervalInput @cost(weight: "10")
 }
 
 input FloatsPropositionInput {
@@ -1196,7 +1296,7 @@ input GeometricDataPropositionInput {
   and: [GeometricDataPropositionInput!]
   or: [GeometricDataPropositionInput!]
   id: UuidPropositionInput
-  userId: NullableOfUuidPropositionInput
+  userId: UuidPropositionInput
   locale: StringPropositionInput
   name: StringPropositionInput
   description: StringPropositionInput
@@ -1204,8 +1304,8 @@ input GeometricDataPropositionInput {
   creatorId: UuidPropositionInput
   createdAt: OffsetDateTimePropositionInput
   appliedMethod: AppliedMethodPropositionInput
-  approvals: ListFilterInputTypeOfDataApprovalPropositionInput
-  resources: ListFilterInputTypeOfGetHttpsResourcePropositionInput
+  approvals: FilterInputTypeOfDataApprovalsPropositionInput
+  resources: FilterInputTypeOfGetHttpsResourcesPropositionInput
   warnings: StringsPropositionInput
   thicknesses: FloatsPropositionInput
 }
@@ -1229,8 +1329,8 @@ input GetHttpsResourcePropositionInput {
   hashValue: StringPropositionInput
   dataFormatId: UuidPropositionInput
   appliedConversionMethod: ToTreeVertexAppliedConversionMethodPropositionInput
-  archivedFilesMetaInformation: ListFilterInputTypeOfFileMetaInformationPropositionInput
-  parent: GetHttpsResourceTreeNonRootVertexFilterInput
+  archivedFilesMetaInformation: FilterInputTypeOfFileMetaInformationsPropositionInput
+  parent: GetHttpsResourceTreeNonRootVertexPropositionInput
   calorimetricData: CalorimetricDataPropositionInput
   geometricData: GeometricDataPropositionInput
   hygrothermalData: HygrothermalDataPropositionInput
@@ -1256,23 +1356,23 @@ input GetHttpsResourceTreeNonRootVertSortInput {
   parent: GetHttpsResourceTreeNonRootVertSortInput @cost(weight: "10")
 }
 
-input GetHttpsResourceTreeNonRootVertexFilterInput {
-  and: [GetHttpsResourceTreeNonRootVertexFilterInput!]
-  or: [GetHttpsResourceTreeNonRootVertexFilterInput!]
+input GetHttpsResourceTreeNonRootVertexPropositionInput {
+  and: [GetHttpsResourceTreeNonRootVertexPropositionInput!]
+  or: [GetHttpsResourceTreeNonRootVertexPropositionInput!]
   id: UuidPropositionInput
   description: StringPropositionInput
   hashValue: StringPropositionInput
   dataFormatId: UuidPropositionInput
   appliedConversionMethod: ToTreeVertexAppliedConversionMethodPropositionInput
-  archivedFilesMetaInformation: ListFilterInputTypeOfFileMetaInformationPropositionInput
-  parent: GetHttpsResourceTreeNonRootVertexFilterInput
+  archivedFilesMetaInformation: FilterInputTypeOfFileMetaInformationsPropositionInput
+  parent: GetHttpsResourceTreeNonRootVertexPropositionInput
 }
 
 input HygrothermalDataPropositionInput {
   and: [HygrothermalDataPropositionInput!]
   or: [HygrothermalDataPropositionInput!]
   id: UuidPropositionInput
-  userId: NullableOfUuidPropositionInput
+  userId: UuidPropositionInput
   locale: StringPropositionInput
   name: StringPropositionInput
   description: StringPropositionInput
@@ -1280,8 +1380,8 @@ input HygrothermalDataPropositionInput {
   creatorId: UuidPropositionInput
   createdAt: OffsetDateTimePropositionInput
   appliedMethod: AppliedMethodPropositionInput
-  approvals: ListFilterInputTypeOfDataApprovalPropositionInput
-  resources: ListFilterInputTypeOfGetHttpsResourcePropositionInput
+  approvals: FilterInputTypeOfDataApprovalsPropositionInput
+  resources: FilterInputTypeOfGetHttpsResourcesPropositionInput
   warnings: StringsPropositionInput
 }
 
@@ -1296,11 +1396,11 @@ input HygrothermalDataSortInput {
   appliedMethod: AppliedMethodSortInput @cost(weight: "10")
 }
 
-input Int32PropositionInput {
+input IntPropositionInput {
   equalTo: Int @cost(weight: "10")
   notEqualTo: Int @cost(weight: "10")
-  in: [Int!] @cost(weight: "10")
-  notIn: [Int!] @cost(weight: "10")
+  in: [Int] @cost(weight: "10")
+  notIn: [Int] @cost(weight: "10")
   greaterThan: Int @cost(weight: "10")
   notGreaterThan: Int @cost(weight: "10")
   greaterThanOrEqualTo: Int @cost(weight: "10")
@@ -1309,21 +1409,6 @@ input Int32PropositionInput {
   notLessThan: Int @cost(weight: "10")
   lessThanOrEqualTo: Int @cost(weight: "10")
   notLessThanOrEqualTo: Int @cost(weight: "10")
-}
-
-input Int64PropositionInput {
-  equalTo: Long @cost(weight: "10")
-  notEqualTo: Long @cost(weight: "10")
-  in: [Long!] @cost(weight: "10")
-  notIn: [Long!] @cost(weight: "10")
-  greaterThan: Long @cost(weight: "10")
-  notGreaterThan: Long @cost(weight: "10")
-  greaterThanOrEqualTo: Long @cost(weight: "10")
-  notGreaterThanOrEqualTo: Long @cost(weight: "10")
-  lessThan: Long @cost(weight: "10")
-  notLessThan: Long @cost(weight: "10")
-  lessThanOrEqualTo: Long @cost(weight: "10")
-  notLessThanOrEqualTo: Long @cost(weight: "10")
 }
 
 input IsoDayOfWeekPropositionInput {
@@ -1351,95 +1436,39 @@ input KeyValuePairOfGuidAndNullableOfUInt32Input {
   value: NonNegativeInt
 }
 
-input ListFilterInputTypeOfCielabColorPropositionInput {
-  all: CielabColorPropositionInput @cost(weight: "10")
-  none: CielabColorPropositionInput @cost(weight: "10")
-  some: CielabColorPropositionInput @cost(weight: "10")
-  any: Boolean @cost(weight: "10")
-}
-
-input ListFilterInputTypeOfDataApprovalPropositionInput {
-  all: DataApprovalPropositionInput @cost(weight: "10")
-  none: DataApprovalPropositionInput @cost(weight: "10")
-  some: DataApprovalPropositionInput @cost(weight: "10")
-  any: Boolean @cost(weight: "10")
-}
-
-input ListFilterInputTypeOfEraPropositionInput {
-  all: EraPropositionInput @cost(weight: "10")
-  none: EraPropositionInput @cost(weight: "10")
-  some: EraPropositionInput @cost(weight: "10")
-  any: Boolean @cost(weight: "10")
-}
-
-input ListFilterInputTypeOfFileMetaInformationPropositionInput {
-  all: FileMetaInformationPropositionInput @cost(weight: "10")
-  none: FileMetaInformationPropositionInput @cost(weight: "10")
-  some: FileMetaInformationPropositionInput @cost(weight: "10")
-  any: Boolean @cost(weight: "10")
-}
-
-input ListFilterInputTypeOfGetHttpsResourcePropositionInput {
-  all: GetHttpsResourceTreeNonRootVertexFilterInput @cost(weight: "10")
-  none: GetHttpsResourceTreeNonRootVertexFilterInput @cost(weight: "10")
-  some: GetHttpsResourceTreeNonRootVertexFilterInput @cost(weight: "10")
-  any: Boolean @cost(weight: "10")
-}
-
-input ListFilterInputTypeOfNamedMethodArgumentPropositionInput {
-  all: NamedMethodArgumentPropositionInput @cost(weight: "10")
-  none: NamedMethodArgumentPropositionInput @cost(weight: "10")
-  some: NamedMethodArgumentPropositionInput @cost(weight: "10")
-  any: Boolean @cost(weight: "10")
-}
-
-input ListFilterInputTypeOfNamedMethodSourcePropositionInput {
-  all: NamedMethodSourcePropositionInput @cost(weight: "10")
-  none: NamedMethodSourcePropositionInput @cost(weight: "10")
-  some: NamedMethodSourcePropositionInput @cost(weight: "10")
-  any: Boolean @cost(weight: "10")
-}
-
-input ListStandardizerPropositionInput {
-  all: StandardizerPropositionInput @cost(weight: "10")
-  none: StandardizerPropositionInput @cost(weight: "10")
-  some: StandardizerPropositionInput @cost(weight: "10")
-  any: Boolean @cost(weight: "10")
-}
-
 input LocalDatePropositionInput {
   and: [LocalDatePropositionInput!]
   or: [LocalDatePropositionInput!]
   calendar: CalendarSystemPropositionInput
-  year: Int32PropositionInput
-  month: Int32PropositionInput
-  day: Int32PropositionInput
+  year: IntPropositionInput
+  month: IntPropositionInput
+  day: IntPropositionInput
   dayOfWeek: IsoDayOfWeekPropositionInput
-  yearOfEra: Int32PropositionInput
+  yearOfEra: IntPropositionInput
   era: EraPropositionInput
-  dayOfYear: Int32PropositionInput
+  dayOfYear: IntPropositionInput
 }
 
 input LocalDateTimePropositionInput {
   and: [LocalDateTimePropositionInput!]
   or: [LocalDateTimePropositionInput!]
   calendar: CalendarSystemPropositionInput
-  year: Int32PropositionInput
-  yearOfEra: Int32PropositionInput
+  year: IntPropositionInput
+  yearOfEra: IntPropositionInput
   era: EraPropositionInput
-  month: Int32PropositionInput
-  dayOfYear: Int32PropositionInput
-  day: Int32PropositionInput
+  month: IntPropositionInput
+  dayOfYear: IntPropositionInput
+  day: IntPropositionInput
   dayOfWeek: IsoDayOfWeekPropositionInput
-  hour: Int32PropositionInput
-  clockHourOfHalfDay: Int32PropositionInput
-  minute: Int32PropositionInput
-  second: Int32PropositionInput
-  millisecond: Int32PropositionInput
-  tickOfSecond: Int32PropositionInput
-  tickOfDay: Int64PropositionInput
-  nanosecondOfSecond: Int32PropositionInput
-  nanosecondOfDay: Int64PropositionInput
+  hour: IntPropositionInput
+  clockHourOfHalfDay: IntPropositionInput
+  minute: IntPropositionInput
+  second: IntPropositionInput
+  millisecond: IntPropositionInput
+  tickOfSecond: IntPropositionInput
+  tickOfDay: LongPropositionInput
+  nanosecondOfSecond: IntPropositionInput
+  nanosecondOfDay: LongPropositionInput
   timeOfDay: LocalTimePropositionInput
   date: LocalDatePropositionInput
 }
@@ -1447,15 +1476,30 @@ input LocalDateTimePropositionInput {
 input LocalTimePropositionInput {
   and: [LocalTimePropositionInput!]
   or: [LocalTimePropositionInput!]
-  hour: Int32PropositionInput
-  clockHourOfHalfDay: Int32PropositionInput
-  minute: Int32PropositionInput
-  second: Int32PropositionInput
-  millisecond: Int32PropositionInput
-  tickOfSecond: Int32PropositionInput
-  tickOfDay: Int64PropositionInput
-  nanosecondOfSecond: Int32PropositionInput
-  nanosecondOfDay: Int64PropositionInput
+  hour: IntPropositionInput
+  clockHourOfHalfDay: IntPropositionInput
+  minute: IntPropositionInput
+  second: IntPropositionInput
+  millisecond: IntPropositionInput
+  tickOfSecond: IntPropositionInput
+  tickOfDay: LongPropositionInput
+  nanosecondOfSecond: IntPropositionInput
+  nanosecondOfDay: LongPropositionInput
+}
+
+input LongPropositionInput {
+  equalTo: Long @cost(weight: "10")
+  notEqualTo: Long @cost(weight: "10")
+  in: [Long] @cost(weight: "10")
+  notIn: [Long] @cost(weight: "10")
+  greaterThan: Long @cost(weight: "10")
+  notGreaterThan: Long @cost(weight: "10")
+  greaterThanOrEqualTo: Long @cost(weight: "10")
+  notGreaterThanOrEqualTo: Long @cost(weight: "10")
+  lessThan: Long @cost(weight: "10")
+  notLessThan: Long @cost(weight: "10")
+  lessThanOrEqualTo: Long @cost(weight: "10")
+  notLessThanOrEqualTo: Long @cost(weight: "10")
 }
 
 input NamedMethodArgumentInput {
@@ -1506,21 +1550,6 @@ input NullableOfIlluminantPropositionInput {
   notIn: [Illuminant] @cost(weight: "10")
 }
 
-input NullableOfInt32PropositionInput {
-  equalTo: Int @cost(weight: "10")
-  notEqualTo: Int @cost(weight: "10")
-  in: [Int] @cost(weight: "10")
-  notIn: [Int] @cost(weight: "10")
-  greaterThan: Int @cost(weight: "10")
-  notGreaterThan: Int @cost(weight: "10")
-  greaterThanOrEqualTo: Int @cost(weight: "10")
-  notGreaterThanOrEqualTo: Int @cost(weight: "10")
-  lessThan: Int @cost(weight: "10")
-  notLessThan: Int @cost(weight: "10")
-  lessThanOrEqualTo: Int @cost(weight: "10")
-  notLessThanOrEqualTo: Int @cost(weight: "10")
-}
-
 input NullableOfOpticalComponentSubtypePropositionInput {
   equalTo: OpticalComponentSubtype @cost(weight: "10")
   notEqualTo: OpticalComponentSubtype @cost(weight: "10")
@@ -1533,21 +1562,6 @@ input NullableOfOpticalComponentTypePropositionInput {
   notEqualTo: OpticalComponentType @cost(weight: "10")
   in: [OpticalComponentType] @cost(weight: "10")
   notIn: [OpticalComponentType] @cost(weight: "10")
-}
-
-input NullableOfUuidPropositionInput {
-  equalTo: Uuid @cost(weight: "10")
-  notEqualTo: Uuid @cost(weight: "10")
-  in: [Uuid] @cost(weight: "10")
-  notIn: [Uuid] @cost(weight: "10")
-  greaterThan: Uuid @cost(weight: "10")
-  notGreaterThan: Uuid @cost(weight: "10")
-  greaterThanOrEqualTo: Uuid @cost(weight: "10")
-  notGreaterThanOrEqualTo: Uuid @cost(weight: "10")
-  lessThan: Uuid @cost(weight: "10")
-  notLessThan: Uuid @cost(weight: "10")
-  lessThanOrEqualTo: Uuid @cost(weight: "10")
-  notLessThanOrEqualTo: Uuid @cost(weight: "10")
 }
 
 input NumerationInput {
@@ -1574,22 +1588,22 @@ input OffsetDateTimePropositionInput {
   and: [OffsetDateTimePropositionInput!]
   or: [OffsetDateTimePropositionInput!]
   calendar: CalendarSystemPropositionInput
-  year: Int32PropositionInput
-  month: Int32PropositionInput
-  day: Int32PropositionInput
+  year: IntPropositionInput
+  month: IntPropositionInput
+  day: IntPropositionInput
   dayOfWeek: IsoDayOfWeekPropositionInput
-  yearOfEra: Int32PropositionInput
+  yearOfEra: IntPropositionInput
   era: EraPropositionInput
-  dayOfYear: Int32PropositionInput
-  hour: Int32PropositionInput
-  clockHourOfHalfDay: Int32PropositionInput
-  minute: Int32PropositionInput
-  second: Int32PropositionInput
-  millisecond: Int32PropositionInput
-  tickOfSecond: Int32PropositionInput
-  tickOfDay: Int64PropositionInput
-  nanosecondOfSecond: Int32PropositionInput
-  nanosecondOfDay: Int64PropositionInput
+  dayOfYear: IntPropositionInput
+  hour: IntPropositionInput
+  clockHourOfHalfDay: IntPropositionInput
+  minute: IntPropositionInput
+  second: IntPropositionInput
+  millisecond: IntPropositionInput
+  tickOfSecond: IntPropositionInput
+  tickOfDay: LongPropositionInput
+  nanosecondOfSecond: IntPropositionInput
+  nanosecondOfDay: LongPropositionInput
   localDateTime: LocalDateTimePropositionInput
   date: LocalDatePropositionInput
   timeOfDay: LocalTimePropositionInput
@@ -1599,17 +1613,17 @@ input OffsetDateTimePropositionInput {
 input OffsetPropositionInput {
   and: [OffsetPropositionInput!]
   or: [OffsetPropositionInput!]
-  seconds: Int32PropositionInput
-  milliseconds: Int32PropositionInput
-  ticks: Int64PropositionInput
-  nanoseconds: Int64PropositionInput
+  seconds: IntPropositionInput
+  milliseconds: IntPropositionInput
+  ticks: LongPropositionInput
+  nanoseconds: LongPropositionInput
 }
 
 input OpticalDataPropositionInput {
   and: [OpticalDataPropositionInput!]
   or: [OpticalDataPropositionInput!]
   id: UuidPropositionInput
-  userId: NullableOfUuidPropositionInput
+  userId: UuidPropositionInput
   locale: StringPropositionInput
   name: StringPropositionInput
   description: StringPropositionInput
@@ -1617,8 +1631,8 @@ input OpticalDataPropositionInput {
   creatorId: UuidPropositionInput
   createdAt: OffsetDateTimePropositionInput
   appliedMethod: AppliedMethodPropositionInput
-  approvals: ListFilterInputTypeOfDataApprovalPropositionInput
-  resources: ListFilterInputTypeOfGetHttpsResourcePropositionInput
+  approvals: FilterInputTypeOfDataApprovalsPropositionInput
+  resources: FilterInputTypeOfGetHttpsResourcesPropositionInput
   warnings: StringsPropositionInput
   type: NullableOfOpticalComponentTypePropositionInput
   subtype: NullableOfOpticalComponentSubtypePropositionInput
@@ -1629,7 +1643,7 @@ input OpticalDataPropositionInput {
   nearnormalHemisphericalVisibleTransmittances: FloatsPropositionInput
   infraredEmittances: FloatsPropositionInput
   colorRenderingIndices: FloatsPropositionInput
-  cielabColors: ListFilterInputTypeOfCielabColorPropositionInput
+  cielabColors: FilterInputTypeOfCielabColorsPropositionInput
 }
 
 input OpticalDataSortInput {
@@ -1647,7 +1661,7 @@ input PhotovoltaicDataPropositionInput {
   and: [PhotovoltaicDataPropositionInput!]
   or: [PhotovoltaicDataPropositionInput!]
   id: UuidPropositionInput
-  userId: NullableOfUuidPropositionInput
+  userId: UuidPropositionInput
   locale: StringPropositionInput
   name: StringPropositionInput
   description: StringPropositionInput
@@ -1655,8 +1669,8 @@ input PhotovoltaicDataPropositionInput {
   creatorId: UuidPropositionInput
   createdAt: OffsetDateTimePropositionInput
   appliedMethod: AppliedMethodPropositionInput
-  approvals: ListFilterInputTypeOfDataApprovalPropositionInput
-  resources: ListFilterInputTypeOfGetHttpsResourcePropositionInput
+  approvals: FilterInputTypeOfDataApprovalsPropositionInput
+  resources: FilterInputTypeOfGetHttpsResourcesPropositionInput
   warnings: StringsPropositionInput
 }
 
@@ -1693,7 +1707,7 @@ input PublicationPropositionInput {
   "A Uniform Resource Name (URN) can be used to define a publication. TODO: Improve the regex pattern to further restrict the string."
   urn: StringPropositionInput
   "If a persistent identifiert like DOI is defined above, this webAdress can define a convenient web address to access the publication. However, if no persistent identifier exist, this web address is the only identifier of this publication. In this case, it is important to choose a web address with a high probability to persist long."
-  webAddress: UriPropositionInput
+  webAddress: UrlPropositionInput
   title: StringPropositionInput
   abstract: StringPropositionInput
   "Referenced section"
@@ -1720,16 +1734,16 @@ input PublishDataInput {
   dataKind: DataKind!
 }
 
-input RecomputeGetHttpsResourceHashValuesFilterInput {
-  and: [RecomputeGetHttpsResourceHashValuesFilterInput!]
-  or: [RecomputeGetHttpsResourceHashValuesFilterInput!]
+input RecomputeGetHttpsResourceHashValuesPropositionInput {
+  and: [RecomputeGetHttpsResourceHashValuesPropositionInput!]
+  or: [RecomputeGetHttpsResourceHashValuesPropositionInput!]
   id: UuidPropositionInput
   description: StringPropositionInput
   hashValue: StringPropositionInput
   dataFormatId: UuidPropositionInput
   appliedConversionMethod: ToTreeVertexAppliedConversionMethodPropositionInput
-  archivedFilesMetaInformation: ListFilterInputTypeOfFileMetaInformationPropositionInput
-  parent: GetHttpsResourceTreeNonRootVertexFilterInput
+  archivedFilesMetaInformation: FilterInputTypeOfFileMetaInformationsPropositionInput
+  parent: GetHttpsResourceTreeNonRootVertexPropositionInput
   calorimetricData: CalorimetricDataPropositionInput
   geometricData: GeometricDataPropositionInput
   hygrothermalData: HygrothermalDataPropositionInput
@@ -1777,6 +1791,21 @@ input SetGetHttpsResourceParentInput {
   parentId: Uuid!
 }
 
+input ShortPropositionInput {
+  equalTo: Short @cost(weight: "10")
+  notEqualTo: Short @cost(weight: "10")
+  in: [Short] @cost(weight: "10")
+  notIn: [Short] @cost(weight: "10")
+  greaterThan: Short @cost(weight: "10")
+  notGreaterThan: Short @cost(weight: "10")
+  greaterThanOrEqualTo: Short @cost(weight: "10")
+  notGreaterThanOrEqualTo: Short @cost(weight: "10")
+  lessThan: Short @cost(weight: "10")
+  notLessThan: Short @cost(weight: "10")
+  lessThanOrEqualTo: Short @cost(weight: "10")
+  notLessThanOrEqualTo: Short @cost(weight: "10")
+}
+
 input StandardInput {
   abstract: String
   locator: Url
@@ -1792,10 +1821,10 @@ input StandardPropositionInput {
   and: [StandardPropositionInput!]
   or: [StandardPropositionInput!]
   "It is important to define the year in which the standard was issued because there can be relevant updates of one standard."
-  year: NullableOfInt32PropositionInput
+  year: IntPropositionInput
   numeration: NumerationPropositionInput
-  standardizers: ListStandardizerPropositionInput
-  locator: UriPropositionInput
+  standardizers: StandardizersPropositionInput
+  locator: UrlPropositionInput
   title: StringPropositionInput
   abstract: StringPropositionInput
   "The section of the standard to which the reference refers to."
@@ -1821,6 +1850,13 @@ input StandardizerPropositionInput {
   notIn: [Standardizer!] @cost(weight: "10")
 }
 
+input StandardizersPropositionInput {
+  all: StandardizerPropositionInput @cost(weight: "10")
+  none: StandardizerPropositionInput @cost(weight: "10")
+  some: StandardizerPropositionInput @cost(weight: "10")
+  any: Boolean @cost(weight: "10")
+}
+
 input StringPropositionInput {
   and: [StringPropositionInput!]
   or: [StringPropositionInput!]
@@ -1843,6 +1879,21 @@ input StringsPropositionInput {
   any: Boolean @cost(weight: "10")
 }
 
+input TimeSpanPropositionInput {
+  equalTo: TimeSpan @cost(weight: "10")
+  notEqualTo: TimeSpan @cost(weight: "10")
+  in: [TimeSpan] @cost(weight: "10")
+  notIn: [TimeSpan] @cost(weight: "10")
+  greaterThan: TimeSpan @cost(weight: "10")
+  notGreaterThan: TimeSpan @cost(weight: "10")
+  greaterThanOrEqualTo: TimeSpan @cost(weight: "10")
+  notGreaterThanOrEqualTo: TimeSpan @cost(weight: "10")
+  lessThan: TimeSpan @cost(weight: "10")
+  notLessThan: TimeSpan @cost(weight: "10")
+  lessThanOrEqualTo: TimeSpan @cost(weight: "10")
+  notLessThanOrEqualTo: TimeSpan @cost(weight: "10")
+}
+
 input ToTreeVertexAppliedConversionMethodInput {
   arguments: [NamedMethodArgumentInput!]!
   methodId: Uuid!
@@ -1853,7 +1904,7 @@ input ToTreeVertexAppliedConversionMethodPropositionInput {
   and: [ToTreeVertexAppliedConversionMethodPropositionInput!]
   or: [ToTreeVertexAppliedConversionMethodPropositionInput!]
   methodId: UuidPropositionInput
-  arguments: ListFilterInputTypeOfNamedMethodArgumentPropositionInput
+  arguments: FilterInputTypeOfNamedMethodArgumentsPropositionInput
   sourceName: StringPropositionInput
 }
 
@@ -1904,11 +1955,11 @@ input UpdateInstitutionAccessRightsInput {
   periodInDays: Int!
 }
 
-input UpdateResponseApprovalsFilterInput {
-  and: [UpdateResponseApprovalsFilterInput!]
-  or: [UpdateResponseApprovalsFilterInput!]
+input UpdateResponseApprovalsPropositionInput {
+  and: [UpdateResponseApprovalsPropositionInput!]
+  or: [UpdateResponseApprovalsPropositionInput!]
   id: UuidPropositionInput
-  userId: NullableOfUuidPropositionInput
+  userId: UuidPropositionInput
   locale: StringPropositionInput
   name: StringPropositionInput
   description: StringPropositionInput
@@ -1916,8 +1967,8 @@ input UpdateResponseApprovalsFilterInput {
   creatorId: UuidPropositionInput
   createdAt: OffsetDateTimePropositionInput
   appliedMethod: AppliedMethodPropositionInput
-  approvals: ListFilterInputTypeOfDataApprovalPropositionInput
-  resources: ListFilterInputTypeOfGetHttpsResourcePropositionInput
+  approvals: FilterInputTypeOfDataApprovalsPropositionInput
+  resources: FilterInputTypeOfGetHttpsResourcesPropositionInput
   warnings: StringsPropositionInput
 }
 
@@ -1926,40 +1977,6 @@ input UpdateRootGetHttpsResourceInput {
   dataFormatId: Uuid!
   description: String!
   getHttpsResourceId: Uuid!
-}
-
-input UriHostNameTypePropositionInput {
-  equalTo: UriHostNameType @cost(weight: "10")
-  notEqualTo: UriHostNameType @cost(weight: "10")
-  in: [UriHostNameType!] @cost(weight: "10")
-  notIn: [UriHostNameType!] @cost(weight: "10")
-}
-
-input UriPropositionInput {
-  and: [UriPropositionInput!]
-  or: [UriPropositionInput!]
-  absolutePath: StringPropositionInput
-  absoluteUri: StringPropositionInput
-  localPath: StringPropositionInput
-  authority: StringPropositionInput
-  hostNameType: UriHostNameTypePropositionInput
-  isDefaultPort: BooleanPropositionInput
-  isFile: BooleanPropositionInput
-  isLoopback: BooleanPropositionInput
-  pathAndQuery: StringPropositionInput
-  segments: StringsPropositionInput
-  isUnc: BooleanPropositionInput
-  host: StringPropositionInput
-  port: Int32PropositionInput
-  query: StringPropositionInput
-  fragment: StringPropositionInput
-  scheme: StringPropositionInput
-  originalString: StringPropositionInput
-  dnsSafeHost: StringPropositionInput
-  idnHost: StringPropositionInput
-  isAbsoluteUri: BooleanPropositionInput
-  userEscaped: BooleanPropositionInput
-  userInfo: StringPropositionInput
 }
 
 input UriSortInput {
@@ -1986,11 +2003,26 @@ input UriSortInput {
   userInfo: SortEnumType @cost(weight: "10")
 }
 
+input UrlPropositionInput {
+  equalTo: Url @cost(weight: "10")
+  notEqualTo: Url @cost(weight: "10")
+  in: [Url] @cost(weight: "10")
+  notIn: [Url] @cost(weight: "10")
+  greaterThan: Url @cost(weight: "10")
+  notGreaterThan: Url @cost(weight: "10")
+  greaterThanOrEqualTo: Url @cost(weight: "10")
+  notGreaterThanOrEqualTo: Url @cost(weight: "10")
+  lessThan: Url @cost(weight: "10")
+  notLessThan: Url @cost(weight: "10")
+  lessThanOrEqualTo: Url @cost(weight: "10")
+  notLessThanOrEqualTo: Url @cost(weight: "10")
+}
+
 input UuidPropositionInput {
   equalTo: Uuid @cost(weight: "10")
   notEqualTo: Uuid @cost(weight: "10")
-  in: [Uuid!] @cost(weight: "10")
-  notIn: [Uuid!] @cost(weight: "10")
+  in: [Uuid] @cost(weight: "10")
+  notIn: [Uuid] @cost(weight: "10")
   greaterThan: Uuid @cost(weight: "10")
   notGreaterThan: Uuid @cost(weight: "10")
   greaterThanOrEqualTo: Uuid @cost(weight: "10")
@@ -2366,14 +2398,6 @@ enum UpdateRootGetHttpsResourceErrorCode {
   CREATING_RESPONSE_APPROVAL_FAILED
 }
 
-enum UriHostNameType {
-  UNKNOWN
-  BASIC
-  DNS
-  I_PV4
-  I_PV6
-}
-
 "The purpose of the `cost` directive is to define a `weight` for GraphQL types, fields, and arguments. Static analysis can use these weights when calculating the overall cost of a query or response."
 directive @cost("The `weight` argument defines what value to add to the overall cost for every appearance, or possible appearance, of a type, field, argument, etc." weight: String!) on SCALAR | OBJECT | FIELD_DEFINITION | ARGUMENT_DEFINITION | ENUM | INPUT_FIELD_DEFINITION
 
@@ -2385,6 +2409,9 @@ directive @specifiedBy("The specifiedBy URL points to a human-readable specifica
 
 scalar Any
 
+"The `Byte` scalar type represents non-fractional whole numeric values. Byte can represent values between 0 and 255."
+scalar Byte
+
 "The `DateTime` scalar represents an ISO-8601 compliant date time type."
 scalar DateTime @specifiedBy(url: "https:\/\/www.graphql-scalars.com\/date-time")
 
@@ -2395,6 +2422,9 @@ A time zone maps UTC instants to local times - or, equivalently, to the offset f
 Example: `Europe/Zurich`
 """
 scalar DateTimeZone
+
+"The `Decimal` scalar type represents a decimal floating-point number."
+scalar Decimal
 
 """
 Represents a fixed (and calendar-independent) length of time.
@@ -2415,6 +2445,12 @@ scalar Long
 
 "The NonNegativeInt scalar type represents a unsigned 32-bit numeric non-fractional value equal to or greater than 0."
 scalar NonNegativeInt
+
+"The `Short` scalar type represents non-fractional signed whole 16-bit numeric values. Short can represent values between -(2^15) and 2^15 - 1."
+scalar Short
+
+"The `TimeSpan` scalar represents an ISO-8601 compliant duration type."
+scalar TimeSpan
 
 "The `Upload` scalar type represents a file upload."
 scalar Upload

@@ -168,10 +168,12 @@ public sealed class FileUploadController(
                 await targetStream.WriteAsync(streamedFileContent, cancellationToken);
                 // Don't trust the file name sent by the client. To display the
                 // file name, HTML-encode the value.
+#pragma warning disable CA1873 // Evaluation of this argument may be expensive and unnecessary if logging is disabled (https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1873)
                 logger.SavedUploadedFile(
                     WebUtility.HtmlEncode(contentDisposition.FileName.Value),
                     getHttpsResource.FilePath
                 );
+#pragma warning restore CA1873
                 break;
             }
             // Drain any remaining section body that hasn't been consumed and

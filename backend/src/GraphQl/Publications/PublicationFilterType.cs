@@ -11,5 +11,6 @@ public sealed class PublicationFilterType
     )
     {
         descriptor.Field(x => x.Exists).Ignore();
+        descriptor.Name(nameof(PublicationFilterType)[..^"FilterType".Length] + GraphQlConstants.FilterInputSuffix);
     }
 }

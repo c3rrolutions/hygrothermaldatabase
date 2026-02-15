@@ -12,6 +12,7 @@ public sealed class CalorimetricDataFilterType
     )
     {
         base.Configure(descriptor);
+        descriptor.Name(nameof(CalorimetricDataFilterType)[..^"FilterType".Length] + GraphQlConstants.FilterInputSuffix);
         descriptor.Field(x => x.GValues);
         descriptor.Field(x => x.UValues);
     }

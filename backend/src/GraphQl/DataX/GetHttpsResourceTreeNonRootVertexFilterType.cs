@@ -12,7 +12,7 @@ public sealed class GetHttpsResourceTreeNonRootVertexFilterType
     )
     {
         base.Configure(descriptor);
-        descriptor.Name(nameof(GetHttpsResourceTreeNonRootVertexFilterType)[..^10] + GraphQlConstants.FilterInputSuffix);
+        descriptor.Name(nameof(GetHttpsResourceTreeNonRootVertexFilterType)[..^"FilterType".Length] + GraphQlConstants.FilterInputSuffix);
         descriptor.Field(x => x.CalorimetricData).Ignore();
         descriptor.Field(x => x.GeometricData).Ignore();
         descriptor.Field(x => x.HygrothermalData).Ignore();

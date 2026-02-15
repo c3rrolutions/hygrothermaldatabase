@@ -7,8 +7,9 @@ using HotChocolate.Types.Descriptors.Definitions;
 namespace Database.GraphQl.Filters;
 
 public sealed class NotField
+    // : FilterOperationField
     : InputField
-        , INotField
+    , INotField
 {
     internal NotField(IDescriptorContext context, int index, string? scope)
         : base(CreateDefinition(context, scope), index)

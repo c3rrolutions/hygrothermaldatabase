@@ -11,6 +11,6 @@ public sealed class DataFilterType
     )
     {
         base.Configure(descriptor);
-        descriptor.Name(nameof(DataFilterType)[..^10] + GraphQlConstants.FilterInputSuffix);
+        descriptor.Name(nameof(DataFilterType)[..^"FilterType".Length] + GraphQlConstants.FilterInputSuffix);
     }
 }

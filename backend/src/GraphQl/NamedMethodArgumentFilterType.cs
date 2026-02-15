@@ -11,6 +11,7 @@ public sealed class NamedMethodArgumentFilterType
     )
     {
         descriptor.BindFieldsExplicitly();
+        descriptor.Name(nameof(NamedMethodArgumentFilterType)[..^"FilterType".Length] + GraphQlConstants.FilterInputSuffix);
         descriptor.Field(x => x.Name);
         // TODO descriptor.Field(x => x.Value);
     }

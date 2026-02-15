@@ -12,6 +12,7 @@ public class GetHttpsResourceFilterType
     )
     {
         base.Configure(descriptor);
+        descriptor.Name(nameof(GetHttpsResourceFilterType)[..^"FilterType".Length] + GraphQlConstants.FilterInputSuffix);
         descriptor.Field(x => x.Description);
         descriptor.Field(x => x.HashValue);
         descriptor.Field(x => x.DataFormatId);

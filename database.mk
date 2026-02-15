@@ -61,7 +61,7 @@ drop : ## Drop database with name `${POSTGRES_DATABASE_NAME}`
 			"${POSTGRES_DATABASE_NAME}"
 .PHONY : drop
 
-sql : ## Run the SQL script in the file `${SCRIPT}` in the database service, for example, `make sql SCRIPT=./my.sql ` (note that after schema changes the backend service needs to be restarted with `make restart SERVICE=backend`)
+sql : ## Run the SQL script in the file `${SCRIPT}` in the database service, for example, `make sql SCRIPT=./my.sql ` (note that after database schema changes it is necessary to restart the backend service for the object-relational mapper Npgsql to work seamlessly, for example, by restarting the backend service with `./docker.mk restart SERVICE=backend`)
 	docker compose up \
 		--wait \
 		database
@@ -79,7 +79,11 @@ sql : ## Run the SQL script in the file `${SCRIPT}` in the database service, for
 .PHONY : sql
 
 migrate : SCRIPT = ./backend/src/Migrations/migrate.sql
-migrate : sql ## Migrate database  by running the idempotent SQL script ./backend/src/Migrations/migrate.sql (note that after schema changes the backend service needs to be restarted with `make restart SERVICE=backend`)
+migrate : ## Migrate database  by running the idempotent SQL script ./backend/src/Migrations/migrate.sql
+	$(MAKE) --file="${SELF}" sql SCRIPT="${SCRIPT}"
+	docker compose restart \
+		--do-deps \
+		backend
 .PHONY : migrate
 
 # Backup with `pg_dump`: https://www.postgresql.org/docs/current/backup-dump.html
@@ -113,7 +117,9 @@ backup : ## Backup database and related data to directory with absolute path `${
 			./files
 .PHONY : backup
 
-restore : ## Restore database and related data from directory with absolute path `${DIR}` (dropping and recreating the database and clearing related files before to start cleanly), for example, `./database.mk restore DIR=/app/data/backups/2021-04-22_15_43_35` (note that after restoring a database it is necessary to restart the backend service for the object-relational mapper Npgsql to work seamlessly, for example, by restarting the backend service with `./docker.mk restart SERVICE=backend`)`
+restore : ## Restore database and related data from directory with absolute path `${DIR}` (dropping and recreating the database and clearing related files before to start cleanly), for example, `./database.mk restore DIR=/app/data/backups/2021-04-22_15_43_35`
+	docker compose stop \
+		backend
 	docker compose up \
 		--wait \
 		database
@@ -156,4 +162,6 @@ restore : ## Restore database and related data from directory with absolute path
 				--strip-components=2 \
 				--file='/backup/${files_archive_name}' \
 		"
+	docker compose start \
+		backend
 .PHONY : restore

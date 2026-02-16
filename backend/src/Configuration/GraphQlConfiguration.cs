@@ -1,5 +1,4 @@
 using System;
-using System.Text.RegularExpressions;
 using Database.Authentication;
 using Database.Data;
 using Database.GraphQl;
@@ -196,7 +195,7 @@ public partial class CustomFilterConvention : FilterConvention
         descriptor.Provider(
             new QueryableFilterProvider(_ => _
                 .AddDefaultFieldHandlers()
-                .AddFieldHandler<QueryableFloatInClosedIntervalHandler>()
+                .AddFieldHandler<QueryableComparableInClosedIntervalHandler>()
             )
         );
     }
@@ -351,6 +350,19 @@ public static class CustomFilterConventionExtensions
     }
 }
 
+public abstract class ExtendedComparableOperationFilterInputType<T>
+    : ComparableOperationFilterInputType<T>
+where T : notnull
+{
+    protected override void Configure(IFilterInputTypeDescriptor descriptor)
+    {
+        base.Configure(descriptor);
+        // descriptor
+        //     .Operation(AdditionalFilterOperations.InClosedInterval)
+        //     .Type<InputObjectType<ClosedIntervalInput<T>>>();
+    }
+}
+
 public sealed class StringFilterInputType
     : StringOperationFilterInputType
 {
@@ -372,7 +384,7 @@ public sealed class BooleanFilterInputType
 }
 
 public sealed class ShortFilterInputType
-    : ComparableOperationFilterInputType<ShortType>
+    : ExtendedComparableOperationFilterInputType<ShortType>
 {
     protected override void Configure(IFilterInputTypeDescriptor descriptor)
     {
@@ -382,7 +394,7 @@ public sealed class ShortFilterInputType
 }
 
 public sealed class DateTimeFilterInputType
-    : ComparableOperationFilterInputType<DateTimeType>
+    : ExtendedComparableOperationFilterInputType<DateTimeType>
 {
     protected override void Configure(IFilterInputTypeDescriptor descriptor)
     {
@@ -392,7 +404,7 @@ public sealed class DateTimeFilterInputType
 }
 
 public sealed class ByteFilterInputType
-    : ComparableOperationFilterInputType<ByteType>
+    : ExtendedComparableOperationFilterInputType<ByteType>
 {
     protected override void Configure(IFilterInputTypeDescriptor descriptor)
     {
@@ -402,7 +414,7 @@ public sealed class ByteFilterInputType
 }
 
 public sealed class UuidFilterInputType
-    : ComparableOperationFilterInputType<UuidType>
+    : ExtendedComparableOperationFilterInputType<UuidType>
 {
     protected override void Configure(IFilterInputTypeDescriptor descriptor)
     {
@@ -412,7 +424,7 @@ public sealed class UuidFilterInputType
 }
 
 // public sealed class LocalDateFilterInputType
-//     : ComparableOperationFilterInputType<HotChocolate.Types.NodaTime.LocalDateType>
+//     : ExtendedComparableOperationFilterInputType<HotChocolate.Types.NodaTime.LocalDateType>
 // {
 //     protected override void Configure(IFilterInputTypeDescriptor descriptor)
 //     {
@@ -422,7 +434,7 @@ public sealed class UuidFilterInputType
 // }
 
 public sealed class LongFilterInputType
-    : ComparableOperationFilterInputType<LongType>
+    : ExtendedComparableOperationFilterInputType<LongType>
 {
     protected override void Configure(IFilterInputTypeDescriptor descriptor)
     {
@@ -432,7 +444,7 @@ public sealed class LongFilterInputType
 }
 
 // public sealed class LocalTimeFilterInputType
-//     : ComparableOperationFilterInputType<HotChocolate.Types.NodaTime.LocalTimeType>
+//     : ExtendedComparableOperationFilterInputType<HotChocolate.Types.NodaTime.LocalTimeType>
 // {
 //     protected override void Configure(IFilterInputTypeDescriptor descriptor)
 //     {
@@ -442,7 +454,7 @@ public sealed class LongFilterInputType
 // }
 
 public sealed class FloatFilterInputType
-    : ComparableOperationFilterInputType<FloatType>
+    : ExtendedComparableOperationFilterInputType<FloatType>
 {
     protected override void Configure(IFilterInputTypeDescriptor descriptor)
     {
@@ -452,7 +464,7 @@ public sealed class FloatFilterInputType
 }
 
 public sealed class TimeSpanFilterInputType
-    : ComparableOperationFilterInputType<TimeSpanType>
+    : ExtendedComparableOperationFilterInputType<TimeSpanType>
 {
     protected override void Configure(IFilterInputTypeDescriptor descriptor)
     {
@@ -462,7 +474,7 @@ public sealed class TimeSpanFilterInputType
 }
 
 public sealed class IntFilterInputType
-    : ComparableOperationFilterInputType<IntType>
+    : ExtendedComparableOperationFilterInputType<IntType>
 {
     protected override void Configure(IFilterInputTypeDescriptor descriptor)
     {
@@ -472,7 +484,7 @@ public sealed class IntFilterInputType
 }
 
 public sealed class DecimalFilterInputType
-    : ComparableOperationFilterInputType<DecimalType>
+    : ExtendedComparableOperationFilterInputType<DecimalType>
 {
     protected override void Configure(IFilterInputTypeDescriptor descriptor)
     {
@@ -482,7 +494,7 @@ public sealed class DecimalFilterInputType
 }
 
 public sealed class UrlFilterInputType
-    : ComparableOperationFilterInputType<UrlType>
+    : ExtendedComparableOperationFilterInputType<UrlType>
 {
     protected override void Configure(IFilterInputTypeDescriptor descriptor)
     {

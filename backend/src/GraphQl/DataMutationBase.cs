@@ -90,7 +90,7 @@ where TError : class
         var validateDataFormats = new Task<DataFormat?>[1 + input.ArchivedFilesMetaInformation.Count];
         // First eagerly execute all `LoadAsync`s on data loaders to make it know all keys.
         validateDataFormats[0] = dataFormatByIdDataLoader.LoadAsync(input.DataFormatId, cancellationToken);
-        foreach (var (archivedFileMetaInformation, index) in input.ArchivedFilesMetaInformation.WithIndex())
+        foreach (var (index, archivedFileMetaInformation) in input.ArchivedFilesMetaInformation.Index())
         {
             validateDataFormats[index + 1] = dataFormatByIdDataLoader.LoadAsync(archivedFileMetaInformation.DataFormatId, cancellationToken);
         }
@@ -109,7 +109,7 @@ where TError : class
                 )
             );
         }
-        foreach (var (archivedFileDataFormat, index) in dataFormats[1..].WithIndex())
+        foreach (var (index, archivedFileDataFormat) in dataFormats[1..].Index())
         {
             if (archivedFileDataFormat is null)
             {

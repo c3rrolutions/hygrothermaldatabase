@@ -96,7 +96,7 @@ where TError : class
             )
             .ToImmutableArray() // Execute eagerly to have the data loader collect all keys first.
         );
-        foreach (var (database, index) in databases.WithIndex())
+        foreach (var (index, database) in databases.Index())
         {
             string[] valuePath = [
                 nameof(input),

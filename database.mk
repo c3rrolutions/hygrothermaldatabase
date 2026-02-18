@@ -123,6 +123,8 @@ backup : ## Backup database and related data to directory with absolute path `${
 		> "${DIR}/${dump_archive_name}"
 	docker compose run \
 		--rm \
+		--no-deps \
+		--no-TTY \
 		--volume "${DIR}":/backup \
 		backend \
 		tar \
@@ -168,6 +170,8 @@ restore : ## Restore database and related data from directory with absolute path
 			--dbname="${POSTGRES_DATABASE_NAME}"
 	docker compose run \
 		--rm \
+		--no-deps \
+		--no-TTY \
 		--volume "${DIR}":/backup \
 		backend \
 		bash -o errexit -o errtrace -o nounset -o pipefail -c " \

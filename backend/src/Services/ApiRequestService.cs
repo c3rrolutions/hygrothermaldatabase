@@ -1,6 +1,4 @@
-using System;
-using System.IO;
-using System.Linq;
+﻿using System;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -183,7 +181,7 @@ public sealed class ApiRequestService(
         if (httpResponseMessage.StatusCode is not HttpStatusCode.OK)
         {
             throw new HttpRequestException(
-                $"The status code is not {HttpStatusCode.OK} but {httpResponseMessage.StatusCode}.",
+                $"The status code is not {HttpStatusCode.OK} but {httpResponseMessage.StatusCode} and the response is: {httpResponseMessage.Content.ReadAsStringAsync(cancellationToken)}",
                 null,
                 httpResponseMessage.StatusCode
             );

@@ -1,93 +1,82 @@
 # Database
 
-This repository presents the reference implementation of a product data server
-as part of the product data network
-[buildingenvelopedata.org](https://www.buildingenvelopedata.org/). Before
-deploying this repository,
-[machine](https://github.com/building-envelope-data/machine) can be used to set
-up the machine.
+The network of databases
+[buildingenvelopedata.org](https://www.buildingenvelopedata.org)
+consists of one meta-data database, aka, metabase, and various product-data
+databases. This project is the reference implementation of a product-data
+database. It is deployed as the product-data server of the
+[TestLab Solar Façades of Fraunhofer ISE](https://www.ise.fraunhofer.de/en/rd-infrastructure/accredited-labs/testlab-solar-facades.html)
+at
+[solarbuildingenvelopes.com](https://www.solarbuildingenvelopes.com)
+You can interact with it through its
+[user interface](https://www.solarbuildingenvelopes.com)
+or
+[GraphQL endpoint](https://www.solarbuildingenvelopes.com/graphql/)
+whose API is a super-set of the
+[API specification of product-data databases](https://github.com/building-envelope-data/api/blob/develop/apis/database.graphql)
+standardized in the repository
+[api](https://github.com/building-envelope-data/api).
+Try for example the
+[sample queries](https://github.com/building-envelope-data/api/blob/develop/requests/database/tutorial.graphql).
 
-The [API specification of the product data
-servers](https://github.com/building-envelope-data/api/blob/develop/apis/database.graphql)
-is available in the repository
-[api](https://github.com/building-envelope-data/api). There is also
-a [visualization of the API of a product data
-server](https://graphql-kit.com/graphql-voyager/?url=https://www.solarbuildingenvelopes.com/graphql/).
-
-This repository is deployed as the [product data server of TestLab Solar
-Facades of Fraunhofer ISE](https://www.solarbuildingenvelopes.com).
-
-If you have a question for which you don't find the answer in this repository,
-please raise a [new
-issue](https://github.com/building-envelope-data/database/issues/new) and add
-the tag `question`! All ways to contribute are presented by
+If you have a question for which you cannot find an answer
+[raise an issue](https://github.com/building-envelope-data/database/issues/new)
+with the tag `question`. Feel free to contribute in any way mentioned in
 [CONTRIBUTING.md](https://github.com/building-envelope-data/database/blob/develop/CONTRIBUTING.md).
-The basis for our collaboration is decribed by our [Code of
-Conduct](https://github.com/building-envelope-data/database/blob/develop/CODE_OF_CONDUCT.md).
+When doing so, please adhere to our
+[Code of Conduct](https://github.com/building-envelope-data/database/blob/develop/CODE_OF_CONDUCT.md).
 
 ## Contents
 
-[Getting started](#getting-started)
+[Development](#development)
 
-- [On your Linux machine](#on-your-linux-machine)
+- [Getting Started](#getting-started)
 - [Migrating the Database](#migrating-the-database)
 - [Developing with Visual Studio Code](#developing-with-visual-studio-code)
-- [Troubleshooting](#troubleshooting)
+- [Troubleshooting](#troubleshooting-0)
 
 [Deployment](#deployment)
 
-- [Setting up a Debian production machine](#setting-up-a-debian-production-machine)
+- [Setting up a production machine](#setting-up-a-production-machine)
 - [Creating a release](#creating-a-release)
 - [Deploying a release](#deploying-a-release)
 - [Troubleshooting](#troubleshooting-1)
 
-## Getting started
+## Development
 
-### On your Linux machine
+### Getting Started
 
-1. Open your favorite shell, for example, good old
-   [Bourne Again SHell, aka, `bash`](https://www.gnu.org/software/bash/),
-   the somewhat newer
-   [Z shell, aka, `zsh`](https://www.zsh.org/),
-   or shiny new
-   [`fish`](https://fishshell.com/).
+1. Use the sibling project
+   [machine](https://github.com/building-envelope-data/machine?tab=readme-ov-file#getting-started)
+   and its instructions for the first stage of the set-up.
 
-1. Install [Git](https://git-scm.com/) by running
-   `sudo apt install git-all` on [Debian](https://www.debian.org/)-based
-   distributions like [Ubuntu](https://ubuntu.com/), or
-   `sudo dnf install git` on [Fedora](https://getfedora.org/) and closely-related
-   [RPM-Package-Manager](https://rpm.org/)-based distributions like
-   [CentOS](https://www.centos.org/). For further information see
-   [Installing Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git).
+1. Change to the parent directory of `./machine` by running `cd ..`.
 
-1. Clone the source code by running
-   `git clone git@github.com:building-envelope-data/database.git` and navigate
-   into the new directory `database` by running `cd ./database`.
+1. Clone the source code into `./development` by running
+   `git clone git@github.com:building-envelope-data/database.git ./development`
+   and navigate into the new directory `development` by running `cd ./development`.
 
-1. Prepare your environment by running `cp ./.env.development.sample ./.env && chmod 600 ./.env`
-   and by adding the line `127.0.0.1 local.solarbuildingenvelopes.com` to your
-   `/etc/hosts` file. The value of `GNUPG_SECRET_SIGNING_KEY_FINGERPRINT` will
-   be set later.
+1. Prepare your environment by running
+   `cp ./.env.development.sample ./.env && chmod 600 ./.env`
+   and adding the line
+   `127.0.0.1 local.solarbuildingenvelopes.org www.local.solarbuildingenvelopes.org staging.local.solarbuildingenvelopes.org telemetry.local.solarbuildingenvelopes.org`
+   to your
+   `/etc/hosts` file. Note that the value of
+   `GNUPG_SECRET_SIGNING_KEY_FINGERPRINT` in `./.env` will be set later.
 
 1. Prepare your remote controls GNU Make and Docker Compose by running
-
    - `ln --symbolic ./docker.mk ./Makefile` and
    - `ln --symbolic ./docker-compose.development.yaml ./docker-compose.yaml`.
-
-1. Install [Docker Desktop](https://www.docker.com/products/docker-desktop), and
-   [GNU Make](https://www.gnu.org/software/make/).
 
 1. List all GNU Make targets by running `make help`.
 
 1. Generate a GnuPG key with the passphrase
-   `${GNUPG_SECRET_SIGNING_KEY_PASSPHRASE}` set in the `./.env` file
-   by running
+   `${GNUPG_SECRET_SIGNING_KEY_PASSPHRASE}` set in `./.env` by running
    `make bootstrap COMMAND='./gpg.mk key PERSON="${name}" COMMENT="${comment}" EMAIL="${email}"'`
    with your information filled in, for example,
    `make bootstrap COMMAND='./gpg.mk key PERSON="Anna Smith" COMMENT="first" EMAIL="anna.smith@fraunhofer.de"'`.
    Then copy the key's fingerprint which is output by the command and set it as
-   the value of the `GNUPG_SECRET_SIGNING_KEY_FINGERPRINT` variable in the
-   `./.env` file.
+   the value of the `GNUPG_SECRET_SIGNING_KEY_FINGERPRINT` variable in `./.env`.
 
 1. Create the PostgreSQL database and schema by running
    `./database.mk create migrate`.
@@ -96,36 +85,38 @@ Conduct](https://github.com/building-envelope-data/database/blob/develop/CODE_OF
    `make build up logs`.
 
 1. In your web browser, navigate to the
-
-   - web frontend at `https://local.solarbuildingenvelopes.com:5051`,
-   - GraphQL API at `https://local.solarbuildingenvelopes.com:5051/graphql/`,
-   - REST API `https://local.solarbuildingenvelopes.com:5051/openapi/docs//`,
-   - dummy email server at `https://local.solarbuildingenvelopes.com:5051/email/`
+   - web frontend at `https://www.local.solarbuildingenvelopes.com:${HTTPS_PORT}`,
+   - GraphQL playground at `https://www.local.solarbuildingenvelopes.com:${HTTPS_PORT}/graphql/`,
+   - OpenAPI reference at `https://www.local.solarbuildingenvelopes.com:${HTTPS_PORT}/openapi/docs/`,
+   - dummy email server at `https://www.local.solarbuildingenvelopes.com:${HTTPS_PORT}/email/`
      (to view for example the confirmation email sent during registration),
-   - OpenId Connect configuration navigate to
-     `https://local.solarbuildingenvelopes.com:5051/.well-known/openid-configuration`
+   - OpenId Connect configuration at
+     `https://www.local.solarbuildingenvelopes.com:${HTTPS_PORT}/.well-known/openid-configuration`,
+   - telemetry web frontend at `https://telemetry.local.solarbuildingenvelopes.com:${HTTPS_PORT}`,
+   - staging web frontend at `https://staging.local.solarbuildingenvelopes.com:${HTTPS_PORT}`,
+   - test the redirect to `www` at `https://local.solarbuildingenvelopes.com:${HTTPS_PORT}`,
 
-   Note that the port is `5051` by default. If you set the variable
-   `HTTPS_PORT` within the `./.env` to some other value though, you need to use
-   that value instead within the URLs.
+   where `${HTTPS_PORT}` is the value set in `../machine/.env` and defaults to
+   `7001` for the general sample environment, `7001` for
+   `buildingenvelopedata.org`, and `7501` for `solarbuildingenvelopes.com`.
 
 In another shell
 
 1. Drop into `bash` with the working directory `/app`, which is mounted to the
    host's `./backend` directory, inside a fresh Docker container based on
-   `./backend/Dockerfile` by running `make shell SERVICE=backend`. If
+   `./backend/Dockerfile.development` by running `make shell SERVICE=backend`. If
    necessary, the Docker image is (re)built automatically, which takes a while
-   the first time. Note that the Docker image and containers try to use the
-   same user and group IDs as the ones on the host machine. This has the upside
-   that files created within containers in mounted directories are owned by the
-   host user. It has the downside that the Docker image may fail to build
-   because the IDs may already be taken by other users and groups in the base
-   image. This happens for example if you are `root` on the host machine with
-   the user and group IDs 0. If there is an ID collision, then you can either
-   change the user and group ID on the host machine (for example by logging in
-   as another user) or you can replace all occurrences of `shell id --group`
-   and `shell id --user` in `Makefile` by fixed non-colliding IDs like 1000. If
-   you know a better way, please
+   the first time. Note that the Docker image and containers try to use the same
+   user and group IDs as the ones on the host machine. This has the upside that
+   files created within containers in mounted directories are owned by the host
+   user. It has the downside that the Docker image may fail to build because the
+   IDs may already be taken by other users and groups in the base image. This
+   happens for example if you are `root` on the host machine with the user and
+   group IDs 0. If there is an ID collision, then you can either change the user
+   and group ID on the host machine (for example by logging in as another user) or
+   you can replace all occurrences of `shell id --group` and `shell id --user` in
+   `Makefile` by fixed non-colliding IDs like 1000. If you know a better way,
+   please
    [let use know on GitHub](https://github.com/building-envelope-data/database/issues/new).
 1. List all backend GNU Make targets by running `make help`.
 1. For example, update packages and tools by running `make update`.
@@ -135,7 +126,7 @@ In another shell
 
 After changing the domain model in `./backend/src/data`, you need to migrate
 the database by dropping into `make shell SERVICE=backend`, adding a migration
-with `make migration PERSON=${MIGRATION_NAME}`, verifying and if necessary
+with `make migration NAME=${MIGRATION_NAME}`, verifying and if necessary
 adapting the new migration C# code and SQL scripts, exiting the container with
 `exit`, and applying the new migration to the PostgreSQL database with
 `./database.mk migrate`. See
@@ -198,8 +189,8 @@ and choose the process `/app/src/bin/Debug/net10.0/Database run` titled
 (`Ctrl+Shift+D`), select the launch profile ".NET Core Attach", press the
 "Start Debugging" icon (`F5`), and select the same process as above. Then, for
 example, open some source files to set breakpoints, navigate through the
-website https://local.solarbuildingenvelopes.com:5051, which will stop at
-breakpoints, and inspect the information provided by the debugger at the
+website <https://local.solarbuildingenvelopes.com:${HTTPS_PORT}>, which will stop
+at breakpoints, and inspect the information provided by the debugger at the
 breakpoints. For details on debugging C# in Visual Studio Code, see
 [Debugging](https://code.visualstudio.com/docs/csharp/debugging).
 
@@ -226,9 +217,9 @@ manually or upgrading Npgsql, the service `backend` may throw exceptions
 regarding the object-relational mapping (Npgsql or EF Core). In that case it
 may be necessary to restart the service `backend`, for example, by running
 `make down up` and it may even be necessary recreate the database from scratch
-by running `make down remove-data-volume up`. Note that the latter will remove
-all data from PostgreSQL, recreate the database and its schema, and seed it
-freshly.
+by running `make down && ./database.mk remove-volume create migrate && make
+up`. Note that the latter will remove all data from PostgreSQL, recreate the
+database and its schema, and seed it freshly.
 
 When your hard-disk starts to grow full, it may be the case that Docker does
 not clean-up anonymous volumes properly. You can do so manually by running
@@ -260,18 +251,20 @@ For information on using Docker in production see
 [Configure and troubleshoot the Docker daemon](https://docs.docker.com/config/daemon/)
 and the pages following it.
 
-### Setting up a Debian production machine
+### Setting up a production machine
 
 1. Use the sibling project [machine](https://github.com/building-envelope-data/machine) and its
    instructions for the first stage of the set-up.
 1. Enter a shell on the production machine using `ssh`.
 1. Change into the directory `/app` by running `cd /app`.
 1. Clone the repository twice by running
+
    ```
    for environment in staging production ; do
      git clone git@github.com:building-envelope-data/database.git ./${environment}
    done
    ```
+
 1. For each of the two environments staging and production referred to by
    `${environment}` below:
    1. Set the variable `environment` by running `environment=staging` or
@@ -283,7 +276,6 @@ and the pages following it.
       log into your account, navigate to the institution operating this
       database (which you should be a representative of), add an OpenId Connect
       Application with
-
       - client ID and display name of your choice;
       - consent type: explicit;
       - endpoints: authorization, pushed authorization, introspection,
@@ -298,7 +290,7 @@ and the pages following it.
         where `${HOST}` is the domain name with sub-domain of the deployment,
         for example, `staging.solarbuildingenvelopes.com` or
         `www.solarbuildingenvelopes.com` for the product-data database of the
-        TestLab Solar Facades.
+        TestLab Solar Façades.
 
       Alternatively, after logging in, open
       `https://www.buildingenvelopedata.org/graphql/` and run the following
@@ -332,19 +324,18 @@ and the pages following it.
 
    1. Prepare the environment by running
       `cp ./.env.${environment}.sample ./.env && chmod 600 ./.env`
-      and by adjusting variable values to your needs, in particular, by setting
-      passwords to newly generated ones, where random passwords may be
-      generated by running `openssl rand -base64 32`. The value of
-      `GNUPG_SECRET_SIGNING_KEY_FINGERPRINT` will be set later. Here is some
+      and by adjusting variable values in the copies to your needs, in
+      particular, by setting passwords to newly generated ones, where random
+      passwords may be generated by running `openssl rand -base64 32`. The value
+      of `GNUPG_SECRET_SIGNING_KEY_FINGERPRINT` will be set later. Here is some
       information on what the variables mean
-
       - `NAME` is the name Docker project name, in particular, it is the prefix
         of the Docker container names listed by `docker ps --all`;
       - `HOST` is the domain name with sub-domain of the deployment, in
         particular, it is used to make resource locators absolute;
       - `HTTP_PORT` is the HTTP port to which the reverse proxy NGINX forwards
         for HTTPS requests (see `PRODUCTION_HTTP_PORT` and
-        `STAGING_HTTP_PORT` in the `.env` file of your clone of
+        `STAGING_HTTP_PORT` in `./.env` of your clone of
         [machine](https://github.com/building-envelope-data/machine));
       - `METABASE_HOST` is the domain name with sub-domain of the metabase, in
         particular, to use it as OpenId Connect provider and to ask it for
@@ -365,7 +356,6 @@ and the pages following it.
         of the GnuPG secret key for signing response and data approvals.
 
    1. Prepare your remote controls GNU Make and Docker Compose by running
-
       - `ln --symbolic ./docker.mk ./Makefile` and
       - `ln --symbolic ./docker-compose.production.yaml ./docker-compose.yaml`.
 
@@ -394,9 +384,11 @@ and the pages following it.
    where `*.*.*` is the version. Note that this is **not** the same as "Draft
    a new release" on
    [Releases](https://github.com/building-envelope-data/database/releases).
-1. Fetch the release branch by running `git fetch` and check it out by running
-   `git checkout release/v*.*.*`, where `*.*.*` is the version.
-1. Apply pending migrations with `./database.mk migrate`.
+1. Fetch the release branch by running `git fetch` and switch to it by running
+   `git switch --detach release/v*.*.*`, where `*.*.*` is the version.
+1. If the databases have not diverged, then apply pending migrations with
+   `./database.mk migrate`. Otherwise, recreate the database by running
+   `./database.mk drop create migrate`.
 1. Make sure that all tests succeed and try out any new features manually.
 1. [Publish the new release](https://github.com/building-envelope-data/database/actions/workflows/publish-new-release.yaml)
    by merging the release branch into `main` whereby a new pull request from
@@ -404,6 +396,12 @@ and the pages following it.
 
 ### Deploying a release
 
+1. Fetch the release branch by running `git fetch` and switch to it by running
+   `git switch --detach release/${TAG}`, where `${TAG}` is the release tag to
+   be deployed, for example, `v1.0.0`.
+1. Build and push the Docker images for the services `frontend` and `backend`
+   services by running `./forge.mk all USER=cloud HOST=${IP}`, where `${IP}` is
+   the server's IP address.
 1. Enter a shell on the production machine using `ssh`.
 1. Navigate into `/app/production` by running `cd /app/production`.
 1. Back up the production database by running
@@ -414,7 +412,7 @@ and the pages following it.
 1. Adapt the environment file `./.env` if necessary by comparing it with the
    `./.env.staging.sample` file of the release to be deployed.
 1. Deploy the new release in the staging environment by running
-   `./deploy.mk TARGET=${TAG} deploy`, where `${TAG}` is
+   `./deploy.mk do TARGET=${TAG}`, where `${TAG}` is
    the release tag to be deployed, for example, `v1.0.0`.
 1. If it fails _after_ the database backup was made, rollback to the previous
    state by running
@@ -422,18 +420,18 @@ and the pages following it.
    figure out what went wrong, apply the necessary fixes to the codebase,
    create a new release, and try to deploy that release instead.
 1. If it succeeds, deploy the new reverse proxy that handles sub-domains by
-   running `cd /app/machine && make deploy` and test whether everything works
+   running `cd /app/machine && ./deploy.mk do` and test whether everything works
    as expected and if that is the case, continue. Note that in the
    staging environment sent emails can be viewed in the web browser under
    `https://staging.solarbuildingenvelopes.com/email/` and emails to addresses in
-   the variable `RELAY_ALLOWED_EMAILS` in the `.env` file are delivered to the
+   the variable `RELAY_ALLOWED_EMAILS` in `./.env` are delivered to the
    respective inboxes (the variable's value is a comma separated list of email
    addresses).
 1. Change to the production environment by running `cd /app/production`.
 1. Adapt the environment file `./.env` if necessary by comparing it with the
    `./.env.production.sample` file of the release to be deployed.
 1. Deploy the new release in the production environment by running
-   `./deploy.mk TARGET=${TAG} deploy`, where `${TAG}` is
+   `./deploy.mk do TARGET=${TAG}`, where `${TAG}` is
    the release tag to be deployed, for example, `v1.0.0`.
 1. If it fails _after_ the database backup was made, rollback to the previous
    state by running
@@ -486,7 +484,7 @@ where the `X`s need to be replaced by proper values. Another solution is to
 reset the transaction log by entering the database container with
 
 ```
-docker compose run database bash
+make shell SERVICE=database
 ```
 
 and dry-running

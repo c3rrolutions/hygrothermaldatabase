@@ -146,13 +146,18 @@ restart : ## Restart service `${SERVICE}` and await its health
 		${SERVICE}
 .PHONY : restart
 
-symlink : ## Confirm that ./docker-compose.yaml links to the correct ./docker-compose.*.yaml
-	if [[ ${ENVIRONMENT} == "staging" ]]; then \
+symlink : ## Confirm that ./Makefile links to ./docker.mk and that ./docker-compose.yaml links to the correct ./docker-compose.*.yaml
+	if [[ ! -L "./Makefile" ]] || [[ ! "./Makefile" -ef "./docker.mk" ]]; then \
+		echo "./docker-compose.yaml does not link to $${file}" >&2 ; \
+		exit 1 ; \
+	fi
+	if [[ "${ENVIRONMENT}" == "staging" ]]; then \
 		file="./docker-compose.production.yaml" ; \
 	else \
 		file="./docker-compose.${ENVIRONMENT}.yaml" ; \
 	fi && \
-	if [[ ! -L "./docker-compose.yaml" ]] || [[ ! "./docker-compose.yaml" -ef $${file} ]]; then \
-	    echo "./docker-compose.yaml does not link to $${file}" ; \
+	if [[ ! -L "./docker-compose.yaml" ]] || [[ ! "./docker-compose.yaml" -ef "$${file}" ]]; then \
+		echo "./docker-compose.yaml does not link to $${file}" >&2 ; \
+		exit 2 ; \
 	fi
 .PHONY : symlink

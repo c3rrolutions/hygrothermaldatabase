@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -8,7 +8,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Database.Enumerations;
 using Database.Extensions;
-using Database.GraphQl;
 using Database.Utilities;
 using EntityFrameworkCore.Projectables;
 
@@ -31,6 +30,7 @@ public sealed class GetHttpsResource
         nameof(CalorimetricDataId),
         nameof(GeometricDataId),
         nameof(HygrothermalDataId),
+        nameof(LifeCycleDataId),
         nameof(OpticalDataId),
         nameof(PhotovoltaicDataId)
     ];
@@ -83,6 +83,7 @@ public sealed class GetHttpsResource
         Guid? calorimetricDataId,
         Guid? geometricDataId,
         Guid? hygrothermalDataId,
+        Guid? lifeCycleDataId,
         Guid? opticalDataId,
         Guid? photovoltaicDataId,
         Guid parentId,
@@ -97,10 +98,11 @@ public sealed class GetHttpsResource
         )
     {
         CalorimetricDataId = calorimetricDataId;
+        GeometricDataId = geometricDataId;
         HygrothermalDataId = hygrothermalDataId;
+        LifeCycleDataId = lifeCycleDataId;
         OpticalDataId = opticalDataId;
         PhotovoltaicDataId = photovoltaicDataId;
-        GeometricDataId = geometricDataId;
         ParentId = parentId;
         ArchivedFilesMetaInformation = archivedFilesMetaInformation;
         AppliedConversionMethod = appliedConversionMethod;
@@ -111,10 +113,11 @@ public sealed class GetHttpsResource
     {
         var nonNullDataIdCount = new Guid?[] {
             CalorimetricDataId,
+            GeometricDataId,
             HygrothermalDataId,
+            LifeCycleDataId,
             OpticalDataId,
-            PhotovoltaicDataId,
-            GeometricDataId
+            PhotovoltaicDataId
         }
         .NotNull()
         .Count();
@@ -144,10 +147,10 @@ public sealed class GetHttpsResource
 
     // Note that at least one data ID is always present. So `Guid.Empty` will never be used.
     [NotMapped]
-    public Guid DataId => CalorimetricDataId ?? HygrothermalDataId ?? OpticalDataId ?? PhotovoltaicDataId ?? GeometricDataId ?? Guid.Empty;
+    public Guid DataId => CalorimetricDataId ?? GeometricDataId ?? HygrothermalDataId ?? LifeCycleDataId ?? OpticalDataId ?? PhotovoltaicDataId ?? Guid.Empty;
 
     [NotMapped]
-    public IData? Data => CalorimetricData ?? HygrothermalData ?? OpticalData ?? GeometricData ?? PhotovoltaicData as IData;
+    public IData? Data => CalorimetricData ?? GeometricData ?? HygrothermalData ?? LifeCycleData ?? OpticalData ?? PhotovoltaicData as IData;
 
     [Projectable]
     public Guid? GetDataId(DataKind dataKind) =>
@@ -156,6 +159,7 @@ public sealed class GetHttpsResource
             DataKind.CALORIMETRIC_DATA => CalorimetricDataId,
             DataKind.GEOMETRIC_DATA => GeometricDataId,
             DataKind.HYGROTHERMAL_DATA => HygrothermalDataId,
+            DataKind.LIFE_CYCLE_DATA => LifeCycleDataId,
             DataKind.OPTICAL_DATA => OpticalDataId,
             DataKind.PHOTOVOLTAIC_DATA => PhotovoltaicDataId,
             _ => null, // throw new ArgumentOutOfRangeException(nameof(dataKind), $"Unsupported data kind {dataKind}"),
@@ -168,6 +172,7 @@ public sealed class GetHttpsResource
             DataKind.CALORIMETRIC_DATA => CalorimetricData,
             DataKind.GEOMETRIC_DATA => GeometricData,
             DataKind.HYGROTHERMAL_DATA => HygrothermalData,
+            DataKind.LIFE_CYCLE_DATA => LifeCycleData,
             DataKind.OPTICAL_DATA => OpticalData,
             DataKind.PHOTOVOLTAIC_DATA => PhotovoltaicData,
             _ => null, //throw new ArgumentOutOfRangeException(nameof(dataKind), $"Unsupported data kind {dataKind}"),
@@ -178,10 +183,20 @@ public sealed class GetHttpsResource
     [InverseProperty(nameof(CalorimetricData.Resources))]
     public CalorimetricData? CalorimetricData { get; set; }
 
+    public Guid? GeometricDataId { get; private set; }
+
+    [InverseProperty(nameof(GeometricData.Resources))]
+    public GeometricData? GeometricData { get; set; }
+
     public Guid? HygrothermalDataId { get; private set; }
 
     [InverseProperty(nameof(HygrothermalData.Resources))]
     public HygrothermalData? HygrothermalData { get; set; }
+
+    public Guid? LifeCycleDataId { get; private set; }
+
+    [InverseProperty(nameof(LifeCycleData.Resources))]
+    public LifeCycleData? LifeCycleData { get; set; }
 
     public Guid? OpticalDataId { get; private set; }
 
@@ -192,11 +207,6 @@ public sealed class GetHttpsResource
 
     [InverseProperty(nameof(PhotovoltaicData.Resources))]
     public PhotovoltaicData? PhotovoltaicData { get; set; }
-
-    public Guid? GeometricDataId { get; private set; }
-
-    [InverseProperty(nameof(GeometricData.Resources))]
-    public GeometricData? GeometricData { get; set; }
 
     public Guid? ParentId { get; private set; }
 

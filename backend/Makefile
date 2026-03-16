@@ -181,6 +181,7 @@ schema : ## Fetch GraphQL schema using `hasura/graphqurl`
 has-pending-model-changes : ## Check whether there have been any model changes made since the last migration was added
 	dotnet ef \
 		--project ./src/Database.csproj \
+		--startup-project ./src/Database.csproj \
 		migrations \
 		has-pending-model-changes
 .PHONY : has-pending-model-changes
@@ -191,6 +192,7 @@ migration : ## Add migration with name `${NAME}`, generate corresponding idempot
 	echo old=$$old && \
 	dotnet ef \
 		--project ./src/Database.csproj \
+		--startup-project ./src/Database.csproj \
 		migrations \
 		add \
 		${NAME} && \
@@ -200,6 +202,7 @@ migration : ## Add migration with name `${NAME}`, generate corresponding idempot
 	rollback_path=./src/Migrations/rollback_from_$${new}_to_$${old}.sql && \
 	dotnet ef \
 		--project ./src/Database.csproj \
+		--startup-project ./src/Database.csproj \
 		migrations \
 		script \
 		--idempotent \
@@ -208,6 +211,7 @@ migration : ## Add migration with name `${NAME}`, generate corresponding idempot
 		--output $${migrate_path} && \
 	dotnet ef \
 		--project ./src/Database.csproj \
+		--startup-project ./src/Database.csproj \
 		migrations \
 		script \
 		--idempotent \
@@ -224,6 +228,7 @@ migration : ## Add migration with name `${NAME}`, generate corresponding idempot
 # update-database : ## Update the database to the latest database schema
 # 	dotnet ef \
 # 		--project ./src/Database.csproj \
+# 		--startup-project ./src/Database.csproj \
 # 		database \
 # 		update
 # .PHONY : update-database

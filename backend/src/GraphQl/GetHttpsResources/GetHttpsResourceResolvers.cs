@@ -1,10 +1,11 @@
-using System;
+﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Database.Data;
 using Database.GraphQl.CalorimetricDataX;
 using Database.GraphQl.GeometricDataX;
 using Database.GraphQl.HygrothermalDataX;
+using Database.GraphQl.LifeCycleDataX;
 using Database.GraphQl.OpticalDataX;
 using Database.GraphQl.PhotovoltaicDataX;
 using HotChocolate;
@@ -17,6 +18,7 @@ public sealed class GetHttpsResourceResolvers
         [Parent] GetHttpsResource getHttpsResource,
         CalorimetricDataByIdDataLoader calorimetricDataById,
         HygrothermalDataByIdDataLoader hygrothermalDataById,
+        LifeCycleDataByIdDataLoader lifeCycleDataById,
         OpticalDataByIdDataLoader opticalDataById,
         PhotovoltaicDataByIdDataLoader photovoltaicDataById,
         GeometricDataByIdDataLoader geometricDataById,
@@ -41,6 +43,13 @@ public sealed class GetHttpsResourceResolvers
         {
             return await hygrothermalDataById.LoadAsync(
                 getHttpsResource.HygrothermalDataId ?? Guid.Empty,
+                cancellationToken
+            );
+        }
+        if (getHttpsResource.LifeCycleDataId is not null)
+        {
+            return await lifeCycleDataById.LoadAsync(
+                getHttpsResource.LifeCycleDataId ?? Guid.Empty,
                 cancellationToken
             );
         }

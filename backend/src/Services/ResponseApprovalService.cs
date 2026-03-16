@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
@@ -57,6 +57,13 @@ public sealed class ResponseApprovalService(
         "HygrothermalData.graphql"
     ];
 
+    private static readonly string[] s_lifeCycleDataQueryFileNames =
+    [
+        "DataFields.graphql",
+        "LifeCycleDataFields.graphql",
+        "LifeCycleData.graphql"
+    ];
+
     private static readonly string[] s_photovoltaicDataQueryFileNames =
     [
         "DataFields.graphql",
@@ -108,6 +115,7 @@ public sealed class ResponseApprovalService(
             CalorimetricData data => await Query(data.Id, s_calorimetricDataQueryFileNames, cancellationToken),
             GeometricData data => await Query(data.Id, s_geometricDataQueryFileNames, cancellationToken),
             HygrothermalData data => await Query(data.Id, s_hygrothermalDataQueryFileNames, cancellationToken),
+            LifeCycleData data => await Query(data.Id, s_lifeCycleDataQueryFileNames, cancellationToken),
             OpticalData data => await Query(data.Id, s_opticalDataQueryFileNames, cancellationToken),
             PhotovoltaicData data => await Query(data.Id, s_photovoltaicDataQueryFileNames, cancellationToken),
             _ => throw new ArgumentOutOfRangeException($"Unsupported data type {dataObject.GetType()}"),

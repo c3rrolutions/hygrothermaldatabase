@@ -56,12 +56,14 @@ public sealed class ApplicationDbContext
         .Include(_ => _.CalorimetricData)
         .Include(_ => _.GeometricData)
         .Include(_ => _.HygrothermalData)
+        .Include(_ => _.LifeCycleData)
         .Include(_ => _.OpticalData)
         .Include(_ => _.PhotovoltaicData);
 
     public DbSet<CalorimetricData> CalorimetricData { get; private set; } = default!;
     public DbSet<GeometricData> GeometricData { get; private set; } = default!;
     public DbSet<HygrothermalData> HygrothermalData { get; private set; } = default!;
+    public DbSet<LifeCycleData> LifeCycleData { get; private set; } = default!;
     public DbSet<OpticalData> OpticalData { get; private set; } = default!;
     public DbSet<PhotovoltaicData> PhotovoltaicData { get; private set; } = default!;
 
@@ -72,6 +74,7 @@ public sealed class ApplicationDbContext
             DataKind.CALORIMETRIC_DATA => CalorimetricData,
             DataKind.GEOMETRIC_DATA => GeometricData,
             DataKind.HYGROTHERMAL_DATA => HygrothermalData,
+            DataKind.LIFE_CYCLE_DATA => LifeCycleData,
             DataKind.OPTICAL_DATA => OpticalData,
             DataKind.PHOTOVOLTAIC_DATA => PhotovoltaicData,
             _ => throw new ArgumentOutOfRangeException(nameof(dataKind), $"Unsupported data kind {dataKind}."),
@@ -102,6 +105,12 @@ public sealed class ApplicationDbContext
         )
         .Union(
             HygrothermalData.AsQueryable<IData>()
+            .With(queryContext, sort => sort.StabilizeOrder())
+            .Where(where)
+            .ToAsyncEnumerable()
+        )
+        .Union(
+            LifeCycleData.AsQueryable<IData>()
             .With(queryContext, sort => sort.StabilizeOrder())
             .Where(where)
             .ToAsyncEnumerable()
@@ -211,6 +220,14 @@ public sealed class ApplicationDbContext
             )
             .IsUnique(true);
         builder
+            .HasIndex(_ => new { _.LifeCycleDataId })
+            .HasFilter(
+                $"""
+                {nameof(GetHttpsResource.LifeCycleDataId).Enquote()} IS NOT NULL AND {nameof(GetHttpsResource.ParentId).Enquote()} IS NULL
+                """
+            )
+            .IsUnique(true);
+        builder
             .HasIndex(_ => new { _.OpticalDataId })
             .HasFilter(
                 $"""
@@ -307,6 +324,20 @@ public sealed class ApplicationDbContext
     }
 
     private static
+        EntityTypeBuilder<LifeCycleData>
+        ConfigureLifeCycleData(
+            EntityTypeBuilder<LifeCycleData> builder
+        )
+    {
+        builder
+            .HasMany(_ => _.Resources)
+            .WithOne(_ => _.LifeCycleData)
+            .HasForeignKey(_ => _.LifeCycleDataId)
+            .OnDelete(DeleteBehavior.Cascade);
+        return builder;
+    }
+
+    private static
         EntityTypeBuilder<OpticalData>
         ConfigureOpticalData(
             EntityTypeBuilder<OpticalData> builder
@@ -396,6 +427,11 @@ public sealed class ApplicationDbContext
             ConfigureData(
                 ConfigureEntity(modelBuilder.Entity<HygrothermalData>())
             ).ToTable("hygrothermal_data")
+        );
+        ConfigureLifeCycleData(
+            ConfigureData(
+                ConfigureEntity(modelBuilder.Entity<LifeCycleData>())
+            ).ToTable("lifeCycle_data")
         );
         ConfigureOpticalData(
             ConfigureData(

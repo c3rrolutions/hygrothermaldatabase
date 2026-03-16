@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using Database.Data;
 using Database.GraphQl.Entities;
@@ -18,8 +18,15 @@ public sealed class GetHttpsResourcesByDataIdDataLoader(
         dbContextFactory,
         (dbContext, ids) =>
                 dbContext.GetHttpsResources.AsNoTracking().Where(x =>
-                    ids.Contains(x.CalorimetricDataId ??
-                                 x.HygrothermalDataId ?? x.OpticalDataId ?? x.PhotovoltaicDataId ?? x.GeometricDataId ?? Guid.Empty)
+                    ids.Contains(
+                        x.CalorimetricDataId
+                        ?? x.GeometricDataId
+                        ?? x.HygrothermalDataId
+                        ?? x.LifeCycleDataId
+                        ?? x.OpticalDataId
+                        ?? x.PhotovoltaicDataId
+                        ?? Guid.Empty
+                    )
                 ),
         x => x.DataId
         )

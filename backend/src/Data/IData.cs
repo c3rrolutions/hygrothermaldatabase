@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
@@ -12,6 +12,7 @@ namespace Database.Data;
 [JsonDerivedType(typeof(CalorimetricData), typeDiscriminator: nameof(CalorimetricData))]
 [JsonDerivedType(typeof(GeometricData), typeDiscriminator: nameof(GeometricData))]
 [JsonDerivedType(typeof(HygrothermalData), typeDiscriminator: nameof(HygrothermalData))]
+[JsonDerivedType(typeof(LifeCycleData), typeDiscriminator: nameof(LifeCycleData))]
 [JsonDerivedType(typeof(OpticalData), typeDiscriminator: nameof(OpticalData))]
 [JsonDerivedType(typeof(PhotovoltaicData), typeDiscriminator: nameof(PhotovoltaicData))]
 public interface IData : IEntity

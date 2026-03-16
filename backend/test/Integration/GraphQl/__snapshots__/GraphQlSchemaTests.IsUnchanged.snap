@@ -196,6 +196,18 @@ type CreateHygrothermalDataPayload {
   query: Query!
 }
 
+type CreateLifeCycleDataError implements UserError {
+  code: CreateLifeCycleDataErrorCode!
+  message: String!
+  path: [String!]!
+}
+
+type CreateLifeCycleDataPayload {
+  errors: [CreateLifeCycleDataError!]
+  lifeCycleData: LifeCycleData
+  query: Query!
+}
+
 type CreateOpticalDataError implements UserError {
   code: CreateOpticalDataErrorCode!
   message: String!
@@ -476,6 +488,48 @@ type KeyValuePairOfGuidAndNullableOfUInt32 {
   value: NonNegativeInt
 }
 
+type LifeCycleData implements Node & Data {
+  appliedMethod: AppliedMethod!
+  approval: ResponseApproval!
+  approvals: [DataApproval!]!
+  componentId: Uuid!
+  createdAt: DateTime!
+  creatorId: Uuid!
+  dataAccessRights: DataAccessRights!
+  databaseId: Uuid!
+  description: String
+  id: ID!
+  isRestrictedByApplication(applicationId: String!): Boolean!
+  isRestrictedByInstitutions(institutions: [Uuid!]!): Boolean!
+  isRestrictedByUser(alreadyAccesedCount: NonNegativeInt! uuid: Uuid!): Boolean!
+  locale: Locale!
+  name: String
+  resources(order: [GetHttpsResourceSortInput!] @cost(weight: "10") where: GetHttpsResourcePropositionInput @cost(weight: "10")): [GetHttpsResource!]! @cost(weight: "10")
+  resourceTree: GetHttpsResourceTree!
+  timestamp: DateTime!
+  userId: Uuid
+  uuid: Uuid! @cost(weight: "10")
+  warnings: [String!]!
+}
+
+"A connection to a list of items."
+type LifeCycleDataConnection {
+  "A list of edges."
+  edges: [LifeCycleDataEdge!]
+  "Information to aid in pagination."
+  pageInfo: PageInfo!
+  "Identifies the total count of items in the connection."
+  totalCount: Int! @cost(weight: "10")
+}
+
+"An edge in a connection."
+type LifeCycleDataEdge {
+  "A cursor for use in pagination."
+  cursor: String!
+  "The item at the end of the edge."
+  node: LifeCycleData!
+}
+
 type Mutation {
   addDataApproval(input: AddDataApprovalInput!): AddDataApprovalPayload! @cost(weight: "10")
   addInstitutionAccessRights(input: AddInstitutionAccessRightsInput!): AddInstitutionAccessRightsPayload! @cost(weight: "10")
@@ -483,6 +537,7 @@ type Mutation {
   createGeometricData(input: CreateGeometricDataInput!): CreateGeometricDataPayload! @cost(weight: "10")
   createGetHttpsResource(input: CreateGetHttpsResourceInput!): CreateGetHttpsResourcePayload! @cost(weight: "10")
   createHygrothermalData(input: CreateHygrothermalDataInput!): CreateHygrothermalDataPayload! @cost(weight: "10")
+  createLifeCycleData(input: CreateLifeCycleDataInput!): CreateLifeCycleDataPayload! @cost(weight: "10")
   createOpticalData(input: CreateOpticalDataInput!): CreateOpticalDataPayload! @cost(weight: "10")
   createPhotovoltaicData(input: CreatePhotovoltaicDataInput!): CreatePhotovoltaicDataPayload! @cost(weight: "10")
   createResponseApprovals(where: CreateResponseApprovalsPropositionInput @cost(weight: "10")): CreateResponseApprovalsPayload! @cost(weight: "10")
@@ -661,10 +716,12 @@ type Query {
   allCalorimetricData("Returns the elements in the list that come after the specified cursor." after: String "Returns the elements in the list that come before the specified cursor." before: String "Returns the first _n_ elements from the list." first: Int "Returns the last _n_ elements from the list." last: Int locale: Locale order: [CalorimetricDataSortInput!] @cost(weight: "10") where: CalorimetricDataPropositionInput @cost(weight: "10")): CalorimetricDataConnection @listSize(assumedSize: 100, slicingArguments: [ "first", "last" ], slicingArgumentDefaultValue: 100, sizedFields: [ "edges", "nodes" ], requireOneSlicingArgument: false) @cost(weight: "10")
   allGeometricData("Returns the elements in the list that come after the specified cursor." after: String "Returns the elements in the list that come before the specified cursor." before: String "Returns the first _n_ elements from the list." first: Int "Returns the last _n_ elements from the list." last: Int locale: Locale order: [GeometricDataSortInput!] @cost(weight: "10") where: GeometricDataPropositionInput @cost(weight: "10")): GeometricDataConnection @listSize(assumedSize: 100, slicingArguments: [ "first", "last" ], slicingArgumentDefaultValue: 100, sizedFields: [ "edges", "nodes" ], requireOneSlicingArgument: false) @cost(weight: "10")
   allHygrothermalData("Returns the elements in the list that come after the specified cursor." after: String "Returns the elements in the list that come before the specified cursor." before: String "Returns the first _n_ elements from the list." first: Int "Returns the last _n_ elements from the list." last: Int locale: Locale order: [HygrothermalDataSortInput!] @cost(weight: "10") where: HygrothermalDataPropositionInput @cost(weight: "10")): HygrothermalDataConnection @listSize(assumedSize: 100, slicingArguments: [ "first", "last" ], slicingArgumentDefaultValue: 100, sizedFields: [ "edges", "nodes" ], requireOneSlicingArgument: false) @cost(weight: "10")
+  allLifeCycleData("Returns the elements in the list that come after the specified cursor." after: String "Returns the elements in the list that come before the specified cursor." before: String "Returns the first _n_ elements from the list." first: Int "Returns the last _n_ elements from the list." last: Int locale: Locale order: [LifeCycleDataSortInput!] @cost(weight: "10") where: LifeCycleDataPropositionInput @cost(weight: "10")): LifeCycleDataConnection @listSize(assumedSize: 100, slicingArguments: [ "first", "last" ], slicingArgumentDefaultValue: 100, sizedFields: [ "edges", "nodes" ], requireOneSlicingArgument: false) @cost(weight: "10")
   allOpticalData("Returns the elements in the list that come after the specified cursor." after: String "Returns the elements in the list that come before the specified cursor." before: String "Returns the first _n_ elements from the list." first: Int "Returns the last _n_ elements from the list." last: Int locale: Locale order: [OpticalDataSortInput!] @cost(weight: "10") where: OpticalDataPropositionInput @cost(weight: "10")): OpticalDataConnection @listSize(assumedSize: 100, slicingArguments: [ "first", "last" ], slicingArgumentDefaultValue: 100, sizedFields: [ "edges", "nodes" ], requireOneSlicingArgument: false) @cost(weight: "10")
   allPendingCalorimetricData("Returns the elements in the list that come after the specified cursor." after: String "Returns the elements in the list that come before the specified cursor." before: String "Returns the first _n_ elements from the list." first: Int "Returns the last _n_ elements from the list." last: Int locale: Locale order: [CalorimetricDataSortInput!] @cost(weight: "10") where: CalorimetricDataPropositionInput @cost(weight: "10")): CalorimetricDataConnection @listSize(assumedSize: 100, slicingArguments: [ "first", "last" ], slicingArgumentDefaultValue: 100, sizedFields: [ "edges", "nodes" ], requireOneSlicingArgument: false) @cost(weight: "10")
   allPendingGeometricData("Returns the elements in the list that come after the specified cursor." after: String "Returns the elements in the list that come before the specified cursor." before: String "Returns the first _n_ elements from the list." first: Int "Returns the last _n_ elements from the list." last: Int locale: Locale order: [GeometricDataSortInput!] @cost(weight: "10") where: GeometricDataPropositionInput @cost(weight: "10")): GeometricDataConnection @listSize(assumedSize: 100, slicingArguments: [ "first", "last" ], slicingArgumentDefaultValue: 100, sizedFields: [ "edges", "nodes" ], requireOneSlicingArgument: false) @cost(weight: "10")
   allPendingHygrothermalData("Returns the elements in the list that come after the specified cursor." after: String "Returns the elements in the list that come before the specified cursor." before: String "Returns the first _n_ elements from the list." first: Int "Returns the last _n_ elements from the list." last: Int locale: Locale order: [HygrothermalDataSortInput!] @cost(weight: "10") where: HygrothermalDataPropositionInput @cost(weight: "10")): HygrothermalDataConnection @listSize(assumedSize: 100, slicingArguments: [ "first", "last" ], slicingArgumentDefaultValue: 100, sizedFields: [ "edges", "nodes" ], requireOneSlicingArgument: false) @cost(weight: "10")
+  allPendingLifeCycleData("Returns the elements in the list that come after the specified cursor." after: String "Returns the elements in the list that come before the specified cursor." before: String "Returns the first _n_ elements from the list." first: Int "Returns the last _n_ elements from the list." last: Int locale: Locale order: [LifeCycleDataSortInput!] @cost(weight: "10") where: LifeCycleDataPropositionInput @cost(weight: "10")): LifeCycleDataConnection @listSize(assumedSize: 100, slicingArguments: [ "first", "last" ], slicingArgumentDefaultValue: 100, sizedFields: [ "edges", "nodes" ], requireOneSlicingArgument: false) @cost(weight: "10")
   allPendingOpticalData("Returns the elements in the list that come after the specified cursor." after: String "Returns the elements in the list that come before the specified cursor." before: String "Returns the first _n_ elements from the list." first: Int "Returns the last _n_ elements from the list." last: Int locale: Locale order: [OpticalDataSortInput!] @cost(weight: "10") where: OpticalDataPropositionInput @cost(weight: "10")): OpticalDataConnection @listSize(assumedSize: 100, slicingArguments: [ "first", "last" ], slicingArgumentDefaultValue: 100, sizedFields: [ "edges", "nodes" ], requireOneSlicingArgument: false) @cost(weight: "10")
   allPendingPhotovoltaicData("Returns the elements in the list that come after the specified cursor." after: String "Returns the elements in the list that come before the specified cursor." before: String "Returns the first _n_ elements from the list." first: Int "Returns the last _n_ elements from the list." last: Int locale: Locale order: [PhotovoltaicDataSortInput!] @cost(weight: "10") where: PhotovoltaicDataPropositionInput @cost(weight: "10")): PhotovoltaicDataConnection @listSize(assumedSize: 100, slicingArguments: [ "first", "last" ], slicingArgumentDefaultValue: 100, sizedFields: [ "edges", "nodes" ], requireOneSlicingArgument: false) @cost(weight: "10")
   allPhotovoltaicData("Returns the elements in the list that come after the specified cursor." after: String "Returns the elements in the list that come before the specified cursor." before: String "Returns the first _n_ elements from the list." first: Int "Returns the last _n_ elements from the list." last: Int locale: Locale order: [PhotovoltaicDataSortInput!] @cost(weight: "10") where: PhotovoltaicDataPropositionInput @cost(weight: "10")): PhotovoltaicDataConnection @listSize(assumedSize: 100, slicingArguments: [ "first", "last" ], slicingArgumentDefaultValue: 100, sizedFields: [ "edges", "nodes" ], requireOneSlicingArgument: false) @cost(weight: "10")
@@ -681,9 +738,11 @@ type Query {
   hasCalorimetricData(locale: Locale where: CalorimetricDataPropositionInput @cost(weight: "10")): Boolean! @cost(weight: "10")
   hasGeometricData(locale: Locale where: GeometricDataPropositionInput @cost(weight: "10")): Boolean! @cost(weight: "10")
   hasHygrothermalData(locale: Locale where: HygrothermalDataPropositionInput @cost(weight: "10")): Boolean! @cost(weight: "10")
+  hasLifeCycleData(locale: Locale where: LifeCycleDataPropositionInput @cost(weight: "10")): Boolean! @cost(weight: "10")
   hasOpticalData(locale: Locale where: OpticalDataPropositionInput @cost(weight: "10")): Boolean! @cost(weight: "10")
   hasPhotovoltaicData(locale: Locale where: PhotovoltaicDataPropositionInput @cost(weight: "10")): Boolean! @cost(weight: "10")
   hygrothermalData(id: Uuid! locale: Locale): HygrothermalData @cost(weight: "10")
+  lifeCycleData(id: Uuid! locale: Locale): LifeCycleData @cost(weight: "10")
   "Fetches an object given its ID."
   node("ID of the object." id: ID!): Node @cost(weight: "10")
   "Lookup nodes by a list of IDs."
@@ -1048,6 +1107,18 @@ input CreateHygrothermalDataInput {
   warnings: [String!]!
 }
 
+input CreateLifeCycleDataInput {
+  appliedMethod: AppliedMethodInput!
+  componentId: Uuid!
+  createdAt: DateTime!
+  creatorId: Uuid!
+  description: String
+  locale: Locale!
+  name: String
+  rootResource: RootGetHttpsResourceInput!
+  warnings: [String!]!
+}
+
 input CreateOpticalDataInput {
   appliedMethod: AppliedMethodInput!
   cielabColors: [CielabColorInput!]!
@@ -1334,6 +1405,7 @@ input GetHttpsResourcePropositionInput {
   calorimetricData: CalorimetricDataPropositionInput
   geometricData: GeometricDataPropositionInput
   hygrothermalData: HygrothermalDataPropositionInput
+  lifeCycleData: LifeCycleDataPropositionInput
   opticalData: OpticalDataPropositionInput
   photovoltaicData: PhotovoltaicDataPropositionInput
 }
@@ -1434,6 +1506,34 @@ input JsonValueKindPropositionInput {
 input KeyValuePairOfGuidAndNullableOfUInt32Input {
   key: Uuid!
   value: NonNegativeInt
+}
+
+input LifeCycleDataPropositionInput {
+  and: [LifeCycleDataPropositionInput!]
+  or: [LifeCycleDataPropositionInput!]
+  id: UuidPropositionInput
+  userId: UuidPropositionInput
+  locale: StringPropositionInput
+  name: StringPropositionInput
+  description: StringPropositionInput
+  componentId: UuidPropositionInput
+  creatorId: UuidPropositionInput
+  createdAt: OffsetDateTimePropositionInput
+  appliedMethod: AppliedMethodPropositionInput
+  approvals: FilterInputTypeOfDataApprovalsPropositionInput
+  resources: FilterInputTypeOfGetHttpsResourcesPropositionInput
+  warnings: StringsPropositionInput
+}
+
+input LifeCycleDataSortInput {
+  id: SortEnumType @cost(weight: "10")
+  locale: SortEnumType @cost(weight: "10")
+  name: SortEnumType @cost(weight: "10")
+  description: SortEnumType @cost(weight: "10")
+  componentId: SortEnumType @cost(weight: "10")
+  creatorId: SortEnumType @cost(weight: "10")
+  createdAt: SortEnumType @cost(weight: "10")
+  appliedMethod: AppliedMethodSortInput @cost(weight: "10")
 }
 
 input LocalDatePropositionInput {
@@ -1747,6 +1847,7 @@ input RecomputeGetHttpsResourceHashValuesPropositionInput {
   calorimetricData: CalorimetricDataPropositionInput
   geometricData: GeometricDataPropositionInput
   hygrothermalData: HygrothermalDataPropositionInput
+  lifeCycleData: LifeCycleDataPropositionInput
   opticalData: OpticalDataPropositionInput
   photovoltaicData: PhotovoltaicDataPropositionInput
 }
@@ -2142,6 +2243,20 @@ enum CreateHygrothermalDataErrorCode {
   CREATING_RESPONSE_APPROVAL_FAILED
 }
 
+enum CreateLifeCycleDataErrorCode {
+  UNKNOWN
+  UNAUTHORIZED
+  UNAUTHENTICATED
+  UNKNOWN_COMPONENT
+  ILLEGAL_CREATED_AT
+  UNKNOWN_CREATOR
+  UNKNOWN_APPLIED_METHOD
+  UNKNOWN_DATABASE
+  UNKNOWN_DATA
+  UNKNOWN_DATA_FORMAT
+  CREATING_RESPONSE_APPROVAL_FAILED
+}
+
 enum CreateOpticalDataErrorCode {
   UNKNOWN
   UNAUTHORIZED
@@ -2182,6 +2297,7 @@ enum DataKind {
   CALORIMETRIC_DATA
   GEOMETRIC_DATA
   HYGROTHERMAL_DATA
+  LIFE_CYCLE_DATA
   OPTICAL_DATA
   PHOTOVOLTAIC_DATA
 }

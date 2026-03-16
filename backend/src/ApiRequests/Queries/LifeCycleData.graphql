@@ -1,0 +1,5 @@
+query LifeCycleData($id: Uuid!) {
+  lifeCycleData(id: $id) {
+    ...LifeCycleDataFields
+  }
+}

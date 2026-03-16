@@ -1,4 +1,4 @@
-using Database.Data;
+﻿using Database.Data;
 using Database.GraphQl.Entities;
 using HotChocolate.Data.Filters;
 
@@ -23,6 +23,7 @@ public class GetHttpsResourceFilterType
         descriptor.Field(x => x.CalorimetricData);
         descriptor.Field(x => x.GeometricData);
         descriptor.Field(x => x.HygrothermalData);
+        descriptor.Field(x => x.LifeCycleData);
         descriptor.Field(x => x.OpticalData);
         descriptor.Field(x => x.PhotovoltaicData);
     }

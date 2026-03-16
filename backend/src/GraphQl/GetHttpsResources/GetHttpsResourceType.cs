@@ -1,4 +1,4 @@
-using Database.Data;
+﻿using Database.Data;
 using HotChocolate.Types;
 
 namespace Database.GraphQl.GetHttpsResources;
@@ -42,10 +42,22 @@ public sealed class GetHttpsResourceType
             .Field(x => x.CalorimetricData)
             .Ignore();
         descriptor
+            .Field(x => x.GeometricDataId)
+            .Ignore();
+        descriptor
+            .Field(x => x.GeometricData)
+            .Ignore();
+        descriptor
             .Field(x => x.HygrothermalDataId)
             .Ignore();
         descriptor
             .Field(x => x.HygrothermalData)
+            .Ignore();
+        descriptor
+            .Field(x => x.LifeCycleDataId)
+            .Ignore();
+        descriptor
+            .Field(x => x.LifeCycleData)
             .Ignore();
         descriptor
             .Field(x => x.OpticalDataId)
@@ -60,14 +72,8 @@ public sealed class GetHttpsResourceType
             .Field(x => x.PhotovoltaicData)
             .Ignore();
         descriptor
-            .Field(x => x.GeometricDataId)
-            .Ignore();
-        descriptor
-            .Field(x => x.GeometricData)
-            .Ignore();
-        descriptor
             .Field(x => x.Data)
             .ResolveWith<GetHttpsResourceResolvers>(t =>
-                t.GetData(default!, default!, default!, default!, default!, default!, default!));
+                t.GetData(default!, default!, default!, default!, default!, default!, default!, default!));
     }
 }

@@ -1,8 +1,6 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Database.Authorization;
@@ -10,7 +8,6 @@ using Database.Data;
 using Database.Enumerations;
 using Database.Extensions;
 using HotChocolate.Types;
-using Microsoft.AspNetCore.Mvc;
 
 namespace Database.GraphQl.DataX;
 
@@ -119,6 +116,9 @@ public sealed class DeleteDataMutation
                 break;
             case HygrothermalData hygrothermalData:
                 context.HygrothermalData.Remove(hygrothermalData);
+                break;
+            case LifeCycleData lifeCycleData:
+                context.LifeCycleData.Remove(lifeCycleData);
                 break;
             case PhotovoltaicData photovoltaicData:
                 context.PhotovoltaicData.Remove(photovoltaicData);

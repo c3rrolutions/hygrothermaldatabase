@@ -7,86 +7,90 @@ import paths from "../paths";
 import { useCookies } from "react-cookie";
 
 const navItems = [
-  {
-    path: paths.home,
-    label: "Home",
-  },
-  {
-    path: paths.calorimetricData,
-    label: "Calorimetric Data",
-  },
-  {
-    path: paths.geometricData,
-    label: "Geometric Data",
-  },
-  {
-    path: paths.hygrothermalData,
-    label: "Hygrothermal Data",
-  },
-  {
-    path: paths.opticalData,
-    label: "Optical Data",
-  },
-  {
-    path: paths.photovoltaicData,
-    label: "Photovoltaic Data",
-  },
-  {
-    path: paths.database,
-    label: "Database",
-  },
+	{
+		path: paths.home,
+		label: "Home",
+	},
+	{
+		path: paths.calorimetricData,
+		label: "Calorimetric Data",
+	},
+	{
+		path: paths.geometricData,
+		label: "Geometric Data",
+	},
+	{
+		path: paths.hygrothermalData,
+		label: "Hygrothermal Data",
+	},
+	{
+		path: paths.lifeCycleData,
+		label: "Life-Cycle Data",
+	},
+	{
+		path: paths.opticalData,
+		label: "Optical Data",
+	},
+	{
+		path: paths.photovoltaicData,
+		label: "Photovoltaic Data",
+	},
+	{
+		path: paths.database,
+		label: "Database",
+	},
 ];
 
 export type LayoutProps = {
-  children?: ReactNode;
+	children?: ReactNode;
 };
 
 const cookieConsentName = "consent";
 const cookieConsentValue = "yes";
 
 export default function Layout({ children }: LayoutProps) {
-  const appTitle = "TestLab Solar Façades";
+	const appTitle = "TestLab Solar Façades";
 
-  const [cookies, setCookie] = useCookies([cookieConsentName]);
-  const shouldShowCookieConsent =
-    cookies[cookieConsentName] != cookieConsentValue;
-  const { modal } = App.useApp();
+	const [cookies, setCookie] = useCookies([cookieConsentName]);
+	const shouldShowCookieConsent =
+		cookies[cookieConsentName] != cookieConsentValue;
+	const { modal } = App.useApp();
 
-  useEffect(() => {
-    if (shouldShowCookieConsent) {
-      modal.info({
-        title: "Cookie Consent",
-        content: (
-          <Typography.Paragraph>
-            This website employs cookies to make it work securely. As these
-            cookies are essential you need to agree to their usage to use this
-            website.
-          </Typography.Paragraph>
-        ),
-        okText: "I agree",
-        onOk: () => {
-          setCookie(cookieConsentName, cookieConsentValue);
-        },
-      });
-    }
-  }, [shouldShowCookieConsent, setCookie]);
+	useEffect(() => {
+		if (shouldShowCookieConsent) {
+			modal.info({
+				title: "Cookie Consent",
+				content: (
+					<Typography.Paragraph>
+						This website employs cookies to make it work securely. As these
+						cookies are essential you need to agree to their usage to use this
+						website.
+					</Typography.Paragraph>
+				),
+				okText: "I agree",
+				onOk: () => {
+					setCookie(cookieConsentName, cookieConsentValue);
+				},
+			});
+		}
+	}, [shouldShowCookieConsent, setCookie]);
 
-  return (
-    <AntLayout>
-      <Head>
-        <title>{appTitle}</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta charSet="utf-8" />
-      </Head>
-      <AntLayout.Header>
-        <NavBar items={navItems} />
-      </AntLayout.Header>
-      <AntLayout.Content style={{ padding: "50px" }}>
-        {children}
-      </AntLayout.Content>
-      <AntLayout.Footer>
-        <Footer />
-      </AntLayout.Footer>
-    </AntLayout>
-  );
+	return (
+		<AntLayout>
+			<Head>
+				<title>{appTitle}</title>
+				<meta name="viewport" content="width=device-width, initial-scale=1" />
+				<meta charSet="utf-8" />
+			</Head>
+			<AntLayout.Header>
+				<NavBar items={navItems} />
+			</AntLayout.Header>
+			<AntLayout.Content style={{ padding: "50px" }}>
+				{children}
+			</AntLayout.Content>
+			<AntLayout.Footer>
+				<Footer />
+			</AntLayout.Footer>
+		</AntLayout>
+	);
 }

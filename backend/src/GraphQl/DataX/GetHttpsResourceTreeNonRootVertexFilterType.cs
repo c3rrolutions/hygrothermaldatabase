@@ -1,4 +1,4 @@
-using Database.Data;
+﻿using Database.Data;
 using Database.GraphQl.GetHttpsResources;
 using HotChocolate.Data.Filters;
 
@@ -16,6 +16,7 @@ public sealed class GetHttpsResourceTreeNonRootVertexFilterType
         descriptor.Field(x => x.CalorimetricData).Ignore();
         descriptor.Field(x => x.GeometricData).Ignore();
         descriptor.Field(x => x.HygrothermalData).Ignore();
+        descriptor.Field(x => x.LifeCycleData).Ignore();
         descriptor.Field(x => x.OpticalData).Ignore();
         descriptor.Field(x => x.PhotovoltaicData).Ignore();
     }

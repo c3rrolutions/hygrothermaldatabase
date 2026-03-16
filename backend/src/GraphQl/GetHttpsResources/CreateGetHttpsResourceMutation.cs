@@ -38,6 +38,7 @@ public sealed record CreateGetHttpsResourceInput(
             DataKind == DataKind.CALORIMETRIC_DATA ? DataId : null,
             DataKind == DataKind.GEOMETRIC_DATA ? DataId : null,
             DataKind == DataKind.HYGROTHERMAL_DATA ? DataId : null,
+            DataKind == DataKind.LIFE_CYCLE_DATA ? DataId : null,
             DataKind == DataKind.OPTICAL_DATA ? DataId : null,
             DataKind == DataKind.PHOTOVOLTAIC_DATA ? DataId : null,
             ParentId,

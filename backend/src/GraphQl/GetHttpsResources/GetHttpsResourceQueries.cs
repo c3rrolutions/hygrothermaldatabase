@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -30,6 +30,7 @@ public sealed class GetHttpsResourceQueries
             .Where(_ => _.CalorimetricData == null || _.CalorimetricData.PublishingState != PublishingState.PENDING)
             .Where(_ => _.GeometricData == null || _.GeometricData.PublishingState != PublishingState.PENDING)
             .Where(_ => _.HygrothermalData == null || _.HygrothermalData.PublishingState != PublishingState.PENDING)
+            .Where(_ => _.LifeCycleData == null || _.LifeCycleData.PublishingState != PublishingState.PENDING)
             .Where(_ => _.OpticalData == null || _.OpticalData.PublishingState != PublishingState.PENDING)
             .Where(_ => _.PhotovoltaicData == null || _.PhotovoltaicData.PublishingState != PublishingState.PENDING);
     }
@@ -54,6 +55,7 @@ public sealed class GetHttpsResourceQueries
             .Where(_ => _.CalorimetricData == null || _.CalorimetricData.PublishingState == PublishingState.PENDING)
             .Where(_ => _.GeometricData == null || _.GeometricData.PublishingState == PublishingState.PENDING)
             .Where(_ => _.HygrothermalData == null || _.HygrothermalData.PublishingState == PublishingState.PENDING)
+            .Where(_ => _.LifeCycleData == null || _.LifeCycleData.PublishingState == PublishingState.PENDING)
             .Where(_ => _.OpticalData == null || _.OpticalData.PublishingState == PublishingState.PENDING)
             .Where(_ => _.PhotovoltaicData == null || _.PhotovoltaicData.PublishingState == PublishingState.PENDING);
     }

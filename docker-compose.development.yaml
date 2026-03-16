@@ -28,7 +28,7 @@ services:
     restart: "unless-stopped"
     healthcheck:
       # pg_isready: https://www.postgresql.org/docs/13/app-pg-isready.html
-      test: [ "CMD-SHELL", "pg_isready --username='${POSTGRES_USER:?required}'" ]
+      test: ["CMD-SHELL", "pg_isready --username='${POSTGRES_USER:?required}'"]
       interval: "30s"
       timeout: "5s"
       retries: 3
@@ -122,10 +122,14 @@ services:
     restart: "unless-stopped"
     healthcheck:
       # https://docs.microsoft.com/en-us/aspnet/core/host-and-deploy/health-checks?view=aspnetcore-5.0#docker-example
-      test: [ "CMD-SHELL", "curl --silent --fail --output /dev/null http://backend:8080/health || exit 1" ]
+      test:
+        [
+          "CMD-SHELL",
+          "curl --silent --fail --output /dev/null http://backend:8080/health || exit 1",
+        ]
       interval: "30s"
       timeout: "5s"
-      retries: 3
+      retries: 6
       start_period: "60s"
       start_interval: "5s"
     labels:
@@ -164,10 +168,14 @@ services:
       - "dev"
     restart: "unless-stopped"
     healthcheck:
-      test: [ "CMD-SHELL", "wget --quiet --output-document /dev/null http://frontend:8080 || exit 1" ]
+      test:
+        [
+          "CMD-SHELL",
+          "wget --quiet --output-document /dev/null http://frontend:8080 || exit 1",
+        ]
       interval: "30s"
       timeout: "5s"
-      retries: 3
+      retries: 6
       start_period: "60s"
       start_interval: "5s"
     labels:
@@ -196,7 +204,7 @@ services:
       - "daemon off;"
     restart: "unless-stopped"
     healthcheck:
-      test: [ "CMD-SHELL", "service nginx status || exit 1" ]
+      test: ["CMD-SHELL", "service nginx status || exit 1"]
       interval: "30s"
       timeout: "5s"
       retries: 3

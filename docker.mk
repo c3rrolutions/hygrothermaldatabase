@@ -184,6 +184,7 @@ bootstrap : ## Run a one-time command in a fresh bootstrap service or enter a sh
 		--build-arg USER_ID=$(shell id --user) \
 		backend
 	docker compose run \
+		--volume .:/app \
 		--rm \
 		backend \
 		${COMMAND}

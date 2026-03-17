@@ -36,6 +36,7 @@ services:
       start_interval: "5s"
     labels:
       autoheal: "true"
+    pull_policy: "always"
 
   backend:
     build:
@@ -138,6 +139,7 @@ services:
       resources:
         limits:
           cpus: "0.8"
+    pull_policy: "never"
     stdin_open: true
 
   frontend:
@@ -180,6 +182,7 @@ services:
       start_interval: "5s"
     labels:
       autoheal: "true"
+    pull_policy: "never"
 
   nginx:
     image: "nginx:1.29-trixie-otel"
@@ -212,6 +215,7 @@ services:
       start_interval: "5s"
     labels:
       autoheal: "true"
+    pull_policy: "always"
 
 volumes:
   data:

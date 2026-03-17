@@ -103,6 +103,7 @@ migrate : ## Migrate database  by running the idempotent SQL script ./backend/sr
 # Command `pg_dump`: https://www.postgresql.org/docs/current/app-pgdump.html
 # Backup files with `tar` and `gzip` as suggested in https://docs.docker.com/storage/volumes/#backup-restore-or-migrate-data-volumes
 # We could have used `docker cp` as explained in https://docs.docker.com/engine/reference/commandline/cp/
+backup : DIR = ./backup
 backup : ## Backup database and related data to directory with absolute path `${DIR}`, for example, `./database.mk backup DIR=/app/data/backups/$(date +"%Y-%m-%d_%H_%M_%S")`
 	mkdir --parents "${DIR}"
 	docker compose up \
@@ -136,6 +137,7 @@ backup : ## Backup database and related data to directory with absolute path `${
 			./files
 .PHONY : backup
 
+restore : DIR = ./backup
 restore : ## Restore database and related data from directory with absolute path `${DIR}` (dropping and recreating the database and clearing related files before to start cleanly), for example, `./database.mk restore DIR=/app/data/backups/2021-04-22_15_43_35`
 	docker compose stop \
 		backend

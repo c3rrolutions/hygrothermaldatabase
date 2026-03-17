@@ -285,6 +285,7 @@ public sealed class Startup(
 
     public static void ConfigureApiRequests(IServiceCollection services)
     {
+        services.AddScoped<GetUserInfo>();
         services.AddScoped<IsGnuPgFingerprintValid>();
         services.AddScoped<QueryCurrentUserOrInstitution>();
         services.AddScoped<QueryData>();

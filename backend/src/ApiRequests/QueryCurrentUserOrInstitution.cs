@@ -2,21 +2,39 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Database.Logging;
 using Database.Services;
 using GraphQL;
+using Microsoft.Extensions.Logging;
 
 namespace Database.ApiRequests;
 
+public static partial class Log
+{
+    [LoggerMessage(
+        Level = LogLevel.Error,
+        Message = "Response contains errors.")
+    ]
+    internal static partial void ResponseErrors(
+        this ILogger<QueryCurrentUserOrInstitution> logger,
+        [TagProvider(typeof(GraphQlErrorsTagProvider), nameof(GraphQlErrorsTagProvider.RecordTags))] GraphQLError[] errors
+    );
+}
+
 /// <summary>
-/// Class to request user info from Metabase API.
+/// Request current user or institution from metabase.
 /// </summary>
-public sealed class QueryCurrentUserOrInstitution
+public sealed class QueryCurrentUserOrInstitution(
+    AppSettings appSettings,
+    ApiRequestService apiRequestService,
+    ILogger<QueryCurrentUserOrInstitution> logger
+)
 {
     private const string QueryFileName = "CurrentUserOrInstitution.graphql";
 
     public static readonly CurrentUserOrInstitution Empty = new(null, null);
 
-    public static Uri GetGraphQlEndpoint(AppSettings appSettings) =>
+    public Uri GetGraphQlEndpoint =>
         appSettings.MetabaseGraphQlEndpoint;
 
     public sealed record CurrentUser(
@@ -95,17 +113,12 @@ public sealed class QueryCurrentUserOrInstitution
         CurrentInstitution? CurrentInstitution
     );
 
-    /// <summary>
-    /// Request current user from Metabase.
-    /// </summary>
-    public static async Task<CurrentUserOrInstitution> Do(
-        AppSettings appSettings,
-        ApiRequestService apiRequestService,
+    public async Task<CurrentUserOrInstitution> Do(
         CancellationToken cancellationToken
     )
     {
-        return (await apiRequestService.QueryGraphQl<CurrentUserOrInstitution>(
-            GetGraphQlEndpoint(appSettings),
+        var response = (await apiRequestService.QueryGraphQl<CurrentUserOrInstitution>(
+            GetGraphQlEndpoint,
             new GraphQLRequest(
                 await GraphQlQueryHelpers.Construct(QueryFileName),
                 new
@@ -115,7 +128,11 @@ public sealed class QueryCurrentUserOrInstitution
                 "CurrentUserOrInstitution"
             ),
             cancellationToken
-        ))
-        .Data;
+        ));
+        if (response.Errors is not null)
+        {
+            logger.ResponseErrors(response.Errors);
+        }
+        return response.Data;
     }
 }

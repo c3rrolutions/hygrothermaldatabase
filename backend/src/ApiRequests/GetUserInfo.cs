@@ -1,16 +1,17 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Database.Services;
-using Microsoft.AspNetCore.Http;
 
 namespace Database.ApiRequests;
 
-public sealed class GetUserInfo
+public sealed class GetUserInfo(
+    AppSettings appSettings,
+    ApiRequestService apiRequestService
+)
 {
-    public static Uri GetEndpoint(AppSettings appSettings) =>
+    public Uri GetEndpoint =>
         new UriBuilder(appSettings.MetabaseHostUri) { Path = "/connect/userinfo" }.Uri;
 
     public sealed record UserInfo(
@@ -32,13 +33,11 @@ public sealed class GetUserInfo
     /// <summary>
     /// Request user info from Metabase.
     /// </summary>
-    public static Task<UserInfo> Do(
-        AppSettings appSettings,
-        ApiRequestService apiRequestService,
+    public Task<UserInfo> Do(
         CancellationToken cancellationToken)
     {
         return apiRequestService.PerformHttpGetRequest<UserInfo>(
-            GetEndpoint(appSettings),
+            GetEndpoint,
             cancellationToken
         );
     }

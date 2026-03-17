@@ -1,18 +1,36 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
+using Database.Logging;
 using Database.Services;
 using GraphQL;
+using Microsoft.Extensions.Logging;
 
 namespace Database.ApiRequests;
 
-public sealed class UpdateDatabase
+public static partial class Log
+{
+    [LoggerMessage(
+        Level = LogLevel.Error,
+        Message = "Response contains errors.")
+    ]
+    internal static partial void ResponseErrors(
+        this ILogger<UpdateDatabase> logger,
+        [TagProvider(typeof(GraphQlErrorsTagProvider), nameof(GraphQlErrorsTagProvider.RecordTags))] GraphQLError[] errors
+    );
+}
+
+public sealed class UpdateDatabase(
+    AppSettings appSettings,
+    ApiRequestService apiRequestService,
+    ILogger<UpdateDatabase> logger
+)
 {
     private const string UpdateDatabaseFileName = "UpdateDatabase.graphql";
 
-    public static Uri GetGraphQlEndpoint(AppSettings appSettings) =>
+    public Uri GetGraphQlEndpoint =>
         appSettings.MetabaseGraphQlEndpoint;
 
     public sealed record UpdateDatabaseInput(
@@ -43,15 +61,13 @@ public sealed class UpdateDatabase
 
     private sealed record UpdateDatabaseData(UpdateDatabasePayload? UpdateDatabase);
 
-    public static async Task<UpdateDatabasePayload?> Do(
+    public async Task<UpdateDatabasePayload?> Do(
         UpdateDatabaseInput updateDatabaseInput,
-        AppSettings appSettings,
-        ApiRequestService apiRequestService,
         CancellationToken cancellationToken
         )
     {
-        return (await apiRequestService.QueryGraphQl<UpdateDatabaseData>(
-            GetGraphQlEndpoint(appSettings),
+        var response = (await apiRequestService.QueryGraphQl<UpdateDatabaseData>(
+            GetGraphQlEndpoint,
             new GraphQLRequest(
                 await GraphQlQueryHelpers.Construct(
                     UpdateDatabaseFileName
@@ -63,8 +79,11 @@ public sealed class UpdateDatabase
                 "UpdateDatabase"
             ),
             cancellationToken
-        ))
-        .Data
-        .UpdateDatabase;
+        ));
+        if (response.Errors is not null)
+        {
+            logger.ResponseErrors(response.Errors);
+        }
+        return response.Data.UpdateDatabase;
     }
 }

@@ -1,11 +1,11 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Database.ApiRequests;
 using Database.Authorization;
 using Database.Data;
 using Database.Enumerations;
@@ -102,7 +102,7 @@ public sealed class AddDataApprovalMutation
         AddDataApprovalInput input,
         ApplicationDbContext context,
         CommonAuthorization authorization,
-        DataApprovalService dataApprovalService,
+        IsGnuPgFingerprintValid isGnuPgFingerprintValid,
         ResponseApprovalService responseApprovalService,
         SigningService signingService,
         ApiRequestService apiRequestService,
@@ -123,7 +123,7 @@ public sealed class AddDataApprovalMutation
             return authorizeErrorPayload;
         }
         var errors = new List<AddDataApprovalError>();
-        if (!await dataApprovalService.IsGnuPgFingerprintValid(
+        if (!await isGnuPgFingerprintValid.Do(
             input.KeyFingerprint,
             input.ApproverId,
             input.Timestamp,

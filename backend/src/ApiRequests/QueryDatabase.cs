@@ -1,16 +1,34 @@
-using System;
+﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Database.Logging;
 using Database.Services;
 using GraphQL;
+using Microsoft.Extensions.Logging;
 
 namespace Database.ApiRequests;
 
-public sealed class QueryDatabase
+public static partial class Log
+{
+    [LoggerMessage(
+        Level = LogLevel.Error,
+        Message = "Response contains errors.")
+    ]
+    internal static partial void ResponseErrors(
+        this ILogger<QueryDatabase> logger,
+        [TagProvider(typeof(GraphQlErrorsTagProvider), nameof(GraphQlErrorsTagProvider.RecordTags))] GraphQLError[] errors
+    );
+}
+
+public sealed class QueryDatabase(
+    AppSettings appSettings,
+    ApiRequestService apiRequestService,
+    ILogger<QueryDatabase> logger
+)
 {
     private const string QueryFileName = "Database.graphql";
 
-    public static Uri GetGraphQlEndpoint(AppSettings appSettings) =>
+    public Uri GetGraphQlEndpoint =>
         appSettings.MetabaseGraphQlEndpoint;
 
     public sealed record Database(
@@ -41,15 +59,13 @@ public sealed class QueryDatabase
 
     private sealed record DatabaseData(Database? Database);
 
-    public static async Task<Database?> Do(
+    public async Task<Database?> Do(
         Guid databaseId,
-        AppSettings appSettings,
-        ApiRequestService apiRequestService,
         CancellationToken cancellationToken
     )
     {
-        return (await apiRequestService.QueryGraphQl<DatabaseData>(
-            GetGraphQlEndpoint(appSettings),
+        var response = (await apiRequestService.QueryGraphQl<DatabaseData>(
+            GetGraphQlEndpoint,
             new GraphQLRequest(
                 await GraphQlQueryHelpers.Construct(QueryFileName),
                 new
@@ -59,6 +75,11 @@ public sealed class QueryDatabase
                 "Database"
             ),
             cancellationToken
-        )).Data.Database;
+        ));
+        if (response.Errors is not null)
+        {
+            logger.ResponseErrors(response.Errors);
+        }
+        return response.Data.Database; ;
     }
 }

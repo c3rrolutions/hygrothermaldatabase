@@ -1,10 +1,9 @@
-using System.Linq;
+﻿using System.Linq;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using Database.ApiRequests;
 using Database.Data;
-using Database.Services;
 using HotChocolate.Resolvers;
 using HotChocolate.Types;
 using Microsoft.EntityFrameworkCore;
@@ -35,20 +34,17 @@ public sealed class UserQueries
     }
 
     public Task<UserInfo> GetCurrentUserInfoAsync(
-        AppSettings appSettings,
-        ApiRequestService apiRequestService,
+        GetUserInfo getUserInfo,
         IResolverContext resolverContext,
         CancellationToken cancellationToken
     )
     {
         return GraphQlRequestHelper.TransformExceptionsAsync(
-            () => GetUserInfo.Do(
-                appSettings,
-                apiRequestService,
+            () => getUserInfo.Do(
                 cancellationToken
             ),
             resolverContext,
-            GetUserInfo.GetEndpoint(appSettings)
+            getUserInfo.GetEndpoint
         );
     }
 }

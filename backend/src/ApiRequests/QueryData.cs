@@ -1,23 +1,39 @@
-using System;
+﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Database.Logging;
 using Database.Services;
 using GraphQL;
+using Microsoft.Extensions.Logging;
 
 namespace Database.ApiRequests;
 
-public sealed class QueryData
+public static partial class Log
 {
-    public static async Task<GraphQLResponse<TGraphQlData>> Do<TGraphQlData>(
+    [LoggerMessage(
+        Level = LogLevel.Error,
+        Message = "Response contains errors.")
+    ]
+    internal static partial void ResponseErrors(
+        this ILogger<QueryData> logger,
+        [TagProvider(typeof(GraphQlErrorsTagProvider), nameof(GraphQlErrorsTagProvider.RecordTags))] GraphQLError[] errors
+    );
+}
+
+public sealed class QueryData(
+    ApiRequestService apiRequestService,
+    ILogger<QueryData> logger
+)
+{
+    public async Task<GraphQLResponse<TGraphQlData>> Do<TGraphQlData>(
         Uri databaseUrl,
         Guid dataId,
         string query,
-        ApiRequestService apiRequestService,
         CancellationToken cancellationToken)
 
         where TGraphQlData : class
     {
-        return await apiRequestService.QueryGraphQl<TGraphQlData>(
+        var response = await apiRequestService.QueryGraphQl<TGraphQlData>(
             databaseUrl,
             new GraphQLRequest(
                 query,
@@ -25,5 +41,10 @@ public sealed class QueryData
             ),
             cancellationToken
         );
+        if (response.Errors is not null)
+        {
+            logger.ResponseErrors(response.Errors);
+        }
+        return response;
     }
 }

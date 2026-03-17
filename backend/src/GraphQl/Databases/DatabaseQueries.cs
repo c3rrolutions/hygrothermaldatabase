@@ -1,7 +1,6 @@
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 using Database.ApiRequests;
-using Database.Services;
 using HotChocolate;
 using HotChocolate.Resolvers;
 using HotChocolate.Types;
@@ -13,20 +12,18 @@ public sealed class DatabaseQueries
 {
     public async Task<QueryDatabase.Database> GetDatabaseAsync(
         AppSettings appSettings,
-        ApiRequestService apiRequestService,
+        QueryDatabase queryDatabase,
         IResolverContext resolverContext,
         CancellationToken cancellationToken
     )
     {
         var database = await GraphQlRequestHelper.TransformExceptionsAsync(
-            () => QueryDatabase.Do(
+            () => queryDatabase.Do(
                 appSettings.DatabaseId,
-                appSettings,
-                apiRequestService,
                 cancellationToken
             ),
             resolverContext,
-            QueryDatabase.GetGraphQlEndpoint(appSettings)
+            queryDatabase.GetGraphQlEndpoint
         );
         if (database is null)
         {

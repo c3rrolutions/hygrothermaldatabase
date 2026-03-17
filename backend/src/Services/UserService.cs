@@ -12,8 +12,7 @@ namespace Database.Services;
 /// Service to fetch current user or institution from the metabase or the local cache
 /// </summary>
 public sealed class UserService(
-    AppSettings appSettings,
-    ApiRequestService apiRequestService,
+    QueryCurrentUserOrInstitution queryCurrentUserOrInstitution,
     IHttpContextAccessor httpContextAccessor,
     CacheService cacheService
 )
@@ -61,9 +60,7 @@ public sealed class UserService(
         // invalid or expired, so we cannot trust a possibly-cached result.
         if (httpContext.User is null)
         {
-            return await QueryCurrentUserOrInstitution.Do(
-                appSettings,
-                apiRequestService,
+            return await queryCurrentUserOrInstitution.Do(
                 cancellationToken
             );
         }
@@ -72,9 +69,7 @@ public sealed class UserService(
         if (!cacheService.TryGetCurrentUserOrInstitution(token, out var cachedUserOrInstitution))
         {
             // If it is not cached, fetch it ...
-            cachedUserOrInstitution = await QueryCurrentUserOrInstitution.Do(
-                appSettings,
-                apiRequestService,
+            cachedUserOrInstitution = await queryCurrentUserOrInstitution.Do(
                 cancellationToken
             );
             // ... and store it in the cache.

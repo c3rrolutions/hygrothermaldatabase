@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
@@ -96,6 +96,8 @@ public sealed class MethodQueries
         AppSettings appSettings,
         MethodFactory methodFactory,
         ApiRequestService apiRequestService,
+        QueryDatabase queryDatabase,
+        QueryData queryData,
         IResolverContext resolverContext,
         CancellationToken cancellationToken
     )
@@ -113,14 +115,12 @@ public sealed class MethodQueries
             );
         }
         var database = await GraphQlRequestHelper.TransformExceptionsAsync(
-            () => QueryDatabase.Do(
+            () => queryDatabase.Do(
                 dataReference.DatabaseId,
-                appSettings,
-                apiRequestService,
                 cancellationToken
             ),
             resolverContext,
-            QueryDatabase.GetGraphQlEndpoint(appSettings)
+            queryDatabase.GetGraphQlEndpoint
         );
         if (database is null)
         {
@@ -136,11 +136,10 @@ public sealed class MethodQueries
         var query = ConstructQuery(dataReference.DataKind);
         GraphQLResponse<DataData>? response;
         response = await GraphQlRequestHelper.TransformExceptionsAsync(
-            () => QueryData.Do<DataData>(
+            () => queryData.Do<DataData>(
                 database.Locator,
                 dataReference.DataId,
                 query,
-                apiRequestService,
                 cancellationToken
             ),
             resolverContext,

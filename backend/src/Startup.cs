@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
@@ -6,6 +6,7 @@ using System.Net.Mime;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Database.ApiRequests;
 using Database.Configuration;
 using Database.Data;
 using Database.Data.Extensions;
@@ -75,6 +76,7 @@ public sealed class Startup(
         services.AddSingleton(environment);
         // services.AddDatabaseDeveloperPageExceptionFilter();
         ConfigureCustomServices(services);
+        ConfigureApiRequests(services);
     }
 
     private static void ConfigureRequestResponseServices(IServiceCollection services)
@@ -274,12 +276,20 @@ public sealed class Startup(
     {
         services.AddScoped<AccessRightsService>();
         services.AddScoped<ApiRequestService>();
-        services.AddScoped<DataApprovalService>();
         services.AddScoped<ResponseApprovalService>();
         services.AddScoped<UserService>();
         services.AddSingleton<CacheService>();
         services.AddSingleton<MethodFactory>();
         services.AddSingleton<SigningService>();
+    }
+
+    public static void ConfigureApiRequests(IServiceCollection services)
+    {
+        services.AddScoped<IsGnuPgFingerprintValid>();
+        services.AddScoped<QueryCurrentUserOrInstitution>();
+        services.AddScoped<QueryData>();
+        services.AddScoped<QueryDatabase>();
+        services.AddScoped<UpdateDatabase>();
     }
 
     public void Configure(WebApplication app)

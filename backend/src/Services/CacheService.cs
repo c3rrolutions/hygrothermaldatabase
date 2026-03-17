@@ -3,26 +3,26 @@ using System.Diagnostics.CodeAnalysis;
 using Database.Extensions;
 using Microsoft.Extensions.Caching.Memory;
 using NodaTime;
-using static Database.ApiRequests.QueryCurrentUserOrApplication;
+using static Database.ApiRequests.QueryCurrentUserOrInstitution;
 
 namespace Database.Services;
 
 public sealed class CacheService(
-    IMemoryCache currentUserOrApplicationCache,
+    IMemoryCache currentUserOrInstitutionCache,
     IMemoryCache accessCountCache,
     IMemoryCache timePeriodCountCache)
 {
-    public CurrentUserOrApplication? SetCurrentUserOrApplication(string token, CurrentUserOrApplication cachedUserOrApplication)
+    public CurrentUserOrInstitution? SetCurrentUserOrInstitution(string token, CurrentUserOrInstitution cachedUserOrInstitution)
     {
         var cacheEntryOptions =
             new MemoryCacheEntryOptions()
             .SetSlidingExpiration(TimeSpan.FromHours(1));
-        return currentUserOrApplicationCache.Set(token, cachedUserOrApplication, cacheEntryOptions);
+        return currentUserOrInstitutionCache.Set(token, cachedUserOrInstitution, cacheEntryOptions);
     }
 
-    public bool TryGetCurrentUserOrApplication(string token, [NotNullWhen(true)] out CurrentUserOrApplication? cachedUserOrApplication)
+    public bool TryGetCurrentUserOrInstitution(string token, [NotNullWhen(true)] out CurrentUserOrInstitution? cachedUserOrInstitution)
     {
-        return currentUserOrApplicationCache.TryGetValue(token, out cachedUserOrApplication);
+        return currentUserOrInstitutionCache.TryGetValue(token, out cachedUserOrInstitution);
     }
 
     public uint GetAccessCountForUser(Guid userId)

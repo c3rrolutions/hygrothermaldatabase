@@ -115,7 +115,7 @@ public sealed class CreateCalorimetricDataMutation
                 authorization,
                 cancellationToken
             )
-            ).Failed(out var currentUserOrApplication, out var authorizeErrorPayload)
+            ).Failed(out var currentUserOrInstitution, out var authorizeErrorPayload)
         )
         {
             return authorizeErrorPayload;
@@ -144,7 +144,7 @@ public sealed class CreateCalorimetricDataMutation
         }
 
         var calorimetricData = input.ToDomainModel(
-            currentUserOrApplication.CurrentUser?.Uuid,
+            currentUserOrInstitution.CurrentUser?.Uuid,
             dataFormat.Extension
         );
         context.CalorimetricData.Add(calorimetricData);

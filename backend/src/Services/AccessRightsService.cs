@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Database.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using static Database.ApiRequests.QueryCurrentUserOrApplication;
+using static Database.ApiRequests.QueryCurrentUserOrInstitution;
 
 namespace Database.Services;
 
@@ -14,8 +14,8 @@ public static partial class Log
 {
     [LoggerMessage(
         Level = LogLevel.Information,
-        Message = "Cannot apply access rights because the user or application is unknown. The fetched user ID is {UserId} and the application ID is {ApplicationId}.")]
-    public static partial void UnknownUserOrApplication(this ILogger<AccessRightsService> logger, Guid? userId, string? applicationId);
+        Message = "Cannot apply access rights because the user or institution is unknown. The fetched user ID is {UserId} and the institution ID is {InstitutionId}.")]
+    public static partial void UnknownUserOrInstitution(this ILogger<AccessRightsService> logger, Guid? userId, string? institutionId);
 
     [LoggerMessage(
         Level = LogLevel.Debug,
@@ -48,24 +48,24 @@ public sealed class AccessRightsService(
         IReadOnlyList<Guid>? institutionIds = null;
         IReadOnlyList<InstitutionAccessRights>? institutionAccessRights = null;
 
-        var currentUserOrApplication = await userService.FetchCurrentUserOrApplicationAsync(cancellationToken);
+        var currentUserOrInstitution = await userService.FetchCurrentUserOrInstitutionAsync(cancellationToken);
         var openIdConnectClientId = userService.GetOpenIdConnectClientId();
 
-        if (currentUserOrApplication.CurrentUser is not null)
+        if (currentUserOrInstitution.CurrentUser is not null)
         {
             context = dbContextFactory.CreateDbContext();
-            alreadyAccessedByUserCount = cacheService.GetAccessCountForUser(currentUserOrApplication.CurrentUser.Uuid);
-            institutionIds = currentUserOrApplication.CurrentUser.RepresentedInstitutions.Edges.Select(e => e.Node.Uuid).ToList().AsReadOnly();
+            alreadyAccessedByUserCount = cacheService.GetAccessCountForUser(currentUserOrInstitution.CurrentUser.Uuid);
+            institutionIds = currentUserOrInstitution.CurrentUser.RepresentedInstitutions.Edges.Select(e => e.Node.Uuid).ToList().AsReadOnly();
             institutionAccessRights = await GetInstitutionAccessRightsAsync(institutionIds, context, cancellationToken);
         }
-        else if (currentUserOrApplication.CurrentApplication is not null)
+        else if (currentUserOrInstitution.CurrentInstitution is not null)
         {
             context = dbContextFactory.CreateDbContext();
-            institutionIds = [currentUserOrApplication.CurrentApplication.Owner.Node.Uuid];
+            institutionIds = [currentUserOrInstitution.CurrentInstitution.Uuid];
             institutionAccessRights = await GetInstitutionAccessRightsAsync(institutionIds, context, cancellationToken);
         }
 
-        var result = ProcessData(data, currentUserOrApplication.CurrentUser, openIdConnectClientId, institutionIds, institutionAccessRights, alreadyAccessedByUserCount, cacheService);
+        var result = ProcessData(data, currentUserOrInstitution.CurrentUser, openIdConnectClientId, institutionIds, institutionAccessRights, alreadyAccessedByUserCount, cacheService);
 
         if (context is not null)
         {

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Database.ApiRequests;
@@ -9,7 +9,7 @@ using OpenIddict.Abstractions;
 namespace Database.Services;
 
 /// <summary>
-/// Service to fetch current user or application from the metabase
+/// Service to fetch current user or institution from the metabase or the local cache
 /// </summary>
 public sealed class UserService(
     AppSettings appSettings,
@@ -26,45 +26,42 @@ public sealed class UserService(
         return httpContextAccessor.HttpContext?.User.GetClaim(OpenIddictConstants.Claims.AuthorizedParty);
     }
 
-    public async Task<T> SwitchUserOrApplicationAsync<T>(
-        Func<QueryCurrentUserOrApplication.CurrentUser?, Task<T>> handleUser,
-        Func<QueryCurrentUserOrApplication.CurrentOpenIdConnectApplication, Task<T>> handleApplication,
+    public async Task<T> SwitchUserOrInstitutionAsync<T>(
+        Func<QueryCurrentUserOrInstitution.CurrentUser?, Task<T>> handleUser,
+        Func<QueryCurrentUserOrInstitution.CurrentInstitution, Task<T>> handleInstitution,
         CancellationToken cancellationToken
     )
     {
-        var userOrApplication = await FetchCurrentUserOrApplicationAsync(cancellationToken);
-        if (userOrApplication.CurrentApplication is not null)
+        var userOrInstitution = await FetchCurrentUserOrInstitutionAsync(cancellationToken);
+        if (userOrInstitution.CurrentInstitution is not null)
         {
-            return await handleApplication(userOrApplication.CurrentApplication);
+            return await handleInstitution(userOrInstitution.CurrentInstitution);
         }
         else
         {
-            return await handleUser(userOrApplication.CurrentUser);
+            return await handleUser(userOrInstitution.CurrentUser);
         }
     }
 
-    /// <summary>
-    /// Get current user or OpenId Connect application from Metabase (or the local cache).
-    /// </summary>
-    public async Task<QueryCurrentUserOrApplication.CurrentUserOrApplication> FetchCurrentUserOrApplicationAsync(
+    public async Task<QueryCurrentUserOrInstitution.CurrentUserOrInstitution> FetchCurrentUserOrInstitutionAsync(
         CancellationToken cancellationToken
     )
     {
         var httpContext = httpContextAccessor.HttpContext;
         if (httpContext is null)
         {
-            return QueryCurrentUserOrApplication.Empty;
+            return QueryCurrentUserOrInstitution.Empty;
         }
         var token = httpContext.ExtractBearerToken();
         if (token is null)
         {
-            return QueryCurrentUserOrApplication.Empty;
+            return QueryCurrentUserOrInstitution.Empty;
         }
         // If there is no authenticated user, then the bearer token may be
         // invalid or expired, so we cannot trust a possibly-cached result.
         if (httpContext.User is null)
         {
-            return await QueryCurrentUserOrApplication.Do(
+            return await QueryCurrentUserOrInstitution.Do(
                 appSettings,
                 apiRequestService,
                 cancellationToken
@@ -72,17 +69,17 @@ public sealed class UserService(
         }
         // If there is an authenticated user, then the bearer token is valid and
         // we try to get the cached user or application.
-        if (!cacheService.TryGetCurrentUserOrApplication(token, out var cachedUserOrApplication))
+        if (!cacheService.TryGetCurrentUserOrInstitution(token, out var cachedUserOrInstitution))
         {
             // If it is not cached, fetch it ...
-            cachedUserOrApplication = await QueryCurrentUserOrApplication.Do(
+            cachedUserOrInstitution = await QueryCurrentUserOrInstitution.Do(
                 appSettings,
                 apiRequestService,
                 cancellationToken
             );
             // ... and store it in the cache.
-            cacheService.SetCurrentUserOrApplication(token, cachedUserOrApplication);
+            cacheService.SetCurrentUserOrInstitution(token, cachedUserOrInstitution);
         }
-        return cachedUserOrApplication;
+        return cachedUserOrInstitution;
     }
 }

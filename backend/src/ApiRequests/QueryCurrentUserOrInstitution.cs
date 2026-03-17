@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -10,11 +10,11 @@ namespace Database.ApiRequests;
 /// <summary>
 /// Class to request user info from Metabase API.
 /// </summary>
-public sealed class QueryCurrentUserOrApplication
+public sealed class QueryCurrentUserOrInstitution
 {
-    private const string QueryFileName = "CurrentUserOrApplication.graphql";
+    private const string QueryFileName = "CurrentUserOrInstitution.graphql";
 
-    public static readonly CurrentUserOrApplication Empty = new(null, null);
+    public static readonly CurrentUserOrInstitution Empty = new(null, null);
 
     public static Uri GetGraphQlEndpoint(AppSettings appSettings) =>
         appSettings.MetabaseGraphQlEndpoint;
@@ -68,29 +68,19 @@ public sealed class QueryCurrentUserOrApplication
         string Name
     );
 
-    public sealed record CurrentOpenIdConnectApplication(
-        Guid Uuid,
-        string ClientId,
-        OpenIdConnectApplicationOwnerEdge Owner
-    )
-    {
-        public bool IsOwnedByDatabaseOperator()
-        {
-            return Owner.Node.DatabaseOperatingDatabases.TotalCount >= 1
-                || Owner.Node.DatabaseOperatingManagedInstitutions.TotalCount >= 1;
-        }
-    };
-
-    public sealed record OpenIdConnectApplicationOwnerEdge(
-        OpenIdConnectApplicationOwnerNode Node
-    );
-
-    public sealed record OpenIdConnectApplicationOwnerNode(
+    public sealed record CurrentInstitution(
         Guid Uuid,
         string Name,
         DatabaseOperatingDatabaseConnection DatabaseOperatingDatabases,
         DatabaseOperatingManagedInstitutionConnection DatabaseOperatingManagedInstitutions
-    );
+    )
+    {
+        public bool IsDatabaseOperator()
+        {
+            return DatabaseOperatingDatabases.TotalCount >= 1
+                || DatabaseOperatingManagedInstitutions.TotalCount >= 1;
+        }
+    };
 
     public sealed record DatabaseOperatingDatabaseConnection(
         uint TotalCount
@@ -100,21 +90,21 @@ public sealed class QueryCurrentUserOrApplication
         uint TotalCount
     );
 
-    public sealed record CurrentUserOrApplication(
+    public sealed record CurrentUserOrInstitution(
         CurrentUser? CurrentUser,
-        CurrentOpenIdConnectApplication? CurrentApplication
+        CurrentInstitution? CurrentInstitution
     );
 
     /// <summary>
     /// Request current user from Metabase.
     /// </summary>
-    public static async Task<CurrentUserOrApplication> Do(
+    public static async Task<CurrentUserOrInstitution> Do(
         AppSettings appSettings,
         ApiRequestService apiRequestService,
         CancellationToken cancellationToken
     )
     {
-        return (await apiRequestService.QueryGraphQl<CurrentUserOrApplication>(
+        return (await apiRequestService.QueryGraphQl<CurrentUserOrInstitution>(
             GetGraphQlEndpoint(appSettings),
             new GraphQLRequest(
                 await GraphQlQueryHelpers.Construct(QueryFileName),
@@ -122,7 +112,7 @@ public sealed class QueryCurrentUserOrApplication
                 {
                     databaseId = appSettings.DatabaseId
                 },
-                "CurrentUserOrApplication"
+                "CurrentUserOrInstitution"
             ),
             cancellationToken
         ))

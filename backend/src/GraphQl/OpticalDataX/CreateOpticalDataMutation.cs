@@ -133,7 +133,7 @@ public sealed class CreateOpticalDataMutation
                 authorization,
                 cancellationToken
             )
-            ).Failed(out var currentUserOrApplication, out var authorizeErrorPayload)
+            ).Failed(out var currentUserOrInstitution, out var authorizeErrorPayload)
         )
         {
             return authorizeErrorPayload;
@@ -162,7 +162,7 @@ public sealed class CreateOpticalDataMutation
         }
 
         var opticalData = input.ToDomainModel(
-            currentUserOrApplication.CurrentUser?.Uuid,
+            currentUserOrInstitution.CurrentUser?.Uuid,
             dataFormat.Extension
         );
         context.OpticalData.Add(opticalData);

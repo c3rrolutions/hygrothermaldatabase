@@ -111,7 +111,7 @@ public sealed class CreateLifeCycleDataMutation
                 authorization,
                 cancellationToken
             )
-            ).Failed(out var currentUserOrApplication, out var authorizeErrorPayload)
+            ).Failed(out var currentUserOrInstitution, out var authorizeErrorPayload)
         )
         {
             return authorizeErrorPayload;
@@ -140,7 +140,7 @@ public sealed class CreateLifeCycleDataMutation
         }
 
         var lifeCycleData = input.ToDomainModel(
-            currentUserOrApplication.CurrentUser?.Uuid,
+            currentUserOrInstitution.CurrentUser?.Uuid,
             dataFormat.Extension
         );
         context.LifeCycleData.Add(lifeCycleData);

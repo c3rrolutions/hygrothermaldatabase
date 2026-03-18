@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -121,7 +121,7 @@ public sealed class UpdateRootGetHttpsResourceMutation
             input.Description,
             input.DataFormatId,
             dataFormat.Extension,
-            input.ArchivedFilesMetaInformation.Select(_ => _.ToDomainModel()).ToArray()
+            input.ArchivedFilesMetaInformation.Select(_ => _.ToDomainModel()).ToList()
         );
         await context.SaveChangesAsync(cancellationToken);
 

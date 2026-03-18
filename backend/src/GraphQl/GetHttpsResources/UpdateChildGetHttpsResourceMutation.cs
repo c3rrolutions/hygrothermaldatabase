@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -133,7 +133,7 @@ public sealed class UpdateChildGetHttpsResourceMutation
             input.Description,
             input.DataFormatId,
             dataFormat.Extension,
-            input.ArchivedFilesMetaInformation.Select(_ => _.ToDomainModel()).ToArray(),
+            input.ArchivedFilesMetaInformation.Select(_ => _.ToDomainModel()).ToList(),
             input.AppliedConversionMethod.ToDomainModel()
         );
         await context.SaveChangesAsync(cancellationToken);

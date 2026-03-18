@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Database.Authentication;
 using Database.Data;
 using Database.GraphQl;

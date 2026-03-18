@@ -1,4 +1,4 @@
-﻿using Database.Data;
+using Database.Data;
 using Database.GraphQl.GetHttpsResources;
 using HotChocolate.Data.Filters;
 

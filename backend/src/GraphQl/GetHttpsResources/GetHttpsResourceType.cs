@@ -1,4 +1,4 @@
-﻿using Database.Data;
+using Database.Data;
 using HotChocolate.Types;
 
 namespace Database.GraphQl.GetHttpsResources;

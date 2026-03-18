@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using Database.Data;
 using Database.GraphQl.Entities;

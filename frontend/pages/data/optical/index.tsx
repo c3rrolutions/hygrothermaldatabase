@@ -1,13 +1,5 @@
 import Layout from "../../../components/Layout";
-import {
-  Table,
-  App,
-  Form,
-  Button,
-  Alert,
-  Typography,
-  Descriptions,
-} from "antd";
+import { Table, App, Form, Button, Typography, Descriptions } from "antd";
 import { AllOpticalDataDocument } from "../../../queries/data.generated";
 import {
   OpticalData,
@@ -35,6 +27,7 @@ import {
 } from "../../../components/UuidPropositionFormList";
 import paths from "../../../paths";
 import { useQuery } from "@apollo/client/react";
+import ErrorAlert from "../../../components/ErrorAlert";
 
 const layout = {
   labelCol: { span: 8 },
@@ -319,10 +312,7 @@ function Page() {
   return (
     <Layout>
       <Typography.Title>Optical Data</Typography.Title>
-      {/* TODO Display error messages in a list? */}
-      {globalErrorMessages.length > 0 && (
-        <Alert type="error" message={globalErrorMessages.join(" ")} />
-      )}
+      <ErrorAlert messages={globalErrorMessages} />
       <Form
         {...layout}
         form={form}
@@ -335,22 +325,32 @@ function Page() {
         <FloatPropositionFormList
           name="infraredEmittances"
           label="Infrared emittance"
+          minimum={0}
+          maximum={1}
         />
         <FloatPropositionFormList
           name="nearnormalHemisphericalSolarReflectances"
           label="Nearnormal hemispherical solar reflectance"
+          minimum={0}
+          maximum={1}
         />
         <FloatPropositionFormList
           name="nearnormalHemisphericalSolarTransmittances"
           label="Nearnormal hemispherical solar transmittance"
+          minimum={0}
+          maximum={1}
         />
         <FloatPropositionFormList
           name="nearnormalHemisphericalVisibleReflectances"
           label="Nearnormal hemispherical visible reflectance"
+          minimum={0}
+          maximum={1}
         />
         <FloatPropositionFormList
           name="nearnormalHemisphericalVisibleTransmittances"
           label="Nearnormal hemispherical visible transmittance"
+          minimum={0}
+          maximum={1}
         />
 
         <Form.Item {...tailLayout}>

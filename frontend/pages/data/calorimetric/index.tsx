@@ -1,13 +1,5 @@
 import Layout from "../../../components/Layout";
-import {
-  Table,
-  App,
-  Form,
-  Button,
-  Alert,
-  Typography,
-  Descriptions,
-} from "antd";
+import { Table, App, Form, Button, Typography, Descriptions } from "antd";
 import { AllCalorimetricDataDocument } from "../../../queries/data.generated";
 import {
   CalorimetricData,
@@ -35,6 +27,7 @@ import {
 } from "../../../components/UuidPropositionFormList";
 import paths from "../../../paths";
 import { useQuery } from "@apollo/client/react";
+import ErrorAlert from "../../../components/ErrorAlert";
 
 const layout = {
   labelCol: { span: 8 },
@@ -234,10 +227,7 @@ function Page() {
   return (
     <Layout>
       <Typography.Title>Calorimetric Data</Typography.Title>
-      {/* TODO Display error messages in a list? */}
-      {globalErrorMessages.length > 0 && (
-        <Alert type="error" message={globalErrorMessages.join(" ")} />
-      )}
+      <ErrorAlert messages={globalErrorMessages} />
       <Form
         {...layout}
         form={form}
@@ -247,8 +237,18 @@ function Page() {
       >
         <UuidPropositionFormList name="componentIds" label="Component Id" />
         <UuidPropositionFormList name="dataFormatIds" label="Data Format Id" />
-        <FloatPropositionFormList name="gValues" label="g Values" />
-        <FloatPropositionFormList name="uValues" label="u Values" />
+        <FloatPropositionFormList
+          name="gValues"
+          label="g Value"
+          minimum={0}
+          maximum={1}
+        />
+        <FloatPropositionFormList
+          name="uValues"
+          label="u Value"
+          minimum={0}
+          maximum={1}
+        />
 
         <Form.Item {...tailLayout}>
           <Button type="primary" htmlType="submit" loading={filtering}>

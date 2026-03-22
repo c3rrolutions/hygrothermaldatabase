@@ -1,253 +1,253 @@
 fragment DataPartial on Data {
-	uuid
-	timestamp
-	componentId
-	name
-	description
-	appliedMethod {
-		methodId
-		arguments {
-			name
-			value
-		}
-		sources {
-			name
-			value {
-				dataId
-				dataKind
-				dataTimestamp
-				databaseId
-			}
-		}
-	}
-	resourceTree {
-		root {
-			value {
-				uuid
-				description
-				hashValue
-				locator
-				dataFormatId
-			}
-		}
-		nonRootVertices {
-			appliedConversionMethod {
-				arguments {
-					name
-					value
-				}
-				methodId
-				sourceName
-			}
-			parentId
-			value {
-				archivedFilesMetaInformation {
-					dataFormatId
-					path
-				}
-				description
-				dataFormatId
-				hashValue
-				id
-				locator
-				uuid
-			}
-			vertexId
-		}
-	}
-	approvals {
-		timestamp
-		signature
-		keyFingerprint
-		query
-		variables
-		message
-		statement {
-			__typename
-			... on Publication {
-				abstract
-				arXiv
-				authors
-				doi
-				section
-				title
-				urn
-				webAddress
-			}
-			... on Standard {
-				abstract
-				locator
-				section
-				standardizers
-				title
-				year
-				numeration {
-					mainNumber
-					prefix
-					suffix
-				}
-			}
-		}
-		approverId
-	}
-	createdAt
-	creatorId
-	locale
-	resources {
-		description
-		hashValue
-		locator
-		dataFormatId
-	}
-	warnings
-	userId
+  uuid
+  timestamp
+  componentId
+  name
+  description
+  appliedMethod {
+    methodId
+    arguments {
+      name
+      value
+    }
+    sources {
+      name
+      value {
+        dataId
+        dataKind
+        dataTimestamp
+        databaseId
+      }
+    }
+  }
+  resourceTree {
+    root {
+      value {
+        uuid
+        description
+        hashValue
+        locator
+        dataFormatId
+      }
+    }
+    nonRootVertices {
+      appliedConversionMethod {
+        arguments {
+          name
+          value
+        }
+        methodId
+        sourceName
+      }
+      parentId
+      value {
+        archivedFilesMetaInformation {
+          dataFormatId
+          path
+        }
+        description
+        dataFormatId
+        hashValue
+        id
+        locator
+        uuid
+      }
+      vertexId
+    }
+  }
+  approvals {
+    timestamp
+    signature
+    keyFingerprint
+    query
+    variables
+    message
+    statement {
+      __typename
+      ... on Publication {
+        abstract
+        arXiv
+        authors
+        doi
+        section
+        title
+        urn
+        webAddress
+      }
+      ... on Standard {
+        abstract
+        locator
+        section
+        standardizers
+        title
+        year
+        numeration {
+          mainNumber
+          prefix
+          suffix
+        }
+      }
+    }
+    approverId
+  }
+  createdAt
+  creatorId
+  locale
+  resources {
+    description
+    hashValue
+    locator
+    dataFormatId
+  }
+  warnings
+  userId
 }
 
 fragment CalorimetricDataPartial on CalorimetricData {
-	...DataPartial
-	gValues
-	uValues
+  ...DataPartial
+  gValues
+  uValues
 }
 
 query CalorimetricData($uuid: Uuid!) {
-	calorimetricData(id: $uuid) {
-		...CalorimetricDataPartial
-	}
+  calorimetricData(id: $uuid) {
+    ...CalorimetricDataPartial
+  }
 }
 
 query AllCalorimetricData($where: CalorimetricDataPropositionInput) {
-	allCalorimetricData(where: $where) {
-		edges {
-			node {
-				...CalorimetricDataPartial
-			}
-		}
-	}
+  allCalorimetricData(where: $where) {
+    edges {
+      node {
+        ...CalorimetricDataPartial
+      }
+    }
+  }
 }
 
 query HasCalorimetricData($where: CalorimetricDataPropositionInput!) {
-	hasCalorimetricData(where: $where)
+  hasCalorimetricData(where: $where)
 }
 
 fragment HygrothermalDataPartial on HygrothermalData {
-	...DataPartial
+  ...DataPartial
 }
 
 query HygrothermalData($uuid: Uuid!) {
-	hygrothermalData(id: $uuid) {
-		...HygrothermalDataPartial
-	}
+  hygrothermalData(id: $uuid) {
+    ...HygrothermalDataPartial
+  }
 }
 
 query AllHygrothermalData($where: HygrothermalDataPropositionInput) {
-	allHygrothermalData(where: $where) {
-		edges {
-			node {
-				...HygrothermalDataPartial
-			}
-		}
-	}
+  allHygrothermalData(where: $where) {
+    edges {
+      node {
+        ...HygrothermalDataPartial
+      }
+    }
+  }
 }
 
 query HasHygrothermalData($where: HygrothermalDataPropositionInput!) {
-	hasHygrothermalData(where: $where)
+  hasHygrothermalData(where: $where)
 }
 
 fragment LifeCycleDataPartial on LifeCycleData {
-	...DataPartial
+  ...DataPartial
 }
 
 query LifeCycleData($uuid: Uuid!) {
-	lifeCycleData(id: $uuid) {
-		...LifeCycleDataPartial
-	}
+  lifeCycleData(id: $uuid) {
+    ...LifeCycleDataPartial
+  }
 }
 
 query AllLifeCycleData($where: LifeCycleDataPropositionInput) {
-	allLifeCycleData(where: $where) {
-		edges {
-			node {
-				...LifeCycleDataPartial
-			}
-		}
-	}
+  allLifeCycleData(where: $where) {
+    edges {
+      node {
+        ...LifeCycleDataPartial
+      }
+    }
+  }
 }
 
 query HasLifeCycleData($where: LifeCycleDataPropositionInput!) {
-	hasLifeCycleData(where: $where)
+  hasLifeCycleData(where: $where)
 }
 
 fragment OpticalDataPartial on OpticalData {
-	...DataPartial
-	infraredEmittances
-	nearnormalHemisphericalSolarReflectances
-	nearnormalHemisphericalSolarTransmittances
-	nearnormalHemisphericalVisibleReflectances
-	nearnormalHemisphericalVisibleTransmittances
-	colorRenderingIndices
+  ...DataPartial
+  infraredEmittances
+  nearnormalHemisphericalSolarReflectances
+  nearnormalHemisphericalSolarTransmittances
+  nearnormalHemisphericalVisibleReflectances
+  nearnormalHemisphericalVisibleTransmittances
+  colorRenderingIndices
 }
 
 query OpticalData($uuid: Uuid!) {
-	opticalData(id: $uuid) {
-		...OpticalDataPartial
-	}
+  opticalData(id: $uuid) {
+    ...OpticalDataPartial
+  }
 }
 
 query AllOpticalData($where: OpticalDataPropositionInput) {
-	allOpticalData(where: $where) {
-		edges {
-			node {
-				...OpticalDataPartial
-			}
-		}
-	}
+  allOpticalData(where: $where) {
+    edges {
+      node {
+        ...OpticalDataPartial
+      }
+    }
+  }
 }
 
 query HasOpticalData($where: OpticalDataPropositionInput!) {
-	hasOpticalData(where: $where)
+  hasOpticalData(where: $where)
 }
 
 fragment PhotovoltaicDataPartial on PhotovoltaicData {
-	...DataPartial
+  ...DataPartial
 }
 
 query PhotovoltaicData($uuid: Uuid!) {
-	photovoltaicData(id: $uuid) {
-		...PhotovoltaicDataPartial
-	}
+  photovoltaicData(id: $uuid) {
+    ...PhotovoltaicDataPartial
+  }
 }
 
 query AllPhotovoltaicData($where: PhotovoltaicDataPropositionInput) {
-	allPhotovoltaicData(where: $where) {
-		edges {
-			node {
-				...PhotovoltaicDataPartial
-			}
-		}
-	}
+  allPhotovoltaicData(where: $where) {
+    edges {
+      node {
+        ...PhotovoltaicDataPartial
+      }
+    }
+  }
 }
 
 query HasPhotovoltaicData($where: PhotovoltaicDataPropositionInput!) {
-	hasPhotovoltaicData(where: $where)
+  hasPhotovoltaicData(where: $where)
 }
 
 fragment GeometricDataPartial on GeometricData {
-	...DataPartial
-	thicknesses
+  ...DataPartial
+  thicknesses
 }
 
 query GeometricData($uuid: Uuid!) {
-	geometricData(id: $uuid) {
-		...GeometricDataPartial
-	}
+  geometricData(id: $uuid) {
+    ...GeometricDataPartial
+  }
 }
 
 query AllGeometricData($where: GeometricDataPropositionInput) {
-	allGeometricData(where: $where) {
-		edges {
-			node {
-				...GeometricDataPartial
-			}
-		}
-	}
+  allGeometricData(where: $where) {
+    edges {
+      node {
+        ...GeometricDataPartial
+      }
+    }
+  }
 }

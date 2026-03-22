@@ -1,5 +1,5 @@
 import { useMutation } from "@apollo/client/react";
-import { Alert, Form, Input, Button, Modal } from "antd";
+import { Form, Input, Button, Modal } from "antd";
 import {
   UpdateDatabaseDocument,
   DatabaseDocument,
@@ -7,6 +7,7 @@ import {
 import { Scalars } from "../../__generated__/graphql";
 import { useState } from "react";
 import { handleFormErrors } from "../../lib/form";
+import ErrorAlert from "../ErrorAlert";
 
 const layout = {
   labelCol: { span: 8 },
@@ -104,11 +105,7 @@ export default function UpdateDatabase({
         onCancel={() => setOpen(false)}
         footer={false}
       >
-        {globalErrorMessages.length > 0 ? (
-          <Alert type="error" message={globalErrorMessages.join(" ")} />
-        ) : (
-          <></>
-        )}
+        <ErrorAlert messages={globalErrorMessages} />
         <Form
           {...layout}
           form={form}

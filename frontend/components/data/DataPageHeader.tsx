@@ -38,10 +38,7 @@ export default function DataPageHeader({
           {data.createdAt}
         </Descriptions.Item>
         <Descriptions.Item label="Creator">
-          <Link
-            href={paths.metabase.institution(data.creatorId)}
-            legacyBehavior
-          >
+          <Link href={paths.metabase.institution(data.creatorId)}>
             {data.creatorId}
           </Link>
         </Descriptions.Item>

@@ -10,9 +10,7 @@ export type LifeCycleDataProps = {
   lifeCycleDataId: Scalars["Uuid"]["input"];
 };
 
-export default function LifeCycleData({
-  lifeCycleDataId,
-}: LifeCycleDataProps) {
+export default function LifeCycleData({ lifeCycleDataId }: LifeCycleDataProps) {
   const { loading, error, data } = useQuery(LifeCycleDataDocument, {
     variables: {
       uuid: lifeCycleDataId,

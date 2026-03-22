@@ -1,13 +1,5 @@
 import Layout from "../../../components/Layout";
-import {
-  Table,
-  App,
-  Form,
-  Button,
-  Alert,
-  Typography,
-  Descriptions,
-} from "antd";
+import { Table, App, Form, Button, Descriptions, Typography } from "antd";
 import { AllGeometricDataDocument } from "../../../queries/data.generated";
 import {
   GeometricData,
@@ -35,6 +27,7 @@ import {
 } from "../../../components/UuidPropositionFormList";
 import paths from "../../../paths";
 import { useQuery } from "@apollo/client/react";
+import ErrorAlert from "../../../components/ErrorAlert";
 
 const layout = {
   labelCol: { span: 8 },
@@ -189,10 +182,7 @@ function Page() {
   return (
     <Layout>
       <Typography.Title>Geometric Data</Typography.Title>
-      {globalErrorMessages.length > 0 && (
-        <Alert type="error" message={globalErrorMessages.join(" ")} />
-      )}
-
+      <ErrorAlert messages={globalErrorMessages} />
       <Form
         {...layout}
         form={form}
@@ -202,7 +192,12 @@ function Page() {
       >
         <UuidPropositionFormList name="componentIds" label="Component Id" />
         <UuidPropositionFormList name="dataFormatIds" label="Data Format Id" />
-        <FloatPropositionFormList name="thicknesses" label="Thicknesses" />
+        <FloatPropositionFormList
+          name="thicknesses"
+          label="Thickness"
+          minimum={0}
+          maximum={Infinity}
+        />
 
         <Form.Item {...tailLayout}>
           <Button type="primary" htmlType="submit" loading={filtering}>

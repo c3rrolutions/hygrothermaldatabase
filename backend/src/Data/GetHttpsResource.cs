@@ -279,7 +279,7 @@ public sealed class GetHttpsResource
         string description,
         Guid dataFormatId,
         string? fileExtension,
-        FileMetaInformation[] archivedFilesMetaInformation,
+        ICollection<FileMetaInformation> archivedFilesMetaInformation,
         ToTreeVertexAppliedConversionMethod appliedConversionMethod
     )
     {

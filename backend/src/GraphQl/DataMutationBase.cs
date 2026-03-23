@@ -98,7 +98,7 @@ where TError : class
         var dataFormats = await Task.WhenAll(validateDataFormats);
         // Finally collect errors.
         var errors = new List<TError>();
-        var dataFormat = dataFormats[1];
+        var dataFormat = dataFormats[0];
         if (dataFormat is null)
         {
             errors.Add(

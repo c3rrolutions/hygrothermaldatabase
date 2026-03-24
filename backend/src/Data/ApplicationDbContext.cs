@@ -12,6 +12,7 @@ using Laraue.EfCoreTriggers.Common.Extensions;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SchemaNameOptionsExtension = Database.Data.Extensions.SchemaNameOptionsExtension;
 
 namespace Database.Data;
@@ -66,6 +67,28 @@ public sealed class ApplicationDbContext
     public DbSet<LifeCycleData> LifeCycleData { get; private set; } = default!;
     public DbSet<OpticalData> OpticalData { get; private set; } = default!;
     public DbSet<PhotovoltaicData> PhotovoltaicData { get; private set; } = default!;
+
+    // Inspired by https://github.com/openiddict/openiddict-core/issues/1376#issuecomment-1151275376
+    // It is needed to fix the following error that occurred when trying to redeem OpenId Connect tokens in production:
+    // `Cannot write DateTime with Kind=Unspecified to PostgreSQL type 'timestamp with time zone', only UTC is supported (...)`
+    // See also https://github.com/openiddict/openiddict-core/issues/1376
+    protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+    {
+        configurationBuilder.Properties<DateTime>().HaveConversion<UtcValueConverter>();
+        configurationBuilder.Properties<DateTime?>().HaveConversion<UtcValueConverter>();
+        base.ConfigureConventions(configurationBuilder);
+    }
+
+    private sealed class UtcValueConverter : ValueConverter<DateTime, DateTime>
+    {
+        public UtcValueConverter()
+            : base(
+                v => v.Kind == DateTimeKind.Utc ? v : v.ToUniversalTime(),
+                v => DateTime.SpecifyKind(v, DateTimeKind.Utc)
+            )
+        {
+        }
+    }
 
     public IQueryable<IData> Data(DataKind dataKind)
     {

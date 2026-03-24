@@ -177,7 +177,11 @@ restore : ## Restore database and related data from directory with absolute path
 		--volume "${DIR}":/backup \
 		backend \
 		bash -o errexit -o errtrace -o nounset -o pipefail -c " \
-			cd /app/files \
+			if [[ "${ENVIRONMENT}" == "development" ]]; then \
+				cd /app/src/files ; \
+			else \
+				cd /app/files ; \
+			fi \
 			&& rm \
 				--recursive \
 				--force \

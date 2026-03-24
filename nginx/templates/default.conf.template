@@ -96,6 +96,7 @@ server {
   location /_next/webpack-hmr {
     proxy_pass http://frontend;
     proxy_read_timeout 86400s;
+    proxy_send_timeout 86400s;
     limit_req zone=general burst=100 nodelay;
   }
 
@@ -126,6 +127,7 @@ server {
     client_body_timeout 300s;
     proxy_read_timeout 300s;
     proxy_send_timeout 300s;
+    proxy_request_buffering off;
   }
 
   location /api/resources/ {

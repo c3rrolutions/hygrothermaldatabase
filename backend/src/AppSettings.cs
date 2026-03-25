@@ -45,7 +45,11 @@ public sealed record AppSettings
 
     public sealed record DatabaseSettings
     {
-        public string ConnectionString { get; set; } = "";
+        public string Host { get; init; } = "";
+        public int Port { get; init; }
+        public string Name { get; set; } = "";
+        public string UserName { get; init; } = "";
+        public string Password { get; init; } = "";
         public string SchemaName { get; init; } = "";
     };
 

@@ -84,7 +84,7 @@ services:
       XBASE_OpenIdConnectClient__Id: "${OPEN_ID_CONNECT_CLIENT_ID:?required}"
       XBASE_OpenIdConnectClient__Secret: "${OPEN_ID_CONNECT_CLIENT_SECRET:?required}"
       XBASE_VerificationCode: "${VERIFICATION_CODE:?required}"
-      XBASE_GnupgSecretSigningKey__Fingerprint: "${GNUPG_SECRET_SIGNING_KEY_FINGERPRINT?required}"
+      XBASE_GnupgSecretSigningKey__Fingerprint: "${GNUPG_SECRET_SIGNING_KEY_FINGERPRINT:?required}"
       XBASE_GnupgSecretSigningKey__Passphrase: "${GNUPG_SECRET_SIGNING_KEY_PASSPHRASE:?required}"
       XBASE_OpenTelemetry__Host: "${OPEN_TELEMETRY_HOST:?required}"
       XBASE_OpenTelemetry__GrpcPort: "${OPEN_TELEMETRY_GRPC_PORT:?required}"

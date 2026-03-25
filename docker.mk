@@ -13,10 +13,10 @@ SERVICE=
 dotenv_linter = \
 	docker run \
 		--rm \
-		--user $(shell id --user):$(shell id --group) \
+		--user "$(shell id --user):$(shell id --group)" \
 		--volume "$(shell pwd):/mnt:ro" \
 		--quiet \
-	  dotenvlinter/dotenv-linter:4.0.0
+		dotenvlinter/dotenv-linter:4.0.0
 
 # Taken from https://www.client9.com/self-documenting-makefiles/
 help : ## Print this help
@@ -62,8 +62,8 @@ pull : ## Pull images
 build : symlink dotenv pull ## Build images
 	docker compose build \
 		--pull \
-		--build-arg GROUP_ID=$(shell id --group) \
-		--build-arg USER_ID=$(shell id --user) ${SERVICE}
+		--build-arg GROUP_ID="$(shell id --group)" \
+		--build-arg USER_ID="$(shell id --user)" ${SERVICE}
 .PHONY : build
 
 bake : ## Print docker-compose file equivalent bake file
@@ -168,17 +168,22 @@ list-services : ## List all services specified in the docker-compose file (used 
 		--services
 .PHONY : list-services
 
+# During the initial setup, the fingerprint is unknown. However, the Docker
+# Compose files require it to be defined and non-empty. So, if it is empty, we
+# set it to "unknown".
 bootstrap : COMMAND = bash
+bootstrap : GNUPG_SECRET_SIGNING_KEY_FINGERPRINT = $(or ${GNUPG_SECRET_SIGNING_KEY_FINGERPRINT},unknown)
 bootstrap : ## Run a one-time command in a fresh bootstrap service or enter a shell within, for example, `make bootstrap COMMAND='./gpg.mk key NAME="Anna Smith" COMMENT=first EMAIL=anna.smith@fraunhofer.de'` or simply `make bootstrap`
 	docker compose pull \
 		backend
 	docker compose build \
 		--pull \
-		--build-arg GROUP_ID=$(shell id --group) \
-		--build-arg USER_ID=$(shell id --user) \
+		--build-arg GROUP_ID="$(shell id --group)" \
+		--build-arg USER_ID="$(shell id --user)" \
 		backend
 	docker compose run \
 		--volume .:/app \
 		--rm \
 		backend \
 		${COMMAND}
+.PHONY : bootstrap

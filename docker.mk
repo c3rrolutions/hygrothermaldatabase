@@ -173,6 +173,7 @@ bootstrap : ## Run a one-time command in a fresh bootstrap service or enter a sh
 	docker compose pull \
 		backend
 	docker compose build \
+		--pull \
 		--build-arg GROUP_ID=$(shell id --group) \
 		--build-arg USER_ID=$(shell id --user) \
 		backend

@@ -67,6 +67,7 @@ public sealed class CustomWebApplicationFactory
 
     protected override IHost CreateHost(IHostBuilder builder)
     {
+        builder.UseEnvironment(Database.Program.TestEnvironment);
         builder.UseSerilog((context, services, configuration) =>
         {
             configuration
@@ -79,8 +80,8 @@ public sealed class CustomWebApplicationFactory
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         var databaseName = Guid.NewGuid().ToString().Replace("-", "");
-        // var schemaName = $"metabase_{Guid.NewGuid().ToString().Replace("-", "")}";
-        // builder.ConfigureAppConfiguration(_ => _.AddInMemoryCollection([new KeyValuePair<string, string?>("Database__ConnectionString", connectionString)])); // "Database__SchemaName"
+        // var schemaName = $"database_{Guid.NewGuid().ToString().Replace("-", "")}";
+        // builder.ConfigureAppConfiguration(_ => _.AddInMemoryCollection([new KeyValuePair<string, string?>("Database__Name", databaseName)])); // "Database__SchemaName"
         builder.UseEnvironment(Database.Program.TestEnvironment);
         builder.ConfigureAppConfiguration((webHostBuilderContext, configurationBuilder) =>
             {

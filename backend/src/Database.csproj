@@ -21,6 +21,7 @@
     <PackageReference Include="HotChocolate" Version="15.1.12" />
     <PackageReference Include="HotChocolate.AspNetCore" Version="15.1.12" />
     <PackageReference Include="HotChocolate.AspNetCore.Authorization" Version="15.1.12" />
+    <PackageReference Include="HotChocolate.AspNetCore.CommandLine" Version="15.1.12" />
     <PackageReference Include="HotChocolate.Data" Version="15.1.12" />
     <PackageReference Include="HotChocolate.Data.EntityFramework" Version="15.1.12" />
     <PackageReference Include="HotChocolate.PersistedOperations.InMemory" Version="15.1.12" />

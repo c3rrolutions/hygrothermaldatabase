@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using HotChocolate.AspNetCore;
 using Database.Data;
 using Database.Services;
 using Microsoft.AspNetCore.Builder;
@@ -92,9 +93,8 @@ public sealed class Program
                 await SeedDatabase(scope.ServiceProvider);
                 await AssertGnuPgKeyExistence(scope.ServiceProvider);
             }
-
-            await application.RunAsync();
-            return 0;
+            // dotnet run -- schema export --output ./schema.graphql
+            return await application.RunWithGraphQLCommandsAsync(commandLineArguments);
         }
         catch (Exception exception) when (exception is not HostAbortedException && exception.Source != "Microsoft.EntityFrameworkCore.Design") // see https://github.com/dotnet/efcore/issues/29923
         {

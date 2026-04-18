@@ -331,6 +331,12 @@ and the pages following it.
       information on what the variables mean
       - `NAME` is the name Docker project name, in particular, it is the prefix
         of the Docker container names listed by `docker ps --all`;
+      - `ENVIRONMENT` is either `staging` or `production`;
+      - `TARGET` is the deployed tag or commit. It is set later by running
+        `./deploy.mk do TARGET=${TAG}`. The corresponding Docker images named
+        `${NAME}-backend:${TARGET}` and `${NAME}-frontend:${TARGET}` are built
+        on a build or development machine and pushed to the server later with
+        GNU Make targets from `./forge.mk`;
       - `HOST` is the domain name with sub-domain of the deployment, in
         particular, it is used to make resource locators absolute;
       - `HTTP_PORT` is the HTTP port to which the reverse proxy NGINX forwards

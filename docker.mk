@@ -60,10 +60,21 @@ pull : ## Pull images
 .PHONY : pull
 
 build : symlink dotenv pull ## Build images
-	docker compose build \
-		--pull \
-		--build-arg GROUP_ID="$(shell id --group)" \
-		--build-arg USER_ID="$(shell id --user)" ${SERVICE}
+	if [[ "${ENVIRONMENT}" == "development" ]]; then \
+		docker compose build \
+			--pull \
+			--build-arg GROUP_ID="$(shell id --group)" \
+			--build-arg USER_ID="$(shell id --user)" ${SERVICE} ; \
+	else \
+		$(MAKE) --file=./forge.mk \
+			build \
+			SERVICE=backend \
+			OVERWRITE=true && \
+		$(MAKE) --file=./forge.mk \
+			build \
+			SERVICE=frontend \
+			OVERWRITE=true ; \
+	fi
 .PHONY : build
 
 bake : ## Print docker-compose file equivalent bake file
@@ -168,22 +179,39 @@ list-services : ## List all services specified in the docker-compose file (used 
 		--services
 .PHONY : list-services
 
-# During the initial setup, the fingerprint is unknown. However, the Docker
-# Compose files require it to be defined and non-empty. So, if it is empty, we
-# set it to "unknown".
-bootstrap : COMMAND = bash
-bootstrap : GNUPG_SECRET_SIGNING_KEY_FINGERPRINT = $(or ${GNUPG_SECRET_SIGNING_KEY_FINGERPRINT},unknown)
-bootstrap : ## Run a one-time command in a fresh bootstrap service or enter a shell within, for example, `make bootstrap COMMAND='./gpg.mk key NAME="Anna Smith" COMMENT=first EMAIL=anna.smith@fraunhofer.de'` or simply `make bootstrap`
-	docker compose pull \
-		backend
-	docker compose build \
-		--pull \
-		--build-arg GROUP_ID="$(shell id --group)" \
-		--build-arg USER_ID="$(shell id --user)" \
-		backend
-	docker compose run \
-		--volume .:/app \
-		--rm \
-		backend \
-		${COMMAND}
-.PHONY : bootstrap
+# During the initial setup, target and fingerprint are unknown. However, the
+# Docker Compose files requires them to be defined and non-empty. So, if they
+# are empty, we set them to the branch name (or the commit hash if in detached
+# head mode) and to "unknown" respectively.
+# Because in production ./.env is a symbolic link (even to a file in another
+# file system under /app/data), it is not available within the management
+# container. So, we pass the required variables explicitly.
+manage : COMMAND = bash
+manage : TARGET := $(or ${TARGET},$(shell git symbolic-ref --quiet --short HEAD || git rev-parse --verify HEAD))
+manage : GNUPG_SECRET_SIGNING_KEY_FINGERPRINT := $(or ${GNUPG_SECRET_SIGNING_KEY_FINGERPRINT},unknown)
+manage : ## Run a one-time command in a fresh management service or enter a shell within, for example, `make manage COMMAND='./gpg.mk key NAME="Anna Smith" COMMENT=first EMAIL=anna.smith@fraunhofer.de'` to create a GnuPG key or simply `make manage` to enter bash inside the container
+	if [[ "${ENVIRONMENT}" == "development" ]]; then \
+		GNUPG_SECRET_SIGNING_KEY_FINGERPRINT="${GNUPG_SECRET_SIGNING_KEY_FINGERPRINT}" \
+			docker compose pull \
+				backend && \
+		GNUPG_SECRET_SIGNING_KEY_FINGERPRINT="${GNUPG_SECRET_SIGNING_KEY_FINGERPRINT}" \
+			docker compose build \
+				--pull \
+				--build-arg GROUP_ID="$(shell id --group)" \
+				--build-arg USER_ID="$(shell id --user)" \
+				backend ; \
+	else \
+		$(MAKE) --file=./forge.mk \
+			build \
+			SERVICE=backend \
+			TARGET="${TARGET}" ; \
+	fi
+	TARGET="${TARGET}" \
+	GNUPG_SECRET_SIGNING_KEY_FINGERPRINT="${GNUPG_SECRET_SIGNING_KEY_FINGERPRINT}" \
+		docker compose run \
+			--volume .:/app \
+			--rm \
+			--env GNUPG_SECRET_SIGNING_KEY_PASSPHRASE="${GNUPG_SECRET_SIGNING_KEY_PASSPHRASE}" \
+			backend \
+			${COMMAND}
+.PHONY : manage

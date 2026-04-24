@@ -1,7 +1,10 @@
 #!/usr/bin/env -S make --file
 SELF := $(lastword $(MAKEFILE_LIST))
 
-include ./.env
+# Because in production ./.env is a symbolic link (even to a file in another
+# file system under /app/data), it is not available within the management
+# container in which this Makefile is used. So, we need the required variables
+# to be available in the environment (instead of including ./.env)
 
 SHELL := /usr/bin/env bash
 .SHELLFLAGS := -o errexit -o errtrace -o nounset -o pipefail -c
@@ -20,7 +23,7 @@ socket : ## Print socket path
 .PHONY : socket
 
 key : COMMENT =
-key : ## Generate GnuPG key with the passphrase `${GNUPG_SECRET_SIGNING_KEY_PASSPHRASE}`, for example, `make gpg PERSON="Simon Wacker" COMMENT=solarbuildingenvelopes EMAIL=simon.wacker@ise.fraunhofer.de`
+key : ## Generate GnuPG key with the passphrase `${GNUPG_SECRET_SIGNING_KEY_PASSPHRASE}`, for example, `./gpg.mk key PERSON="Simon Wacker" COMMENT=solarbuildingenvelopes EMAIL=simon.wacker@ise.fraunhofer.de`
 	gpg \
 		--quick-generate-key \
 		--batch \

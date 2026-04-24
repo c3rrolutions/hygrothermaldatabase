@@ -72,11 +72,16 @@ When doing so, please adhere to our
 
 1. Generate a GnuPG key with the passphrase
    `${GNUPG_SECRET_SIGNING_KEY_PASSPHRASE}` set in `./.env` by running
-   `make bootstrap COMMAND='./gpg.mk key PERSON="${name}" COMMENT="${comment}" EMAIL="${email}"'`
+   `make manage COMMAND='./gpg.mk key PERSON="${name}" COMMENT="${comment}" EMAIL="${email}"'`
    with your information filled in, for example,
-   `make bootstrap COMMAND='./gpg.mk key PERSON="Anna Smith" COMMENT="first" EMAIL="anna.smith@fraunhofer.de"'`.
+   `make manage COMMAND='./gpg.mk key PERSON="Anna Smith" COMMENT="first" EMAIL="anna.smith@fraunhofer.de"'`.
    Then copy the key's fingerprint which is output by the command and set it as
    the value of the `GNUPG_SECRET_SIGNING_KEY_FINGERPRINT` variable in `./.env`.
+
+   Note that the key is stored in the Docker Compose volume
+   `${NAME}_${ENVIRONMENT}_gnupg`. Here or later on, you can enter a shell
+   inside the management container by running `make manage` and manage GnuPG
+   keys with the `gpg` command or the GNU Make targets `./gpg.mk` there.
 
 1. Create the PostgreSQL database and schema by running
    `./database.mk create migrate`.
@@ -368,12 +373,17 @@ and the pages following it.
    1. Generate a GnuPG key with the passphrase
       `${GNUPG_SECRET_SIGNING_KEY_PASSPHRASE}` set in the `./.env` file
       by running
-      `make bootstrap COMMAND='./gpg.mk key PERSON="${name}" COMMENT="${comment}" EMAIL="${email}"'`
+      `make manage COMMAND='./gpg.mk key PERSON="${name}" COMMENT="${comment}" EMAIL="${email}"'`
       with your information filled in, for example,
-      `make bootstrap COMMAND='./gpg.mk key PERSON="Anna Smith" COMMENT="first" EMAIL="anna.smith@fraunhofer.de"'`.
+      `make manage COMMAND='./gpg.mk key PERSON="Anna Smith" COMMENT="first" EMAIL="anna.smith@fraunhofer.de"'`.
       Then copy the key's fingerprint which is output by the command and set it
       as the value of the `GNUPG_SECRET_SIGNING_KEY_FINGERPRINT` variable in
       the `./.env` file.
+
+      Note that the key is stored in the Docker Compose volume
+      `${NAME}_${ENVIRONMENT}_gnupg`. Here or later on, you can enter a shell
+      inside the management container by running `make manage` and manage GnuPG
+      keys with the `gpg` command or the GNU Make targets `./gpg.mk` there.
 
    1. Create the PostgreSQL database by running `./database.mk create`.
 
@@ -420,29 +430,28 @@ and the pages following it.
 1. Deploy the new release in the staging environment by running
    `./deploy.mk do TARGET=${TAG}`, where `${TAG}` is
    the release tag to be deployed, for example, `v1.0.0`.
-1. If it fails _after_ the database backup was made, rollback to the previous
-   state by running
-   `./deploy.mk rollback`,
-   figure out what went wrong, apply the necessary fixes to the codebase,
-   create a new release, and try to deploy that release instead.
+1. If it fails, then either
+   - rollback to the previous state by running `./deploy.mk rollback`, figure
+     out what went wrong, apply the necessary fixes to the codebase, create a
+     new release, and try to deploy that release instead, or
+   - make configuration changes that caused the failure and resume the
+     deployment attempt by running `./deploy.mk resume`.
 1. If it succeeds, deploy the new reverse proxy that handles sub-domains by
-   running `cd /app/machine && ./deploy.mk do` and test whether everything works
-   as expected and if that is the case, continue. Note that in the
-   staging environment sent emails can be viewed in the web browser under
+   running `cd /app/machine && git pull && ./deploy.mk do` and test whether
+   everything works as expected and if that is the case, continue. Note that in
+   the staging environment sent emails can be viewed in the web browser under
    `https://staging.solarbuildingenvelopes.com/email/` and emails to addresses in
-   the variable `RELAY_ALLOWED_EMAILS` in `./.env` are delivered to the
-   respective inboxes (the variable's value is a comma separated list of email
-   addresses).
+   the variable `RELAY_ALLOWED_EMAILS` in `./.env` are delivered to the respective
+   inboxes (the variable's value is a comma separated list of email addresses).
 1. Change to the production environment by running `cd /app/production`.
 1. Adapt the environment file `./.env` if necessary by comparing it with the
    `./.env.production.sample` file of the release to be deployed.
 1. Deploy the new release in the production environment by running
    `./deploy.mk do TARGET=${TAG}`, where `${TAG}` is
    the release tag to be deployed, for example, `v1.0.0`.
-1. If it fails _after_ the database backup was made, rollback to the previous
-   state by running
-   `./deploy.mk rollback`,
-   figure out what went wrong, apply the necessary fixes to the codebase,
+1. If it fails, then rollback to the previous state by running
+   `./deploy.mk rollback`, figure out what went wrong, apply the necessary
+   fixes the configuration and try again, or apply fixes to the codebase,
    create a new release, and try to deploy that release instead.
 
 ### Troubleshooting

@@ -20,12 +20,17 @@ target : ## Print value of variable `TARGET`
 	@echo ${TARGET}
 .PHONY : target
 
-build : ## Build image, for example, `./forge.mk build SERVICE=backend`
-	docker build \
-		--pull \
-		--file "./${SERVICE}/Dockerfile.production" \
-		--tag "${NAME}-${SERVICE}:${TARGET}" \
-		"./${SERVICE}"
+build : OVERWRITE = false
+build : ## Build image if it does not exist yet, for example, `./forge.mk build SERVICE=backend` or even if it does exist `./forge.mk build SERVICE=backend OVERWRITE=true`
+	if [[ "${OVERWRITE}" == "true" || -z "$(shell docker images --quiet '${NAME}-${SERVICE}:${TARGET}')" ]]; then \
+		docker build \
+			--pull \
+			--file "./${SERVICE}/Dockerfile.production" \
+			--tag "${NAME}-${SERVICE}:${TARGET}" \
+			"./${SERVICE}" ; \
+	else \
+		echo "Image already exists, skipping build. Pass `OVERWRITE=true` to build anyway." ; \
+	fi
 .PHONY : build
 
 push : ## Push image, for example, `./forge.mk push SERVICE=backend USER=cloud HOST=192.102.162.39`

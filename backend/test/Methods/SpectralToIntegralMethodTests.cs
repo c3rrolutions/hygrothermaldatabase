@@ -5,7 +5,6 @@ using System.Reflection;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Database.Json;
-using Database.Methods;
 using Database.Methods.SpectralToIntegral;
 using FluentAssertions;
 using FluentAssertions.Execution;
@@ -90,7 +89,7 @@ public sealed class SpectralToIntegralMethodTests
     public async Task Calculate_Many()
     {
         using var fileStream = File.OpenRead(
-            ConstructFilePath("./Methods/2d40b285-79d4-4ec6-8d46-767bd9b0f249.json")
+            ConstructFilePath("./Methods/2d40b285-79d4-4ec6-8d46-767bd9b0f249.large.json")
         );
         using var jsonDocument = await JsonDocument.ParseAsync(
             fileStream,

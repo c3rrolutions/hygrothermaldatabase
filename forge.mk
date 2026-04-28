@@ -29,7 +29,7 @@ build : ## Build image if it does not exist yet, for example, `./forge.mk build 
 			--tag "${NAME}-${SERVICE}:${TARGET}" \
 			"./${SERVICE}" ; \
 	else \
-		echo "Image already exists, skipping build. Pass `OVERWRITE=true` to build anyway." ; \
+		echo "Image already exists, skipping build. Pass 'OVERWRITE=true' to build anyway." ; \
 	fi
 .PHONY : build
 

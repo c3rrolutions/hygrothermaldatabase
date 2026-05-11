@@ -49,7 +49,7 @@ const cookieConsentName = "consent";
 const cookieConsentValue = "yes";
 
 export default function Layout({ children }: LayoutProps) {
-  const appTitle = "TestLab Solar Façades";
+  const appTitle = "Hygro DB - C3RRO Product Data Server";
 
   const [cookies, setCookie] = useCookies([cookieConsentName]);
   const shouldShowCookieConsent =

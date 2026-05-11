@@ -10,22 +10,26 @@ function Page() {
     <Layout>
       <div style={{ maxWidth: 768 }}>
         <Typography.Paragraph>
-          <Link href={paths.home}>solarbuildingenvelopes.com</Link> is the
-          website of the product data server of{" "}
-          <Typography.Link href="https://www.ise.fraunhofer.de/en/rd-infrastructure/accredited-labs/testlab-solar-facades.html">
-            TestLab Solar Facades
-          </Typography.Link>{" "}
-          at{" "}
-          <Typography.Link href="https://www.ise.fraunhofer.de">
-            Fraunhofer Institute for Solar Energy Systems ISE
+          <Link href={paths.home}>buildingenvelopedata-dev.c3rro.com/</Link> is the
+          website of the product data server from {" "}
+          <Typography.Link href="https://www.c3rro.com">
+            C3rrolutions GmbH
           </Typography.Link>
           . The product data server is part of the Product Data Network{" "}
           <Typography.Link href={paths.metabase.home}>
             buildingenvelopedata.org
           </Typography.Link>
           . The product data server is an instance of the{" "}
+          <Typography.Link href="https://github.com/c3rrolutions/hygrothermaldatabase">
+            c3rro implementation 
+          </Typography.Link>
+          a fork of the{" "}
           <Typography.Link href="https://github.com/building-envelope-data/database">
             reference implementation of a database
+          </Typography.Link>
+          from {" "}
+          <Typography.Link href="https://www.ise.fraunhofer.de/en/rd-infrastructure/accredited-labs/testlab-solar-facades.html">
+            TestLab Solar Facades, Fraunhofer ISE
           </Typography.Link>
           . The{" "}
           <Typography.Link href="https://github.com/building-envelope-data/database">
@@ -41,14 +45,12 @@ function Page() {
         </Typography.Paragraph>
         <Typography.Paragraph>
           This website is the frontend of the product data server of{" "}
-          <Typography.Link href="https://www.ise.fraunhofer.de/en/rd-infrastructure/accredited-labs/testlab-solar-facades.html">
-            TestLab Solar Facades
+          <Typography.Link href="https://www.c3rro.com">
+            C3rrolutions GmbH
           </Typography.Link>
           . You can use this website to search this product data server for{" "}
-          <Link href={paths.opticalData}>optical data</Link>,{" "}
-          <Link href={paths.geometricData}>optical data</Link>,{" "}
-          <Link href={paths.calorimetricData}>calorimetric data</Link> and{" "}
-          <Link href={paths.photovoltaicData}>photovoltaic data</Link>. If you
+          <Link href={paths.hygrothermalData}>hygrothermal data</Link>
+          . If you
           would like to search the entire Product Data Network{" "}
           <Typography.Link href={paths.metabase.home}>
             buildingenvelopedata.org
@@ -118,7 +120,7 @@ function Page() {
           >
             BED-JSON
           </Typography.Link>{" "}
-          is a general format for optical, calorimetric and photovoltaic data
+          is a general format for optical, calorimetric, photovoltaic data and hygrothermal data 
           sets. It is defined by the{" "}
           <Typography.Link href="https://github.com/building-envelope-data/api/tree/develop/schemas">
             JSON Schemas of the API specification

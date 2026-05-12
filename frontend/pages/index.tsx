@@ -10,7 +10,7 @@ function Page() {
     <Layout>
       <div style={{ maxWidth: 768 }}>
         <Typography.Paragraph>
-          <Link href={paths.home}>buildingenvelopedata-dev.c3rro.com/</Link> is the
+          <Link href={paths.home}>buildingenvelopedata-dev.c3rro.com</Link> is the
           website of the product data server from {" "}
           <Typography.Link href="https://www.c3rro.com">
             C3rrolutions GmbH
@@ -19,14 +19,14 @@ function Page() {
           <Typography.Link href={paths.metabase.home}>
             buildingenvelopedata.org
           </Typography.Link>
-          . The product data server is an instance of the{" "}
+          . It is a fork{" "}
           <Typography.Link href="https://github.com/c3rrolutions/hygrothermaldatabase">
             c3rro implementation 
-          </Typography.Link>
-          a fork of the{" "}
+          </Typography.Link>{" "}
+          of the{" "}
           <Typography.Link href="https://github.com/building-envelope-data/database">
             reference implementation of a database
-          </Typography.Link>
+          </Typography.Link>{" "}
           from {" "}
           <Typography.Link href="https://www.ise.fraunhofer.de/en/rd-infrastructure/accredited-labs/testlab-solar-facades.html">
             TestLab Solar Facades, Fraunhofer ISE
@@ -57,7 +57,7 @@ function Page() {
           </Typography.Link>
           , you can search there for example for{" "}
           <Typography.Link href={paths.metabase.allOpticalData}>
-            optical data{" "}
+            optical data
           </Typography.Link>
           . You will find there also an overview about all building envelope{" "}
           <Typography.Link href={paths.metabase.components}>
@@ -120,7 +120,7 @@ function Page() {
           >
             BED-JSON
           </Typography.Link>{" "}
-          is a general format for optical, calorimetric, photovoltaic data and hygrothermal data 
+          is a general format for optical, calorimetric, photovoltaic and hygrothermal data 
           sets. It is defined by the{" "}
           <Typography.Link href="https://github.com/building-envelope-data/api/tree/develop/schemas">
             JSON Schemas of the API specification

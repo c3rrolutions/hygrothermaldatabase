@@ -1,5 +1,5 @@
 using System;
-using System.Linq;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Database.Authorization;
@@ -23,7 +23,7 @@ public sealed class HygrothermalDataQueries
     // same `id` and when also requesting `uuid`, the latter was always the empty UUID `000...`.
     [UseFiltering<HygrothermalDataFilterType>]
     [UseSorting<HygrothermalDataSortType>]
-    public Task<IQueryable<HygrothermalData>> GetAllHygrothermalDataAsync(
+    public Task<IEnumerable<HygrothermalData>> GetAllHygrothermalDataAsync(
         [GraphQLType<LocaleType>] string? locale,
         ApplicationDbContext context,
         AccessRightsService accessRightsService,
@@ -47,7 +47,7 @@ public sealed class HygrothermalDataQueries
     // same `id` and when also requesting `uuid`, the latter was always the empty UUID `000...`.
     [UseFiltering<HygrothermalDataFilterType>]
     [UseSorting<HygrothermalDataSortType>]
-    public Task<IQueryable<HygrothermalData>> GetAllPendingHygrothermalDataAsync(
+    public Task<IEnumerable<HygrothermalData>> GetAllPendingHygrothermalDataAsync(
         [GraphQLType<LocaleType>] string? locale,
         ApplicationDbContext context,
         AccessRightsService accessRightsService,

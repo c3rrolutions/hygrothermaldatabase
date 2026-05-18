@@ -8,35 +8,31 @@ using static Database.ApiRequests.QueryByIdDataLoader;
 
 namespace Database.ApiRequests;
 
-public static class DataFormatDataLoader
+public static class UserDataLoader
 {
-    private const string QueryFileName = "DataFormats.graphql";
+    private const string QueryFileName = "Users.graphql";
 
     public static Uri GetGraphQlEndpoint(AppSettings appSettings) =>
         QueryByIdDataLoader.GetGraphQlEndpoint(appSettings);
 
-    public sealed record DataFormat(
-        Guid Id,
-        string Name,
-        string? Extension,
-        string MediaType,
-        Uri? SchemaLocator
+    public sealed record User(
+        Guid Id
     ) : IIdNode<Guid>;
 
-    private sealed record DataFormatsData(
-        Connection<DataFormat>? Connection
-    ) : IConnectionData<DataFormat>;
+    private sealed record UsersData(
+        Connection<User>? Connection
+    ) : IConnectionData<User>;
 
     [DataLoader]
-    public static Task<Dictionary<Guid, DataFormat>> GetDataFormatByIdAsync(
-        IReadOnlyList<Guid> dataFormatIds,
+    public static Task<Dictionary<Guid, User>> GetUserByIdAsync(
+        IReadOnlyList<Guid> userIds,
         ApiRequestService apiRequestService,
         AppSettings appSettings,
         CancellationToken cancellationToken
     )
     {
-        return QueryByIdDataLoader.GetByIdAsync<Guid, DataFormatsData, DataFormat>(
-            dataFormatIds,
+        return QueryByIdDataLoader.GetByIdAsync<Guid, UsersData, User>(
+            userIds,
             [QueryFileName],
             apiRequestService,
             appSettings,

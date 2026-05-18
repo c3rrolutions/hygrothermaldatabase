@@ -1,0 +1,9 @@
+query Users($ids: [Uuid!]!) {
+  connection: users(where: { id: { in: $ids } }) {
+    edges {
+      node {
+        id: uuid
+      }
+    }
+  }
+}

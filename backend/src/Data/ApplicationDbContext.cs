@@ -15,6 +15,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SchemaNameOptionsExtension = Database.Data.Extensions.SchemaNameOptionsExtension;
 using NodaTime;
+using System.Text.Json;
 
 namespace Database.Data;
 
@@ -206,6 +207,19 @@ public sealed class ApplicationDbContext
         )
         where TData : class, IData
     {
+        builder
+            .OwnsOne(
+                data => data.DataAccessRights,
+                dataAccessRights =>
+                {
+                    dataAccessRights
+                        .Property(_ => _.AllowedUserAndQuantity)
+                        .HasConversion(
+                            dictionary => JsonSerializer.Serialize(dictionary),
+                            stringValue => JsonSerializer.Deserialize<Dictionary<Guid, uint?>>(stringValue) ?? new()
+                        );
+                }
+            );
         builder
             .OwnsOne(
                 data => data.AppliedMethod,

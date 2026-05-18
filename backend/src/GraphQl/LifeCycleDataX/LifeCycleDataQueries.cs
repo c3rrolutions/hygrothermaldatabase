@@ -1,5 +1,5 @@
 using System;
-using System.Linq;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Database.Authorization;
@@ -23,7 +23,7 @@ public sealed class LifeCycleDataQueries
     // same `id` and when also requesting `uuid`, the latter was always the empty UUID `000...`.
     [UseFiltering<LifeCycleDataFilterType>]
     [UseSorting<LifeCycleDataSortType>]
-    public Task<IQueryable<LifeCycleData>> GetAllLifeCycleDataAsync(
+    public Task<IEnumerable<LifeCycleData>> GetAllLifeCycleDataAsync(
         [GraphQLType<LocaleType>] string? locale,
         ApplicationDbContext context,
         AccessRightsService accessRightsService,
@@ -47,7 +47,7 @@ public sealed class LifeCycleDataQueries
     // same `id` and when also requesting `uuid`, the latter was always the empty UUID `000...`.
     [UseFiltering<LifeCycleDataFilterType>]
     [UseSorting<LifeCycleDataSortType>]
-    public Task<IQueryable<LifeCycleData>> GetAllPendingLifeCycleDataAsync(
+    public Task<IEnumerable<LifeCycleData>> GetAllPendingLifeCycleDataAsync(
         [GraphQLType<LocaleType>] string? locale,
         ApplicationDbContext context,
         AccessRightsService accessRightsService,

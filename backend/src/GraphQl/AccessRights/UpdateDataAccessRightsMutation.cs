@@ -1,13 +1,15 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Database.ApiRequests;
 using Database.Authorization;
 using Database.Data;
 using Database.Enumerations;
 using Database.Extensions;
-using Database.Services;
+using GraphQL.Client.Abstractions.Utilities;
 using HotChocolate.Types;
 
 namespace Database.GraphQl.AccessRights;
@@ -27,7 +29,10 @@ public enum UpdateDataAccessRightsErrorCode
     UNKNOWN,
     UNAUTHENTICATED,
     UNAUTHORIZED,
-    UNKNOWN_DATA
+    UNKNOWN_DATA,
+    UNKNOWN_INSTITUTION,
+    UNKNOWN_USER,
+    UNKNOWN_APPLICATION
 }
 
 public sealed record UpdateDataAccessRightsError(
@@ -61,6 +66,9 @@ public sealed class UpdateDataAccessRightsMutation
         UpdateDataAccessRightsInput input,
         ApplicationDbContext context,
         CommonAuthorization authorization,
+        IInstitutionByIdDataLoader institutionByIdDataLoader,
+        IOpenIdConnectApplicationByClientIdDataLoader openIdConnectApplicationByIdDataLoader,
+        IUserByIdDataLoader userByIdDataLoader,
         CancellationToken cancellationToken
     )
     {
@@ -86,6 +94,82 @@ public sealed class UpdateDataAccessRightsMutation
         )
         {
             return fetchDataErrorPayload;
+        }
+
+        List<UpdateDataAccessRightsError> errors = [];
+
+        var unknownInstitutions =
+            input.AllowedInstitutions is null
+            ? null
+            : input.AllowedInstitutions.Zip(
+                    await Task.WhenAll(
+                        input.AllowedInstitutions
+                        .Select(id => institutionByIdDataLoader.LoadAsync(id, cancellationToken))
+                    )
+                )
+                .Where(_ => _.Second is null)
+                .Select(_ => _.First)
+                .ToList().AsReadOnly();
+        if (unknownInstitutions is not null && unknownInstitutions.Count > 0)
+        {
+            errors.Add(
+                NewError(
+                    UpdateDataAccessRightsErrorCode.UNKNOWN_INSTITUTION,
+                    $"The institution(s) '{string.Join("', '", unknownInstitutions)}' do(es) not exist.",
+                    [nameof(input), nameof(input.AllowedInstitutions).ToLowerFirst()]
+                )
+            );
+        }
+
+        var unknownOpenIdConnectApplications =
+            input.AllowedApplications is null
+            ? null
+            : input.AllowedApplications.Zip(
+                    await Task.WhenAll(
+                        input.AllowedApplications
+                        .Select(id => openIdConnectApplicationByIdDataLoader.LoadAsync(id, cancellationToken))
+                    )
+                )
+                .Where(_ => _.Second is null)
+                .Select(_ => _.First)
+                .ToList().AsReadOnly();
+        if (unknownOpenIdConnectApplications is not null && unknownOpenIdConnectApplications.Count > 0)
+        {
+            errors.Add(
+                NewError(
+                    UpdateDataAccessRightsErrorCode.UNKNOWN_APPLICATION,
+                    $"The openIdConnectApplication(s) '{string.Join("', '", unknownOpenIdConnectApplications)}' do(es) not exist.",
+                    [nameof(input), nameof(input.AllowedApplications).ToLowerFirst()]
+                )
+            );
+        }
+
+        var unknownUsers =
+            input.AllowedUserAndQuantity is null
+            ? null
+            : input.AllowedUserAndQuantity.Zip(
+                    await Task.WhenAll(
+                        input.AllowedUserAndQuantity
+                        .Select(userAndQuantity => userByIdDataLoader.LoadAsync(userAndQuantity.Key, cancellationToken))
+                    )
+                )
+                .Where(_ => _.Second is null)
+                .Select(_ => _.First.Key)
+                .ToList().AsReadOnly();
+        if (unknownUsers is not null && unknownUsers.Count > 0)
+        {
+            errors.Add(
+                NewError(
+                    UpdateDataAccessRightsErrorCode.UNKNOWN_USER,
+                    $"The user(s) '{string.Join("', '", unknownUsers)}' do(es) not exist.",
+                    [nameof(input), nameof(input.AllowedUserAndQuantity).ToLowerFirst()]
+                )
+            );
+        }
+
+        if (errors.Count > 0)
+        {
+            return NewPayload(null, errors);
         }
 
         data.DataAccessRights.AllowedInstitutions = input.AllowedInstitutions;

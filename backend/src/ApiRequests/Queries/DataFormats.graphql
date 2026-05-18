@@ -2,7 +2,7 @@ query DataFormats($ids: [Uuid!]!) {
   connection: dataFormats(where: { id: { in: $ids } }) {
     edges {
       node {
-        uuid
+        id: uuid
         name
         extension
         mediaType
@@ -11,3 +11,4 @@ query DataFormats($ids: [Uuid!]!) {
     }
   }
 }
+

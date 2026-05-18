@@ -1,18 +1,16 @@
 using System;
-using System.Linq;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Database.Authorization;
 using Database.Data;
 using Database.GraphQl.DataX;
-using Database.GraphQl.Extensions;
 using Database.Services;
 using HotChocolate;
 using HotChocolate.Data;
 using HotChocolate.Data.Sorting;
 using HotChocolate.Resolvers;
 using HotChocolate.Types;
-using Microsoft.EntityFrameworkCore;
 
 namespace Database.GraphQl.GeometricDataX;
 
@@ -23,7 +21,7 @@ public sealed class GeometricDataQueries
     [UsePaging]
     [UseFiltering<GeometricDataFilterType>]
     [UseSorting<GeometricDataSortType>]
-    public Task<IQueryable<GeometricData>> GetAllGeometricDataAsync(
+    public Task<IEnumerable<GeometricData>> GetAllGeometricDataAsync(
         [GraphQLType<LocaleType>] string? locale,
         ApplicationDbContext context,
         AccessRightsService accessRightsService,
@@ -45,7 +43,7 @@ public sealed class GeometricDataQueries
     [UsePaging]
     [UseFiltering<GeometricDataFilterType>]
     [UseSorting<GeometricDataSortType>]
-    public Task<IQueryable<GeometricData>> GetAllPendingGeometricDataAsync(
+    public Task<IEnumerable<GeometricData>> GetAllPendingGeometricDataAsync(
         [GraphQLType<LocaleType>] string? locale,
         ApplicationDbContext context,
         AccessRightsService accessRightsService,

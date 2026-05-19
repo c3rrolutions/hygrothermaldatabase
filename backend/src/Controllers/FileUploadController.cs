@@ -90,6 +90,7 @@ public sealed class FileUploadController(
     [DisableFormValueModelBinding]
     // TODO Add this `[RequireAntiforgeryToken]` once we know where to set the generation token cookie!
     [Authorize(AuthenticationSchemes = AuthenticationConstants.CookieAndBearerTokenAuthenticationScheme)]
+    [AllowAnonymous]
     [Produces(MediaTypeNames.Application.Json)]
     public async Task<IActionResult> UploadFile(
         [FromQuery] Guid getHttpsResourceUuid,

@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Database.Services;
 using GreenDonut;
+using static Database.ApiRequests.QueryByIdDataLoader;
 
 namespace Database.ApiRequests;
 
@@ -15,8 +16,8 @@ public static class InstitutionDataLoader
         QueryByIdDataLoader.GetGraphQlEndpoint(appSettings);
 
     public sealed record Institution(
-        Guid Uuid
-    ) : IIdNode;
+        Guid Id
+    ) : IIdNode<Guid>;
 
     private sealed record InstitutionsData(
         Connection<Institution>? Connection
@@ -30,7 +31,7 @@ public static class InstitutionDataLoader
         CancellationToken cancellationToken
     )
     {
-        return QueryByIdDataLoader.GetByIdAsync<InstitutionsData, Institution>(
+        return QueryByIdDataLoader.GetByIdAsync<Guid, InstitutionsData, Institution>(
             institutionIds,
             [QueryFileName],
             apiRequestService,

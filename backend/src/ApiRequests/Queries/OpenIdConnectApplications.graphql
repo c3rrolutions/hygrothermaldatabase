@@ -1,0 +1,9 @@
+query OpenIdConnectApplications($ids: [String!]!) {
+  connection: openIdConnectApplications(where: { clientId: { in: $ids } }) {
+    edges {
+      node {
+        id: clientId
+      }
+    }
+  }
+}

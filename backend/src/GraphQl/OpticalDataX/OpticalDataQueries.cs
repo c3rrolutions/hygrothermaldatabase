@@ -1,5 +1,5 @@
 using System;
-using System.Linq;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Database.Authorization;
@@ -23,7 +23,7 @@ public sealed class OpticalDataQueries
     // same `id` and when also requesting `uuid`, the latter was always the empty UUID `000...`.
     [UseFiltering<OpticalDataFilterType>]
     [UseSorting<OpticalDataSortType>]
-    public Task<IQueryable<OpticalData>> GetAllOpticalDataAsync(
+    public Task<IEnumerable<OpticalData>> GetAllOpticalDataAsync(
         [GraphQLType<LocaleType>] string? locale,
         ApplicationDbContext context,
         AccessRightsService accessRightsService,
@@ -47,7 +47,7 @@ public sealed class OpticalDataQueries
     // same `id` and when also requesting `uuid`, the latter was always the empty UUID `000...`.
     [UseFiltering<OpticalDataFilterType>]
     [UseSorting<OpticalDataSortType>]
-    public Task<IQueryable<OpticalData>> GetAllPendingOpticalDataAsync(
+    public Task<IEnumerable<OpticalData>> GetAllPendingOpticalDataAsync(
         [GraphQLType<LocaleType>] string? locale,
         ApplicationDbContext context,
         AccessRightsService accessRightsService,

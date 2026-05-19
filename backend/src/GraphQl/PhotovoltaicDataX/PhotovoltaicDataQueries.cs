@@ -1,18 +1,16 @@
 using System;
-using System.Linq;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Database.Authorization;
 using Database.Data;
 using Database.GraphQl.DataX;
-using Database.GraphQl.Extensions;
 using Database.Services;
 using HotChocolate;
 using HotChocolate.Data;
 using HotChocolate.Data.Sorting;
 using HotChocolate.Resolvers;
 using HotChocolate.Types;
-using Microsoft.EntityFrameworkCore;
 
 namespace Database.GraphQl.PhotovoltaicDataX;
 
@@ -25,7 +23,7 @@ public sealed class PhotovoltaicDataQueries
     // same `id` and when also requesting `uuid`, the latter was always the empty UUID `000...`.
     [UseFiltering<PhotovoltaicDataFilterType>]
     [UseSorting<PhotovoltaicDataSortType>]
-    public Task<IQueryable<PhotovoltaicData>> GetAllPhotovoltaicDataAsync(
+    public Task<IEnumerable<PhotovoltaicData>> GetAllPhotovoltaicDataAsync(
         [GraphQLType<LocaleType>] string? locale,
         ApplicationDbContext context,
         AccessRightsService accessRightsService,
@@ -49,7 +47,7 @@ public sealed class PhotovoltaicDataQueries
     // same `id` and when also requesting `uuid`, the latter was always the empty UUID `000...`.
     [UseFiltering<PhotovoltaicDataFilterType>]
     [UseSorting<PhotovoltaicDataSortType>]
-    public Task<IQueryable<PhotovoltaicData>> GetAllPendingPhotovoltaicDataAsync(
+    public Task<IEnumerable<PhotovoltaicData>> GetAllPendingPhotovoltaicDataAsync(
         [GraphQLType<LocaleType>] string? locale,
         ApplicationDbContext context,
         AccessRightsService accessRightsService,

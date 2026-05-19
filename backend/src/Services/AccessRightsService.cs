@@ -32,13 +32,13 @@ public sealed class AccessRightsService(
     public async Task<T?> ApplyAccessRightsOnData<T>(T data, CancellationToken cancellationToken)
     where T : IData
     {
-        return await (
-            await ApplyAccessRightsOnData(new List<T> { data }.AsQueryable(), cancellationToken)
-        ).SingleOrDefaultAsync(cancellationToken);
+        return (
+            await ApplyAccessRightsOnData([data], cancellationToken)
+        ).SingleOrDefault();
     }
 
-    public async Task<IQueryable<T>> ApplyAccessRightsOnData<T>(
-        IQueryable<T> data,
+    public async Task<IEnumerable<T>> ApplyAccessRightsOnData<T>(
+        IEnumerable<T> data,
         CancellationToken cancellationToken
     )
     where T : IData
@@ -72,7 +72,7 @@ public sealed class AccessRightsService(
             // Save InstitutionAccessRight changes
             await context.SaveChangesAsync(cancellationToken);
         }
-        return result.AsQueryable<T>();
+        return result;
     }
 
     private static async Task<IReadOnlyList<InstitutionAccessRights>> GetInstitutionAccessRightsAsync(
@@ -90,7 +90,7 @@ public sealed class AccessRightsService(
     }
 
     private IEnumerable<T> ProcessData<T>(
-        IQueryable<T> data,
+        IEnumerable<T> data,
         CurrentUser? currentUser,
         string? openIdConnectClientId,
         IReadOnlyList<Guid>? institutionIds,

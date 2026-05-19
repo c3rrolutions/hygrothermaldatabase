@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Database.Services;
 using GreenDonut;
+using static Database.ApiRequests.QueryByIdDataLoader;
 
 namespace Database.ApiRequests;
 
@@ -15,8 +16,8 @@ public static class MethodDataLoader
         QueryByIdDataLoader.GetGraphQlEndpoint(appSettings);
 
     public sealed record Method(
-        Guid Uuid
-    ) : IIdNode;
+        Guid Id
+    ) : IIdNode<Guid>;
 
     private sealed record MethodsData(
         Connection<Method>? Connection
@@ -30,7 +31,7 @@ public static class MethodDataLoader
         CancellationToken cancellationToken
     )
     {
-        return QueryByIdDataLoader.GetByIdAsync<MethodsData, Method>(
+        return QueryByIdDataLoader.GetByIdAsync<Guid, MethodsData, Method>(
             methodIds,
             [QueryFileName],
             apiRequestService,

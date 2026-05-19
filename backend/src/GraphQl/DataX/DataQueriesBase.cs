@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -18,7 +19,7 @@ namespace Database.GraphQl.DataX;
 public abstract class DataQueriesBase<TData>
 where TData : class, IData
 {
-    protected async Task<IQueryable<TData>> GetAllDataAsync(
+    protected async Task<IEnumerable<TData>> GetAllDataAsync(
         DbSet<TData> data,
         [GraphQLType<LocaleType>] string? locale,
         AccessRightsService accessRightsService,
@@ -40,7 +41,7 @@ where TData : class, IData
         return await accessRightsService.ApplyAccessRightsOnData(filteredData, cancellationToken);
     }
 
-    protected async Task<IQueryable<TData>> GetAllPendingDataAsync(
+    protected async Task<IEnumerable<TData>> GetAllPendingDataAsync(
         DbSet<TData> data,
         [GraphQLType<LocaleType>] string? locale,
         AccessRightsService accessRightsService,

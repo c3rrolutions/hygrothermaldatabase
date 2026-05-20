@@ -10,6 +10,7 @@ using Database.Data;
 using Database.Enumerations;
 using Database.Extensions;
 using Database.GraphQl.DataX;
+using Database.GraphQl.Scalars;
 using Database.Services;
 using HotChocolate;
 using HotChocolate.Types;
@@ -23,7 +24,7 @@ public sealed record CreateOpticalDataInput(
     string? Name,
     string? Description,
     string[] Warnings,
-    OffsetDateTime CreatedAt,
+    DateTimeOffset CreatedAt,
     Guid CreatorId,
     OpticalComponentType? Type,
     OpticalComponentSubtype? Subtype,
@@ -124,6 +125,7 @@ public sealed class CreateOpticalDataMutation
         IDataByDatabaseAndIdAndKindDataLoader dataByDatabaseAndIdAndKindDataLoader,
         IDataFormatByIdDataLoader dataFormatByIdDataLoader,
         ResponseApprovalService responseApprovalService,
+        IClock clock,
         CancellationToken cancellationToken
     )
     {
@@ -153,6 +155,7 @@ public sealed class CreateOpticalDataMutation
                 CreateOpticalDataErrorCode.UNKNOWN_DATA,
                 dataFormatByIdDataLoader,
                 CreateOpticalDataErrorCode.UNKNOWN_DATA_FORMAT,
+                clock,
                 cancellationToken
             )
             ).Failed(out var dataFormat, out var validateErrorPayload)

@@ -5,8 +5,8 @@ using HotChocolate.Data.Sorting;
 namespace Database.GraphQl.DataX;
 
 public abstract class DataSortTypeBase<TData>
-    : EntitySortType<TData>
-    where TData : IData
+    : AuditableEntitySortType<TData>
+    where TData : IData, IAuditable
 {
     protected override void Configure(
         ISortInputTypeDescriptor<TData> descriptor
@@ -18,7 +18,6 @@ public abstract class DataSortTypeBase<TData>
         descriptor.Field(x => x.Description);
         descriptor.Field(x => x.ComponentId);
         descriptor.Field(x => x.CreatorId);
-        descriptor.Field(x => x.CreatedAt);
         descriptor.Field(x => x.AppliedMethod);
     }
 }

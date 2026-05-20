@@ -86,7 +86,6 @@ public sealed class UpdateResponseApprovalsMutation
         CancellationToken cancellationToken
     )
     {
-        var queryContext = resolverContext.GetQueryContext<IData>();
         if ((await AuthorizeAsync(
                 UpdateResponseApprovalsErrorCode.UNAUTHENTICATED,
                 UpdateResponseApprovalsErrorCode.UNAUTHORIZED,
@@ -102,7 +101,7 @@ public sealed class UpdateResponseApprovalsMutation
         var dataSets = new ConcurrentBag<IData>();
         var errors = new ConcurrentBag<UpdateResponseApprovalsError>();
         await Parallel.ForEachAsync(
-            context.GetAllDataAsync(_ => _.Approval != null, queryContext),
+            context.GetAllDataAsync(_ => _.Approval != null, resolverContext.GetQueryContext<IData>()),
             cancellationToken,
             async (data, cancellationToken) =>
             {

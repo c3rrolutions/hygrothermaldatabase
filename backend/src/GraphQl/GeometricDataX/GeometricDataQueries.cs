@@ -1,14 +1,13 @@
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Database.Authorization;
 using Database.Data;
 using Database.GraphQl.DataX;
+using Database.GraphQl.Scalars;
 using Database.Services;
 using HotChocolate;
 using HotChocolate.Data;
-using HotChocolate.Data.Sorting;
 using HotChocolate.Resolvers;
 using HotChocolate.Types;
 
@@ -21,11 +20,10 @@ public sealed class GeometricDataQueries
     [UsePaging]
     [UseFiltering<GeometricDataFilterType>]
     [UseSorting<GeometricDataSortType>]
-    public Task<IEnumerable<GeometricData>> GetAllGeometricDataAsync(
+    public Task<HotChocolate.Types.Pagination.Connection<GeometricData>> GetAllGeometricDataAsync(
         [GraphQLType<LocaleType>] string? locale,
         ApplicationDbContext context,
         AccessRightsService accessRightsService,
-        ISortingContext sorting,
         IResolverContext resolverContext,
         CancellationToken cancellationToken
     )
@@ -34,7 +32,6 @@ public sealed class GeometricDataQueries
             context.GeometricData,
             locale,
             accessRightsService,
-            sorting,
             resolverContext,
             cancellationToken
         );
@@ -43,11 +40,10 @@ public sealed class GeometricDataQueries
     [UsePaging]
     [UseFiltering<GeometricDataFilterType>]
     [UseSorting<GeometricDataSortType>]
-    public Task<IEnumerable<GeometricData>> GetAllPendingGeometricDataAsync(
+    public Task<HotChocolate.Types.Pagination.Connection<GeometricData>> GetAllPendingGeometricDataAsync(
         [GraphQLType<LocaleType>] string? locale,
         ApplicationDbContext context,
         AccessRightsService accessRightsService,
-        ISortingContext sorting,
         IResolverContext resolverContext,
         CommonAuthorization authorization,
         CancellationToken cancellationToken
@@ -57,7 +53,6 @@ public sealed class GeometricDataQueries
             context.GeometricData,
             locale,
             accessRightsService,
-            sorting,
             resolverContext,
             authorization,
             cancellationToken

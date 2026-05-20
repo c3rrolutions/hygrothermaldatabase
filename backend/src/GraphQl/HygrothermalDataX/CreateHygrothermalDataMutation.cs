@@ -8,6 +8,7 @@ using Database.Authorization;
 using Database.Data;
 using Database.Extensions;
 using Database.GraphQl.DataX;
+using Database.GraphQl.Scalars;
 using Database.Services;
 using HotChocolate;
 using HotChocolate.Types;
@@ -21,7 +22,7 @@ public sealed record CreateHygrothermalDataInput(
     string? Name,
     string? Description,
     string[] Warnings,
-    OffsetDateTime CreatedAt,
+    DateTimeOffset CreatedAt,
     Guid CreatorId,
     AppliedMethodInput AppliedMethod,
     RootGetHttpsResourceInput RootResource
@@ -102,6 +103,7 @@ public sealed class CreateHygrothermalDataMutation
         IDataByDatabaseAndIdAndKindDataLoader dataByDatabaseAndIdAndKindDataLoader,
         IDataFormatByIdDataLoader dataFormatByIdDataLoader,
         ResponseApprovalService responseApprovalService,
+        IClock clock,
         CancellationToken cancellationToken
     )
     {
@@ -131,6 +133,7 @@ public sealed class CreateHygrothermalDataMutation
                 CreateHygrothermalDataErrorCode.UNKNOWN_DATA,
                 dataFormatByIdDataLoader,
                 CreateHygrothermalDataErrorCode.UNKNOWN_DATA_FORMAT,
+                clock,
                 cancellationToken
             )
             ).Failed(out var dataFormat, out var validateErrorPayload)

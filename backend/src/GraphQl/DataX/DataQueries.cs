@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Database.Data;
 using Database.Enumerations;
+using Database.GraphQl.Scalars;
 using Database.Services;
 using HotChocolate;
 using HotChocolate.Types;

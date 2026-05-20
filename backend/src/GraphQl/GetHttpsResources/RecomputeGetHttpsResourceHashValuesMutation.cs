@@ -88,8 +88,6 @@ public sealed class RecomputeGetHttpsResourceHashValuesMutation
         CancellationToken cancellationToken
     )
     {
-        var queryContext = resolverContext.GetQueryContext<GetHttpsResource>();
-
         if ((await AuthorizeAsync(
                 RecomputeGetHttpsResourceHashValuesErrorCode.UNAUTHENTICATED,
                 RecomputeGetHttpsResourceHashValuesErrorCode.UNAUTHORIZED,
@@ -101,10 +99,9 @@ public sealed class RecomputeGetHttpsResourceHashValuesMutation
         {
             return authorizeErrorPayload;
         }
-
         var resources =
             await context.GetHttpsResourcesWithData
-            .With(queryContext, sort => sort.StabilizeOrder())
+            .With(resolverContext.GetQueryContext<GetHttpsResource>(), Sorting.DefaultEntityOrder)
             .ToListAsync(cancellationToken);
         var errors = new ConcurrentBag<RecomputeGetHttpsResourceHashValuesError>();
         await Parallel.ForEachAsync(

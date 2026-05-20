@@ -5,8 +5,8 @@ using HotChocolate.Data.Filters;
 namespace Database.GraphQl.DataX;
 
 public abstract class DataFilterTypeBase<TData>
-    : EntityFilterType<TData>
-    where TData : IData
+    : AuditableEntityFilterType<TData>
+    where TData : IData, IAuditable
 {
     protected override void Configure(
         IFilterInputTypeDescriptor<TData> descriptor
@@ -19,7 +19,6 @@ public abstract class DataFilterTypeBase<TData>
         descriptor.Field(x => x.Description);
         descriptor.Field(x => x.ComponentId);
         descriptor.Field(x => x.CreatorId);
-        descriptor.Field(x => x.CreatedAt);
         descriptor.Field(x => x.AppliedMethod);
         descriptor.Field(x => x.Approvals);
         descriptor.Field(x => x.Resources);

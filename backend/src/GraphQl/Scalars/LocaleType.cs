@@ -2,7 +2,7 @@ using System.Text.RegularExpressions;
 using HotChocolate.Types;
 
 // TODO Maybe use an enumeration as runtime type instead of string (and fallback to english when the given one does not exist).namespace Database.GraphQl
-namespace Database.GraphQl;
+namespace Database.GraphQl.Scalars;
 
 /// <summary>
 ///     [BCP 47](https://tools.ietf.org/html/bcp47)
@@ -29,12 +29,12 @@ public sealed class LocaleType(
     BindingBehavior bind = BindingBehavior.Explicit)
         : RegexType(
         name,
-        _validationPattern,
+        ValidationPattern,
         description,
         RegexOptions.Compiled | RegexOptions.IgnoreCase,
         bind)
 {
-    private const string _validationPattern =
+    private const string ValidationPattern =
         "^[a-zA-Z0-9]+(-[a-zA-Z0-9]+)?(-[a-zA-Z0-9]+)?$";
 
     /// <summary>

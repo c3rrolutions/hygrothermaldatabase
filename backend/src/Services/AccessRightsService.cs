@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Database.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using NodaTime;
 using static Database.ApiRequests.QueryCurrentUserOrInstitution;
 
 namespace Database.Services;
@@ -27,7 +28,9 @@ public sealed class AccessRightsService(
     IDbContextFactory<ApplicationDbContext> dbContextFactory,
     UserService userService,
     CacheService cacheService,
-    ILogger<AccessRightsService> logger)
+    IClock clock,
+    ILogger<AccessRightsService> logger
+)
 {
     public async Task<T?> ApplyAccessRightsOnData<T>(T data, CancellationToken cancellationToken)
     where T : IData
@@ -65,7 +68,7 @@ public sealed class AccessRightsService(
             institutionAccessRights = await GetInstitutionAccessRightsAsync(institutionIds, context, cancellationToken);
         }
 
-        var result = ProcessData(data, currentUserOrInstitution.CurrentUser, openIdConnectClientId, institutionIds, institutionAccessRights, alreadyAccessedByUserCount, cacheService);
+        var result = ProcessData(data, currentUserOrInstitution.CurrentUser, openIdConnectClientId, institutionIds, institutionAccessRights, alreadyAccessedByUserCount);
 
         if (context is not null)
         {
@@ -95,8 +98,7 @@ public sealed class AccessRightsService(
         string? openIdConnectClientId,
         IReadOnlyList<Guid>? institutionIds,
         IReadOnlyList<InstitutionAccessRights>? institutionAccessRights,
-        uint? alreadyAccessedByUserCount,
-        CacheService cacheService
+        uint? alreadyAccessedByUserCount
     )
     where T : IData
     {
@@ -145,7 +147,7 @@ public sealed class AccessRightsService(
                     && institutionAccessRights.Any(x =>
                         (
                             x.HasRestrictionsByTime
-                            && x.IsDataRestrictedByTime(dataItem, cacheService, out reason)
+                            && x.IsDataRestrictedByTime(dataItem, clock, cacheService, out reason)
                         )
                         || (
                             x.HasRestrictionsByUser

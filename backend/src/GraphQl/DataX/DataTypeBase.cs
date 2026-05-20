@@ -1,5 +1,7 @@
 using System;
 using Database.Data;
+using Database.GraphQl.Entities;
+using Database.GraphQl.Scalars;
 using GreenDonut;
 using HotChocolate.Types;
 
@@ -8,7 +10,7 @@ namespace Database.GraphQl.DataX;
 public abstract class DataTypeBase<TData, TDataByIdDataLoader>
     : EntityType<TData, TDataByIdDataLoader>
     where TData : IData
-    where TDataByIdDataLoader : IDataLoader<Guid, TData?>
+    where TDataByIdDataLoader : IDataLoader<Guid, TData>
 {
     protected override void Configure(
         IObjectTypeDescriptor<TData> descriptor
@@ -16,23 +18,22 @@ public abstract class DataTypeBase<TData, TDataByIdDataLoader>
     {
         base.Configure(descriptor);
         descriptor
+            .Field(_ => _.PublishingState)
+            .Ignore();
+        descriptor
+            .Field(_ => _.UpdatedAt)
+            .Name(DataType.TimestampFieldName);
+        descriptor
             .Field(x => x.Locale)
             .Type<NonNullType<LocaleType>>();
         descriptor
             .Field(x => x.Resources)
-            .ResolveWith<DataResolvers>(t => t.GetGetHttpsResources(default!, default!, default!, default!));
+            .ResolveWith<DataResolvers>(t => t.GetHttpsResources(default!, default!, default!, default!));
         descriptor
             .Field(DataType.ResourceTreeFieldName)
-            .ResolveWith<DataResolvers>(t => t.GetGetHttpsResourceTree(default!));
-        descriptor
-            .Field(DataType.TimestampFieldName)
-            .Type<NonNullType<DateTimeType>>()
-            .ResolveWith<DataResolvers>(t => t.GetTimestamp());
+            .ResolveWith<DataResolvers>(t => t.GetHttpsResourceTree(default!));
         descriptor
             .Field(x => x.Approval)
             .Type<NonNullType<ObjectType<ResponseApproval>>>();
-        descriptor
-            .Field(_ => _.PublishingState)
-            .Ignore();
     }
 }

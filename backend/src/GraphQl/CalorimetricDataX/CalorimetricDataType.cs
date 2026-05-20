@@ -5,7 +5,7 @@ using HotChocolate.Types;
 namespace Database.GraphQl.CalorimetricDataX;
 
 public sealed class CalorimetricDataType
-    : DataTypeBase<CalorimetricData, CalorimetricDataByIdDataLoader>
+    : DataTypeBase<CalorimetricData, ICalorimetricDataByIdDataLoader>
 {
     protected override void Configure(
         IObjectTypeDescriptor<CalorimetricData> descriptor

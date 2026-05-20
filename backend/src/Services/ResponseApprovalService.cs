@@ -32,7 +32,8 @@ public static partial class Log
 public sealed class ResponseApprovalService(
     AppSettings appSettings,
     SigningService signingService,
-    IRequestExecutorResolver requestExecutorResolver,
+    IRequestExecutorProvider requestExecutorProvider,
+    IClock clock,
     ILogger<ResponseApprovalService> logger
 )
 {
@@ -97,7 +98,7 @@ public sealed class ResponseApprovalService(
         }
         var (signature, fingerprint) = await signingService.SignData(response);
         return new ResponseApproval(
-            OffsetDateTime.UtcNow,
+            clock.GetUtcNow(),
             signature,
             fingerprint,
             query,
@@ -134,7 +135,7 @@ public sealed class ResponseApprovalService(
             .SetDocument(query)
             .SetVariableValues(variables)
             .Build();
-        var requestExecutor = await requestExecutorResolver.GetRequestExecutorAsync(cancellationToken: cancellationToken);
+        var requestExecutor = await requestExecutorProvider.GetExecutorAsync(cancellationToken: cancellationToken);
         var executionResult = await requestExecutor.ExecuteAsync(operationRequest, cancellationToken);
         var response = executionResult.ToJson(withIndentations: false);
         return (query, JsonSerializer.SerializeToElement(variables), response);

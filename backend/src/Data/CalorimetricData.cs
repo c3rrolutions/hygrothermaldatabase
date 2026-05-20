@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Threading.Tasks;
 using Database.Extractors;
-using NodaTime;
 
 namespace Database.Data;
 
@@ -18,7 +17,7 @@ public sealed class CalorimetricData
         string? description,
         string[] warnings,
         Guid creatorId,
-        OffsetDateTime createdAt,
+        DateTimeOffset createdAt,
         AppliedMethod appliedMethod,
         double[] gValues,
         double[] uValues
@@ -47,7 +46,7 @@ public sealed class CalorimetricData
         string? description,
         string[] warnings,
         Guid creatorId,
-        OffsetDateTime createdAt,
+        DateTimeOffset createdAt,
         double[] gValues,
         double[] uValues
     ) : base(

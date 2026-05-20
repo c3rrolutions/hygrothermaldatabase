@@ -14,7 +14,7 @@ using EntityFrameworkCore.Projectables;
 namespace Database.Data;
 
 public sealed class GetHttpsResource
-: Entity
+: AuditableEntity
 {
     public const string FilesDirectoryPath = "./files/";
     public const string TableName = "get_https_resource";

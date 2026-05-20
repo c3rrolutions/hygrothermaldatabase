@@ -10,7 +10,9 @@ namespace Database.Services;
 public sealed class CacheService(
     IMemoryCache currentUserOrInstitutionCache,
     IMemoryCache accessCountCache,
-    IMemoryCache timePeriodCountCache)
+    IMemoryCache timePeriodCountCache,
+    IClock clock
+)
 {
     public CurrentUserOrInstitution? SetCurrentUserOrInstitution(string token, CurrentUserOrInstitution cachedUserOrInstitution)
     {
@@ -43,7 +45,7 @@ public sealed class CacheService(
     {
         if (!timePeriodCountCache.TryGetValue(institutionId, out (OffsetDateTime StartTime, uint Count) accessesPerPeriod))
         {
-            return timePeriodCountCache.Set(institutionId, (OffsetDateTime.UtcNow, (uint)0));
+            return timePeriodCountCache.Set(institutionId, (clock.GetUtcNow(), (uint)0));
         }
         return accessesPerPeriod;
     }
@@ -57,6 +59,6 @@ public sealed class CacheService(
 
     public (OffsetDateTime StartTime, uint Count) SetNewTimePeriod(Guid institutionId)
     {
-        return timePeriodCountCache.Set(institutionId, (OffsetDateTime.UtcNow, (uint)0));
+        return timePeriodCountCache.Set(institutionId, (clock.GetUtcNow(), (uint)0));
     }
 }

@@ -1,10 +1,11 @@
 using System;
-using System.Runtime.ConstrainedExecution;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Database.Authentication;
+using Database.Extensions;
 using Microsoft.Extensions.Logging;
+using NodaTime;
 using Quartz;
 
 namespace Database.Jobs;
@@ -48,6 +49,7 @@ public static partial class Log
 }
 
 public sealed class JwtSigningAndEncryptionCertificateRotationJob(
+    IClock clock,
     ILogger<JwtSigningAndEncryptionCertificateRotationJob> logger
 )
 : IJob
@@ -71,7 +73,7 @@ public sealed class JwtSigningAndEncryptionCertificateRotationJob(
         // TODO: Trigger OpenIddict reload. Currently done dialy with a cron job that restart all services.
     }
 
-    public static X509Certificate2 CreateSigningCertificate(string distinguishedName)
+    public static X509Certificate2 CreateSigningCertificate(string distinguishedName, IClock clock)
     {
         // In the future use ECDSA.
         // using var algorithm = ECDsa.Create(ECCurve.NamedCurves.nistP256);
@@ -93,7 +95,7 @@ public sealed class JwtSigningAndEncryptionCertificateRotationJob(
                 critical: true
             )
         );
-        var now = TimeProvider.System.GetUtcNow();
+        var now = clock.GetUtcNow().ToDateTimeOffset();
         var ephemeralCertificate = request.CreateSelfSigned(
             notBefore: now.Add(s_notBeforeOffset),
             notAfter: now.Add(s_notAfterOffset)
@@ -110,7 +112,7 @@ public sealed class JwtSigningAndEncryptionCertificateRotationJob(
     {
         try
         {
-            return CreateSigningCertificate(distinguishedName);
+            return CreateSigningCertificate(distinguishedName, clock);
         }
         catch (Exception exception)
         {
@@ -119,7 +121,7 @@ public sealed class JwtSigningAndEncryptionCertificateRotationJob(
         }
     }
 
-    public static X509Certificate2 CreateEncryptionCertificate(string distinguishedName)
+    public static X509Certificate2 CreateEncryptionCertificate(string distinguishedName, IClock clock)
     {
         // In the furture use `ML-KEM`.
         using var algorithm = RSA.Create(keySizeInBits: 3072);
@@ -135,7 +137,7 @@ public sealed class JwtSigningAndEncryptionCertificateRotationJob(
                 critical: true
             )
         );
-        var now = TimeProvider.System.GetUtcNow();
+        var now = clock.GetUtcNow().ToDateTimeOffset();
         var ephemeralCertificate = request.CreateSelfSigned(
             notBefore: now.Add(s_notBeforeOffset),
             notAfter: now.Add(s_notAfterOffset)
@@ -152,7 +154,7 @@ public sealed class JwtSigningAndEncryptionCertificateRotationJob(
     {
         try
         {
-            return CreateEncryptionCertificate(distinguishedName);
+            return CreateEncryptionCertificate(distinguishedName, clock);
         }
         catch (Exception exception)
         {
@@ -198,10 +200,10 @@ public sealed class JwtSigningAndEncryptionCertificateRotationJob(
                     distinguishedName,
                     validOnly: false
                 );
-                var now = TimeProvider.System.GetUtcNow();
+                var now = clock.GetUtcNow().ToDateTimeOffset();
                 foreach (var certificate in certificates)
                 {
-                    // Use `NotAfterDaysOffset` as overlap period.
+                    // Use `RefreshTokenLifetime` as overlap period.
                     if (certificate.NotAfter.Add(OpenIdConnectConstants.RefreshTokenLifetime) < now)
                     {
                         try

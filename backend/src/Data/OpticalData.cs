@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Database.Enumerations;
 using Database.Enumerations.DataPoints;
 using Database.Extractors;
-using NodaTime;
 
 namespace Database.Data;
 
@@ -20,7 +19,7 @@ public sealed class OpticalData
         string? description,
         string[] warnings,
         Guid creatorId,
-        OffsetDateTime createdAt,
+        DateTimeOffset createdAt,
         OpticalComponentType? type,
         OpticalComponentSubtype? subtype,
         CoatedSide? coatedSide,
@@ -65,7 +64,7 @@ public sealed class OpticalData
         string? description,
         string[] warnings,
         Guid creatorId,
-        OffsetDateTime createdAt,
+        DateTimeOffset createdAt,
         OpticalComponentType? type,
         OpticalComponentSubtype? subtype,
         CoatedSide? coatedSide,

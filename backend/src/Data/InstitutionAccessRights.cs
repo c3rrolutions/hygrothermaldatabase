@@ -16,7 +16,7 @@ public sealed class InstitutionAccessRights(
     uint? allowedDatasetsPerTime,
     Duration period
 )
-: Entity
+: AuditableEntity
 {
     public Guid InstitutionId { get; set; } = institutionId;
     public uint? AllowedUserCount { get; set; } = allowedUserCount;
@@ -38,7 +38,7 @@ public sealed class InstitutionAccessRights(
     [Projectable]
     public bool HasRestrictionsByUser => AllowedUserCount != null;
 
-    internal bool IsDataRestrictedByTime(IData dataItem, CacheService cacheService, out string? reason)
+    internal bool IsDataRestrictedByTime(IData dataItem, IClock clock, CacheService cacheService, out string? reason)
     {
         var isRestricted = false;
         reason = null;
@@ -46,7 +46,7 @@ public sealed class InstitutionAccessRights(
         if (AllowedDatasetsPerTime is not null)
         {
             var accessesPerPeriod = cacheService.GetOrCreateAccessCountForPeriod(InstitutionId);
-            if (accessesPerPeriod.StartTime + Period < OffsetDateTime.UtcNow)
+            if (accessesPerPeriod.StartTime + Period < clock.GetUtcNow())
             {
                 if (accessesPerPeriod.Count >= AllowedDatasetsPerTime)
                 {

@@ -16,7 +16,7 @@ namespace Database.GraphQl.DataX;
 public interface IValidateCreateInput
 {
     Guid ComponentId { get; }
-    OffsetDateTime CreatedAt { get; }
+    DateTimeOffset CreatedAt { get; }
     Guid CreatorId { get; }
     AppliedMethodInput AppliedMethod { get; }
     RootGetHttpsResourceInput RootResource { get; }
@@ -42,6 +42,7 @@ where TError : class
         TErrorCode unknownCrossDatabaseData,
         IDataFormatByIdDataLoader dataFormatByIdDataLoader,
         TErrorCode unknownDataFormatErrorCode,
+        IClock clock,
         CancellationToken cancellationToken
     )
     {
@@ -56,7 +57,7 @@ where TError : class
                 )
             );
         }
-        if (input.CreatedAt > OffsetDateTime.UtcNow)
+        if (input.CreatedAt > clock.GetUtcNow().ToDateTimeOffset())
         {
             errors.Add(
                 NewError(

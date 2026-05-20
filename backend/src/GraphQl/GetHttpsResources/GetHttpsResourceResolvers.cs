@@ -16,12 +16,12 @@ public sealed class GetHttpsResourceResolvers
 {
     public async Task<IData?> GetData(
         [Parent] GetHttpsResource getHttpsResource,
-        CalorimetricDataByIdDataLoader calorimetricDataById,
-        HygrothermalDataByIdDataLoader hygrothermalDataById,
-        LifeCycleDataByIdDataLoader lifeCycleDataById,
-        OpticalDataByIdDataLoader opticalDataById,
-        PhotovoltaicDataByIdDataLoader photovoltaicDataById,
-        GeometricDataByIdDataLoader geometricDataById,
+        ICalorimetricDataByIdDataLoader calorimetricDataById,
+        IHygrothermalDataByIdDataLoader hygrothermalDataById,
+        ILifeCycleDataByIdDataLoader lifeCycleDataById,
+        IOpticalDataByIdDataLoader opticalDataById,
+        IPhotovoltaicDataByIdDataLoader photovoltaicDataById,
+        IGeometricDataByIdDataLoader geometricDataById,
         CancellationToken cancellationToken
     )
     {
@@ -83,7 +83,7 @@ public sealed class GetHttpsResourceResolvers
 
     public async Task<GetHttpsResource?> GetParent(
         [Parent] GetHttpsResource getHttpsResource,
-        GetHttpsResourceByIdDataLoader byId,
+        IGetHttpsResourceByIdDataLoader byId,
         CancellationToken cancellationToken
     )
     {
@@ -94,7 +94,7 @@ public sealed class GetHttpsResourceResolvers
 
     public Task<GetHttpsResource[]> GetChildren(
         [Parent] GetHttpsResource getHttpsResource,
-        GetHttpsResourceChildrenByGetHttpsResourceIdDataLoader byId,
+        IHttpsResourceChildrenByGetHttpsResourceIdDataLoader byId,
         CancellationToken cancellationToken
     )
     {

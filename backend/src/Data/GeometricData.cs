@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Threading.Tasks;
 using Database.Extractors;
-using NodaTime;
 
 namespace Database.Data;
 
@@ -18,7 +17,7 @@ public sealed class GeometricData
         string? description,
         string[] warnings,
         Guid creatorId,
-        OffsetDateTime createdAt,
+        DateTimeOffset createdAt,
         AppliedMethod appliedMethod,
         double[] widths,
         double[] heights,
@@ -48,7 +47,7 @@ public sealed class GeometricData
         string? description,
         string[] warnings,
         Guid creatorId,
-        OffsetDateTime createdAt,
+        DateTimeOffset createdAt,
         double[] widths,
         double[] heights,
         double[] thicknesses

@@ -1,16 +1,11 @@
-using System;
-using System.Linq;
-using Database.Data;
-using HotChocolate.Configuration;
 using HotChocolate.Data.Filters;
-using HotChocolate.Types;
-using HotChocolate.Types.Descriptors.Definitions;
+using Database.Data;
 
 namespace Database.GraphQl.Entities;
 
-public abstract class EntityFilterType<TEntity>
+public abstract class AuditableEntityFilterType<TEntity>
     : FilterInputType<TEntity>
-    where TEntity : IEntity
+    where TEntity : IEntity, IAuditable
 {
     protected override void Configure(
         IFilterInputTypeDescriptor<TEntity> descriptor
@@ -18,6 +13,8 @@ public abstract class EntityFilterType<TEntity>
     {
         descriptor.BindFieldsExplicitly();
         descriptor.Field(x => x.Id);
+        descriptor.Field(x => x.CreatedAt);
+        descriptor.Field(x => x.UpdatedAt);
         // TODO Do we want to filter by: descriptor.Field(x => x.Version);
     }
 

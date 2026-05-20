@@ -1,14 +1,13 @@
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Database.Authorization;
 using Database.Data;
 using Database.GraphQl.DataX;
+using Database.GraphQl.Scalars;
 using Database.Services;
 using HotChocolate;
 using HotChocolate.Data;
-using HotChocolate.Data.Sorting;
 using HotChocolate.Resolvers;
 using HotChocolate.Types;
 
@@ -23,12 +22,11 @@ public sealed class LifeCycleDataQueries
     // same `id` and when also requesting `uuid`, the latter was always the empty UUID `000...`.
     [UseFiltering<LifeCycleDataFilterType>]
     [UseSorting<LifeCycleDataSortType>]
-    public Task<IEnumerable<LifeCycleData>> GetAllLifeCycleDataAsync(
+    public Task<HotChocolate.Types.Pagination.Connection<LifeCycleData>> GetAllLifeCycleDataAsync(
         [GraphQLType<LocaleType>] string? locale,
         ApplicationDbContext context,
         AccessRightsService accessRightsService,
         IResolverContext resolverContext,
-        ISortingContext sorting,
         CancellationToken cancellationToken
     )
     {
@@ -36,7 +34,6 @@ public sealed class LifeCycleDataQueries
             context.LifeCycleData,
             locale,
             accessRightsService,
-            sorting,
             resolverContext,
             cancellationToken
         );
@@ -47,12 +44,11 @@ public sealed class LifeCycleDataQueries
     // same `id` and when also requesting `uuid`, the latter was always the empty UUID `000...`.
     [UseFiltering<LifeCycleDataFilterType>]
     [UseSorting<LifeCycleDataSortType>]
-    public Task<IEnumerable<LifeCycleData>> GetAllPendingLifeCycleDataAsync(
+    public Task<HotChocolate.Types.Pagination.Connection<LifeCycleData>> GetAllPendingLifeCycleDataAsync(
         [GraphQLType<LocaleType>] string? locale,
         ApplicationDbContext context,
         AccessRightsService accessRightsService,
         IResolverContext resolverContext,
-        ISortingContext sorting,
         CommonAuthorization authorization,
         CancellationToken cancellationToken
     )
@@ -61,7 +57,6 @@ public sealed class LifeCycleDataQueries
             context.LifeCycleData,
             locale,
             accessRightsService,
-            sorting,
             resolverContext,
             authorization,
             cancellationToken

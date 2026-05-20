@@ -4,7 +4,6 @@ using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Database.Enumerations;
 using Database.GraphQl;
-using NodaTime;
 
 namespace Database.Data;
 
@@ -15,7 +14,7 @@ namespace Database.Data;
 [JsonDerivedType(typeof(LifeCycleData), typeDiscriminator: nameof(LifeCycleData))]
 [JsonDerivedType(typeof(OpticalData), typeDiscriminator: nameof(OpticalData))]
 [JsonDerivedType(typeof(PhotovoltaicData), typeDiscriminator: nameof(PhotovoltaicData))]
-public interface IData : IEntity
+public interface IData : IEntity, IAuditable
 {
     public static readonly Guid BedJsonDataFormatId = new("9ca9e8f5-94bf-4fdd-81e3-31a58d7ca708");
 
@@ -25,7 +24,6 @@ public interface IData : IEntity
     string? Description { get; }
     string[] Warnings { get; }
     Guid CreatorId { get; }
-    OffsetDateTime CreatedAt { get; }
     AppliedMethod AppliedMethod { get; }
     ICollection<DataApproval> Approvals { get; }
     ICollection<GetHttpsResource> Resources { get; }
@@ -62,7 +60,7 @@ public interface IData : IEntity
         string? name,
         string? description,
         string[] warnings,
-        OffsetDateTime createdAt,
+        DateTimeOffset createdAt,
         Guid creatorId
     );
 

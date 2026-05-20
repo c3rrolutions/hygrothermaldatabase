@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Threading.Tasks;
-using NodaTime;
 
 namespace Database.Data;
 
@@ -17,7 +16,7 @@ public sealed class HygrothermalData
         string? description,
         string[] warnings,
         Guid creatorId,
-        OffsetDateTime createdAt,
+        DateTimeOffset createdAt,
         AppliedMethod appliedMethod
     ) : base(
         userId,
@@ -42,7 +41,7 @@ public sealed class HygrothermalData
         string? description,
         string[] warnings,
         Guid creatorId,
-        OffsetDateTime createdAt
+        DateTimeOffset createdAt
     ) : base(
         userId,
         locale,

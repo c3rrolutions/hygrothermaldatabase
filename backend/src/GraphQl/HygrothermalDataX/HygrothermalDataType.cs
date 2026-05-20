@@ -5,7 +5,7 @@ using HotChocolate.Types;
 namespace Database.GraphQl.HygrothermalDataX;
 
 public sealed class HygrothermalDataType
-    : DataTypeBase<HygrothermalData, HygrothermalDataByIdDataLoader>
+    : DataTypeBase<HygrothermalData, IHygrothermalDataByIdDataLoader>
 {
     protected override void Configure(
         IObjectTypeDescriptor<HygrothermalData> descriptor

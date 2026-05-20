@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
-using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 using Database.Authentication;
 using Database.Authorization;
@@ -10,6 +9,7 @@ using Database.Jobs;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using NodaTime;
 using OpenIddict.Abstractions;
 using OpenIddict.Client;
 using Quartz;
@@ -21,7 +21,7 @@ public static class AuthConfiguration
 {
     private static readonly TimeSpan s_cookieExpirationTimeSpan = TimeSpan.FromDays(1);
 
-    private static void BootstrapCertificates()
+    private static void BootstrapCertificates(IClock clock)
     {
         using var store = new X509Store(OpenIdConnectConstants.CertificateStoreName, OpenIdConnectConstants.CertificateStoreLocation);
         try
@@ -34,11 +34,12 @@ public static class AuthConfiguration
                     distinguishedName,
                     validOnly: true
                 );
-                if (certificates.Count == 0)
+                if (certificates.Count is 0)
                 {
                     store.Add(
                         JwtSigningAndEncryptionCertificateRotationJob.CreateSigningCertificate(
-                            distinguishedName
+                            distinguishedName,
+                            clock
                         )
                     );
                 }
@@ -50,11 +51,12 @@ public static class AuthConfiguration
                     distinguishedName,
                     validOnly: true
                 );
-                if (certificates.Count == 0)
+                if (certificates.Count is 0)
                 {
                     store.Add(
                         JwtSigningAndEncryptionCertificateRotationJob.CreateEncryptionCertificate(
-                            distinguishedName
+                            distinguishedName,
+                            clock
                         )
                     );
                 }
@@ -93,10 +95,11 @@ public static class AuthConfiguration
     public static void ConfigureServices(
         IServiceCollection services,
         IWebHostEnvironment environment,
-        AppSettings appSettings
+        AppSettings appSettings,
+        IClock clock
     )
     {
-        BootstrapCertificates();
+        BootstrapCertificates(clock);
         services.AddScoped<AuthenticationHandler>();
         services.AddScoped<GraphQlAuthenticationAndAntiforgeryHandler>();
         ConfigureAuthenticationAndAuthorizationServices(services);

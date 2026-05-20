@@ -1,16 +1,15 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Database.Authorization;
 using Database.Data;
-using Database.GraphQl.Entities;
 using Database.GraphQl.Extensions;
+using Database.GraphQl.Scalars;
 using Database.Services;
+using GreenDonut.Data;
 using HotChocolate;
 using HotChocolate.Data;
-using HotChocolate.Data.Sorting;
 using HotChocolate.Resolvers;
 using Microsoft.EntityFrameworkCore;
 
@@ -19,33 +18,31 @@ namespace Database.GraphQl.DataX;
 public abstract class DataQueriesBase<TData>
 where TData : class, IData
 {
-    protected async Task<IEnumerable<TData>> GetAllDataAsync(
+    protected async Task<HotChocolate.Types.Pagination.Connection<TData>> GetAllDataAsync(
         DbSet<TData> data,
         [GraphQLType<LocaleType>] string? locale,
         AccessRightsService accessRightsService,
-        ISortingContext sorting,
         IResolverContext resolverContext,
         CancellationToken cancellationToken
     )
     {
-        sorting.StabilizeOrder<TData>();
-        var filteredData =
+        var sortedAndFilteredData =
             data.AsNoTracking()
             .Where(_ => _.PublishingState != Enumerations.PublishingState.PENDING)
-            .Sort(resolverContext)
-            .Filter(resolverContext);
-        if (!await filteredData.AnyAsync(x => x.DataAccessRights.HasRestrictions, cancellationToken))
+            .With(resolverContext.GetQueryContext<TData>(), Sorting.DefaultEntityOrder);
+        if (await sortedAndFilteredData.AnyAsync(_ => _.DataAccessRights.HasRestrictions, cancellationToken))
         {
-            return filteredData;
+            sortedAndFilteredData = (await accessRightsService.ApplyAccessRightsOnData(sortedAndFilteredData, cancellationToken)).AsQueryable();
         }
-        return await accessRightsService.ApplyAccessRightsOnData(filteredData, cancellationToken);
+        return await sortedAndFilteredData
+            .ToPageAsync(resolverContext.GetPagingArguments(), cancellationToken)
+            .ToConnectionAsync();
     }
 
-    protected async Task<IEnumerable<TData>> GetAllPendingDataAsync(
+    protected async Task<HotChocolate.Types.Pagination.Connection<TData>> GetAllPendingDataAsync(
         DbSet<TData> data,
         [GraphQLType<LocaleType>] string? locale,
         AccessRightsService accessRightsService,
-        ISortingContext sorting,
         IResolverContext resolverContext,
         CommonAuthorization authorization,
         CancellationToken cancellationToken
@@ -53,19 +50,22 @@ where TData : class, IData
     {
         if (!await authorization.IsDatabaseOperator(cancellationToken))
         {
-            return Enumerable.Empty<TData>().AsQueryable();
+            return await Enumerable.Empty<TData>()
+                .AsQueryable()
+                .ToPageAsync(resolverContext.GetPagingArguments(), cancellationToken)
+                .ToConnectionAsync();
         }
-        sorting.StabilizeOrder<TData>();
-        var filteredData =
+        var sortedAndFilteredData =
             data.AsNoTracking()
             .Where(_ => _.PublishingState == Enumerations.PublishingState.PENDING)
-            .Sort(resolverContext)
-            .Filter(resolverContext);
-        if (!await filteredData.AnyAsync(x => x.DataAccessRights.HasRestrictions, cancellationToken))
+            .With(resolverContext.GetQueryContext<TData>(), Sorting.DefaultEntityOrder);
+        if (await sortedAndFilteredData.AnyAsync(_ => _.DataAccessRights.HasRestrictions, cancellationToken))
         {
-            return filteredData;
+            sortedAndFilteredData = (await accessRightsService.ApplyAccessRightsOnData(sortedAndFilteredData, cancellationToken)).AsQueryable();
         }
-        return await accessRightsService.ApplyAccessRightsOnData(filteredData, cancellationToken);
+        return await sortedAndFilteredData
+            .ToPageAsync(resolverContext.GetPagingArguments(), cancellationToken)
+            .ToConnectionAsync();
     }
 
     protected Task<bool> HasDataAsync(
@@ -77,14 +77,14 @@ where TData : class, IData
     {
         return data.AsNoTracking()
             .Where(_ => _.PublishingState != Enumerations.PublishingState.PENDING)
-            .Filter(resolverContext)
+            .With(resolverContext.GetQueryContext<TData>(), Sorting.DefaultEntityOrder)
             .AnyAsync(cancellationToken);
     }
 
     protected async Task<TData?> GetDataAsync(
         Guid id,
         [GraphQLType<LocaleType>] string? locale,
-        EntityByIdDataLoader<TData> byId,
+        GreenDonut.DataLoaderBase<Guid, TData> byId,
         AccessRightsService accessRightsService,
         CancellationToken cancellationToken
     )

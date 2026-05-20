@@ -16,7 +16,7 @@ public sealed class GetHttpsResourceTree(
 )
 {
     public async Task<GetHttpsResourceTreeRoot> GetRoot(
-        GetHttpsResourceTreeRootByDataIdDataLoader byId,
+        IHttpsResourceTreeRootByDataIdDataLoader byId,
         CancellationToken cancellationToken
     )
     {
@@ -30,14 +30,13 @@ public sealed class GetHttpsResourceTree(
     [UseSorting<GetHttpsResourceTreeNonRootVertexSortType>]
     public async Task<IReadOnlyList<GetHttpsResourceTreeNonRootVertex>> GetNonRootVertices(
         IResolverContext resolverContext,
-        GetHttpsResourceTreeNonRootVerticesByDataIdDataLoader byId,
+        IHttpsResourceTreeNonRootVerticesByDataIdDataLoader byId,
         CancellationToken cancellationToken
     )
     {
-        var queryContext = resolverContext.GetQueryContext<GetHttpsResource>();
         return (
             await byId
-                .With(queryContext)
+                .With(resolverContext.GetQueryContext<GetHttpsResource>())
                 .LoadRequiredAsync(data.Id, cancellationToken)
             )
             .Select(v =>

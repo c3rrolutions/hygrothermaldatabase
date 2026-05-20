@@ -3,21 +3,32 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Database.Enumerations;
-using NodaTime;
 
 namespace Database.Data;
 
-public abstract class DataX(
-    Guid? userId,
-    string locale,
-    Guid componentId,
-    string? name,
-    string? description,
-    string[] warnings,
-    Guid creatorId,
-    OffsetDateTime createdAt
-) : Entity, IData
+public abstract class DataX : AuditableEntity, IData
 {
+    public DataX(
+        Guid? userId,
+        string locale,
+        Guid componentId,
+        string? name,
+        string? description,
+        string[] warnings,
+        Guid creatorId,
+        DateTimeOffset createdAt
+    )
+    {
+        UserId = userId;
+        Locale = locale;
+        ComponentId = componentId;
+        Name = name;
+        Description = description;
+        Warnings = warnings;
+        CreatorId = creatorId;
+        CreatedAt = createdAt;
+    }
+
     protected DataX(
         Guid? userId,
         string locale,
@@ -26,7 +37,7 @@ public abstract class DataX(
         string? description,
         string[] warnings,
         Guid creatorId,
-        OffsetDateTime createdAt,
+        DateTimeOffset createdAt,
         AppliedMethod appliedMethod
     )
         : this(
@@ -49,7 +60,7 @@ public abstract class DataX(
         string? name,
         string? description,
         string[] warnings,
-        OffsetDateTime createdAt,
+        DateTimeOffset createdAt,
         Guid creatorId
     )
     {
@@ -72,14 +83,13 @@ public abstract class DataX(
         PublishingState = PublishingState.RETRACTED;
     }
 
-    public Guid? UserId { get; private set; } = userId;
-    public string Locale { get; private set; } = locale;
-    public Guid ComponentId { get; private set; } = componentId;
-    public string? Name { get; private set; } = name;
-    public string? Description { get; private set; } = description;
-    public string[] Warnings { get; private set; } = warnings;
-    public Guid CreatorId { get; private set; } = creatorId;
-    public OffsetDateTime CreatedAt { get; private set; } = createdAt;
+    public Guid? UserId { get; private set; }
+    public string Locale { get; private set; }
+    public Guid ComponentId { get; private set; }
+    public string? Name { get; private set; }
+    public string? Description { get; private set; }
+    public string[] Warnings { get; private set; }
+    public Guid CreatorId { get; private set; }
     public AppliedMethod AppliedMethod { get; private set; } = default!;
 
     public ICollection<DataApproval> Approvals { get; } = [];

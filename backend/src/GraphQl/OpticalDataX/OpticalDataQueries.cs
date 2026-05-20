@@ -1,14 +1,13 @@
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Database.Authorization;
 using Database.Data;
 using Database.GraphQl.DataX;
+using Database.GraphQl.Scalars;
 using Database.Services;
 using HotChocolate;
 using HotChocolate.Data;
-using HotChocolate.Data.Sorting;
 using HotChocolate.Resolvers;
 using HotChocolate.Types;
 
@@ -23,11 +22,10 @@ public sealed class OpticalDataQueries
     // same `id` and when also requesting `uuid`, the latter was always the empty UUID `000...`.
     [UseFiltering<OpticalDataFilterType>]
     [UseSorting<OpticalDataSortType>]
-    public Task<IEnumerable<OpticalData>> GetAllOpticalDataAsync(
+    public Task<HotChocolate.Types.Pagination.Connection<OpticalData>> GetAllOpticalDataAsync(
         [GraphQLType<LocaleType>] string? locale,
         ApplicationDbContext context,
         AccessRightsService accessRightsService,
-        ISortingContext sorting,
         IResolverContext resolverContext,
         CancellationToken cancellationToken
     )
@@ -36,7 +34,6 @@ public sealed class OpticalDataQueries
             context.OpticalData,
             locale,
             accessRightsService,
-            sorting,
             resolverContext,
             cancellationToken
         );
@@ -47,11 +44,10 @@ public sealed class OpticalDataQueries
     // same `id` and when also requesting `uuid`, the latter was always the empty UUID `000...`.
     [UseFiltering<OpticalDataFilterType>]
     [UseSorting<OpticalDataSortType>]
-    public Task<IEnumerable<OpticalData>> GetAllPendingOpticalDataAsync(
+    public Task<HotChocolate.Types.Pagination.Connection<OpticalData>> GetAllPendingOpticalDataAsync(
         [GraphQLType<LocaleType>] string? locale,
         ApplicationDbContext context,
         AccessRightsService accessRightsService,
-        ISortingContext sorting,
         IResolverContext resolverContext,
         CommonAuthorization authorization,
         CancellationToken cancellationToken
@@ -61,7 +57,6 @@ public sealed class OpticalDataQueries
             context.OpticalData,
             locale,
             accessRightsService,
-            sorting,
             resolverContext,
             authorization,
             cancellationToken

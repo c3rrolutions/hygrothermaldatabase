@@ -1,8 +1,6 @@
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -42,7 +40,7 @@ public static class FileHelpers
             formFile.FileName);
         // Check the file length. This check doesn't catch files that only have
         // a BOM as their content.
-        if (formFile.Length == 0)
+        if (formFile.Length is 0)
         {
             modelState.AddModelError(formFile.Name,
                 $"{fieldDisplayName}({trustedFileNameForDisplay}) is empty.");
@@ -55,7 +53,7 @@ public static class FileHelpers
             // Check the content length in case the file's only
             // content was a BOM and the content is actually
             // empty after removing the BOM.
-            if (memoryStream.Length == 0)
+            if (memoryStream.Length is 0)
             {
                 modelState.AddModelError(formFile.Name,
                     $"{fieldDisplayName}({trustedFileNameForDisplay}) is empty.");
@@ -85,7 +83,7 @@ public static class FileHelpers
         {
             using var memoryStream = new MemoryStream();
             await section.Body.CopyToAsync(memoryStream);
-            if (memoryStream.Length == 0)
+            if (memoryStream.Length is 0)
             {
                 modelState.AddModelError("File", "The file is empty.");
             }

@@ -5,7 +5,7 @@ using HotChocolate.Data.Sorting;
 namespace Database.GraphQl.GetHttpsResources;
 
 public class GetHttpsResourceSortType
-    : EntitySortType<GetHttpsResource>
+    : AuditableEntitySortType<GetHttpsResource>
 {
     protected override void Configure(
         ISortInputTypeDescriptor<GetHttpsResource> descriptor

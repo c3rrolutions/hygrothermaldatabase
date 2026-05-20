@@ -1,10 +1,11 @@
 using Database.Data;
+using Database.GraphQl.Entities;
 using HotChocolate.Types;
 
 namespace Database.GraphQl.GetHttpsResources;
 
 public sealed class GetHttpsResourceType
-    : EntityType<GetHttpsResource, GetHttpsResourceByIdDataLoader>
+    : EntityType<GetHttpsResource, IGetHttpsResourceByIdDataLoader>
 {
     protected override void Configure(
         IObjectTypeDescriptor<GetHttpsResource> descriptor

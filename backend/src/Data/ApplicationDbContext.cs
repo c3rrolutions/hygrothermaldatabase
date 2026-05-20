@@ -6,7 +6,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Database.Enumerations;
 using Database.Extensions;
-using Database.GraphQl.Extensions;
 using GreenDonut.Data;
 using Laraue.EfCoreTriggers.Common.Extensions;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
@@ -16,6 +15,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SchemaNameOptionsExtension = Database.Data.Extensions.SchemaNameOptionsExtension;
 using NodaTime;
 using System.Text.Json;
+using Database.GraphQl;
 
 namespace Database.Data;
 
@@ -27,6 +27,7 @@ public sealed class ApplicationDbContext
 {
     private const string DefaultSchemaName = "database";
     private readonly string _schemaName;
+    private readonly IClock _clock;
 
     internal const string CalorimetricObserverTypeName = "calorimetric_observer";
     internal const string CoatedSideTypeName = "coated_side";
@@ -38,14 +39,16 @@ public sealed class ApplicationDbContext
     internal const string StandardizerTypeName = "standardizer";
 
     public ApplicationDbContext(
-        DbContextOptions<ApplicationDbContext> options
+        DbContextOptions<ApplicationDbContext> options,
+        IClock clock
     )
         : base(options)
     {
-        // The schema-name option is set in `Metabase.Startup` by an invocation of
-        // `UseSchemaName` on a `DbContextOptionsBuilder` instance.
+        // The schema-name option is set in `Metabase.Startup` by an invocation
+        // of `UseSchemaName` on a `DbContextOptionsBuilder` instance.
         var schemaNameOptions = options.FindExtension<SchemaNameOptionsExtension>();
         _schemaName = schemaNameOptions is null ? DefaultSchemaName : schemaNameOptions.SchemaName;
+        _clock = clock;
     }
 
     // https://docs.microsoft.com/en-us/ef/core/miscellaneous/nullable-reference-types#dbcontext-and-dbset
@@ -118,6 +121,53 @@ public sealed class ApplicationDbContext
         }
     }
 
+    public override int SaveChanges()
+    {
+        UpdateTimestamps();
+        return base.SaveChanges();
+    }
+
+    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        UpdateTimestamps();
+        return base.SaveChangesAsync(cancellationToken);
+    }
+
+    private void UpdateTimestamps()
+    {
+        var entries = ChangeTracker
+            .Entries<IAuditable>()
+            .Where(_ =>
+                _.State == EntityState.Added
+                || _.State == EntityState.Modified
+            // || _.State == EntityState.Deleted
+            );
+        var now = _clock.GetUtcNow().ToDateTimeOffset();
+        foreach (var entry in entries)
+        {
+            switch (entry.State)
+            {
+                case EntityState.Added:
+                    if (entry.Entity.CreatedAt == default)
+                    {
+                        entry.Entity.CreatedAt = now;
+                    }
+                    entry.Entity.UpdatedAt = now;
+                    break;
+                case EntityState.Modified:
+                    entry.Entity.UpdatedAt = now;
+                    break;
+                    // NOTE that soft deletes do not cascade
+                    // case EntityState.Deleted:
+                    //     // soft delete
+                    //     entry.State = EntityState.Modified;
+                    //     entry.Entity.DeletedAt = now;
+                    //     entry.Entity.UpdatedAt = now;
+                    //     break;
+            }
+        }
+    }
+
     public IQueryable<IData> Data(DataKind dataKind)
     {
         return dataKind switch
@@ -144,38 +194,38 @@ public sealed class ApplicationDbContext
     {
         return (
             CalorimetricData.AsQueryable<IData>()
-            .With(queryContext, sort => sort.StabilizeOrder())
             .Where(where)
+            .With(queryContext, Sorting.DefaultEntityOrder)
             .ToAsyncEnumerable()
         )
         .Union(
             GeometricData.AsQueryable<IData>()
-            .With(queryContext, sort => sort.StabilizeOrder())
             .Where(where)
+            .With(queryContext, Sorting.DefaultEntityOrder)
             .ToAsyncEnumerable()
         )
         .Union(
             HygrothermalData.AsQueryable<IData>()
-            .With(queryContext, sort => sort.StabilizeOrder())
             .Where(where)
+            .With(queryContext, Sorting.DefaultEntityOrder)
             .ToAsyncEnumerable()
         )
         .Union(
             LifeCycleData.AsQueryable<IData>()
-            .With(queryContext, sort => sort.StabilizeOrder())
             .Where(where)
+            .With(queryContext, Sorting.DefaultEntityOrder)
             .ToAsyncEnumerable()
         )
         .Union(
             OpticalData.AsQueryable<IData>()
-            .With(queryContext, sort => sort.StabilizeOrder())
             .Where(where)
+            .With(queryContext, Sorting.DefaultEntityOrder)
             .ToAsyncEnumerable()
         )
         .Union(
             PhotovoltaicData.AsQueryable<IData>()
-            .With(queryContext, sort => sort.StabilizeOrder())
             .Where(where)
+            .With(queryContext, Sorting.DefaultEntityOrder)
             .ToAsyncEnumerable()
         );
     }
@@ -515,5 +565,63 @@ public sealed class ApplicationDbContext
                 modelBuilder.Entity<InstitutionAccessRights>()
             )
             .ToTable("institution_access_rights");
+        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+        {
+            if (typeof(IEntity).IsAssignableFrom(entityType.ClrType))
+            {
+                var entity = modelBuilder.Entity(entityType.ClrType);
+                // https://www.npgsql.org/efcore/modeling/generated-properties.html#guiduuid-generation
+                entity
+                    .Property(nameof(IEntity.Id))
+                    .HasDefaultValueSql("gen_random_uuid()");
+                // https://www.npgsql.org/efcore/modeling/concurrency.html#the-postgresql-xmin-system-column
+                entity
+                    .Property(nameof(IEntity.Version))
+                    .IsRowVersion();
+            }
+            if (typeof(IAssociation).IsAssignableFrom(entityType.ClrType))
+            {
+                var association = modelBuilder.Entity(entityType.ClrType);
+                // https://www.npgsql.org/efcore/modeling/concurrency.html#the-postgresql-xmin-system-column
+                association
+                    .Property(nameof(IAssociation.Version))
+                    .IsRowVersion();
+            }
+            if (typeof(IAuditable).IsAssignableFrom(entityType.ClrType))
+            {
+                var auditable = modelBuilder.Entity(entityType.ClrType);
+                auditable
+                    .Property(nameof(IAuditable.CreatedAt))
+                    .HasDefaultValueSql("now()");
+                auditable
+                    .Property(nameof(IAuditable.UpdatedAt))
+                    .HasDefaultValueSql("now()");
+                // exclude soft-deleted entities with the effect that
+                // `context.<Auditables>.ToList()` only returns rows where
+                // `DeletedAt` is null and
+                // `context.<Auditables>.IgnoreQueryFilters().ToList()` returns
+                // all rows
+                // entity
+                //     .HasQueryFilter((IAuditable _) => _.DeletedAt == null);
+            }
+            if (typeof(IEntity).IsAssignableFrom(entityType.ClrType)
+                && typeof(INamed).IsAssignableFrom(entityType.ClrType))
+            {
+                var entity = modelBuilder.Entity(entityType.ClrType);
+                // https://www.npgsql.org/efcore/modeling/generated-properties.html#guiduuid-generation
+                entity
+                    .HasIndex(nameof(INamed.Name), nameof(IEntity.Id))
+                    .IsUnique();
+            }
+            if (typeof(IEntity).IsAssignableFrom(entityType.ClrType)
+                && typeof(IAuditable).IsAssignableFrom(entityType.ClrType))
+            {
+                var entity = modelBuilder.Entity(entityType.ClrType);
+                // https://www.npgsql.org/efcore/modeling/generated-properties.html#guiduuid-generation
+                entity
+                    .HasIndex(nameof(IAuditable.CreatedAt), nameof(IEntity.Id))
+                    .IsUnique();
+            }
+        }
     }
 }

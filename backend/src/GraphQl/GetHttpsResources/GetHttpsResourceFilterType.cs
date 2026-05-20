@@ -5,7 +5,7 @@ using HotChocolate.Data.Filters;
 namespace Database.GraphQl.GetHttpsResources;
 
 public class GetHttpsResourceFilterType
-    : EntityFilterType<GetHttpsResource>
+    : AuditableEntityFilterType<GetHttpsResource>
 {
     protected override void Configure(
         IFilterInputTypeDescriptor<GetHttpsResource> descriptor

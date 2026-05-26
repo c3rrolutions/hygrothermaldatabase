@@ -139,6 +139,9 @@ function Page() {
             height: "auto",
           }}
         />
+		<Typography.Paragraph>
+          V.0.1.2
+        </Typography.Paragraph>
       </div>
     </Layout>
   );

@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Database.ApiRequests;
 using Database.Data;
 using Database.GraphQl.CalorimetricDataX;
 using Database.GraphQl.GeometricDataX;
@@ -99,5 +100,13 @@ public sealed class GetHttpsResourceResolvers
     )
     {
         return byId.LoadAsync(getHttpsResource.Id, cancellationToken)!;
+    }
+
+    public Task<DataFormatDataLoader.DataFormat?> GetDataFormatAsync(
+        [Parent] GetHttpsResource getHttpsResource,
+        IDataFormatByIdDataLoader byId
+    )
+    {
+        return byId.LoadAsync(getHttpsResource.DataFormatId);
     }
 }

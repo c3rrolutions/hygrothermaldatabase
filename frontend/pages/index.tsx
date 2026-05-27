@@ -1,5 +1,5 @@
 import Layout from "../components/Layout";
-import { Typography } from "antd";
+import { Card, Typography } from "antd";
 import Link from "next/link";
 import paths from "../paths";
 import Image from "next/image";
@@ -8,8 +8,8 @@ import overviewImage from "../public/overview.png";
 function Page() {
   return (
     <Layout>
-      <div style={{ maxWidth: 768 }}>
-        <Typography.Paragraph>
+      <Card>
+        <Typography.Paragraph style={{ maxWidth: "75ch" }}>
           <Link href={paths.home}>solarbuildingenvelopes.com</Link> is the
           website of the product data server of{" "}
           <Typography.Link href="https://www.ise.fraunhofer.de/en/rd-infrastructure/accredited-labs/testlab-solar-facades.html">
@@ -39,17 +39,17 @@ function Page() {
           </Typography.Link>
           .
         </Typography.Paragraph>
-        <Typography.Paragraph>
+        <Typography.Paragraph style={{ maxWidth: "75ch" }}>
           This website is the frontend of the product data server of{" "}
           <Typography.Link href="https://www.ise.fraunhofer.de/en/rd-infrastructure/accredited-labs/testlab-solar-facades.html">
             TestLab Solar Facades
           </Typography.Link>
           . You can use this website to search this product data server for{" "}
-          <Link href={paths.opticalData}>optical data</Link>,{" "}
-          <Link href={paths.geometricData}>optical data</Link>,{" "}
-          <Link href={paths.calorimetricData}>calorimetric data</Link> and{" "}
-          <Link href={paths.photovoltaicData}>photovoltaic data</Link>. If you
-          would like to search the entire Product Data Network{" "}
+          <Link href={paths.allOpticalData}>optical data</Link>,{" "}
+          <Link href={paths.allGeometricData}>optical data</Link>,{" "}
+          <Link href={paths.allCalorimetricData}>calorimetric data</Link> and{" "}
+          <Link href={paths.allPhotovoltaicData}>photovoltaic data</Link>. If
+          you would like to search the entire Product Data Network{" "}
           <Typography.Link href={paths.metabase.home}>
             buildingenvelopedata.org
           </Typography.Link>
@@ -84,7 +84,7 @@ function Page() {
           </Typography.Link>
           .
         </Typography.Paragraph>
-        <Typography.Paragraph>
+        <Typography.Paragraph style={{ maxWidth: "75ch" }}>
           This website is completely based on the
           <Typography.Link href={paths.graphQl}>
             {" "}
@@ -109,7 +109,7 @@ function Page() {
           is then a convenient way to query for data, components, institutions,
           databases, data formats and methods.
         </Typography.Paragraph>
-        <Typography.Paragraph>
+        <Typography.Paragraph style={{ maxWidth: "75ch" }}>
           The data format{" "}
           <Typography.Link
             href={paths.metabase.dataFormat(
@@ -137,7 +137,7 @@ function Page() {
             height: "auto",
           }}
         />
-      </div>
+      </Card>
     </Layout>
   );
 }

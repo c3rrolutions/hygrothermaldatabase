@@ -1,7 +1,9 @@
 using System;
+using Database.ApiRequests;
 using Database.Data;
 using Database.GraphQl.Entities;
 using Database.GraphQl.Scalars;
+using Database.Extensions;
 using GreenDonut;
 using HotChocolate.Types;
 
@@ -24,16 +26,34 @@ public abstract class DataTypeBase<TData, TDataByIdDataLoader>
             .Field(_ => _.UpdatedAt)
             .Name(DataType.TimestampFieldName);
         descriptor
-            .Field(x => x.Locale)
+            .Field(_ => _.Locale)
             .Type<NonNullType<LocaleType>>();
         descriptor
-            .Field(x => x.Resources)
-            .ResolveWith<DataResolvers>(t => t.GetHttpsResources(default!, default!, default!, default!));
+            .Field(_ => _.Resources)
+            .Cost(1)
+            .ResolveWith<DataResolvers>(_ => _.GetHttpsResources(default!, default!, default!, default!));
         descriptor
             .Field(DataType.ResourceTreeFieldName)
-            .ResolveWith<DataResolvers>(t => t.GetHttpsResourceTree(default!));
+            .Cost(1)
+            .ResolveWith<DataResolvers>(_ => _.GetHttpsResourceTree(default!));
         descriptor
-            .Field(x => x.Approval)
+            .Field(_ => _.Approval)
+            .Cost(3)
             .Type<NonNullType<ObjectType<ResponseApproval>>>();
+        descriptor
+            .Field(DataType.DatabaseIdFieldName[..^2].FirstCharToLower())
+            .Type<ObjectType<DatabaseDataLoader.Database>>()
+            .Cost(3)
+            .ResolveWith<DataResolvers>(_ => _.GetDatabaseAsync(default!, default!, default!));
+        descriptor
+            .Field(nameof(IData.ComponentId)[..^2].FirstCharToLower())
+            .Type<ObjectType<ComponentDataLoader.Component>>()
+            .Cost(3)
+            .ResolveWith<DataResolvers>(_ => _.GetComponentAsync(default!, default!));
+        descriptor
+            .Field(nameof(IData.CreatorId)[..^2].FirstCharToLower())
+            .Type<ObjectType<InstitutionDataLoader.Institution>>()
+            .Cost(3)
+            .ResolveWith<DataResolvers>(_ => _.GetInstitutionAsync(default!, default!));
     }
 }

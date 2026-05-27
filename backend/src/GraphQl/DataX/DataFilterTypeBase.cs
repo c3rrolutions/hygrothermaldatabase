@@ -6,7 +6,7 @@ namespace Database.GraphQl.DataX;
 
 public abstract class DataFilterTypeBase<TData>
     : AuditableEntityFilterType<TData>
-    where TData : IData, IAuditable
+    where TData : IData
 {
     protected override void Configure(
         IFilterInputTypeDescriptor<TData> descriptor

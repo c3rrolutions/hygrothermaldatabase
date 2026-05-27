@@ -1,5 +1,7 @@
+using Database.ApiRequests;
 using Database.Data;
 using Database.GraphQl.Entities;
+using Database.Extensions;
 using HotChocolate.Types;
 
 namespace Database.GraphQl.GetHttpsResources;
@@ -14,6 +16,7 @@ public sealed class GetHttpsResourceType
         base.Configure(descriptor);
         descriptor
             .Field("locator")
+            .Cost(0)
             .ResolveWith<GetHttpsResourceResolvers>(t => t.GetLocator(default!, default!));
         descriptor
             .Field(_ => _.FileName)
@@ -29,9 +32,11 @@ public sealed class GetHttpsResourceType
             .Ignore();
         descriptor
             .Field(x => x.Parent)
+            .Cost(0)
             .ResolveWith<GetHttpsResourceResolvers>(t => t.GetParent(default!, default!, default!));
         descriptor
             .Field(x => x.Children)
+            .Cost(0)
             .ResolveWith<GetHttpsResourceResolvers>(t => t.GetChildren(default!, default!, default!));
         descriptor
             .Field(x => x.DataId)
@@ -74,7 +79,13 @@ public sealed class GetHttpsResourceType
             .Ignore();
         descriptor
             .Field(x => x.Data)
+            .Cost(0)
             .ResolveWith<GetHttpsResourceResolvers>(t =>
                 t.GetData(default!, default!, default!, default!, default!, default!, default!, default!));
+        descriptor
+            .Field(nameof(GetHttpsResource.DataFormatId)[..^2].FirstCharToLower())
+            .Type<ObjectType<DataFormatDataLoader.DataFormat>>()
+            .Cost(3)
+            .ResolveWith<GetHttpsResourceResolvers>(_ => _.GetDataFormatAsync(default!, default!));
     }
 }

@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Database.Data;
 using Database.GraphQl.Extensions;
+using Database.GraphQl.GetHttpsResources;
 using GreenDonut;
 using GreenDonut.Data;
 using HotChocolate.Data;
@@ -39,8 +40,8 @@ public sealed class GetHttpsResourceTree(
                 .With(resolverContext.GetQueryContext<GetHttpsResource>())
                 .LoadRequiredAsync(data.Id, cancellationToken)
             )
-            .Select(v =>
-                new GetHttpsResourceTreeNonRootVertex(v)
+            .Select(_ =>
+                new GetHttpsResourceTreeNonRootVertex(_)
             )
             .ToList()
             .AsReadOnly();

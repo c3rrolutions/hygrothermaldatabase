@@ -28,7 +28,7 @@ function Page() {
       <Row justify="center">
         <Col>
           <Card title="Upload File">
-            <Typography.Paragraph style={{ maxWidth: 768 }}>
+            <Typography.Paragraph style={{ maxWidth: "75ch" }}>
               For an existing GET HTTPS resource entry in the database, upload a
               file with the content for that resource.
             </Typography.Paragraph>

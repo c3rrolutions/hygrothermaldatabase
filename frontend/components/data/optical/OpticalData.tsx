@@ -1,35 +1,31 @@
 import { Scalars } from "../../../__generated__/graphql";
 import { OpticalDataDocument } from "../../../queries/data.generated";
-import { Skeleton, Result, Descriptions, App } from "antd";
-import { useEffect } from "react";
-import { stringifyApolloError } from "../../../lib/apollo";
-import DataPageHeader from "../DataPageHeader";
+import { Skeleton, Result, Card } from "antd";
 import { useQuery } from "@apollo/client/react";
+import { useQueryHandler } from "../../../lib/hooks/useQueryHandler";
+import OpticalDataSummary from "./OpticalDataSummary";
+import OpticalDataRibbon from "./OpticalDataRibbon";
+import QueryToolbar from "../../QueryToolbar";
 
-export type OpticalDataProps = {
-  opticalDataId: Scalars["Uuid"]["input"];
-};
+interface OpticalDataProps {
+  id: Scalars["Uuid"]["input"];
+}
 
-export default function OpticalData({ opticalDataId }: OpticalDataProps) {
+export default function OpticalData({ id }: OpticalDataProps) {
+  const queryVariables = {
+    id,
+  };
   const { loading, error, data } = useQuery(OpticalDataDocument, {
-    variables: {
-      uuid: opticalDataId,
-    },
+    variables: queryVariables,
   });
-  const opticalData = data?.opticalData;
-  const { message } = App.useApp();
-
-  useEffect(() => {
-    if (error) {
-      message.error(stringifyApolloError(error));
-    }
-  }, [error]);
+  useQueryHandler({ error });
+  const theData = data?.data;
 
   if (loading) {
     return <Skeleton active avatar title />;
   }
 
-  if (!opticalData) {
+  if (!theData) {
     return (
       <Result
         status="500"
@@ -40,62 +36,13 @@ export default function OpticalData({ opticalDataId }: OpticalDataProps) {
   }
 
   return (
-    <>
-      <DataPageHeader
-        data={opticalData}
-        // extra={[
-        //   <UpdateOpticalData
-        //     key="updateOpticalData"
-        //     opticalDataId={opticalData.uuid}
-        //   />,
-        // ]}
-      >
-        <Descriptions.Item
-          key="nearnormalHemisphericalVisibleTransmittances"
-          label="Near Normal Hemispherical Visible Transmittances"
-        >
-          {opticalData.nearnormalHemisphericalVisibleTransmittances
-            .map((x) => x.toLocaleString("en"))
-            .join(", ")}
-        </Descriptions.Item>
-        <Descriptions.Item
-          key="nearnormalHemisphericalVisibleReflectances"
-          label="Near Normal Hemispherical Visible Reflectances"
-        >
-          {opticalData.nearnormalHemisphericalVisibleReflectances
-            .map((x) => x.toLocaleString("en"))
-            .join(", ")}
-        </Descriptions.Item>
-        <Descriptions.Item
-          key="nearnormalHemisphericalSolarTransmittances"
-          label="Near Normal Hemispherical Solar Transmittances"
-        >
-          {opticalData.nearnormalHemisphericalSolarTransmittances
-            .map((x) => x.toLocaleString("en"))
-            .join(", ")}
-        </Descriptions.Item>
-        <Descriptions.Item
-          key="nearnormalHemisphericalSolarReflectances"
-          label="Near Normal Hemispherical Solar Reflectances"
-        >
-          {opticalData.nearnormalHemisphericalSolarReflectances
-            .map((x) => x.toLocaleString("en"))
-            .join(", ")}
-        </Descriptions.Item>
-        <Descriptions.Item key="infraredEmittances" label="Infrared Emittances">
-          {opticalData.infraredEmittances
-            .map((x) => x.toLocaleString("en"))
-            .join(", ")}
-        </Descriptions.Item>
-        <Descriptions.Item
-          key="colorRenderingIndices"
-          label="Color Rendering Indices"
-        >
-          {opticalData.colorRenderingIndices
-            .map((x) => x.toLocaleString("en"))
-            .join(", ")}
-        </Descriptions.Item>
-      </DataPageHeader>
-    </>
+    <div>
+      <OpticalDataRibbon {...theData}>
+        <Card style={{ marginBottom: "1em" }}>
+          <OpticalDataSummary entity={theData} />
+        </Card>
+      </OpticalDataRibbon>
+      <QueryToolbar query={OpticalDataDocument} variables={queryVariables} />
+    </div>
   );
 }

@@ -96,7 +96,7 @@ public sealed class MethodQueries
         AppSettings appSettings,
         MethodFactory methodFactory,
         ApiRequestService apiRequestService,
-        QueryDatabase queryDatabase,
+        IDatabaseByIdDataLoader databaseById,
         QueryData queryData,
         IResolverContext resolverContext,
         CancellationToken cancellationToken
@@ -115,12 +115,12 @@ public sealed class MethodQueries
             );
         }
         var database = await GraphQlRequestHelper.TransformExceptionsAsync(
-            () => queryDatabase.Do(
+            () => databaseById.LoadAsync(
                 dataReference.DatabaseId,
                 cancellationToken
             ),
             resolverContext,
-            queryDatabase.GetGraphQlEndpoint
+            DatabaseDataLoader.GetGraphQlEndpoint(appSettings)
         );
         if (database is null)
         {

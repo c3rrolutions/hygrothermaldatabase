@@ -1,0 +1,22 @@
+query Databases($ids: [Uuid!]!) {
+  connection: databases(where: { id: { in: $ids } }) {
+    edges {
+      node {
+        id: uuid
+        name
+        description
+        locator
+        verificationState
+        verificationCode
+        operator {
+          node {
+            id: uuid
+            name
+          }
+        }
+        isAuthorizedToUpdateNode
+        isAuthorizedToVerifyNode
+      }
+    }
+  }
+}

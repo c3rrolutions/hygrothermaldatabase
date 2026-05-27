@@ -23,5 +23,22 @@ public sealed class OpticalDataFilterType
         descriptor.Field(x => x.InfraredEmittances);
         descriptor.Field(x => x.ColorRenderingIndices);
         descriptor.Field(x => x.CielabColors);
+
+        // TODO Why are the fields below not included by `base.Configure` above?
+        // AuditableEntityFilterType.Configure
+        descriptor.Field(x => x.Id);
+        descriptor.Field(x => x.CreatedAt);
+        descriptor.Field(x => x.UpdatedAt);
+        // DataFilterTypeBase.Configure
+        descriptor.Field(x => x.UserId);
+        descriptor.Field(x => x.Locale);
+        descriptor.Field(x => x.Name);
+        descriptor.Field(x => x.Description);
+        descriptor.Field(x => x.ComponentId);
+        descriptor.Field(x => x.CreatorId);
+        descriptor.Field(x => x.AppliedMethod);
+        descriptor.Field(x => x.Approvals);
+        descriptor.Field(x => x.Resources);
+        descriptor.Field(x => x.Warnings);
     }
 }

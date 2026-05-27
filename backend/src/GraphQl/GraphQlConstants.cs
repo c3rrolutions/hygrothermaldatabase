@@ -9,6 +9,7 @@ internal static class GraphQlConstants
     internal const string FilterInputSuffix = "PropositionInput";
     internal const string SortInputSuffix = "SortInput";
     internal const string PendingPrefix = "pending";
+    internal const string IdFieldName = "id";
     internal const string UuidFieldName = "uuid";
     internal const string VersionFieldName = "version";
 }

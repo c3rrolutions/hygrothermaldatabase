@@ -1,22 +1,15 @@
 import { useQuery } from "@apollo/client/react";
 import Layout from "../components/Layout";
 import { CurrentUserInfoDocument } from "../queries/currentUser.generated";
-import { Skeleton, Result, Descriptions, Typography, App } from "antd";
+import { Skeleton, Result, Descriptions, Typography } from "antd";
 import { PageHeader } from "@ant-design/pro-layout";
-import { useEffect } from "react";
-import { stringifyApolloError } from "../lib/apollo";
 import paths from "../paths";
+import { useQueryHandler } from "../lib/hooks/useQueryHandler";
 
 function Page() {
   const { loading, error, data } = useQuery(CurrentUserInfoDocument);
+  useQueryHandler({ error });
   const currentUserInfo = data?.currentUserInfo;
-  const { message } = App.useApp();
-
-  useEffect(() => {
-    if (error) {
-      message.error(stringifyApolloError(error));
-    }
-  }, [error]);
 
   if (loading) {
     return <Skeleton active avatar title />;

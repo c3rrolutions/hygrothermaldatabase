@@ -22,7 +22,7 @@ namespace Database.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasDefaultSchema("database")
-                .HasAnnotation("ProductVersion", "10.0.2")
+                .HasAnnotation("ProductVersion", "10.0.8")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "database", "calorimetric_observer", new[] { "ten_degrees", "two_degrees" });
@@ -46,8 +46,10 @@ namespace Database.Migrations
                     b.Property<Guid>("ComponentId")
                         .HasColumnType("uuid");
 
-                    b.Property<OffsetDateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("now()");
 
                     b.Property<Guid>("CreatorId")
                         .HasColumnType("uuid");
@@ -73,6 +75,11 @@ namespace Database.Migrations
                         .IsRequired()
                         .HasColumnType("double precision[]");
 
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("now()");
+
                     b.Property<Guid?>("UserId")
                         .HasColumnType("uuid");
 
@@ -88,6 +95,9 @@ namespace Database.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CreatedAt", "Id")
+                        .IsUnique();
+
                     b.ToTable("calorimetric_data", "database");
                 });
 
@@ -101,8 +111,10 @@ namespace Database.Migrations
                     b.Property<Guid>("ComponentId")
                         .HasColumnType("uuid");
 
-                    b.Property<OffsetDateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("now()");
 
                     b.Property<Guid>("CreatorId")
                         .HasColumnType("uuid");
@@ -128,6 +140,11 @@ namespace Database.Migrations
                         .IsRequired()
                         .HasColumnType("double precision[]");
 
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("now()");
+
                     b.Property<Guid?>("UserId")
                         .HasColumnType("uuid");
 
@@ -147,6 +164,9 @@ namespace Database.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CreatedAt", "Id")
+                        .IsUnique();
+
                     b.ToTable("geometric_data", "database");
                 });
 
@@ -159,6 +179,11 @@ namespace Database.Migrations
 
                     b.Property<Guid?>("CalorimetricDataId")
                         .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("now()");
 
                     b.Property<Guid>("DataFormatId")
                         .HasColumnType("uuid");
@@ -190,6 +215,11 @@ namespace Database.Migrations
 
                     b.Property<Guid?>("PhotovoltaicDataId")
                         .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("now()");
 
                     b.Property<uint>("Version")
                         .IsConcurrencyToken()
@@ -225,6 +255,9 @@ namespace Database.Migrations
                         .IsUnique()
                         .HasFilter("\"PhotovoltaicDataId\" IS NOT NULL AND \"ParentId\" IS NULL");
 
+                    b.HasIndex("CreatedAt", "Id")
+                        .IsUnique();
+
                     b.ToTable("get_https_resource", "database", t =>
                         {
                             t.HasTrigger("LC_TRIGGER_data_id_cannot_change");
@@ -255,8 +288,10 @@ namespace Database.Migrations
                     b.Property<Guid>("ComponentId")
                         .HasColumnType("uuid");
 
-                    b.Property<OffsetDateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("now()");
 
                     b.Property<Guid>("CreatorId")
                         .HasColumnType("uuid");
@@ -274,6 +309,11 @@ namespace Database.Migrations
                     b.Property<PublishingState>("PublishingState")
                         .HasColumnType("database.publishing_state");
 
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("now()");
+
                     b.Property<Guid?>("UserId")
                         .HasColumnType("uuid");
 
@@ -288,6 +328,9 @@ namespace Database.Migrations
                         .HasColumnType("text[]");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CreatedAt", "Id")
+                        .IsUnique();
 
                     b.ToTable("hygrothermal_data", "database");
                 });
@@ -305,11 +348,21 @@ namespace Database.Migrations
                     b.Property<long?>("AllowedUserCount")
                         .HasColumnType("bigint");
 
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("now()");
+
                     b.Property<Guid>("InstitutionId")
                         .HasColumnType("uuid");
 
                     b.Property<Duration>("Period")
                         .HasColumnType("interval");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("now()");
 
                     b.PrimitiveCollection<List<Guid>>("UserAlreadyAccessed")
                         .IsRequired()
@@ -326,6 +379,9 @@ namespace Database.Migrations
                     b.HasIndex("InstitutionId")
                         .IsUnique();
 
+                    b.HasIndex("CreatedAt", "Id")
+                        .IsUnique();
+
                     b.ToTable("institution_access_rights", "database");
                 });
 
@@ -339,8 +395,10 @@ namespace Database.Migrations
                     b.Property<Guid>("ComponentId")
                         .HasColumnType("uuid");
 
-                    b.Property<OffsetDateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("now()");
 
                     b.Property<Guid>("CreatorId")
                         .HasColumnType("uuid");
@@ -358,6 +416,11 @@ namespace Database.Migrations
                     b.Property<PublishingState>("PublishingState")
                         .HasColumnType("database.publishing_state");
 
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("now()");
+
                     b.Property<Guid?>("UserId")
                         .HasColumnType("uuid");
 
@@ -372,6 +435,9 @@ namespace Database.Migrations
                         .HasColumnType("text[]");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CreatedAt", "Id")
+                        .IsUnique();
 
                     b.ToTable("lifeCycle_data", "database");
                 });
@@ -393,8 +459,10 @@ namespace Database.Migrations
                     b.Property<Guid>("ComponentId")
                         .HasColumnType("uuid");
 
-                    b.Property<OffsetDateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("now()");
 
                     b.Property<Guid>("CreatorId")
                         .HasColumnType("uuid");
@@ -438,6 +506,11 @@ namespace Database.Migrations
                     b.Property<OpticalComponentType?>("Type")
                         .HasColumnType("database.optical_component_type");
 
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("now()");
+
                     b.Property<Guid?>("UserId")
                         .HasColumnType("uuid");
 
@@ -453,6 +526,9 @@ namespace Database.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CreatedAt", "Id")
+                        .IsUnique();
+
                     b.ToTable("optical_data", "database");
                 });
 
@@ -466,8 +542,10 @@ namespace Database.Migrations
                     b.Property<Guid>("ComponentId")
                         .HasColumnType("uuid");
 
-                    b.Property<OffsetDateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("now()");
 
                     b.Property<Guid>("CreatorId")
                         .HasColumnType("uuid");
@@ -485,6 +563,11 @@ namespace Database.Migrations
                     b.Property<PublishingState>("PublishingState")
                         .HasColumnType("database.publishing_state");
 
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("now()");
+
                     b.Property<Guid?>("UserId")
                         .HasColumnType("uuid");
 
@@ -500,6 +583,9 @@ namespace Database.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CreatedAt", "Id")
+                        .IsUnique();
+
                     b.ToTable("photovoltaic_data", "database");
                 });
 
@@ -510,6 +596,11 @@ namespace Database.Migrations
                         .HasColumnType("uuid")
                         .HasDefaultValueSql("gen_random_uuid()");
 
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("now()");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text");
@@ -518,6 +609,11 @@ namespace Database.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("now()");
+
                     b.Property<uint>("Version")
                         .IsConcurrencyToken()
                         .ValueGeneratedOnAddOrUpdate()
@@ -525,6 +621,9 @@ namespace Database.Migrations
                         .HasColumnName("xmin");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CreatedAt", "Id")
+                        .IsUnique();
 
                     b.ToTable("user", "database");
                 });
@@ -1088,7 +1187,7 @@ namespace Database.Migrations
                             b1.PrimitiveCollection<Guid[]>("AllowedInstitutions")
                                 .HasColumnType("uuid[]");
 
-                            b1.Property<IReadOnlyDictionary<Guid, uint?>>("AllowedUserAndQuantity")
+                            b1.Property<string>("AllowedUserAndQuantity")
                                 .HasColumnType("jsonb");
 
                             b1.HasKey("CalorimetricDataId");
@@ -1442,7 +1541,7 @@ namespace Database.Migrations
                             b1.PrimitiveCollection<Guid[]>("AllowedInstitutions")
                                 .HasColumnType("uuid[]");
 
-                            b1.Property<IReadOnlyDictionary<Guid, uint?>>("AllowedUserAndQuantity")
+                            b1.Property<string>("AllowedUserAndQuantity")
                                 .HasColumnType("jsonb");
 
                             b1.HasKey("GeometricDataId");
@@ -1925,7 +2024,7 @@ namespace Database.Migrations
                             b1.PrimitiveCollection<Guid[]>("AllowedInstitutions")
                                 .HasColumnType("uuid[]");
 
-                            b1.Property<IReadOnlyDictionary<Guid, uint?>>("AllowedUserAndQuantity")
+                            b1.Property<string>("AllowedUserAndQuantity")
                                 .HasColumnType("jsonb");
 
                             b1.HasKey("HygrothermalDataId");
@@ -2279,7 +2378,7 @@ namespace Database.Migrations
                             b1.PrimitiveCollection<Guid[]>("AllowedInstitutions")
                                 .HasColumnType("uuid[]");
 
-                            b1.Property<IReadOnlyDictionary<Guid, uint?>>("AllowedUserAndQuantity")
+                            b1.Property<string>("AllowedUserAndQuantity")
                                 .HasColumnType("jsonb");
 
                             b1.HasKey("LifeCycleDataId");
@@ -2670,7 +2769,7 @@ namespace Database.Migrations
                             b1.PrimitiveCollection<Guid[]>("AllowedInstitutions")
                                 .HasColumnType("uuid[]");
 
-                            b1.Property<IReadOnlyDictionary<Guid, uint?>>("AllowedUserAndQuantity")
+                            b1.Property<string>("AllowedUserAndQuantity")
                                 .HasColumnType("jsonb");
 
                             b1.HasKey("OpticalDataId");
@@ -3026,7 +3125,7 @@ namespace Database.Migrations
                             b1.PrimitiveCollection<Guid[]>("AllowedInstitutions")
                                 .HasColumnType("uuid[]");
 
-                            b1.Property<IReadOnlyDictionary<Guid, uint?>>("AllowedUserAndQuantity")
+                            b1.Property<string>("AllowedUserAndQuantity")
                                 .HasColumnType("jsonb");
 
                             b1.HasKey("PhotovoltaicDataId");

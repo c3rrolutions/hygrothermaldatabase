@@ -1,4 +1,5 @@
 fragment CurrentUserPartial on User {
+  subject
   name
 }
 

@@ -3,8 +3,8 @@ query Methods($ids: [Uuid!]!) {
     edges {
       node {
         id: uuid
+        name
       }
     }
   }
 }
-

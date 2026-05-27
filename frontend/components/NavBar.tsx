@@ -1,12 +1,113 @@
 import { useQuery } from "@apollo/client/react";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { Button, Menu } from "antd";
-import { UserOutlined } from "@ant-design/icons";
+import { Button, Menu, Spin } from "antd";
+import { LoadingOutlined, UserOutlined } from "@ant-design/icons";
 import paths from "../paths";
-import { CurrentUserDocument } from "../queries/currentUser.generated";
+import {
+  CurrentUserDocument,
+  CurrentUserPartialFragment,
+} from "../queries/currentUser.generated";
 import { extractAntiforgeryTokenFromCookie } from "../lib/apollo";
 import { Route } from "next";
+import { CSSProperties, useMemo } from "react";
+
+const firstUserOrLoginItemStyle = { marginLeft: "auto" };
+
+const userLoadingItem = {
+  key: "userLoading",
+  style: firstUserOrLoginItemStyle,
+  label: (
+    <Spin indicator={<LoadingOutlined style={{ color: "white" }} spin />} />
+  ),
+};
+
+const loginOrRegisterItems = (returnTo: string | string[] | undefined) => [
+  {
+    key: paths.login,
+    style: firstUserOrLoginItemStyle,
+    label: (
+      <Link
+        href={{
+          pathname: paths.login,
+          query: returnTo
+            ? { returnTo: returnTo }
+            : window.location.pathname != paths.login
+              ? { returnTo: window.location.pathname }
+              : null,
+        }}
+      >
+        Login
+      </Link>
+    ),
+  },
+  {
+    key: paths.metabase.register,
+    label: (
+      <Link
+        href={{
+          pathname: paths.metabase.register,
+          query: returnTo
+            ? { returnTo: returnTo }
+            : window.location.pathname != paths.metabase.register
+              ? { returnTo: window.location.pathname }
+              : null,
+        }}
+      >
+        Register
+      </Link>
+    ),
+  },
+];
+
+const userItems = (currentUser: CurrentUserPartialFragment) => [
+  {
+    key: "user",
+    label: currentUser.name,
+    icon: <UserOutlined />,
+    style: firstUserOrLoginItemStyle,
+    children: [
+      {
+        key: paths.userInfo,
+        label: <Link href={paths.userInfo}>User Info</Link>,
+      },
+      {
+        key: paths.createData,
+        label: <Link href={paths.createData}>Create Data</Link>,
+      },
+      {
+        key: paths.uploadFile,
+        label: <Link href={paths.uploadFile}>Upload File</Link>,
+      },
+      {
+        key: paths.logout,
+        label: (
+          <form action={paths.logout} method="post">
+            <input
+              name="__RequestVerificationToken"
+              type="hidden"
+              value={
+                typeof window !== "undefined"
+                  ? (extractAntiforgeryTokenFromCookie() ?? "")
+                  : ""
+              }
+            />
+            <input
+              name="returnTo"
+              type="hidden"
+              value={
+                typeof window !== "undefined" ? window.location.pathname : ""
+              }
+            />
+            <Button type="primary" htmlType="submit">
+              Logout
+            </Button>
+          </form>
+        ),
+      },
+    ],
+  },
+];
 
 type NavItemProps = {
   path: Route;
@@ -15,67 +116,41 @@ type NavItemProps = {
 
 export type NavBarProps = {
   items: NavItemProps[];
+  style?: CSSProperties;
 };
 
-const moderatorItems = [
-  {
-    path: paths.userInfo,
-    label: "User Info",
-  },
-  {
-    path: paths.createData,
-    label: "Create Data",
-  },
-  {
-    path: paths.uploadFile,
-    label: "Upload File",
-  },
-];
-
-export default function NavBar({ items }: NavBarProps) {
+export default function NavBar({ items, style }: NavBarProps) {
   const router = useRouter();
-  const currentUser = useQuery(CurrentUserDocument)?.data?.currentUser;
+  const returnTo = router.query.returnTo;
+  const { loading, data } = useQuery(CurrentUserDocument);
+  const currentUser = data?.currentUser;
+
+  const mainItems = useMemo(
+    () =>
+      items.map((item) => ({
+        key: item.path,
+        label: <Link href={item.path}>{item.label}</Link>,
+      })),
+    [items],
+  );
+
+  const userOrLoginItems = useMemo(
+    () =>
+      loading
+        ? [userLoadingItem]
+        : currentUser
+          ? userItems(currentUser)
+          : loginOrRegisterItems(returnTo),
+    [loading, currentUser],
+  );
 
   return (
-    <Menu mode="horizontal" selectedKeys={[router.pathname]} theme="dark">
-      {items.map(({ path, label }) => (
-        <Menu.Item key={path}>
-          <Link href={path}>{label}</Link>
-        </Menu.Item>
-      ))}
-      {currentUser ? (
-        <Menu.SubMenu
-          key="moderator"
-          title={currentUser ? currentUser.name : null}
-          icon={<UserOutlined />}
-        >
-          {moderatorItems.map(({ path, label }) => (
-            <Menu.Item key={path}>
-              <Link href={path}>{label}</Link>
-            </Menu.Item>
-          ))}
-          <Menu.Item key={paths.logout}>
-            <form action={paths.logout} method="post">
-              <input
-                name="__RequestVerificationToken"
-                type="hidden"
-                value={
-                  typeof window !== "undefined"
-                    ? (extractAntiforgeryTokenFromCookie() ?? "")
-                    : ""
-                }
-              />
-              <Button type="primary" htmlType="submit">
-                Logout
-              </Button>
-            </form>
-          </Menu.Item>
-        </Menu.SubMenu>
-      ) : (
-        <Menu.Item key={paths.login}>
-          <Link href={paths.login}>Login</Link>
-        </Menu.Item>
-      )}
-    </Menu>
+    <Menu
+      mode="horizontal"
+      theme="dark"
+      selectedKeys={[router.pathname]}
+      style={style}
+      items={[...mainItems, ...userOrLoginItems]}
+    />
   );
 }

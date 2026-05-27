@@ -3,795 +3,6 @@ schema {
   mutation: Mutation
 }
 
-interface Approval {
-  approverId: Uuid!
-  keyFingerprint: String!
-  message: String!
-  query: String!
-  signature: String!
-  timestamp: DateTime!
-  variables: Any!
-}
-
-interface Data {
-  appliedMethod: AppliedMethod!
-  approval: ResponseApproval!
-  approvals: [DataApproval!]!
-  componentId: Uuid!
-  createdAt: DateTime!
-  creatorId: Uuid!
-  dataAccessRights: DataAccessRights!
-  databaseId: Uuid!
-  description: String
-  isRestrictedByApplication(applicationId: String!): Boolean!
-  isRestrictedByInstitutions(institutions: [Uuid!]!): Boolean!
-  isRestrictedByUser(
-    alreadyAccesedCount: NonNegativeInt!
-    uuid: Uuid!
-  ): Boolean!
-  locale: Locale!
-  name: String
-  resources: [GetHttpsResource!]!
-  resourceTree: GetHttpsResourceTree!
-  timestamp: DateTime!
-  userId: Uuid
-  uuid: Uuid!
-  warnings: [String!]!
-}
-
-interface GetHttpsResourceTreeVertex {
-  value: GetHttpsResource!
-  vertexId: ID
-}
-
-"The node interface is implemented by entities that have a global unique identifier."
-interface Node {
-  id: ID!
-}
-
-interface UserError {
-  message: String!
-  path: [String!]!
-}
-
-type AddDataApprovalError implements UserError {
-  code: AddDataApprovalErrorCode!
-  message: String!
-  path: [String!]!
-}
-
-type AddDataApprovalPayload {
-  dataApproval: DataApproval
-  errors: [AddDataApprovalError!]
-  query: Query!
-}
-
-type AddInstitutionAccessRightsError implements UserError {
-  code: AddInstitutionAccessRightsErrorCode!
-  message: String!
-  path: [String!]!
-}
-
-type AddInstitutionAccessRightsPayload {
-  errors: [AddInstitutionAccessRightsError!]
-  institutionAccessRights: InstitutionAccessRights
-  query: Query!
-}
-
-type Address {
-  formatted: String!
-}
-
-type AppliedMethod {
-  arguments: [NamedMethodArgument!]!
-  methodId: Uuid!
-  sources: [NamedMethodSource!]!
-}
-
-type CalculateMethodError implements UserError {
-  code: CalculateMethodErrorCode!
-  message: String!
-  path: [String!]!
-}
-
-type CalculateMethodPayload {
-  errors: [CalculateMethodError!]
-  result: Any
-}
-
-type CalorimetricData implements Node & Data {
-  appliedMethod: AppliedMethod!
-  approval: ResponseApproval!
-  approvals: [DataApproval!]!
-  componentId: Uuid!
-  createdAt: DateTime!
-  creatorId: Uuid!
-  dataAccessRights: DataAccessRights!
-  databaseId: Uuid!
-  description: String
-  gValues: [Float!]!
-  id: ID!
-  isRestrictedByApplication(applicationId: String!): Boolean!
-  isRestrictedByInstitutions(institutions: [Uuid!]!): Boolean!
-  isRestrictedByUser(
-    alreadyAccesedCount: NonNegativeInt!
-    uuid: Uuid!
-  ): Boolean!
-  locale: Locale!
-  name: String
-  resources(
-    order: [GetHttpsResourceSortInput!] @cost(weight: "10")
-    where: GetHttpsResourcePropositionInput @cost(weight: "10")
-  ): [GetHttpsResource!]! @cost(weight: "10")
-  resourceTree: GetHttpsResourceTree!
-  timestamp: DateTime!
-  userId: Uuid
-  uuid: Uuid! @cost(weight: "10")
-  uValues: [Float!]!
-  warnings: [String!]!
-}
-
-"A connection to a list of items."
-type CalorimetricDataConnection {
-  "A list of edges."
-  edges: [CalorimetricDataEdge!]
-  "Information to aid in pagination."
-  pageInfo: PageInfo!
-  "Identifies the total count of items in the connection."
-  totalCount: Int! @cost(weight: "10")
-}
-
-"An edge in a connection."
-type CalorimetricDataEdge {
-  "A cursor for use in pagination."
-  cursor: String!
-  "The item at the end of the edge."
-  node: CalorimetricData!
-}
-
-type CielabColor {
-  aStar: Float!
-  bStar: Float!
-  illuminant: Illuminant
-  lStar: Float!
-  observer: CalorimetricObserver
-}
-
-type CreateCalorimetricDataError implements UserError {
-  code: CreateCalorimetricDataErrorCode!
-  message: String!
-  path: [String!]!
-}
-
-type CreateCalorimetricDataPayload {
-  calorimetricData: CalorimetricData
-  errors: [CreateCalorimetricDataError!]
-  query: Query!
-}
-
-type CreateGeometricDataError implements UserError {
-  code: CreateGeometricDataErrorCode!
-  message: String!
-  path: [String!]!
-}
-
-type CreateGeometricDataPayload {
-  errors: [CreateGeometricDataError!]
-  geometricData: GeometricData
-  query: Query!
-}
-
-type CreateGetHttpsResourceError implements UserError {
-  code: CreateGetHttpsResourceErrorCode!
-  message: String!
-  path: [String!]!
-}
-
-type CreateGetHttpsResourcePayload {
-  errors: [CreateGetHttpsResourceError!]
-  getHttpsResource: GetHttpsResource
-  query: Query!
-}
-
-type CreateHygrothermalDataError implements UserError {
-  code: CreateHygrothermalDataErrorCode!
-  message: String!
-  path: [String!]!
-}
-
-type CreateHygrothermalDataPayload {
-  errors: [CreateHygrothermalDataError!]
-  hygrothermalData: HygrothermalData
-  query: Query!
-}
-
-type CreateLifeCycleDataError implements UserError {
-  code: CreateLifeCycleDataErrorCode!
-  message: String!
-  path: [String!]!
-}
-
-type CreateLifeCycleDataPayload {
-  errors: [CreateLifeCycleDataError!]
-  lifeCycleData: LifeCycleData
-  query: Query!
-}
-
-type CreateOpticalDataError implements UserError {
-  code: CreateOpticalDataErrorCode!
-  message: String!
-  path: [String!]!
-}
-
-type CreateOpticalDataPayload {
-  errors: [CreateOpticalDataError!]
-  opticalData: OpticalData
-  query: Query!
-}
-
-type CreatePhotovoltaicDataError implements UserError {
-  code: CreatePhotovoltaicDataErrorCode!
-  message: String!
-  path: [String!]!
-}
-
-type CreatePhotovoltaicDataPayload {
-  errors: [CreatePhotovoltaicDataError!]
-  photovoltaicData: PhotovoltaicData
-  query: Query!
-}
-
-type CreateResponseApprovalsError implements UserError {
-  code: CreateResponseApprovalsErrorCode!
-  message: String!
-  path: [String!]!
-}
-
-type CreateResponseApprovalsPayload {
-  data: [Data!]
-  errors: [CreateResponseApprovalsError!]
-  query: Query!
-}
-
-type CrossDatabaseDataReference {
-  databaseId: Uuid!
-  dataId: Uuid!
-  dataKind: DataKind!
-  dataTimestamp: DateTime!
-}
-
-type DataAccessRights {
-  allowedApplications: [String!]
-  allowedInstitutions: [Uuid!]
-  allowedUserAndQuantity: [KeyValuePairOfGuidAndNullableOfUInt32!]
-  hasRestrictions: Boolean!
-  hasRestrictionsByApplication: Boolean!
-  hasRestrictionsByInstitution: Boolean!
-  hasRestrictionsByUser: Boolean!
-}
-
-type DataApproval implements Approval {
-  approverId: Uuid!
-  keyFingerprint: String!
-  message: String!
-  query: String!
-  signature: String!
-  statement: Reference @cost(weight: "10")
-  timestamp: DateTime!
-  variables: Any!
-}
-
-type DataConnection {
-  edges: [DataEdge!]!
-  pageInfo: PageInfo!
-  totalCount: NonNegativeInt
-}
-
-type DataEdge {
-  cursor: String!
-  node: Data!
-}
-
-type Database {
-  description: String!
-  isAuthorizedToUpdateNode: Boolean!
-  isAuthorizedToVerifyNode: Boolean!
-  locator: Url!
-  name: String!
-  operator: DatabaseOperatorEdge!
-  uuid: Uuid!
-  verificationCode: String!
-  verificationState: DatabaseVerificationState!
-}
-
-type DatabaseOperatorEdge {
-  node: Institution!
-}
-
-type DeleteDataError implements UserError {
-  code: DeleteDataErrorCode!
-  message: String!
-  path: [String!]!
-}
-
-type DeleteDataPayload {
-  errors: [DeleteDataError!]
-  query: Query!
-}
-
-type DeleteGetHttpsResourceError implements UserError {
-  code: DeleteGetHttpsResourceErrorCode!
-  message: String!
-  path: [String!]!
-}
-
-type DeleteGetHttpsResourcePayload {
-  errors: [DeleteGetHttpsResourceError!]
-  getHttpsResource: GetHttpsResource
-  query: Query!
-}
-
-type FileMetaInformation {
-  dataFormatId: Uuid!
-  path: [String!]!
-}
-
-type GeometricData implements Node & Data {
-  appliedMethod: AppliedMethod!
-  approval: ResponseApproval!
-  approvals: [DataApproval!]!
-  componentId: Uuid!
-  createdAt: DateTime!
-  creatorId: Uuid!
-  dataAccessRights: DataAccessRights!
-  databaseId: Uuid!
-  description: String
-  heights: [Float!]!
-  id: ID!
-  isRestrictedByApplication(applicationId: String!): Boolean!
-  isRestrictedByInstitutions(institutions: [Uuid!]!): Boolean!
-  isRestrictedByUser(
-    alreadyAccesedCount: NonNegativeInt!
-    uuid: Uuid!
-  ): Boolean!
-  locale: Locale!
-  name: String
-  resources(
-    order: [GetHttpsResourceSortInput!] @cost(weight: "10")
-    where: GetHttpsResourcePropositionInput @cost(weight: "10")
-  ): [GetHttpsResource!]! @cost(weight: "10")
-  resourceTree: GetHttpsResourceTree!
-  thicknesses: [Float!]!
-  timestamp: DateTime!
-  userId: Uuid
-  uuid: Uuid! @cost(weight: "10")
-  warnings: [String!]!
-  widths: [Float!]!
-}
-
-"A connection to a list of items."
-type GeometricDataConnection {
-  "A list of edges."
-  edges: [GeometricDataEdge!]
-  "Information to aid in pagination."
-  pageInfo: PageInfo!
-  "Identifies the total count of items in the connection."
-  totalCount: Int! @cost(weight: "10")
-}
-
-"An edge in a connection."
-type GeometricDataEdge {
-  "A cursor for use in pagination."
-  cursor: String!
-  "The item at the end of the edge."
-  node: GeometricData!
-}
-
-type GetHttpsResource implements Node {
-  appliedConversionMethod: ToTreeVertexAppliedConversionMethod
-  archivedFilesMetaInformation: [FileMetaInformation!]!
-  children: [GetHttpsResource!]! @cost(weight: "10")
-  data: Data @cost(weight: "10")
-  dataFormatId: Uuid!
-  description: String
-  doesFileExist: Boolean!
-  hashValue: String!
-  id: ID!
-  isChild: Boolean!
-  isRoot: Boolean!
-  locator: Url!
-  parent: GetHttpsResource @cost(weight: "10")
-  uuid: Uuid! @cost(weight: "10")
-}
-
-"A connection to a list of items."
-type GetHttpsResourceConnection {
-  "A list of edges."
-  edges: [GetHttpsResourceEdge!]
-  "Information to aid in pagination."
-  pageInfo: PageInfo!
-  "Identifies the total count of items in the connection."
-  totalCount: Int! @cost(weight: "10")
-}
-
-"An edge in a connection."
-type GetHttpsResourceEdge {
-  "A cursor for use in pagination."
-  cursor: String!
-  "The item at the end of the edge."
-  node: GetHttpsResource!
-}
-
-type GetHttpsResourceTree {
-  nonRootVertices(
-    order: [GetHttpsResourceTreeNonRootVertSortInput!] @cost(weight: "10")
-    where: GetHttpsResourceTreeNonRootVertexPropositionInput @cost(weight: "10")
-  ): [GetHttpsResourceTreeNonRootVertex!]! @cost(weight: "10")
-  root: GetHttpsResourceTreeRoot! @cost(weight: "10")
-}
-
-type GetHttpsResourceTreeNonRootVertex implements GetHttpsResourceTreeVertex {
-  appliedConversionMethod: ToTreeVertexAppliedConversionMethod!
-  parentId: ID!
-  value: GetHttpsResource!
-  vertexId: ID!
-}
-
-type GetHttpsResourceTreeRoot implements GetHttpsResourceTreeVertex {
-  value: GetHttpsResource!
-  vertexId: ID!
-}
-
-type HygrothermalData implements Node & Data {
-  appliedMethod: AppliedMethod!
-  approval: ResponseApproval!
-  approvals: [DataApproval!]!
-  componentId: Uuid!
-  createdAt: DateTime!
-  creatorId: Uuid!
-  dataAccessRights: DataAccessRights!
-  databaseId: Uuid!
-  description: String
-  id: ID!
-  isRestrictedByApplication(applicationId: String!): Boolean!
-  isRestrictedByInstitutions(institutions: [Uuid!]!): Boolean!
-  isRestrictedByUser(
-    alreadyAccesedCount: NonNegativeInt!
-    uuid: Uuid!
-  ): Boolean!
-  locale: Locale!
-  name: String
-  resources(
-    order: [GetHttpsResourceSortInput!] @cost(weight: "10")
-    where: GetHttpsResourcePropositionInput @cost(weight: "10")
-  ): [GetHttpsResource!]! @cost(weight: "10")
-  resourceTree: GetHttpsResourceTree!
-  timestamp: DateTime!
-  userId: Uuid
-  uuid: Uuid! @cost(weight: "10")
-  warnings: [String!]!
-}
-
-"A connection to a list of items."
-type HygrothermalDataConnection {
-  "A list of edges."
-  edges: [HygrothermalDataEdge!]
-  "Information to aid in pagination."
-  pageInfo: PageInfo!
-  "Identifies the total count of items in the connection."
-  totalCount: Int! @cost(weight: "10")
-}
-
-"An edge in a connection."
-type HygrothermalDataEdge {
-  "A cursor for use in pagination."
-  cursor: String!
-  "The item at the end of the edge."
-  node: HygrothermalData!
-}
-
-type Institution {
-  uuid: Uuid!
-}
-
-type InstitutionAccessRights {
-  allowedDatasetsPerTime: NonNegativeInt
-  allowedUserCount: NonNegativeInt
-  hasRestrictions: Boolean!
-  hasRestrictionsByTime: Boolean!
-  hasRestrictionsByUser: Boolean!
-  id: Uuid!
-  institutionId: Uuid!
-  period: Duration!
-  userAlreadyAccessed: [Uuid!]!
-  version: NonNegativeInt!
-}
-
-type KeyValuePairOfGuidAndNullableOfUInt32 {
-  key: Uuid!
-  value: NonNegativeInt
-}
-
-type LifeCycleData implements Node & Data {
-  appliedMethod: AppliedMethod!
-  approval: ResponseApproval!
-  approvals: [DataApproval!]!
-  componentId: Uuid!
-  createdAt: DateTime!
-  creatorId: Uuid!
-  dataAccessRights: DataAccessRights!
-  databaseId: Uuid!
-  description: String
-  id: ID!
-  isRestrictedByApplication(applicationId: String!): Boolean!
-  isRestrictedByInstitutions(institutions: [Uuid!]!): Boolean!
-  isRestrictedByUser(
-    alreadyAccesedCount: NonNegativeInt!
-    uuid: Uuid!
-  ): Boolean!
-  locale: Locale!
-  name: String
-  resources(
-    order: [GetHttpsResourceSortInput!] @cost(weight: "10")
-    where: GetHttpsResourcePropositionInput @cost(weight: "10")
-  ): [GetHttpsResource!]! @cost(weight: "10")
-  resourceTree: GetHttpsResourceTree!
-  timestamp: DateTime!
-  userId: Uuid
-  uuid: Uuid! @cost(weight: "10")
-  warnings: [String!]!
-}
-
-"A connection to a list of items."
-type LifeCycleDataConnection {
-  "A list of edges."
-  edges: [LifeCycleDataEdge!]
-  "Information to aid in pagination."
-  pageInfo: PageInfo!
-  "Identifies the total count of items in the connection."
-  totalCount: Int! @cost(weight: "10")
-}
-
-"An edge in a connection."
-type LifeCycleDataEdge {
-  "A cursor for use in pagination."
-  cursor: String!
-  "The item at the end of the edge."
-  node: LifeCycleData!
-}
-
-type Mutation {
-  addDataApproval(input: AddDataApprovalInput!): AddDataApprovalPayload!
-    @cost(weight: "10")
-  addInstitutionAccessRights(
-    input: AddInstitutionAccessRightsInput!
-  ): AddInstitutionAccessRightsPayload! @cost(weight: "10")
-  createCalorimetricData(
-    input: CreateCalorimetricDataInput!
-  ): CreateCalorimetricDataPayload! @cost(weight: "10")
-  createGeometricData(
-    input: CreateGeometricDataInput!
-  ): CreateGeometricDataPayload! @cost(weight: "10")
-  createGetHttpsResource(
-    input: CreateGetHttpsResourceInput!
-  ): CreateGetHttpsResourcePayload! @cost(weight: "10")
-  createHygrothermalData(
-    input: CreateHygrothermalDataInput!
-  ): CreateHygrothermalDataPayload! @cost(weight: "10")
-  createLifeCycleData(
-    input: CreateLifeCycleDataInput!
-  ): CreateLifeCycleDataPayload! @cost(weight: "10")
-  createOpticalData(input: CreateOpticalDataInput!): CreateOpticalDataPayload!
-    @cost(weight: "10")
-  createPhotovoltaicData(
-    input: CreatePhotovoltaicDataInput!
-  ): CreatePhotovoltaicDataPayload! @cost(weight: "10")
-  createResponseApprovals(
-    where: CreateResponseApprovalsPropositionInput @cost(weight: "10")
-  ): CreateResponseApprovalsPayload! @cost(weight: "10")
-  deleteData(input: DeleteDataInput!): DeleteDataPayload! @cost(weight: "10")
-  deleteGetHttpsResource(
-    input: DeleteGetHttpsResourceInput!
-  ): DeleteGetHttpsResourcePayload! @cost(weight: "10")
-  publishData(input: PublishDataInput!): PublishDataPayload! @cost(weight: "10")
-  recomputeGetHttpsResourceHashValues(
-    where: RecomputeGetHttpsResourceHashValuesPropositionInput
-      @cost(weight: "10")
-  ): RecomputeGetHttpsResourceHashValuesPayload! @cost(weight: "10")
-  removeDataApproval(
-    input: RemoveDataApprovalInput!
-  ): RemoveDataApprovalPayload! @cost(weight: "10")
-  retractData(input: RetractDataInput!): RetractDataPayload! @cost(weight: "10")
-  setGetHttpsResourceParent(
-    input: SetGetHttpsResourceParentInput!
-  ): SetGetHttpsResourceParentPayload! @cost(weight: "10")
-  updateChildGetHttpsResource(
-    input: UpdateChildGetHttpsResourceInput!
-  ): UpdateChildGetHttpsResourcePayload! @cost(weight: "10")
-  updateData(input: UpdateDataInput!): UpdateDataPayload! @cost(weight: "10")
-  updateDataAccessRights(
-    input: UpdateDataAccessRightsInput!
-  ): UpdateDataAccessRightsPayload! @cost(weight: "10")
-  updateDatabase(input: UpdateDatabaseInput!): UpdateDatabasePayload!
-    @cost(weight: "10")
-  updateInstitutionAccessRights(
-    input: UpdateInstitutionAccessRightsInput!
-  ): UpdateInstitutionAccessRightsPayload! @cost(weight: "10")
-  updateResponseApprovals(
-    where: UpdateResponseApprovalsPropositionInput @cost(weight: "10")
-  ): UpdateResponseApprovalsPayload! @cost(weight: "10")
-  updateRootGetHttpsResource(
-    input: UpdateRootGetHttpsResourceInput!
-  ): UpdateRootGetHttpsResourcePayload! @cost(weight: "10")
-}
-
-type NamedMethodArgument {
-  name: String!
-  value: Any!
-}
-
-type NamedMethodSource {
-  name: String!
-  value: CrossDatabaseDataReference!
-}
-
-type Numeration {
-  mainNumber: String!
-  prefix: String
-  suffix: String
-}
-
-type OpenEndedDateTimeRange {
-  from: DateTime @cost(weight: "10")
-  until: DateTime @cost(weight: "10")
-}
-
-type OpticalData implements Node & Data {
-  appliedMethod: AppliedMethod!
-  approval: ResponseApproval!
-  approvals: [DataApproval!]!
-  cielabColors: [CielabColor!]!
-  coatedSide: CoatedSide
-  colorRenderingIndices: [Float!]!
-  componentId: Uuid!
-  createdAt: DateTime!
-  creatorId: Uuid!
-  dataAccessRights: DataAccessRights!
-  databaseId: Uuid!
-  description: String
-  id: ID!
-  infraredEmittances: [Float!]!
-  isRestrictedByApplication(applicationId: String!): Boolean!
-  isRestrictedByInstitutions(institutions: [Uuid!]!): Boolean!
-  isRestrictedByUser(
-    alreadyAccesedCount: NonNegativeInt!
-    uuid: Uuid!
-  ): Boolean!
-  locale: Locale!
-  name: String
-  nearnormalHemisphericalSolarReflectances: [Float!]!
-  nearnormalHemisphericalSolarTransmittances: [Float!]!
-  nearnormalHemisphericalVisibleReflectances: [Float!]!
-  nearnormalHemisphericalVisibleTransmittances: [Float!]!
-  resources(
-    order: [GetHttpsResourceSortInput!] @cost(weight: "10")
-    where: GetHttpsResourcePropositionInput @cost(weight: "10")
-  ): [GetHttpsResource!]! @cost(weight: "10")
-  resourceTree: GetHttpsResourceTree!
-  subtype: OpticalComponentSubtype
-  timestamp: DateTime!
-  type: OpticalComponentType
-  userId: Uuid
-  uuid: Uuid! @cost(weight: "10")
-  warnings: [String!]!
-}
-
-"A connection to a list of items."
-type OpticalDataConnection {
-  "A list of edges."
-  edges: [OpticalDataEdge!]
-  "Information to aid in pagination."
-  pageInfo: PageInfo!
-  "Identifies the total count of items in the connection."
-  totalCount: Int! @cost(weight: "10")
-}
-
-"An edge in a connection."
-type OpticalDataEdge {
-  "A cursor for use in pagination."
-  cursor: String!
-  "The item at the end of the edge."
-  node: OpticalData!
-}
-
-"Information about pagination in a connection."
-type PageInfo {
-  "When paginating forwards, the cursor to continue."
-  endCursor: String
-  "Indicates whether more edges exist following the set defined by the clients arguments."
-  hasNextPage: Boolean!
-  "Indicates whether more edges exist prior the set defined by the clients arguments."
-  hasPreviousPage: Boolean!
-  "When paginating backwards, the cursor to continue."
-  startCursor: String
-}
-
-type PhotovoltaicData implements Node & Data {
-  appliedMethod: AppliedMethod!
-  approval: ResponseApproval!
-  approvals: [DataApproval!]!
-  componentId: Uuid!
-  createdAt: DateTime!
-  creatorId: Uuid!
-  dataAccessRights: DataAccessRights!
-  databaseId: Uuid!
-  description: String
-  id: ID!
-  isRestrictedByApplication(applicationId: String!): Boolean!
-  isRestrictedByInstitutions(institutions: [Uuid!]!): Boolean!
-  isRestrictedByUser(
-    alreadyAccesedCount: NonNegativeInt!
-    uuid: Uuid!
-  ): Boolean!
-  locale: Locale!
-  name: String
-  resources(
-    order: [GetHttpsResourceSortInput!] @cost(weight: "10")
-    where: GetHttpsResourcePropositionInput @cost(weight: "10")
-  ): [GetHttpsResource!]! @cost(weight: "10")
-  resourceTree: GetHttpsResourceTree!
-  timestamp: DateTime!
-  userId: Uuid
-  uuid: Uuid! @cost(weight: "10")
-  warnings: [String!]!
-}
-
-"A connection to a list of items."
-type PhotovoltaicDataConnection {
-  "A list of edges."
-  edges: [PhotovoltaicDataEdge!]
-  "Information to aid in pagination."
-  pageInfo: PageInfo!
-  "Identifies the total count of items in the connection."
-  totalCount: Int! @cost(weight: "10")
-}
-
-"An edge in a connection."
-type PhotovoltaicDataEdge {
-  "A cursor for use in pagination."
-  cursor: String!
-  "The item at the end of the edge."
-  node: PhotovoltaicData!
-}
-
-type Publication {
-  abstract: String
-  "The website arXiv.org is a free and open-access archive for publications. The arXiv identifier can be used to define a publication."
-  arXiv: String
-  authors: [String!]
-  "The Digital Object Identifier (DOI) is a very important persistent identifier for publications. It MUST be defined here if it is available for a publication."
-  doi: String
-  "Referenced section"
-  section: String
-  title: String
-  "A Uniform Resource Name (URN) can be used to define a publication. TODO: Improve the regex pattern to further restrict the string."
-  urn: String
-  "If a persistent identifiert like DOI is defined above, this webAdress can define a convenient web address to access the publication. However, if no persistent identifier exist, this web address is the only identifier of this publication. In this case, it is important to choose a web address with a high probability to persist long."
-  webAddress: Url
-}
-
-type PublishDataError implements UserError {
-  code: PublishDataErrorCode!
-  message: String!
-  path: [String!]!
-}
-
-type PublishDataPayload {
-  data: Data
-  errors: [PublishDataError!]
-  query: Query!
-}
-
 type Query {
   allCalorimetricData(
     "Returns the elements in the list that come after the specified cursor."
@@ -1049,12 +260,11 @@ type Query {
     dataReference: CrossDatabaseDataReferenceInput!
     methodId: Uuid!
   ): CalculateMethodPayload! @cost(weight: "10")
-  calculateMethodWithDataUpload(
-    data: Upload!
-    methodId: Uuid!
-  ): CalculateMethodPayload! @cost(weight: "10")
+  calculateMethodWithDataUpload(data: Upload!, methodId: Uuid!): CalculateMethodPayload!
+    @cost(weight: "10")
   calorimetricData(id: Uuid!, locale: Locale): CalorimetricData
     @cost(weight: "10")
+  currentInstitution: CurrentInstitution @cost(weight: "10")
   currentUser: User @cost(weight: "10")
   currentUserInfo: UserInfo! @cost(weight: "10")
   data(dataKind: DataKind!, id: Uuid!, locale: Locale): Data @cost(weight: "10")
@@ -1138,6 +348,773 @@ type Query {
   verificationCode: String!
 }
 
+type Mutation {
+  addDataApproval(input: AddDataApprovalInput!): AddDataApprovalPayload!
+    @cost(weight: "10")
+  addInstitutionAccessRights(input: AddInstitutionAccessRightsInput!): AddInstitutionAccessRightsPayload!
+    @cost(weight: "10")
+  createCalorimetricData(input: CreateCalorimetricDataInput!): CreateCalorimetricDataPayload!
+    @cost(weight: "10")
+  createGeometricData(input: CreateGeometricDataInput!): CreateGeometricDataPayload!
+    @cost(weight: "10")
+  createGetHttpsResource(input: CreateGetHttpsResourceInput!): CreateGetHttpsResourcePayload!
+    @cost(weight: "10")
+  createHygrothermalData(input: CreateHygrothermalDataInput!): CreateHygrothermalDataPayload!
+    @cost(weight: "10")
+  createLifeCycleData(input: CreateLifeCycleDataInput!): CreateLifeCycleDataPayload!
+    @cost(weight: "10")
+  createOpticalData(input: CreateOpticalDataInput!): CreateOpticalDataPayload!
+    @cost(weight: "10")
+  createPhotovoltaicData(input: CreatePhotovoltaicDataInput!): CreatePhotovoltaicDataPayload!
+    @cost(weight: "10")
+  createResponseApprovals(
+    where: CreateResponseApprovalsPropositionInput @cost(weight: "10")
+  ): CreateResponseApprovalsPayload! @cost(weight: "10")
+  deleteData(input: DeleteDataInput!): DeleteDataPayload! @cost(weight: "10")
+  deleteGetHttpsResource(input: DeleteGetHttpsResourceInput!): DeleteGetHttpsResourcePayload!
+    @cost(weight: "10")
+  publishData(input: PublishDataInput!): PublishDataPayload! @cost(weight: "10")
+  recomputeGetHttpsResourceHashValues(
+    where: RecomputeGetHttpsResourceHashValuesPropositionInput @cost(weight: "10")
+  ): RecomputeGetHttpsResourceHashValuesPayload! @cost(weight: "10")
+  removeDataApproval(input: RemoveDataApprovalInput!): RemoveDataApprovalPayload!
+    @cost(weight: "10")
+  retractData(input: RetractDataInput!): RetractDataPayload! @cost(weight: "10")
+  setGetHttpsResourceParent(input: SetGetHttpsResourceParentInput!): SetGetHttpsResourceParentPayload!
+    @cost(weight: "10")
+  updateChildGetHttpsResource(input: UpdateChildGetHttpsResourceInput!): UpdateChildGetHttpsResourcePayload!
+    @cost(weight: "10")
+  updateData(input: UpdateDataInput!): UpdateDataPayload! @cost(weight: "10")
+  updateDataAccessRights(input: UpdateDataAccessRightsInput!): UpdateDataAccessRightsPayload!
+    @cost(weight: "10")
+  updateDatabase(input: UpdateDatabaseInput!): UpdateDatabasePayload!
+    @cost(weight: "10")
+  updateInstitutionAccessRights(input: UpdateInstitutionAccessRightsInput!): UpdateInstitutionAccessRightsPayload!
+    @cost(weight: "10")
+  updateResponseApprovals(
+    where: UpdateResponseApprovalsPropositionInput @cost(weight: "10")
+  ): UpdateResponseApprovalsPayload! @cost(weight: "10")
+  updateRootGetHttpsResource(input: UpdateRootGetHttpsResourceInput!): UpdateRootGetHttpsResourcePayload!
+    @cost(weight: "10")
+}
+
+type AddDataApprovalError implements UserError {
+  code: AddDataApprovalErrorCode!
+  message: String!
+  path: [String!]!
+}
+
+type AddDataApprovalPayload {
+  dataApproval: DataApproval
+  errors: [AddDataApprovalError!]
+  query: Query!
+}
+
+type AddInstitutionAccessRightsError implements UserError {
+  code: AddInstitutionAccessRightsErrorCode!
+  message: String!
+  path: [String!]!
+}
+
+type AddInstitutionAccessRightsPayload {
+  errors: [AddInstitutionAccessRightsError!]
+  institutionAccessRights: InstitutionAccessRights
+  query: Query!
+}
+
+type Address {
+  formatted: String!
+}
+
+type AppliedMethod {
+  arguments: [NamedMethodArgument!]!
+  method: Method @cost(weight: "3")
+  methodId: Uuid!
+  sources: [NamedMethodSource!]!
+}
+
+type CalculateMethodError implements UserError {
+  code: CalculateMethodErrorCode!
+  message: String!
+  path: [String!]!
+}
+
+type CalculateMethodPayload {
+  errors: [CalculateMethodError!]
+  result: Any
+}
+
+type CalorimetricData implements Node & Data {
+  appliedMethod: AppliedMethod!
+  approval: ResponseApproval! @cost(weight: "3")
+  approvals: [DataApproval!]!
+  component: Component @cost(weight: "3")
+  componentId: Uuid!
+  createdAt: DateTime!
+  creator: Institution @cost(weight: "3")
+  creatorId: Uuid!
+  dataAccessRights: DataAccessRights!
+  database: Database @cost(weight: "3")
+  databaseId: Uuid!
+  description: String
+  gValues: [Float!]!
+  id: ID!
+  isRestrictedByApplication(applicationId: String!): Boolean!
+  isRestrictedByInstitutions(institutions: [Uuid!]!): Boolean!
+  isRestrictedByUser(alreadyAccesedCount: NonNegativeInt!, uuid: Uuid!): Boolean!
+  locale: Locale!
+  name: String
+  resources(
+    order: [GetHttpsResourceSortInput!]
+    where: GetHttpsResourcePropositionInput
+  ): [GetHttpsResource!]!
+  resourceTree: GetHttpsResourceTree!
+  timestamp: DateTime!
+  userId: Uuid
+  uuid: Uuid!
+  uValues: [Float!]!
+  warnings: [String!]!
+}
+
+"A connection to a list of items."
+type CalorimetricDataConnection {
+  "A list of edges."
+  edges: [CalorimetricDataEdge!]
+  "Information to aid in pagination."
+  pageInfo: PageInfo!
+  "Identifies the total count of items in the connection."
+  totalCount: Int! @cost(weight: "10")
+}
+
+"An edge in a connection."
+type CalorimetricDataEdge {
+  "A cursor for use in pagination."
+  cursor: String!
+  "The item at the end of the edge."
+  node: CalorimetricData!
+}
+
+type CielabColor {
+  aStar: Float!
+  bStar: Float!
+  illuminant: Illuminant
+  lStar: Float!
+  observer: CalorimetricObserver
+}
+
+type Component {
+  name: String!
+  uuid: Uuid!
+}
+
+type CreateCalorimetricDataError implements UserError {
+  code: CreateCalorimetricDataErrorCode!
+  message: String!
+  path: [String!]!
+}
+
+type CreateCalorimetricDataPayload {
+  calorimetricData: CalorimetricData
+  errors: [CreateCalorimetricDataError!]
+  query: Query!
+}
+
+type CreateGeometricDataError implements UserError {
+  code: CreateGeometricDataErrorCode!
+  message: String!
+  path: [String!]!
+}
+
+type CreateGeometricDataPayload {
+  errors: [CreateGeometricDataError!]
+  geometricData: GeometricData
+  query: Query!
+}
+
+type CreateGetHttpsResourceError implements UserError {
+  code: CreateGetHttpsResourceErrorCode!
+  message: String!
+  path: [String!]!
+}
+
+type CreateGetHttpsResourcePayload {
+  errors: [CreateGetHttpsResourceError!]
+  getHttpsResource: GetHttpsResource
+  query: Query!
+}
+
+type CreateHygrothermalDataError implements UserError {
+  code: CreateHygrothermalDataErrorCode!
+  message: String!
+  path: [String!]!
+}
+
+type CreateHygrothermalDataPayload {
+  errors: [CreateHygrothermalDataError!]
+  hygrothermalData: HygrothermalData
+  query: Query!
+}
+
+type CreateLifeCycleDataError implements UserError {
+  code: CreateLifeCycleDataErrorCode!
+  message: String!
+  path: [String!]!
+}
+
+type CreateLifeCycleDataPayload {
+  errors: [CreateLifeCycleDataError!]
+  lifeCycleData: LifeCycleData
+  query: Query!
+}
+
+type CreateOpticalDataError implements UserError {
+  code: CreateOpticalDataErrorCode!
+  message: String!
+  path: [String!]!
+}
+
+type CreateOpticalDataPayload {
+  errors: [CreateOpticalDataError!]
+  opticalData: OpticalData
+  query: Query!
+}
+
+type CreatePhotovoltaicDataError implements UserError {
+  code: CreatePhotovoltaicDataErrorCode!
+  message: String!
+  path: [String!]!
+}
+
+type CreatePhotovoltaicDataPayload {
+  errors: [CreatePhotovoltaicDataError!]
+  photovoltaicData: PhotovoltaicData
+  query: Query!
+}
+
+type CreateResponseApprovalsError implements UserError {
+  code: CreateResponseApprovalsErrorCode!
+  message: String!
+  path: [String!]!
+}
+
+type CreateResponseApprovalsPayload {
+  data: [Data!]
+  errors: [CreateResponseApprovalsError!]
+  query: Query!
+}
+
+type CrossDatabaseDataReference {
+  database: Database @cost(weight: "3")
+  databaseId: Uuid!
+  dataId: Uuid!
+  dataKind: DataKind!
+  dataTimestamp: DateTime!
+}
+
+type CurrentInstitution {
+  databaseOperatingDatabases: DatabaseOperatingDatabaseConnection!
+  databaseOperatingManagedInstitutions: DatabaseOperatingManagedInstitutionConnection!
+  isDatabaseOperator: Boolean!
+  name: String!
+  uuid: Uuid!
+}
+
+type DataAccessRights {
+  allowedApplications: [String!]
+  allowedInstitutions: [Uuid!]
+  allowedUserAndQuantity: [KeyValuePairOfGuidAndNullableUInt32!]
+  hasRestrictions: Boolean!
+  hasRestrictionsByApplication: Boolean!
+  hasRestrictionsByInstitution: Boolean!
+  hasRestrictionsByUser: Boolean!
+}
+
+type DataApproval implements Approval {
+  approver: Institution @cost(weight: "3")
+  approverId: Uuid!
+  keyFingerprint: String!
+  message: String!
+  query: String!
+  signature: String!
+  statement: Reference! @cost(weight: "10")
+  timestamp: DateTime!
+  variables: Any!
+}
+
+type Database {
+  description: String!
+  isAuthorizedToUpdateNode: Boolean!
+  isAuthorizedToVerifyNode: Boolean!
+  locator: Url!
+  name: String!
+  operator: DatabaseOperatorEdge!
+  uuid: Uuid!
+  verificationCode: String!
+  verificationState: DatabaseVerificationState!
+}
+
+type DatabaseOperatingDatabaseConnection {
+  totalCount: NonNegativeInt!
+}
+
+type DatabaseOperatingManagedInstitutionConnection {
+  totalCount: NonNegativeInt!
+}
+
+type DatabaseOperatorEdge {
+  node: Institution!
+}
+
+type DataConnection {
+  edges: [DataEdge!]!
+  pageInfo: PageInfo!
+  totalCount: NonNegativeInt
+}
+
+type DataEdge {
+  cursor: String!
+  node: Data!
+}
+
+type DataFormat {
+  extension: String
+  mediaType: String!
+  name: String!
+  schemaLocator: Url
+  uuid: Uuid!
+}
+
+type DeleteDataError implements UserError {
+  code: DeleteDataErrorCode!
+  message: String!
+  path: [String!]!
+}
+
+type DeleteDataPayload {
+  errors: [DeleteDataError!]
+  query: Query!
+}
+
+type DeleteGetHttpsResourceError implements UserError {
+  code: DeleteGetHttpsResourceErrorCode!
+  message: String!
+  path: [String!]!
+}
+
+type DeleteGetHttpsResourcePayload {
+  errors: [DeleteGetHttpsResourceError!]
+  getHttpsResource: GetHttpsResource
+  query: Query!
+}
+
+type FileMetaInformation {
+  dataFormat: DataFormat @cost(weight: "3")
+  dataFormatId: Uuid!
+  path: [String!]!
+}
+
+type GeometricData implements Node & Data {
+  appliedMethod: AppliedMethod!
+  approval: ResponseApproval! @cost(weight: "3")
+  approvals: [DataApproval!]!
+  component: Component @cost(weight: "3")
+  componentId: Uuid!
+  createdAt: DateTime!
+  creator: Institution @cost(weight: "3")
+  creatorId: Uuid!
+  dataAccessRights: DataAccessRights!
+  database: Database @cost(weight: "3")
+  databaseId: Uuid!
+  description: String
+  heights: [Float!]!
+  id: ID!
+  isRestrictedByApplication(applicationId: String!): Boolean!
+  isRestrictedByInstitutions(institutions: [Uuid!]!): Boolean!
+  isRestrictedByUser(alreadyAccesedCount: NonNegativeInt!, uuid: Uuid!): Boolean!
+  locale: Locale!
+  name: String
+  resources(
+    order: [GetHttpsResourceSortInput!]
+    where: GetHttpsResourcePropositionInput
+  ): [GetHttpsResource!]!
+  resourceTree: GetHttpsResourceTree!
+  thicknesses: [Float!]!
+  timestamp: DateTime!
+  userId: Uuid
+  uuid: Uuid!
+  warnings: [String!]!
+  widths: [Float!]!
+}
+
+"A connection to a list of items."
+type GeometricDataConnection {
+  "A list of edges."
+  edges: [GeometricDataEdge!]
+  "Information to aid in pagination."
+  pageInfo: PageInfo!
+  "Identifies the total count of items in the connection."
+  totalCount: Int! @cost(weight: "10")
+}
+
+"An edge in a connection."
+type GeometricDataEdge {
+  "A cursor for use in pagination."
+  cursor: String!
+  "The item at the end of the edge."
+  node: GeometricData!
+}
+
+type GetHttpsResource implements Node {
+  appliedConversionMethod: ToTreeVertexAppliedConversionMethod
+  archivedFilesMetaInformation: [FileMetaInformation!]!
+  children: [GetHttpsResource!]! @cost(weight: "0")
+  createdAt: DateTime!
+  data: Data @cost(weight: "0")
+  dataFormat: DataFormat @cost(weight: "3")
+  dataFormatId: Uuid!
+  description: String
+  doesFileExist: Boolean!
+  hashValue: String!
+  id: ID!
+  isChild: Boolean!
+  isRoot: Boolean!
+  locator: Url!
+  parent: GetHttpsResource @cost(weight: "0")
+  updatedAt: DateTime!
+  uuid: Uuid!
+}
+
+"A connection to a list of items."
+type GetHttpsResourceConnection {
+  "A list of edges."
+  edges: [GetHttpsResourceEdge!]
+  "Information to aid in pagination."
+  pageInfo: PageInfo!
+  "Identifies the total count of items in the connection."
+  totalCount: Int! @cost(weight: "10")
+}
+
+"An edge in a connection."
+type GetHttpsResourceEdge {
+  "A cursor for use in pagination."
+  cursor: String!
+  "The item at the end of the edge."
+  node: GetHttpsResource!
+}
+
+type GetHttpsResourceTree {
+  nonRootVertices(
+    order: [GetHttpsResourceTreeNonRootVertSortInput!] @cost(weight: "10")
+    where: GetHttpsResourceTreeNonRootVertexPropositionInput @cost(weight: "10")
+  ): [GetHttpsResourceTreeNonRootVertex!]! @cost(weight: "10")
+  root: GetHttpsResourceTreeRoot! @cost(weight: "10")
+}
+
+type GetHttpsResourceTreeNonRootVertex implements GetHttpsResourceTreeVertex {
+  appliedConversionMethod: ToTreeVertexAppliedConversionMethod!
+  parentId: ID!
+  value: GetHttpsResource!
+  vertexId: ID!
+}
+
+type GetHttpsResourceTreeRoot implements GetHttpsResourceTreeVertex {
+  value: GetHttpsResource!
+  vertexId: ID!
+}
+
+type HygrothermalData implements Node & Data {
+  appliedMethod: AppliedMethod!
+  approval: ResponseApproval! @cost(weight: "3")
+  approvals: [DataApproval!]!
+  component: Component @cost(weight: "3")
+  componentId: Uuid!
+  createdAt: DateTime!
+  creator: Institution @cost(weight: "3")
+  creatorId: Uuid!
+  dataAccessRights: DataAccessRights!
+  database: Database @cost(weight: "3")
+  databaseId: Uuid!
+  description: String
+  id: ID!
+  isRestrictedByApplication(applicationId: String!): Boolean!
+  isRestrictedByInstitutions(institutions: [Uuid!]!): Boolean!
+  isRestrictedByUser(alreadyAccesedCount: NonNegativeInt!, uuid: Uuid!): Boolean!
+  locale: Locale!
+  name: String
+  resources(
+    order: [GetHttpsResourceSortInput!]
+    where: GetHttpsResourcePropositionInput
+  ): [GetHttpsResource!]!
+  resourceTree: GetHttpsResourceTree!
+  timestamp: DateTime!
+  userId: Uuid
+  uuid: Uuid!
+  warnings: [String!]!
+}
+
+"A connection to a list of items."
+type HygrothermalDataConnection {
+  "A list of edges."
+  edges: [HygrothermalDataEdge!]
+  "Information to aid in pagination."
+  pageInfo: PageInfo!
+  "Identifies the total count of items in the connection."
+  totalCount: Int! @cost(weight: "10")
+}
+
+"An edge in a connection."
+type HygrothermalDataEdge {
+  "A cursor for use in pagination."
+  cursor: String!
+  "The item at the end of the edge."
+  node: HygrothermalData!
+}
+
+type Institution {
+  name: String!
+  uuid: Uuid!
+}
+
+type InstitutionAccessRights {
+  allowedDatasetsPerTime: NonNegativeInt
+  allowedUserCount: NonNegativeInt
+  createdAt: DateTime!
+  hasRestrictions: Boolean!
+  hasRestrictionsByTime: Boolean!
+  hasRestrictionsByUser: Boolean!
+  id: Uuid!
+  institutionId: Uuid!
+  period: Duration!
+  updatedAt: DateTime!
+  userAlreadyAccessed: [Uuid!]!
+  version: NonNegativeInt!
+}
+
+type KeyValuePairOfGuidAndNullableUInt32 {
+  key: Uuid!
+  value: NonNegativeInt
+}
+
+type LifeCycleData implements Node & Data {
+  appliedMethod: AppliedMethod!
+  approval: ResponseApproval! @cost(weight: "3")
+  approvals: [DataApproval!]!
+  component: Component @cost(weight: "3")
+  componentId: Uuid!
+  createdAt: DateTime!
+  creator: Institution @cost(weight: "3")
+  creatorId: Uuid!
+  dataAccessRights: DataAccessRights!
+  database: Database @cost(weight: "3")
+  databaseId: Uuid!
+  description: String
+  id: ID!
+  isRestrictedByApplication(applicationId: String!): Boolean!
+  isRestrictedByInstitutions(institutions: [Uuid!]!): Boolean!
+  isRestrictedByUser(alreadyAccesedCount: NonNegativeInt!, uuid: Uuid!): Boolean!
+  locale: Locale!
+  name: String
+  resources(
+    order: [GetHttpsResourceSortInput!]
+    where: GetHttpsResourcePropositionInput
+  ): [GetHttpsResource!]!
+  resourceTree: GetHttpsResourceTree!
+  timestamp: DateTime!
+  userId: Uuid
+  uuid: Uuid!
+  warnings: [String!]!
+}
+
+"A connection to a list of items."
+type LifeCycleDataConnection {
+  "A list of edges."
+  edges: [LifeCycleDataEdge!]
+  "Information to aid in pagination."
+  pageInfo: PageInfo!
+  "Identifies the total count of items in the connection."
+  totalCount: Int! @cost(weight: "10")
+}
+
+"An edge in a connection."
+type LifeCycleDataEdge {
+  "A cursor for use in pagination."
+  cursor: String!
+  "The item at the end of the edge."
+  node: LifeCycleData!
+}
+
+type Method {
+  name: String!
+  uuid: Uuid!
+}
+
+type NamedMethodArgument {
+  name: String!
+  value: Any!
+}
+
+type NamedMethodSource {
+  name: String!
+  value: CrossDatabaseDataReference!
+}
+
+type Numeration {
+  mainNumber: String!
+  prefix: String
+  suffix: String
+}
+
+type OpenEndedDateTimeRange {
+  from: DateTime @cost(weight: "10")
+  until: DateTime @cost(weight: "10")
+}
+
+type OpticalData implements Node & Data {
+  appliedMethod: AppliedMethod!
+  approval: ResponseApproval! @cost(weight: "3")
+  approvals: [DataApproval!]!
+  cielabColors: [CielabColor!]!
+  coatedSide: CoatedSide
+  colorRenderingIndices: [Float!]!
+  component: Component @cost(weight: "3")
+  componentId: Uuid!
+  createdAt: DateTime!
+  creator: Institution @cost(weight: "3")
+  creatorId: Uuid!
+  dataAccessRights: DataAccessRights!
+  database: Database @cost(weight: "3")
+  databaseId: Uuid!
+  description: String
+  id: ID!
+  infraredEmittances: [Float!]!
+  isRestrictedByApplication(applicationId: String!): Boolean!
+  isRestrictedByInstitutions(institutions: [Uuid!]!): Boolean!
+  isRestrictedByUser(alreadyAccesedCount: NonNegativeInt!, uuid: Uuid!): Boolean!
+  locale: Locale!
+  name: String
+  nearnormalHemisphericalSolarReflectances: [Float!]!
+  nearnormalHemisphericalSolarTransmittances: [Float!]!
+  nearnormalHemisphericalVisibleReflectances: [Float!]!
+  nearnormalHemisphericalVisibleTransmittances: [Float!]!
+  resources(
+    order: [GetHttpsResourceSortInput!]
+    where: GetHttpsResourcePropositionInput
+  ): [GetHttpsResource!]!
+  resourceTree: GetHttpsResourceTree!
+  subtype: OpticalComponentSubtype
+  timestamp: DateTime!
+  type: OpticalComponentType
+  userId: Uuid
+  uuid: Uuid!
+  warnings: [String!]!
+}
+
+"A connection to a list of items."
+type OpticalDataConnection {
+  "A list of edges."
+  edges: [OpticalDataEdge!]
+  "Information to aid in pagination."
+  pageInfo: PageInfo!
+  "Identifies the total count of items in the connection."
+  totalCount: Int! @cost(weight: "10")
+}
+
+"An edge in a connection."
+type OpticalDataEdge {
+  "A cursor for use in pagination."
+  cursor: String!
+  "The item at the end of the edge."
+  node: OpticalData!
+}
+
+"Information about pagination in a connection."
+type PageInfo {
+  "When paginating forwards, the cursor to continue."
+  endCursor: String
+  "Indicates whether more edges exist following the set defined by the clients arguments."
+  hasNextPage: Boolean!
+  "Indicates whether more edges exist prior the set defined by the clients arguments."
+  hasPreviousPage: Boolean!
+  "When paginating backwards, the cursor to continue."
+  startCursor: String
+}
+
+type PhotovoltaicData implements Node & Data {
+  appliedMethod: AppliedMethod!
+  approval: ResponseApproval! @cost(weight: "3")
+  approvals: [DataApproval!]!
+  component: Component @cost(weight: "3")
+  componentId: Uuid!
+  createdAt: DateTime!
+  creator: Institution @cost(weight: "3")
+  creatorId: Uuid!
+  dataAccessRights: DataAccessRights!
+  database: Database @cost(weight: "3")
+  databaseId: Uuid!
+  description: String
+  id: ID!
+  isRestrictedByApplication(applicationId: String!): Boolean!
+  isRestrictedByInstitutions(institutions: [Uuid!]!): Boolean!
+  isRestrictedByUser(alreadyAccesedCount: NonNegativeInt!, uuid: Uuid!): Boolean!
+  locale: Locale!
+  name: String
+  resources(
+    order: [GetHttpsResourceSortInput!]
+    where: GetHttpsResourcePropositionInput
+  ): [GetHttpsResource!]!
+  resourceTree: GetHttpsResourceTree!
+  timestamp: DateTime!
+  userId: Uuid
+  uuid: Uuid!
+  warnings: [String!]!
+}
+
+"A connection to a list of items."
+type PhotovoltaicDataConnection {
+  "A list of edges."
+  edges: [PhotovoltaicDataEdge!]
+  "Information to aid in pagination."
+  pageInfo: PageInfo!
+  "Identifies the total count of items in the connection."
+  totalCount: Int! @cost(weight: "10")
+}
+
+"An edge in a connection."
+type PhotovoltaicDataEdge {
+  "A cursor for use in pagination."
+  cursor: String!
+  "The item at the end of the edge."
+  node: PhotovoltaicData!
+}
+
+type Publication {
+  abstract: String
+  "The website arXiv.org is a free and open-access archive for publications. The arXiv identifier can be used to define a publication."
+  arXiv: String
+  authors: [String!]
+  "The Digital Object Identifier (DOI) is a very important persistent identifier for publications. It MUST be defined here if it is available for a publication."
+  doi: String
+  "Referenced section"
+  section: String
+  title: String
+  "A Uniform Resource Name (URN) can be used to define a publication. TODO: Improve the regex pattern to further restrict the string."
+  urn: String
+  "If a persistent identifiert like DOI is defined above, this webAdress can define a convenient web address to access the publication. However, if no persistent identifier exist, this web address is the only identifier of this publication. In this case, it is important to choose a web address with a high probability to persist long."
+  webAddress: Url
+}
+
+type PublishDataError implements UserError {
+  code: PublishDataErrorCode!
+  message: String!
+  path: [String!]!
+}
+
+type PublishDataPayload {
+  data: Data
+  errors: [PublishDataError!]
+  query: Query!
+}
+
 type RecomputeGetHttpsResourceHashValuesError implements UserError {
   code: RecomputeGetHttpsResourceHashValuesErrorCode!
   message: String!
@@ -1211,6 +1188,7 @@ type Standard {
 
 type ToTreeVertexAppliedConversionMethod {
   arguments: [NamedMethodArgument!]!
+  method: Method @cost(weight: "3")
   methodId: Uuid!
   sourceName: String!
 }
@@ -1239,18 +1217,6 @@ type UpdateDataAccessRightsPayload {
   query: Query!
 }
 
-type UpdateDataError implements UserError {
-  code: UpdateDataErrorCode!
-  message: String!
-  path: [String!]!
-}
-
-type UpdateDataPayload {
-  data: Data
-  errors: [UpdateDataError!]
-  query: Query!
-}
-
 type UpdateDatabaseError {
   code: UpdateDatabaseErrorCode!
   message: String!
@@ -1260,6 +1226,18 @@ type UpdateDatabaseError {
 type UpdateDatabasePayload {
   database: Database
   errors: [UpdateDatabaseError!]
+  query: Query!
+}
+
+type UpdateDataError implements UserError {
+  code: UpdateDataErrorCode!
+  message: String!
+  path: [String!]!
+}
+
+type UpdateDataPayload {
+  data: Data
+  errors: [UpdateDataError!]
   query: Query!
 }
 
@@ -1300,10 +1278,12 @@ type UpdateRootGetHttpsResourcePayload {
 }
 
 type User implements Node {
+  createdAt: DateTime!
   id: ID!
   name: String!
   subject: String!
-  uuid: Uuid! @cost(weight: "10")
+  updatedAt: DateTime!
+  uuid: Uuid!
 }
 
 type UserInfo {
@@ -1316,6 +1296,58 @@ type UserInfo {
   roles: [String!]
   sub: String!
   website: String
+}
+
+interface Approval {
+  approverId: Uuid!
+  keyFingerprint: String!
+  message: String!
+  query: String!
+  signature: String!
+  timestamp: DateTime!
+  variables: Any!
+}
+
+interface Data {
+  appliedMethod: AppliedMethod!
+  approval: ResponseApproval!
+  approvals: [DataApproval!]!
+  component: Component
+  componentId: Uuid!
+  createdAt: DateTime!
+  creator: Institution
+  creatorId: Uuid!
+  dataAccessRights: DataAccessRights!
+  database: Database
+  databaseId: Uuid!
+  description: String
+  id: ID!
+  isRestrictedByApplication(applicationId: String!): Boolean!
+  isRestrictedByInstitutions(institutions: [Uuid!]!): Boolean!
+  isRestrictedByUser(alreadyAccesedCount: NonNegativeInt!, uuid: Uuid!): Boolean!
+  locale: Locale!
+  name: String
+  resources: [GetHttpsResource!]!
+  resourceTree: GetHttpsResourceTree!
+  timestamp: DateTime!
+  userId: Uuid
+  uuid: Uuid!
+  warnings: [String!]!
+}
+
+interface GetHttpsResourceTreeVertex {
+  value: GetHttpsResource!
+  vertexId: ID
+}
+
+"The node interface is implemented by entities that have a global unique identifier."
+interface Node {
+  id: ID!
+}
+
+interface UserError {
+  message: String!
+  path: [String!]!
 }
 
 union Reference = Publication | Standard
@@ -1348,9 +1380,9 @@ input AppliedMethodInput {
 
 input AppliedMethodPropositionInput {
   and: [AppliedMethodPropositionInput!]
-  or: [AppliedMethodPropositionInput!]
-  methodId: UuidPropositionInput
   arguments: FilterInputTypeOfNamedMethodArgumentsPropositionInput
+  methodId: UuidPropositionInput
+  or: [AppliedMethodPropositionInput!]
   sources: FilterInputTypeOfNamedMethodSourcesPropositionInput
 }
 
@@ -1365,57 +1397,49 @@ input BooleanPropositionInput {
 
 input BytePropositionInput {
   equalTo: Byte @cost(weight: "10")
-  notEqualTo: Byte @cost(weight: "10")
-  in: [Byte] @cost(weight: "10")
-  notIn: [Byte] @cost(weight: "10")
   greaterThan: Byte @cost(weight: "10")
-  notGreaterThan: Byte @cost(weight: "10")
   greaterThanOrEqualTo: Byte @cost(weight: "10")
-  notGreaterThanOrEqualTo: Byte @cost(weight: "10")
+  in: [Byte] @cost(weight: "10")
   lessThan: Byte @cost(weight: "10")
-  notLessThan: Byte @cost(weight: "10")
   lessThanOrEqualTo: Byte @cost(weight: "10")
+  notEqualTo: Byte @cost(weight: "10")
+  notGreaterThan: Byte @cost(weight: "10")
+  notGreaterThanOrEqualTo: Byte @cost(weight: "10")
+  notIn: [Byte] @cost(weight: "10")
+  notLessThan: Byte @cost(weight: "10")
   notLessThanOrEqualTo: Byte @cost(weight: "10")
-}
-
-input CalendarSystemPropositionInput {
-  and: [CalendarSystemPropositionInput!]
-  or: [CalendarSystemPropositionInput!]
-  id: StringPropositionInput
-  name: StringPropositionInput
-  minYear: IntPropositionInput
-  maxYear: IntPropositionInput
-  eras: FilterInputTypeOfErasPropositionInput
 }
 
 input CalorimetricDataPropositionInput {
   and: [CalorimetricDataPropositionInput!]
-  or: [CalorimetricDataPropositionInput!]
-  id: UuidPropositionInput
-  userId: UuidPropositionInput
-  locale: StringPropositionInput
-  name: StringPropositionInput
-  description: StringPropositionInput
-  componentId: UuidPropositionInput
-  creatorId: UuidPropositionInput
-  createdAt: OffsetDateTimePropositionInput
   appliedMethod: AppliedMethodPropositionInput
   approvals: FilterInputTypeOfDataApprovalsPropositionInput
-  resources: FilterInputTypeOfGetHttpsResourcesPropositionInput
-  warnings: StringsPropositionInput
+  componentId: UuidPropositionInput
+  createdAt: DateTimePropositionInput
+  creatorId: UuidPropositionInput
+  description: StringPropositionInput
   gValues: FloatsPropositionInput
+  id: UuidPropositionInput
+  locale: StringPropositionInput
+  name: StringPropositionInput
+  or: [CalorimetricDataPropositionInput!]
+  resources: FilterInputTypeOfGetHttpsResourcesPropositionInput
+  updatedAt: DateTimePropositionInput
+  userId: UuidPropositionInput
   uValues: FloatsPropositionInput
+  warnings: StringsPropositionInput
 }
 
 input CalorimetricDataSortInput {
+  appliedMethod: AppliedMethodSortInput @cost(weight: "10")
+  componentId: SortEnumType @cost(weight: "10")
+  createdAt: SortEnumType @cost(weight: "10")
+  creatorId: SortEnumType @cost(weight: "10")
+  description: SortEnumType @cost(weight: "10")
   id: SortEnumType @cost(weight: "10")
   locale: SortEnumType @cost(weight: "10")
   name: SortEnumType @cost(weight: "10")
-  description: SortEnumType @cost(weight: "10")
-  componentId: SortEnumType @cost(weight: "10")
-  creatorId: SortEnumType @cost(weight: "10")
-  createdAt: SortEnumType @cost(weight: "10")
-  appliedMethod: AppliedMethodSortInput @cost(weight: "10")
+  updatedAt: SortEnumType @cost(weight: "10")
 }
 
 input CielabColorInput {
@@ -1428,12 +1452,12 @@ input CielabColorInput {
 
 input CielabColorPropositionInput {
   and: [CielabColorPropositionInput!]
-  or: [CielabColorPropositionInput!]
-  lStar: FloatPropositionInput
   aStar: FloatPropositionInput
   bStar: FloatPropositionInput
-  observer: NullableOfCalorimetricObserverPropositionInput
   illuminant: NullableOfIlluminantPropositionInput
+  lStar: FloatPropositionInput
+  observer: NullableOfCalorimetricObserverPropositionInput
+  or: [CielabColorPropositionInput!]
 }
 
 input ClosedIntervalInput {
@@ -1540,18 +1564,16 @@ input CreatePhotovoltaicDataInput {
 
 input CreateResponseApprovalsPropositionInput {
   and: [CreateResponseApprovalsPropositionInput!]
-  or: [CreateResponseApprovalsPropositionInput!]
-  id: UuidPropositionInput
-  userId: UuidPropositionInput
-  locale: StringPropositionInput
-  name: StringPropositionInput
-  description: StringPropositionInput
-  componentId: UuidPropositionInput
-  creatorId: UuidPropositionInput
-  createdAt: OffsetDateTimePropositionInput
   appliedMethod: AppliedMethodPropositionInput
   approvals: FilterInputTypeOfDataApprovalsPropositionInput
+  componentId: UuidPropositionInput
+  creatorId: UuidPropositionInput
+  description: StringPropositionInput
+  locale: StringPropositionInput
+  name: StringPropositionInput
+  or: [CreateResponseApprovalsPropositionInput!]
   resources: FilterInputTypeOfGetHttpsResourcesPropositionInput
+  userId: UuidPropositionInput
   warnings: StringsPropositionInput
 }
 
@@ -1564,88 +1586,90 @@ input CrossDatabaseDataReferenceInput {
 
 input CrossDatabaseDataReferencePropositionInput {
   and: [CrossDatabaseDataReferencePropositionInput!]
-  or: [CrossDatabaseDataReferencePropositionInput!]
-  dataId: UuidPropositionInput
-  dataTimestamp: OffsetDateTimePropositionInput
-  dataKind: DataKindPropositionInput
   databaseId: UuidPropositionInput
+  dataId: UuidPropositionInput
+  dataKind: DataKindPropositionInput
+  dataTimestamp: DateTimePropositionInput
+  or: [CrossDatabaseDataReferencePropositionInput!]
 }
 
 input DataApprovalPropositionInput {
   and: [DataApprovalPropositionInput!]
-  or: [DataApprovalPropositionInput!]
   approverId: UuidPropositionInput
-  timestamp: OffsetDateTimePropositionInput
-  signature: StringPropositionInput
   keyFingerprint: StringPropositionInput
-  query: StringPropositionInput
-  variables: JsonElementPropositionInput
   message: StringPropositionInput
+  or: [DataApprovalPropositionInput!]
+  query: StringPropositionInput
+  signature: StringPropositionInput
   statement: ReferencePropositionInput
+  timestamp: DateTimePropositionInput
+  variables: JsonElementPropositionInput
 }
 
 input DataKindPropositionInput {
   equalTo: DataKind @cost(weight: "10")
-  notEqualTo: DataKind @cost(weight: "10")
   in: [DataKind!] @cost(weight: "10")
+  notEqualTo: DataKind @cost(weight: "10")
   notIn: [DataKind!] @cost(weight: "10")
 }
 
 input DataPropositionInput {
   and: [DataPropositionInput!]
-  or: [DataPropositionInput!]
-  id: UuidPropositionInput
-  userId: UuidPropositionInput
-  locale: StringPropositionInput
-  name: StringPropositionInput
-  description: StringPropositionInput
-  componentId: UuidPropositionInput
-  creatorId: UuidPropositionInput
-  createdAt: OffsetDateTimePropositionInput
   appliedMethod: AppliedMethodPropositionInput
   approvals: FilterInputTypeOfDataApprovalsPropositionInput
+  componentId: UuidPropositionInput
+  createdAt: DateTimePropositionInput
+  creatorId: UuidPropositionInput
+  description: StringPropositionInput
+  id: UuidPropositionInput
+  locale: StringPropositionInput
+  name: StringPropositionInput
+  or: [DataPropositionInput!]
   resources: FilterInputTypeOfGetHttpsResourcesPropositionInput
+  updatedAt: DateTimePropositionInput
+  userId: UuidPropositionInput
   warnings: StringsPropositionInput
 }
 
 input DataSortInput {
+  appliedMethod: AppliedMethodSortInput @cost(weight: "10")
+  componentId: SortEnumType @cost(weight: "10")
+  createdAt: SortEnumType @cost(weight: "10")
+  creatorId: SortEnumType @cost(weight: "10")
+  description: SortEnumType @cost(weight: "10")
   id: SortEnumType @cost(weight: "10")
   locale: SortEnumType @cost(weight: "10")
   name: SortEnumType @cost(weight: "10")
-  description: SortEnumType @cost(weight: "10")
-  componentId: SortEnumType @cost(weight: "10")
-  creatorId: SortEnumType @cost(weight: "10")
-  createdAt: SortEnumType @cost(weight: "10")
-  appliedMethod: AppliedMethodSortInput @cost(weight: "10")
+  updatedAt: SortEnumType @cost(weight: "10")
 }
 
 input DateTimePropositionInput {
   equalTo: DateTime @cost(weight: "10")
-  notEqualTo: DateTime @cost(weight: "10")
-  in: [DateTime] @cost(weight: "10")
-  notIn: [DateTime] @cost(weight: "10")
   greaterThan: DateTime @cost(weight: "10")
-  notGreaterThan: DateTime @cost(weight: "10")
   greaterThanOrEqualTo: DateTime @cost(weight: "10")
-  notGreaterThanOrEqualTo: DateTime @cost(weight: "10")
+  in: [DateTime] @cost(weight: "10")
   lessThan: DateTime @cost(weight: "10")
-  notLessThan: DateTime @cost(weight: "10")
   lessThanOrEqualTo: DateTime @cost(weight: "10")
+  notEqualTo: DateTime @cost(weight: "10")
+  notGreaterThan: DateTime @cost(weight: "10")
+  notGreaterThanOrEqualTo: DateTime @cost(weight: "10")
+  notIn: [DateTime] @cost(weight: "10")
+  notLessThan: DateTime @cost(weight: "10")
   notLessThanOrEqualTo: DateTime @cost(weight: "10")
 }
 
 input DecimalPropositionInput {
   equalTo: Decimal @cost(weight: "10")
-  notEqualTo: Decimal @cost(weight: "10")
-  in: [Decimal] @cost(weight: "10")
-  notIn: [Decimal] @cost(weight: "10")
   greaterThan: Decimal @cost(weight: "10")
-  notGreaterThan: Decimal @cost(weight: "10")
   greaterThanOrEqualTo: Decimal @cost(weight: "10")
-  notGreaterThanOrEqualTo: Decimal @cost(weight: "10")
+  in: [Decimal] @cost(weight: "10")
   lessThan: Decimal @cost(weight: "10")
-  notLessThan: Decimal @cost(weight: "10")
   lessThanOrEqualTo: Decimal @cost(weight: "10")
+  notEqualTo: Decimal @cost(weight: "10")
+  notGreaterThan: Decimal @cost(weight: "10")
+  notGreaterThanOrEqualTo: Decimal @cost(weight: "10")
+  notIn: [Decimal] @cost(weight: "10")
+  notLessThan: Decimal @cost(weight: "10")
   notLessThanOrEqualTo: Decimal @cost(weight: "10")
 }
 
@@ -1658,10 +1682,19 @@ input DeleteGetHttpsResourceInput {
   getHttpsResourceId: Uuid!
 }
 
-input EraPropositionInput {
-  and: [EraPropositionInput!]
-  or: [EraPropositionInput!]
-  name: StringPropositionInput
+input DurationPropositionInput {
+  equalTo: Duration @cost(weight: "10")
+  greaterThan: Duration @cost(weight: "10")
+  greaterThanOrEqualTo: Duration @cost(weight: "10")
+  in: [Duration] @cost(weight: "10")
+  lessThan: Duration @cost(weight: "10")
+  lessThanOrEqualTo: Duration @cost(weight: "10")
+  notEqualTo: Duration @cost(weight: "10")
+  notGreaterThan: Duration @cost(weight: "10")
+  notGreaterThanOrEqualTo: Duration @cost(weight: "10")
+  notIn: [Duration] @cost(weight: "10")
+  notLessThan: Duration @cost(weight: "10")
+  notLessThanOrEqualTo: Duration @cost(weight: "10")
 }
 
 input FileMetaInformationInput {
@@ -1671,210 +1704,200 @@ input FileMetaInformationInput {
 
 input FileMetaInformationPropositionInput {
   and: [FileMetaInformationPropositionInput!]
+  dataFormatId: UuidPropositionInput
   or: [FileMetaInformationPropositionInput!]
   path: StringsPropositionInput
-  dataFormatId: UuidPropositionInput
 }
 
 input FilterInputTypeOfCielabColorsPropositionInput {
   all: CielabColorPropositionInput @cost(weight: "10")
+  any: Boolean @cost(weight: "10")
   none: CielabColorPropositionInput @cost(weight: "10")
   some: CielabColorPropositionInput @cost(weight: "10")
-  any: Boolean @cost(weight: "10")
 }
 
 input FilterInputTypeOfDataApprovalsPropositionInput {
   all: DataApprovalPropositionInput @cost(weight: "10")
+  any: Boolean @cost(weight: "10")
   none: DataApprovalPropositionInput @cost(weight: "10")
   some: DataApprovalPropositionInput @cost(weight: "10")
-  any: Boolean @cost(weight: "10")
-}
-
-input FilterInputTypeOfErasPropositionInput {
-  all: EraPropositionInput @cost(weight: "10")
-  none: EraPropositionInput @cost(weight: "10")
-  some: EraPropositionInput @cost(weight: "10")
-  any: Boolean @cost(weight: "10")
 }
 
 input FilterInputTypeOfFileMetaInformationsPropositionInput {
   all: FileMetaInformationPropositionInput @cost(weight: "10")
+  any: Boolean @cost(weight: "10")
   none: FileMetaInformationPropositionInput @cost(weight: "10")
   some: FileMetaInformationPropositionInput @cost(weight: "10")
-  any: Boolean @cost(weight: "10")
 }
 
 input FilterInputTypeOfGetHttpsResourcesPropositionInput {
   all: GetHttpsResourceTreeNonRootVertexPropositionInput @cost(weight: "10")
+  any: Boolean @cost(weight: "10")
   none: GetHttpsResourceTreeNonRootVertexPropositionInput @cost(weight: "10")
   some: GetHttpsResourceTreeNonRootVertexPropositionInput @cost(weight: "10")
-  any: Boolean @cost(weight: "10")
 }
 
 input FilterInputTypeOfNamedMethodArgumentsPropositionInput {
   all: NamedMethodArgumentPropositionInput @cost(weight: "10")
+  any: Boolean @cost(weight: "10")
   none: NamedMethodArgumentPropositionInput @cost(weight: "10")
   some: NamedMethodArgumentPropositionInput @cost(weight: "10")
-  any: Boolean @cost(weight: "10")
 }
 
 input FilterInputTypeOfNamedMethodSourcesPropositionInput {
   all: NamedMethodSourcePropositionInput @cost(weight: "10")
+  any: Boolean @cost(weight: "10")
   none: NamedMethodSourcePropositionInput @cost(weight: "10")
   some: NamedMethodSourcePropositionInput @cost(weight: "10")
-  any: Boolean @cost(weight: "10")
 }
 
 input FloatPropositionInput {
   equalTo: Float @cost(weight: "10")
-  notEqualTo: Float @cost(weight: "10")
-  in: [Float] @cost(weight: "10")
-  notIn: [Float] @cost(weight: "10")
   greaterThan: Float @cost(weight: "10")
-  notGreaterThan: Float @cost(weight: "10")
   greaterThanOrEqualTo: Float @cost(weight: "10")
-  notGreaterThanOrEqualTo: Float @cost(weight: "10")
-  lessThan: Float @cost(weight: "10")
-  notLessThan: Float @cost(weight: "10")
-  lessThanOrEqualTo: Float @cost(weight: "10")
-  notLessThanOrEqualTo: Float @cost(weight: "10")
+  in: [Float] @cost(weight: "10")
   inClosedInterval: ClosedIntervalInput @cost(weight: "10")
+  lessThan: Float @cost(weight: "10")
+  lessThanOrEqualTo: Float @cost(weight: "10")
+  notEqualTo: Float @cost(weight: "10")
+  notGreaterThan: Float @cost(weight: "10")
+  notGreaterThanOrEqualTo: Float @cost(weight: "10")
+  notIn: [Float] @cost(weight: "10")
+  notLessThan: Float @cost(weight: "10")
+  notLessThanOrEqualTo: Float @cost(weight: "10")
 }
 
 input FloatsPropositionInput {
   all: FloatPropositionInput @cost(weight: "10")
+  any: Boolean @cost(weight: "10")
   none: FloatPropositionInput @cost(weight: "10")
   some: FloatPropositionInput @cost(weight: "10")
-  any: Boolean @cost(weight: "10")
 }
 
 input GeometricDataPropositionInput {
   and: [GeometricDataPropositionInput!]
-  or: [GeometricDataPropositionInput!]
-  id: UuidPropositionInput
-  userId: UuidPropositionInput
-  locale: StringPropositionInput
-  name: StringPropositionInput
-  description: StringPropositionInput
-  componentId: UuidPropositionInput
-  creatorId: UuidPropositionInput
-  createdAt: OffsetDateTimePropositionInput
   appliedMethod: AppliedMethodPropositionInput
   approvals: FilterInputTypeOfDataApprovalsPropositionInput
+  componentId: UuidPropositionInput
+  createdAt: DateTimePropositionInput
+  creatorId: UuidPropositionInput
+  description: StringPropositionInput
+  id: UuidPropositionInput
+  locale: StringPropositionInput
+  name: StringPropositionInput
+  or: [GeometricDataPropositionInput!]
   resources: FilterInputTypeOfGetHttpsResourcesPropositionInput
-  warnings: StringsPropositionInput
   thicknesses: FloatsPropositionInput
+  updatedAt: DateTimePropositionInput
+  userId: UuidPropositionInput
+  warnings: StringsPropositionInput
 }
 
 input GeometricDataSortInput {
+  appliedMethod: AppliedMethodSortInput @cost(weight: "10")
+  componentId: SortEnumType @cost(weight: "10")
+  createdAt: SortEnumType @cost(weight: "10")
+  creatorId: SortEnumType @cost(weight: "10")
+  description: SortEnumType @cost(weight: "10")
   id: SortEnumType @cost(weight: "10")
   locale: SortEnumType @cost(weight: "10")
   name: SortEnumType @cost(weight: "10")
-  description: SortEnumType @cost(weight: "10")
-  componentId: SortEnumType @cost(weight: "10")
-  creatorId: SortEnumType @cost(weight: "10")
-  createdAt: SortEnumType @cost(weight: "10")
-  appliedMethod: AppliedMethodSortInput @cost(weight: "10")
+  updatedAt: SortEnumType @cost(weight: "10")
 }
 
 input GetHttpsResourcePropositionInput {
   and: [GetHttpsResourcePropositionInput!]
-  or: [GetHttpsResourcePropositionInput!]
-  id: UuidPropositionInput
-  description: StringPropositionInput
-  hashValue: StringPropositionInput
-  dataFormatId: UuidPropositionInput
   appliedConversionMethod: ToTreeVertexAppliedConversionMethodPropositionInput
   archivedFilesMetaInformation: FilterInputTypeOfFileMetaInformationsPropositionInput
-  parent: GetHttpsResourceTreeNonRootVertexPropositionInput
   calorimetricData: CalorimetricDataPropositionInput
+  dataFormatId: UuidPropositionInput
+  description: StringPropositionInput
   geometricData: GeometricDataPropositionInput
+  hashValue: StringPropositionInput
   hygrothermalData: HygrothermalDataPropositionInput
   lifeCycleData: LifeCycleDataPropositionInput
   opticalData: OpticalDataPropositionInput
+  or: [GetHttpsResourcePropositionInput!]
+  parent: GetHttpsResourceTreeNonRootVertexPropositionInput
   photovoltaicData: PhotovoltaicDataPropositionInput
 }
 
 input GetHttpsResourceSortInput {
-  id: SortEnumType @cost(weight: "10")
+  appliedConversionMethod: ToTreeVertexAppliedConversionMethodSortInput @cost(weight: "10")
+  createdAt: SortEnumType @cost(weight: "10")
+  dataFormatId: SortEnumType @cost(weight: "10")
   description: SortEnumType @cost(weight: "10")
   hashValue: SortEnumType @cost(weight: "10")
-  dataFormatId: SortEnumType @cost(weight: "10")
-  appliedConversionMethod: ToTreeVertexAppliedConversionMethodSortInput
-    @cost(weight: "10")
-  parent: GetHttpsResourceTreeNonRootVertSortInput @cost(weight: "10")
-}
-
-input GetHttpsResourceTreeNonRootVertSortInput {
   id: SortEnumType @cost(weight: "10")
-  description: SortEnumType @cost(weight: "10")
-  hashValue: SortEnumType @cost(weight: "10")
-  dataFormatId: SortEnumType @cost(weight: "10")
-  appliedConversionMethod: ToTreeVertexAppliedConversionMethodSortInput
-    @cost(weight: "10")
   parent: GetHttpsResourceTreeNonRootVertSortInput @cost(weight: "10")
+  updatedAt: SortEnumType @cost(weight: "10")
 }
 
 input GetHttpsResourceTreeNonRootVertexPropositionInput {
   and: [GetHttpsResourceTreeNonRootVertexPropositionInput!]
-  or: [GetHttpsResourceTreeNonRootVertexPropositionInput!]
-  id: UuidPropositionInput
-  description: StringPropositionInput
-  hashValue: StringPropositionInput
-  dataFormatId: UuidPropositionInput
   appliedConversionMethod: ToTreeVertexAppliedConversionMethodPropositionInput
   archivedFilesMetaInformation: FilterInputTypeOfFileMetaInformationsPropositionInput
+  dataFormatId: UuidPropositionInput
+  description: StringPropositionInput
+  hashValue: StringPropositionInput
+  or: [GetHttpsResourceTreeNonRootVertexPropositionInput!]
   parent: GetHttpsResourceTreeNonRootVertexPropositionInput
+}
+
+input GetHttpsResourceTreeNonRootVertSortInput {
+  appliedConversionMethod: ToTreeVertexAppliedConversionMethodSortInput @cost(weight: "10")
+  createdAt: SortEnumType @cost(weight: "10")
+  dataFormatId: SortEnumType @cost(weight: "10")
+  description: SortEnumType @cost(weight: "10")
+  hashValue: SortEnumType @cost(weight: "10")
+  id: SortEnumType @cost(weight: "10")
+  parent: GetHttpsResourceTreeNonRootVertSortInput @cost(weight: "10")
+  updatedAt: SortEnumType @cost(weight: "10")
 }
 
 input HygrothermalDataPropositionInput {
   and: [HygrothermalDataPropositionInput!]
-  or: [HygrothermalDataPropositionInput!]
-  id: UuidPropositionInput
-  userId: UuidPropositionInput
-  locale: StringPropositionInput
-  name: StringPropositionInput
-  description: StringPropositionInput
-  componentId: UuidPropositionInput
-  creatorId: UuidPropositionInput
-  createdAt: OffsetDateTimePropositionInput
   appliedMethod: AppliedMethodPropositionInput
   approvals: FilterInputTypeOfDataApprovalsPropositionInput
+  componentId: UuidPropositionInput
+  createdAt: DateTimePropositionInput
+  creatorId: UuidPropositionInput
+  description: StringPropositionInput
+  id: UuidPropositionInput
+  locale: StringPropositionInput
+  name: StringPropositionInput
+  or: [HygrothermalDataPropositionInput!]
   resources: FilterInputTypeOfGetHttpsResourcesPropositionInput
+  updatedAt: DateTimePropositionInput
+  userId: UuidPropositionInput
   warnings: StringsPropositionInput
 }
 
 input HygrothermalDataSortInput {
+  appliedMethod: AppliedMethodSortInput @cost(weight: "10")
+  componentId: SortEnumType @cost(weight: "10")
+  createdAt: SortEnumType @cost(weight: "10")
+  creatorId: SortEnumType @cost(weight: "10")
+  description: SortEnumType @cost(weight: "10")
   id: SortEnumType @cost(weight: "10")
   locale: SortEnumType @cost(weight: "10")
   name: SortEnumType @cost(weight: "10")
-  description: SortEnumType @cost(weight: "10")
-  componentId: SortEnumType @cost(weight: "10")
-  creatorId: SortEnumType @cost(weight: "10")
-  createdAt: SortEnumType @cost(weight: "10")
-  appliedMethod: AppliedMethodSortInput @cost(weight: "10")
+  updatedAt: SortEnumType @cost(weight: "10")
 }
 
 input IntPropositionInput {
   equalTo: Int @cost(weight: "10")
-  notEqualTo: Int @cost(weight: "10")
-  in: [Int] @cost(weight: "10")
-  notIn: [Int] @cost(weight: "10")
   greaterThan: Int @cost(weight: "10")
-  notGreaterThan: Int @cost(weight: "10")
   greaterThanOrEqualTo: Int @cost(weight: "10")
-  notGreaterThanOrEqualTo: Int @cost(weight: "10")
+  in: [Int] @cost(weight: "10")
   lessThan: Int @cost(weight: "10")
-  notLessThan: Int @cost(weight: "10")
   lessThanOrEqualTo: Int @cost(weight: "10")
+  notEqualTo: Int @cost(weight: "10")
+  notGreaterThan: Int @cost(weight: "10")
+  notGreaterThanOrEqualTo: Int @cost(weight: "10")
+  notIn: [Int] @cost(weight: "10")
+  notLessThan: Int @cost(weight: "10")
   notLessThanOrEqualTo: Int @cost(weight: "10")
-}
-
-input IsoDayOfWeekPropositionInput {
-  equalTo: IsoDayOfWeek @cost(weight: "10")
-  notEqualTo: IsoDayOfWeek @cost(weight: "10")
-  in: [IsoDayOfWeek!] @cost(weight: "10")
-  notIn: [IsoDayOfWeek!] @cost(weight: "10")
 }
 
 input JsonElementPropositionInput {
@@ -1885,107 +1908,103 @@ input JsonElementPropositionInput {
 
 input JsonValueKindPropositionInput {
   equalTo: JsonValueKind @cost(weight: "10")
-  notEqualTo: JsonValueKind @cost(weight: "10")
   in: [JsonValueKind!] @cost(weight: "10")
+  notEqualTo: JsonValueKind @cost(weight: "10")
   notIn: [JsonValueKind!] @cost(weight: "10")
 }
 
-input KeyValuePairOfGuidAndNullableOfUInt32Input {
+input KeyValuePairOfGuidAndNullableUInt32Input {
   key: Uuid!
   value: NonNegativeInt
 }
 
 input LifeCycleDataPropositionInput {
   and: [LifeCycleDataPropositionInput!]
-  or: [LifeCycleDataPropositionInput!]
-  id: UuidPropositionInput
-  userId: UuidPropositionInput
-  locale: StringPropositionInput
-  name: StringPropositionInput
-  description: StringPropositionInput
-  componentId: UuidPropositionInput
-  creatorId: UuidPropositionInput
-  createdAt: OffsetDateTimePropositionInput
   appliedMethod: AppliedMethodPropositionInput
   approvals: FilterInputTypeOfDataApprovalsPropositionInput
+  componentId: UuidPropositionInput
+  createdAt: DateTimePropositionInput
+  creatorId: UuidPropositionInput
+  description: StringPropositionInput
+  id: UuidPropositionInput
+  locale: StringPropositionInput
+  name: StringPropositionInput
+  or: [LifeCycleDataPropositionInput!]
   resources: FilterInputTypeOfGetHttpsResourcesPropositionInput
+  updatedAt: DateTimePropositionInput
+  userId: UuidPropositionInput
   warnings: StringsPropositionInput
 }
 
 input LifeCycleDataSortInput {
+  appliedMethod: AppliedMethodSortInput @cost(weight: "10")
+  componentId: SortEnumType @cost(weight: "10")
+  createdAt: SortEnumType @cost(weight: "10")
+  creatorId: SortEnumType @cost(weight: "10")
+  description: SortEnumType @cost(weight: "10")
   id: SortEnumType @cost(weight: "10")
   locale: SortEnumType @cost(weight: "10")
   name: SortEnumType @cost(weight: "10")
-  description: SortEnumType @cost(weight: "10")
-  componentId: SortEnumType @cost(weight: "10")
-  creatorId: SortEnumType @cost(weight: "10")
-  createdAt: SortEnumType @cost(weight: "10")
-  appliedMethod: AppliedMethodSortInput @cost(weight: "10")
+  updatedAt: SortEnumType @cost(weight: "10")
 }
 
 input LocalDatePropositionInput {
-  and: [LocalDatePropositionInput!]
-  or: [LocalDatePropositionInput!]
-  calendar: CalendarSystemPropositionInput
-  year: IntPropositionInput
-  month: IntPropositionInput
-  day: IntPropositionInput
-  dayOfWeek: IsoDayOfWeekPropositionInput
-  yearOfEra: IntPropositionInput
-  era: EraPropositionInput
-  dayOfYear: IntPropositionInput
+  equalTo: LocalDate @cost(weight: "10")
+  greaterThan: LocalDate @cost(weight: "10")
+  greaterThanOrEqualTo: LocalDate @cost(weight: "10")
+  in: [LocalDate] @cost(weight: "10")
+  lessThan: LocalDate @cost(weight: "10")
+  lessThanOrEqualTo: LocalDate @cost(weight: "10")
+  notEqualTo: LocalDate @cost(weight: "10")
+  notGreaterThan: LocalDate @cost(weight: "10")
+  notGreaterThanOrEqualTo: LocalDate @cost(weight: "10")
+  notIn: [LocalDate] @cost(weight: "10")
+  notLessThan: LocalDate @cost(weight: "10")
+  notLessThanOrEqualTo: LocalDate @cost(weight: "10")
 }
 
 input LocalDateTimePropositionInput {
-  and: [LocalDateTimePropositionInput!]
-  or: [LocalDateTimePropositionInput!]
-  calendar: CalendarSystemPropositionInput
-  year: IntPropositionInput
-  yearOfEra: IntPropositionInput
-  era: EraPropositionInput
-  month: IntPropositionInput
-  dayOfYear: IntPropositionInput
-  day: IntPropositionInput
-  dayOfWeek: IsoDayOfWeekPropositionInput
-  hour: IntPropositionInput
-  clockHourOfHalfDay: IntPropositionInput
-  minute: IntPropositionInput
-  second: IntPropositionInput
-  millisecond: IntPropositionInput
-  tickOfSecond: IntPropositionInput
-  tickOfDay: LongPropositionInput
-  nanosecondOfSecond: IntPropositionInput
-  nanosecondOfDay: LongPropositionInput
-  timeOfDay: LocalTimePropositionInput
-  date: LocalDatePropositionInput
+  equalTo: LocalDateTime @cost(weight: "10")
+  greaterThan: LocalDateTime @cost(weight: "10")
+  greaterThanOrEqualTo: LocalDateTime @cost(weight: "10")
+  in: [LocalDateTime] @cost(weight: "10")
+  lessThan: LocalDateTime @cost(weight: "10")
+  lessThanOrEqualTo: LocalDateTime @cost(weight: "10")
+  notEqualTo: LocalDateTime @cost(weight: "10")
+  notGreaterThan: LocalDateTime @cost(weight: "10")
+  notGreaterThanOrEqualTo: LocalDateTime @cost(weight: "10")
+  notIn: [LocalDateTime] @cost(weight: "10")
+  notLessThan: LocalDateTime @cost(weight: "10")
+  notLessThanOrEqualTo: LocalDateTime @cost(weight: "10")
 }
 
 input LocalTimePropositionInput {
-  and: [LocalTimePropositionInput!]
-  or: [LocalTimePropositionInput!]
-  hour: IntPropositionInput
-  clockHourOfHalfDay: IntPropositionInput
-  minute: IntPropositionInput
-  second: IntPropositionInput
-  millisecond: IntPropositionInput
-  tickOfSecond: IntPropositionInput
-  tickOfDay: LongPropositionInput
-  nanosecondOfSecond: IntPropositionInput
-  nanosecondOfDay: LongPropositionInput
+  equalTo: LocalTime @cost(weight: "10")
+  greaterThan: LocalTime @cost(weight: "10")
+  greaterThanOrEqualTo: LocalTime @cost(weight: "10")
+  in: [LocalTime] @cost(weight: "10")
+  lessThan: LocalTime @cost(weight: "10")
+  lessThanOrEqualTo: LocalTime @cost(weight: "10")
+  notEqualTo: LocalTime @cost(weight: "10")
+  notGreaterThan: LocalTime @cost(weight: "10")
+  notGreaterThanOrEqualTo: LocalTime @cost(weight: "10")
+  notIn: [LocalTime] @cost(weight: "10")
+  notLessThan: LocalTime @cost(weight: "10")
+  notLessThanOrEqualTo: LocalTime @cost(weight: "10")
 }
 
 input LongPropositionInput {
   equalTo: Long @cost(weight: "10")
-  notEqualTo: Long @cost(weight: "10")
-  in: [Long] @cost(weight: "10")
-  notIn: [Long] @cost(weight: "10")
   greaterThan: Long @cost(weight: "10")
-  notGreaterThan: Long @cost(weight: "10")
   greaterThanOrEqualTo: Long @cost(weight: "10")
-  notGreaterThanOrEqualTo: Long @cost(weight: "10")
+  in: [Long] @cost(weight: "10")
   lessThan: Long @cost(weight: "10")
-  notLessThan: Long @cost(weight: "10")
   lessThanOrEqualTo: Long @cost(weight: "10")
+  notEqualTo: Long @cost(weight: "10")
+  notGreaterThan: Long @cost(weight: "10")
+  notGreaterThanOrEqualTo: Long @cost(weight: "10")
+  notIn: [Long] @cost(weight: "10")
+  notLessThan: Long @cost(weight: "10")
   notLessThanOrEqualTo: Long @cost(weight: "10")
 }
 
@@ -1996,8 +2015,8 @@ input NamedMethodArgumentInput {
 
 input NamedMethodArgumentPropositionInput {
   and: [NamedMethodArgumentPropositionInput!]
-  or: [NamedMethodArgumentPropositionInput!]
   name: StringPropositionInput
+  or: [NamedMethodArgumentPropositionInput!]
 }
 
 input NamedMethodArgumentSortInput {
@@ -2011,43 +2030,43 @@ input NamedMethodSourceInput {
 
 input NamedMethodSourcePropositionInput {
   and: [NamedMethodSourcePropositionInput!]
-  or: [NamedMethodSourcePropositionInput!]
   name: StringPropositionInput
+  or: [NamedMethodSourcePropositionInput!]
   value: CrossDatabaseDataReferencePropositionInput
 }
 
 input NullableOfCalorimetricObserverPropositionInput {
   equalTo: CalorimetricObserver @cost(weight: "10")
-  notEqualTo: CalorimetricObserver @cost(weight: "10")
   in: [CalorimetricObserver] @cost(weight: "10")
+  notEqualTo: CalorimetricObserver @cost(weight: "10")
   notIn: [CalorimetricObserver] @cost(weight: "10")
 }
 
 input NullableOfCoatedSidePropositionInput {
   equalTo: CoatedSide @cost(weight: "10")
-  notEqualTo: CoatedSide @cost(weight: "10")
   in: [CoatedSide] @cost(weight: "10")
+  notEqualTo: CoatedSide @cost(weight: "10")
   notIn: [CoatedSide] @cost(weight: "10")
 }
 
 input NullableOfIlluminantPropositionInput {
   equalTo: Illuminant @cost(weight: "10")
-  notEqualTo: Illuminant @cost(weight: "10")
   in: [Illuminant] @cost(weight: "10")
+  notEqualTo: Illuminant @cost(weight: "10")
   notIn: [Illuminant] @cost(weight: "10")
 }
 
 input NullableOfOpticalComponentSubtypePropositionInput {
   equalTo: OpticalComponentSubtype @cost(weight: "10")
-  notEqualTo: OpticalComponentSubtype @cost(weight: "10")
   in: [OpticalComponentSubtype] @cost(weight: "10")
+  notEqualTo: OpticalComponentSubtype @cost(weight: "10")
   notIn: [OpticalComponentSubtype] @cost(weight: "10")
 }
 
 input NullableOfOpticalComponentTypePropositionInput {
   equalTo: OpticalComponentType @cost(weight: "10")
-  notEqualTo: OpticalComponentType @cost(weight: "10")
   in: [OpticalComponentType] @cost(weight: "10")
+  notEqualTo: OpticalComponentType @cost(weight: "10")
   notIn: [OpticalComponentType] @cost(weight: "10")
 }
 
@@ -2059,117 +2078,86 @@ input NumerationInput {
 
 input NumerationPropositionInput {
   and: [NumerationPropositionInput!]
+  mainNumber: StringPropositionInput
   or: [NumerationPropositionInput!]
   prefix: StringPropositionInput
-  mainNumber: StringPropositionInput
   suffix: StringPropositionInput
 }
 
 input NumerationSortInput {
-  prefix: SortEnumType @cost(weight: "10")
   mainNumber: SortEnumType @cost(weight: "10")
+  prefix: SortEnumType @cost(weight: "10")
   suffix: SortEnumType @cost(weight: "10")
-}
-
-input OffsetDateTimePropositionInput {
-  and: [OffsetDateTimePropositionInput!]
-  or: [OffsetDateTimePropositionInput!]
-  calendar: CalendarSystemPropositionInput
-  year: IntPropositionInput
-  month: IntPropositionInput
-  day: IntPropositionInput
-  dayOfWeek: IsoDayOfWeekPropositionInput
-  yearOfEra: IntPropositionInput
-  era: EraPropositionInput
-  dayOfYear: IntPropositionInput
-  hour: IntPropositionInput
-  clockHourOfHalfDay: IntPropositionInput
-  minute: IntPropositionInput
-  second: IntPropositionInput
-  millisecond: IntPropositionInput
-  tickOfSecond: IntPropositionInput
-  tickOfDay: LongPropositionInput
-  nanosecondOfSecond: IntPropositionInput
-  nanosecondOfDay: LongPropositionInput
-  localDateTime: LocalDateTimePropositionInput
-  date: LocalDatePropositionInput
-  timeOfDay: LocalTimePropositionInput
-  offset: OffsetPropositionInput
-}
-
-input OffsetPropositionInput {
-  and: [OffsetPropositionInput!]
-  or: [OffsetPropositionInput!]
-  seconds: IntPropositionInput
-  milliseconds: IntPropositionInput
-  ticks: LongPropositionInput
-  nanoseconds: LongPropositionInput
 }
 
 input OpticalDataPropositionInput {
   and: [OpticalDataPropositionInput!]
-  or: [OpticalDataPropositionInput!]
-  id: UuidPropositionInput
-  userId: UuidPropositionInput
-  locale: StringPropositionInput
-  name: StringPropositionInput
-  description: StringPropositionInput
-  componentId: UuidPropositionInput
-  creatorId: UuidPropositionInput
-  createdAt: OffsetDateTimePropositionInput
   appliedMethod: AppliedMethodPropositionInput
   approvals: FilterInputTypeOfDataApprovalsPropositionInput
-  resources: FilterInputTypeOfGetHttpsResourcesPropositionInput
-  warnings: StringsPropositionInput
-  type: NullableOfOpticalComponentTypePropositionInput
-  subtype: NullableOfOpticalComponentSubtypePropositionInput
+  cielabColors: FilterInputTypeOfCielabColorsPropositionInput
   coatedSide: NullableOfCoatedSidePropositionInput
+  colorRenderingIndices: FloatsPropositionInput
+  componentId: UuidPropositionInput
+  createdAt: DateTimePropositionInput
+  creatorId: UuidPropositionInput
+  description: StringPropositionInput
+  id: UuidPropositionInput
+  infraredEmittances: FloatsPropositionInput
+  locale: StringPropositionInput
+  name: StringPropositionInput
   nearnormalHemisphericalSolarReflectances: FloatsPropositionInput
   nearnormalHemisphericalSolarTransmittances: FloatsPropositionInput
   nearnormalHemisphericalVisibleReflectances: FloatsPropositionInput
   nearnormalHemisphericalVisibleTransmittances: FloatsPropositionInput
-  infraredEmittances: FloatsPropositionInput
-  colorRenderingIndices: FloatsPropositionInput
-  cielabColors: FilterInputTypeOfCielabColorsPropositionInput
+  or: [OpticalDataPropositionInput!]
+  resources: FilterInputTypeOfGetHttpsResourcesPropositionInput
+  subtype: NullableOfOpticalComponentSubtypePropositionInput
+  type: NullableOfOpticalComponentTypePropositionInput
+  updatedAt: DateTimePropositionInput
+  userId: UuidPropositionInput
+  warnings: StringsPropositionInput
 }
 
 input OpticalDataSortInput {
+  appliedMethod: AppliedMethodSortInput @cost(weight: "10")
+  componentId: SortEnumType @cost(weight: "10")
+  createdAt: SortEnumType @cost(weight: "10")
+  creatorId: SortEnumType @cost(weight: "10")
+  description: SortEnumType @cost(weight: "10")
   id: SortEnumType @cost(weight: "10")
   locale: SortEnumType @cost(weight: "10")
   name: SortEnumType @cost(weight: "10")
-  description: SortEnumType @cost(weight: "10")
-  componentId: SortEnumType @cost(weight: "10")
-  creatorId: SortEnumType @cost(weight: "10")
-  createdAt: SortEnumType @cost(weight: "10")
-  appliedMethod: AppliedMethodSortInput @cost(weight: "10")
+  updatedAt: SortEnumType @cost(weight: "10")
 }
 
 input PhotovoltaicDataPropositionInput {
   and: [PhotovoltaicDataPropositionInput!]
-  or: [PhotovoltaicDataPropositionInput!]
-  id: UuidPropositionInput
-  userId: UuidPropositionInput
-  locale: StringPropositionInput
-  name: StringPropositionInput
-  description: StringPropositionInput
-  componentId: UuidPropositionInput
-  creatorId: UuidPropositionInput
-  createdAt: OffsetDateTimePropositionInput
   appliedMethod: AppliedMethodPropositionInput
   approvals: FilterInputTypeOfDataApprovalsPropositionInput
+  componentId: UuidPropositionInput
+  createdAt: DateTimePropositionInput
+  creatorId: UuidPropositionInput
+  description: StringPropositionInput
+  id: UuidPropositionInput
+  locale: StringPropositionInput
+  name: StringPropositionInput
+  or: [PhotovoltaicDataPropositionInput!]
   resources: FilterInputTypeOfGetHttpsResourcesPropositionInput
+  updatedAt: DateTimePropositionInput
+  userId: UuidPropositionInput
   warnings: StringsPropositionInput
 }
 
 input PhotovoltaicDataSortInput {
+  appliedMethod: AppliedMethodSortInput @cost(weight: "10")
+  componentId: SortEnumType @cost(weight: "10")
+  createdAt: SortEnumType @cost(weight: "10")
+  creatorId: SortEnumType @cost(weight: "10")
+  description: SortEnumType @cost(weight: "10")
   id: SortEnumType @cost(weight: "10")
   locale: SortEnumType @cost(weight: "10")
   name: SortEnumType @cost(weight: "10")
-  description: SortEnumType @cost(weight: "10")
-  componentId: SortEnumType @cost(weight: "10")
-  creatorId: SortEnumType @cost(weight: "10")
-  createdAt: SortEnumType @cost(weight: "10")
-  appliedMethod: AppliedMethodSortInput @cost(weight: "10")
+  updatedAt: SortEnumType @cost(weight: "10")
 }
 
 input PublicationInput {
@@ -2184,36 +2172,36 @@ input PublicationInput {
 }
 
 input PublicationPropositionInput {
+  abstract: StringPropositionInput
   and: [PublicationPropositionInput!]
-  or: [PublicationPropositionInput!]
+  "The website arXiv.org is a free and open-access archive for publications. The arXiv identifier can be used to define a publication."
+  arXiv: StringPropositionInput
   authors: StringsPropositionInput
   "The Digital Object Identifier (DOI) is a very important persistent identifier for publications. It MUST be defined here if it is available for a publication."
   doi: StringPropositionInput
-  "The website arXiv.org is a free and open-access archive for publications. The arXiv identifier can be used to define a publication."
-  arXiv: StringPropositionInput
+  or: [PublicationPropositionInput!]
+  "Referenced section"
+  section: StringPropositionInput
+  title: StringPropositionInput
   "A Uniform Resource Name (URN) can be used to define a publication. TODO: Improve the regex pattern to further restrict the string."
   urn: StringPropositionInput
   "If a persistent identifiert like DOI is defined above, this webAdress can define a convenient web address to access the publication. However, if no persistent identifier exist, this web address is the only identifier of this publication. In this case, it is important to choose a web address with a high probability to persist long."
   webAddress: UrlPropositionInput
-  title: StringPropositionInput
-  abstract: StringPropositionInput
-  "Referenced section"
-  section: StringPropositionInput
 }
 
 input PublicationSortInput {
-  "The Digital Object Identifier (DOI) is a very important persistent identifier for publications. It MUST be defined here if it is available for a publication."
-  doi: SortEnumType @cost(weight: "10")
+  abstract: SortEnumType @cost(weight: "10")
   "The website arXiv.org is a free and open-access archive for publications. The arXiv identifier can be used to define a publication."
   arXiv: SortEnumType @cost(weight: "10")
+  "The Digital Object Identifier (DOI) is a very important persistent identifier for publications. It MUST be defined here if it is available for a publication."
+  doi: SortEnumType @cost(weight: "10")
+  "Referenced section"
+  section: SortEnumType @cost(weight: "10")
+  title: SortEnumType @cost(weight: "10")
   "A Uniform Resource Name (URN) can be used to define a publication. TODO: Improve the regex pattern to further restrict the string."
   urn: SortEnumType @cost(weight: "10")
   "If a persistent identifiert like DOI is defined above, this webAdress can define a convenient web address to access the publication. However, if no persistent identifier exist, this web address is the only identifier of this publication. In this case, it is important to choose a web address with a high probability to persist long."
   webAddress: UriSortInput @cost(weight: "10")
-  title: SortEnumType @cost(weight: "10")
-  abstract: SortEnumType @cost(weight: "10")
-  "Referenced section"
-  section: SortEnumType @cost(weight: "10")
 }
 
 input PublishDataInput {
@@ -2223,19 +2211,18 @@ input PublishDataInput {
 
 input RecomputeGetHttpsResourceHashValuesPropositionInput {
   and: [RecomputeGetHttpsResourceHashValuesPropositionInput!]
-  or: [RecomputeGetHttpsResourceHashValuesPropositionInput!]
-  id: UuidPropositionInput
-  description: StringPropositionInput
-  hashValue: StringPropositionInput
-  dataFormatId: UuidPropositionInput
   appliedConversionMethod: ToTreeVertexAppliedConversionMethodPropositionInput
   archivedFilesMetaInformation: FilterInputTypeOfFileMetaInformationsPropositionInput
-  parent: GetHttpsResourceTreeNonRootVertexPropositionInput
   calorimetricData: CalorimetricDataPropositionInput
+  dataFormatId: UuidPropositionInput
+  description: StringPropositionInput
   geometricData: GeometricDataPropositionInput
+  hashValue: StringPropositionInput
   hygrothermalData: HygrothermalDataPropositionInput
   lifeCycleData: LifeCycleDataPropositionInput
   opticalData: OpticalDataPropositionInput
+  or: [RecomputeGetHttpsResourceHashValuesPropositionInput!]
+  parent: GetHttpsResourceTreeNonRootVertexPropositionInput
   photovoltaicData: PhotovoltaicDataPropositionInput
 }
 
@@ -2247,13 +2234,13 @@ input ReferenceInput {
 input ReferencePropositionInput {
   and: [ReferencePropositionInput!]
   or: [ReferencePropositionInput!]
-  standard: StandardPropositionInput
   publication: PublicationPropositionInput
+  standard: StandardPropositionInput
 }
 
 input ReferenceSortInput {
-  standard: StandardSortInput @cost(weight: "10")
   publication: PublicationSortInput @cost(weight: "10")
+  standard: StandardSortInput @cost(weight: "10")
 }
 
 input RemoveDataApprovalInput {
@@ -2281,16 +2268,16 @@ input SetGetHttpsResourceParentInput {
 
 input ShortPropositionInput {
   equalTo: Short @cost(weight: "10")
-  notEqualTo: Short @cost(weight: "10")
-  in: [Short] @cost(weight: "10")
-  notIn: [Short] @cost(weight: "10")
   greaterThan: Short @cost(weight: "10")
-  notGreaterThan: Short @cost(weight: "10")
   greaterThanOrEqualTo: Short @cost(weight: "10")
-  notGreaterThanOrEqualTo: Short @cost(weight: "10")
+  in: [Short] @cost(weight: "10")
   lessThan: Short @cost(weight: "10")
-  notLessThan: Short @cost(weight: "10")
   lessThanOrEqualTo: Short @cost(weight: "10")
+  notEqualTo: Short @cost(weight: "10")
+  notGreaterThan: Short @cost(weight: "10")
+  notGreaterThanOrEqualTo: Short @cost(weight: "10")
+  notIn: [Short] @cost(weight: "10")
+  notLessThan: Short @cost(weight: "10")
   notLessThanOrEqualTo: Short @cost(weight: "10")
 }
 
@@ -2304,82 +2291,67 @@ input StandardInput {
   year: Int
 }
 
-"`ISO 52022` is an example of the abbreviation of a standardizer and the main number of the identifier."
-input StandardPropositionInput {
-  and: [StandardPropositionInput!]
-  or: [StandardPropositionInput!]
-  "It is important to define the year in which the standard was issued because there can be relevant updates of one standard."
-  year: IntPropositionInput
-  numeration: NumerationPropositionInput
-  standardizers: StandardizersPropositionInput
-  locator: UrlPropositionInput
-  title: StringPropositionInput
-  abstract: StringPropositionInput
-  "The section of the standard to which the reference refers to."
-  section: StringPropositionInput
-}
-
-"`ISO 52022` is an example of the abbreviation of a standardizer and the main number of the identifier."
-input StandardSortInput {
-  "It is important to define the year in which the standard was issued because there can be relevant updates of one standard."
-  year: SortEnumType @cost(weight: "10")
-  numeration: NumerationSortInput @cost(weight: "10")
-  locator: UriSortInput @cost(weight: "10")
-  title: SortEnumType @cost(weight: "10")
-  abstract: SortEnumType @cost(weight: "10")
-  "The section of the standard to which the reference refers to."
-  section: SortEnumType @cost(weight: "10")
-}
-
 input StandardizerPropositionInput {
   equalTo: Standardizer @cost(weight: "10")
-  notEqualTo: Standardizer @cost(weight: "10")
   in: [Standardizer!] @cost(weight: "10")
+  notEqualTo: Standardizer @cost(weight: "10")
   notIn: [Standardizer!] @cost(weight: "10")
 }
 
 input StandardizersPropositionInput {
   all: StandardizerPropositionInput @cost(weight: "10")
+  any: Boolean @cost(weight: "10")
   none: StandardizerPropositionInput @cost(weight: "10")
   some: StandardizerPropositionInput @cost(weight: "10")
-  any: Boolean @cost(weight: "10")
+}
+
+"`ISO 52022` is an example of the abbreviation of a standardizer and the main number of the identifier."
+input StandardPropositionInput {
+  abstract: StringPropositionInput
+  and: [StandardPropositionInput!]
+  locator: UrlPropositionInput
+  numeration: NumerationPropositionInput
+  or: [StandardPropositionInput!]
+  "The section of the standard to which the reference refers to."
+  section: StringPropositionInput
+  standardizers: StandardizersPropositionInput
+  title: StringPropositionInput
+  "It is important to define the year in which the standard was issued because there can be relevant updates of one standard."
+  year: IntPropositionInput
+}
+
+"`ISO 52022` is an example of the abbreviation of a standardizer and the main number of the identifier."
+input StandardSortInput {
+  abstract: SortEnumType @cost(weight: "10")
+  locator: UriSortInput @cost(weight: "10")
+  numeration: NumerationSortInput @cost(weight: "10")
+  "The section of the standard to which the reference refers to."
+  section: SortEnumType @cost(weight: "10")
+  title: SortEnumType @cost(weight: "10")
+  "It is important to define the year in which the standard was issued because there can be relevant updates of one standard."
+  year: SortEnumType @cost(weight: "10")
 }
 
 input StringPropositionInput {
   and: [StringPropositionInput!]
-  or: [StringPropositionInput!]
-  equalTo: String @cost(weight: "10")
-  notEqualTo: String @cost(weight: "10")
   contains: String @cost(weight: "20")
   doesNotContain: String @cost(weight: "20")
-  in: [String] @cost(weight: "10")
-  notIn: [String] @cost(weight: "10")
-  startsWith: String @cost(weight: "20")
+  doesNotEndWith: String @cost(weight: "20")
   doesNotStartWith: String @cost(weight: "20")
   endsWith: String @cost(weight: "20")
-  doesNotEndWith: String @cost(weight: "20")
+  equalTo: String @cost(weight: "10")
+  in: [String] @cost(weight: "10")
+  notEqualTo: String @cost(weight: "10")
+  notIn: [String] @cost(weight: "10")
+  or: [StringPropositionInput!]
+  startsWith: String @cost(weight: "20")
 }
 
 input StringsPropositionInput {
   all: StringPropositionInput @cost(weight: "10")
+  any: Boolean @cost(weight: "10")
   none: StringPropositionInput @cost(weight: "10")
   some: StringPropositionInput @cost(weight: "10")
-  any: Boolean @cost(weight: "10")
-}
-
-input TimeSpanPropositionInput {
-  equalTo: TimeSpan @cost(weight: "10")
-  notEqualTo: TimeSpan @cost(weight: "10")
-  in: [TimeSpan] @cost(weight: "10")
-  notIn: [TimeSpan] @cost(weight: "10")
-  greaterThan: TimeSpan @cost(weight: "10")
-  notGreaterThan: TimeSpan @cost(weight: "10")
-  greaterThanOrEqualTo: TimeSpan @cost(weight: "10")
-  notGreaterThanOrEqualTo: TimeSpan @cost(weight: "10")
-  lessThan: TimeSpan @cost(weight: "10")
-  notLessThan: TimeSpan @cost(weight: "10")
-  lessThanOrEqualTo: TimeSpan @cost(weight: "10")
-  notLessThanOrEqualTo: TimeSpan @cost(weight: "10")
 }
 
 input ToTreeVertexAppliedConversionMethodInput {
@@ -2390,9 +2362,9 @@ input ToTreeVertexAppliedConversionMethodInput {
 
 input ToTreeVertexAppliedConversionMethodPropositionInput {
   and: [ToTreeVertexAppliedConversionMethodPropositionInput!]
-  or: [ToTreeVertexAppliedConversionMethodPropositionInput!]
-  methodId: UuidPropositionInput
   arguments: FilterInputTypeOfNamedMethodArgumentsPropositionInput
+  methodId: UuidPropositionInput
+  or: [ToTreeVertexAppliedConversionMethodPropositionInput!]
   sourceName: StringPropositionInput
 }
 
@@ -2412,9 +2384,16 @@ input UpdateChildGetHttpsResourceInput {
 input UpdateDataAccessRightsInput {
   allowedApplications: [String!]
   allowedInstitutions: [Uuid!]
-  allowedUserAndQuantity: [KeyValuePairOfGuidAndNullableOfUInt32Input!]
+  allowedUserAndQuantity: [KeyValuePairOfGuidAndNullableUInt32Input!]
   dataId: Uuid!
   dataKind: DataKind!
+}
+
+input UpdateDatabaseInput {
+  databaseId: Uuid!
+  description: String!
+  locator: Url!
+  name: String!
 }
 
 input UpdateDataInput {
@@ -2429,13 +2408,6 @@ input UpdateDataInput {
   warnings: [String!]!
 }
 
-input UpdateDatabaseInput {
-  databaseId: Uuid!
-  description: String!
-  locator: Url!
-  name: String!
-}
-
 input UpdateInstitutionAccessRightsInput {
   allowedDatasetsPerTimeSpan: NonNegativeInt
   allowedUserCount: NonNegativeInt
@@ -2445,18 +2417,16 @@ input UpdateInstitutionAccessRightsInput {
 
 input UpdateResponseApprovalsPropositionInput {
   and: [UpdateResponseApprovalsPropositionInput!]
-  or: [UpdateResponseApprovalsPropositionInput!]
-  id: UuidPropositionInput
-  userId: UuidPropositionInput
-  locale: StringPropositionInput
-  name: StringPropositionInput
-  description: StringPropositionInput
-  componentId: UuidPropositionInput
-  creatorId: UuidPropositionInput
-  createdAt: OffsetDateTimePropositionInput
   appliedMethod: AppliedMethodPropositionInput
   approvals: FilterInputTypeOfDataApprovalsPropositionInput
+  componentId: UuidPropositionInput
+  creatorId: UuidPropositionInput
+  description: StringPropositionInput
+  locale: StringPropositionInput
+  name: StringPropositionInput
+  or: [UpdateResponseApprovalsPropositionInput!]
   resources: FilterInputTypeOfGetHttpsResourcesPropositionInput
+  userId: UuidPropositionInput
   warnings: StringsPropositionInput
 }
 
@@ -2470,54 +2440,54 @@ input UpdateRootGetHttpsResourceInput {
 input UriSortInput {
   absolutePath: SortEnumType @cost(weight: "10")
   absoluteUri: SortEnumType @cost(weight: "10")
-  localPath: SortEnumType @cost(weight: "10")
   authority: SortEnumType @cost(weight: "10")
+  dnsSafeHost: SortEnumType @cost(weight: "10")
+  fragment: SortEnumType @cost(weight: "10")
+  host: SortEnumType @cost(weight: "10")
   hostNameType: SortEnumType @cost(weight: "10")
+  idnHost: SortEnumType @cost(weight: "10")
+  isAbsoluteUri: SortEnumType @cost(weight: "10")
   isDefaultPort: SortEnumType @cost(weight: "10")
   isFile: SortEnumType @cost(weight: "10")
   isLoopback: SortEnumType @cost(weight: "10")
-  pathAndQuery: SortEnumType @cost(weight: "10")
   isUnc: SortEnumType @cost(weight: "10")
-  host: SortEnumType @cost(weight: "10")
+  localPath: SortEnumType @cost(weight: "10")
+  originalString: SortEnumType @cost(weight: "10")
+  pathAndQuery: SortEnumType @cost(weight: "10")
   port: SortEnumType @cost(weight: "10")
   query: SortEnumType @cost(weight: "10")
-  fragment: SortEnumType @cost(weight: "10")
   scheme: SortEnumType @cost(weight: "10")
-  originalString: SortEnumType @cost(weight: "10")
-  dnsSafeHost: SortEnumType @cost(weight: "10")
-  idnHost: SortEnumType @cost(weight: "10")
-  isAbsoluteUri: SortEnumType @cost(weight: "10")
   userEscaped: SortEnumType @cost(weight: "10")
   userInfo: SortEnumType @cost(weight: "10")
 }
 
 input UrlPropositionInput {
   equalTo: Url @cost(weight: "10")
-  notEqualTo: Url @cost(weight: "10")
-  in: [Url] @cost(weight: "10")
-  notIn: [Url] @cost(weight: "10")
   greaterThan: Url @cost(weight: "10")
-  notGreaterThan: Url @cost(weight: "10")
   greaterThanOrEqualTo: Url @cost(weight: "10")
-  notGreaterThanOrEqualTo: Url @cost(weight: "10")
+  in: [Url] @cost(weight: "10")
   lessThan: Url @cost(weight: "10")
-  notLessThan: Url @cost(weight: "10")
   lessThanOrEqualTo: Url @cost(weight: "10")
+  notEqualTo: Url @cost(weight: "10")
+  notGreaterThan: Url @cost(weight: "10")
+  notGreaterThanOrEqualTo: Url @cost(weight: "10")
+  notIn: [Url] @cost(weight: "10")
+  notLessThan: Url @cost(weight: "10")
   notLessThanOrEqualTo: Url @cost(weight: "10")
 }
 
 input UuidPropositionInput {
   equalTo: Uuid @cost(weight: "10")
-  notEqualTo: Uuid @cost(weight: "10")
-  in: [Uuid] @cost(weight: "10")
-  notIn: [Uuid] @cost(weight: "10")
   greaterThan: Uuid @cost(weight: "10")
-  notGreaterThan: Uuid @cost(weight: "10")
   greaterThanOrEqualTo: Uuid @cost(weight: "10")
-  notGreaterThanOrEqualTo: Uuid @cost(weight: "10")
+  in: [Uuid] @cost(weight: "10")
   lessThan: Uuid @cost(weight: "10")
-  notLessThan: Uuid @cost(weight: "10")
   lessThanOrEqualTo: Uuid @cost(weight: "10")
+  notEqualTo: Uuid @cost(weight: "10")
+  notGreaterThan: Uuid @cost(weight: "10")
+  notGreaterThanOrEqualTo: Uuid @cost(weight: "10")
+  notIn: [Uuid] @cost(weight: "10")
+  notLessThan: Uuid @cost(weight: "10")
   notLessThanOrEqualTo: Uuid @cost(weight: "10")
 }
 
@@ -2680,6 +2650,11 @@ enum CreateResponseApprovalsErrorCode {
   CREATING_RESPONSE_APPROVAL_FAILED
 }
 
+enum DatabaseVerificationState {
+  PENDING
+  VERIFIED
+}
+
 enum DataKind {
   CALORIMETRIC_DATA
   GEOMETRIC_DATA
@@ -2687,11 +2662,6 @@ enum DataKind {
   LIFE_CYCLE_DATA
   OPTICAL_DATA
   PHOTOVOLTAIC_DATA
-}
-
-enum DatabaseVerificationState {
-  PENDING
-  VERIFIED
 }
 
 enum DeleteDataErrorCode {
@@ -2715,17 +2685,6 @@ enum DeleteGetHttpsResourceErrorCode {
 enum Illuminant {
   A
   D65
-}
-
-enum IsoDayOfWeek {
-  NONE
-  MONDAY
-  TUESDAY
-  WEDNESDAY
-  THURSDAY
-  FRIDAY
-  SATURDAY
-  SUNDAY
 }
 
 enum JsonValueKind {
@@ -2862,6 +2821,15 @@ enum UpdateDataAccessRightsErrorCode {
   UNAUTHENTICATED
   UNAUTHORIZED
   UNKNOWN_DATA
+  UNKNOWN_INSTITUTION
+  UNKNOWN_USER
+  UNKNOWN_APPLICATION
+}
+
+enum UpdateDatabaseErrorCode {
+  UNKNOWN
+  UNAUTHORIZED
+  UNKNOWN_DATABASE
 }
 
 enum UpdateDataErrorCode {
@@ -2869,12 +2837,6 @@ enum UpdateDataErrorCode {
   UNAUTHORIZED
   UNKNOWN_DATA
   CREATING_RESPONSE_APPROVAL_FAILED
-}
-
-enum UpdateDatabaseErrorCode {
-  UNKNOWN
-  UNAUTHORIZED
-  UNKNOWN_DATABASE
 }
 
 enum UpdateInstitutionAccessRightsErrorCode {
@@ -2901,18 +2863,79 @@ enum UpdateRootGetHttpsResourceErrorCode {
   CREATING_RESPONSE_APPROVAL_FAILED
 }
 
+scalar Any @specifiedBy(url: "https://scalars.graphql.org/chillicream/any.html")
+
+"The `Byte` scalar type represents a signed 8-bit integer."
+scalar Byte
+  @specifiedBy(url: "https://scalars.graphql.org/chillicream/byte.html")
+
+"The `DateTime` scalar type represents a date and time with time zone offset information."
+scalar DateTime
+  @specifiedBy(url: "https://scalars.graphql.org/chillicream/date-time.html")
+
+"The `Decimal` scalar type represents a decimal floating-point number with high precision."
+scalar Decimal
+  @specifiedBy(url: "https://scalars.graphql.org/chillicream/decimal.html")
+
+"The `Duration` scalar type represents a duration of time."
+scalar Duration
+  @specifiedBy(url: "https://scalars.graphql.org/chillicream/duration.html")
+
+"The `LocalDate` scalar type represents a date without time or time zone information."
+scalar LocalDate
+  @specifiedBy(url: "https://scalars.graphql.org/chillicream/local-date.html")
+
+"The `LocalDateTime` scalar type represents a date and time without time zone information."
+scalar LocalDateTime
+  @specifiedBy(
+    url: "https://scalars.graphql.org/chillicream/local-date-time.html"
+  )
+
+"BCP 47 compliant Language Tag string"
+scalar Locale
+
+"The `LocalTime` scalar type represents a time of day without date or time zone information."
+scalar LocalTime
+  @specifiedBy(url: "https://scalars.graphql.org/chillicream/local-time.html")
+
+"The `Long` scalar type represents a signed 64-bit integer."
+scalar Long
+  @specifiedBy(url: "https://scalars.graphql.org/chillicream/long.html")
+
+"The `NonNegativeInt` scalar type represents an unsigned 32-bit numeric non-fractional value."
+scalar NonNegativeInt
+
+"The `Short` scalar type represents a signed 16-bit integer."
+scalar Short
+  @specifiedBy(url: "https://scalars.graphql.org/chillicream/short.html")
+
+"The `Upload` scalar type represents a file upload."
+scalar Upload
+
+"The `Url` scalar type represents a Uniform Resource Identifier (URI) as defined by RFC 3986."
+scalar Url @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
+
+scalar Uuid
+  @specifiedBy(url: "https://scalars.graphql.org/chillicream/uuid.html")
+
 "The purpose of the `cost` directive is to define a `weight` for GraphQL types, fields, and arguments. Static analysis can use these weights when calculating the overall cost of a query or response."
 directive @cost(
   "The `weight` argument defines what value to add to the overall cost for every appearance, or possible appearance, of a type, field, argument, etc."
   weight: String!
-) on SCALAR | OBJECT | FIELD_DEFINITION | ARGUMENT_DEFINITION | ENUM | INPUT_FIELD_DEFINITION
+) on
+  | SCALAR
+  | OBJECT
+  | FIELD_DEFINITION
+  | ARGUMENT_DEFINITION
+  | ENUM
+  | INPUT_FIELD_DEFINITION
 
 "The purpose of the `@listSize` directive is to either inform the static analysis about the size of returned lists (if that information is statically available), or to point the analysis to where to find that information."
 directive @listSize(
   "The `assumedSize` argument can be used to statically define the maximum length of a list returned by a field."
   assumedSize: Int
   "The `requireOneSlicingArgument` argument can be used to inform the static analysis that it should expect that exactly one of the defined slicing arguments is present in a query. If that is not the case (i.e., if none or multiple slicing arguments are present), the static analysis may throw an error."
-  requireOneSlicingArgument: Boolean! = true
+  requireOneSlicingArgument: Boolean = true
   "The `sizedFields` argument can be used to define that the value of the `assumedSize` argument or of a slicing argument does not affect the size of a list returned by a field itself, but that of a list returned by one of its sub-fields."
   sizedFields: [String!]
   "The `slicingArgumentDefaultValue` argument can be used to define a default value for a slicing argument, which is used if the argument is not present in a query."
@@ -2920,61 +2943,3 @@ directive @listSize(
   "The `slicingArguments` argument can be used to define which of the field's arguments with numeric type are slicing arguments, so that their value determines the size of the list returned by that field. It may specify a list of multiple slicing arguments."
   slicingArguments: [String!]
 ) on FIELD_DEFINITION
-
-"The `@specifiedBy` directive is used within the type system definition language to provide a URL for specifying the behavior of custom scalar definitions."
-directive @specifiedBy(
-  "The specifiedBy URL points to a human-readable specification. This field will only read a result for scalar types."
-  url: String!
-) on SCALAR
-
-scalar Any
-
-"The `Byte` scalar type represents non-fractional whole numeric values. Byte can represent values between 0 and 255."
-scalar Byte
-
-"The `DateTime` scalar represents an ISO-8601 compliant date time type."
-scalar DateTime @specifiedBy(url: "https://www.graphql-scalars.com/date-time")
-
-"""
-Represents a time zone - a mapping between UTC and local time.
-A time zone maps UTC instants to local times - or, equivalently, to the offset from UTC at any particular instant.
-
-Example: `Europe/Zurich`
-"""
-scalar DateTimeZone
-
-"The `Decimal` scalar type represents a decimal floating-point number."
-scalar Decimal
-
-"""
-Represents a fixed (and calendar-independent) length of time.
-
-Allowed patterns:
-- `-D:hh:mm:ss.sssssssss`
-
-Examples:
-- `-1:20:00:00.999999999`
-"""
-scalar Duration
-
-"BCP 47 compliant Language Tag string"
-scalar Locale
-
-"The `Long` scalar type represents non-fractional signed whole 64-bit numeric values. Long can represent values between -(2^63) and 2^63 - 1."
-scalar Long
-
-"The NonNegativeInt scalar type represents a unsigned 32-bit numeric non-fractional value equal to or greater than 0."
-scalar NonNegativeInt
-
-"The `Short` scalar type represents non-fractional signed whole 16-bit numeric values. Short can represent values between -(2^15) and 2^15 - 1."
-scalar Short
-
-"The `TimeSpan` scalar represents an ISO-8601 compliant duration type."
-scalar TimeSpan
-
-"The `Upload` scalar type represents a file upload."
-scalar Upload
-
-scalar Url
-
-scalar Uuid

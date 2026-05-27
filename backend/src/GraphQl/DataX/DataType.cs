@@ -1,4 +1,6 @@
+using Database.ApiRequests;
 using Database.Data;
+using Database.Extensions;
 using Database.GraphQl.Scalars;
 using HotChocolate.Types;
 
@@ -21,11 +23,16 @@ public sealed class DataType(AppSettings appSettings)
             .Field(_ => _.PublishingState)
             .Ignore();
         descriptor
+            .Field(GraphQlConstants.IdFieldName)
+            .Type<NonNullType<IdType>>();
+        descriptor
             .Field(GraphQlConstants.UuidFieldName)
             .Type<NonNullType<UuidType>>();
         descriptor
             .Field(_ => _.UpdatedAt)
             .Name(TimestampFieldName);
+        descriptor
+            .Field(_ => _.CreatedAt);
         descriptor
             .Field(x => x.Locale)
             .Type<NonNullType<LocaleType>>();
@@ -39,5 +46,14 @@ public sealed class DataType(AppSettings appSettings)
         descriptor
             .Field(x => x.Approval)
             .Type<NonNullType<ObjectType<ResponseApproval>>>();
+        descriptor
+            .Field(DataType.DatabaseIdFieldName[..^2].FirstCharToLower())
+            .Type<ObjectType<DatabaseDataLoader.Database>>();
+        descriptor
+            .Field(nameof(IData.ComponentId)[..^2].FirstCharToLower())
+            .Type<ObjectType<ComponentDataLoader.Component>>();
+        descriptor
+            .Field(nameof(IData.CreatorId)[..^2].FirstCharToLower())
+            .Type<ObjectType<InstitutionDataLoader.Institution>>();
     }
 }

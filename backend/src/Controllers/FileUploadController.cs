@@ -88,6 +88,7 @@ public sealed class FileUploadController(
     [EndpointName("UploadFile")]
     [EndpointDescription("Upload file for GET HTTP resource")]
     [DisableFormValueModelBinding]
+    [DisableRequestSizeLimit]
     // TODO Add this `[RequireAntiforgeryToken]` once we know where to set the generation token cookie!
     [Authorize(AuthenticationSchemes = AuthenticationConstants.CookieAndBearerTokenAuthenticationScheme)]
     [AllowAnonymous]

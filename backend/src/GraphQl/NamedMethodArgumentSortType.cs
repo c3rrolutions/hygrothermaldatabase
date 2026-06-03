@@ -11,7 +11,7 @@ public sealed class NamedMethodArgumentSortType
     )
     {
         descriptor.BindFieldsExplicitly();
-        descriptor.Field(x => x.Name);
-        // TODO descriptor.Field(x => x.Value);
+        descriptor.Field(_ => _.Name);
+        // TODO descriptor.Field(_ => _.Value);
     }
 }

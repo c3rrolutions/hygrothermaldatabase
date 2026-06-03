@@ -25,7 +25,7 @@ public sealed class LifeCycleDataQueries
     public Task<HotChocolate.Types.Pagination.Connection<LifeCycleData>> GetAllLifeCycleDataAsync(
         [GraphQLType<LocaleType>] string? locale,
         ApplicationDbContext context,
-        AccessRightsService accessRightsService,
+        AccessPolicyService accessPolicyService,
         IResolverContext resolverContext,
         CancellationToken cancellationToken
     )
@@ -33,7 +33,8 @@ public sealed class LifeCycleDataQueries
         return GetAllDataAsync(
             context.LifeCycleData,
             locale,
-            accessRightsService,
+            context,
+            accessPolicyService,
             resolverContext,
             cancellationToken
         );
@@ -47,7 +48,7 @@ public sealed class LifeCycleDataQueries
     public Task<HotChocolate.Types.Pagination.Connection<LifeCycleData>> GetAllPendingLifeCycleDataAsync(
         [GraphQLType<LocaleType>] string? locale,
         ApplicationDbContext context,
-        AccessRightsService accessRightsService,
+        AccessPolicyService accessPolicyService,
         IResolverContext resolverContext,
         CommonAuthorization authorization,
         CancellationToken cancellationToken
@@ -56,7 +57,8 @@ public sealed class LifeCycleDataQueries
         return GetAllPendingDataAsync(
             context.LifeCycleData,
             locale,
-            accessRightsService,
+            context,
+            accessPolicyService,
             resolverContext,
             authorization,
             cancellationToken
@@ -67,6 +69,7 @@ public sealed class LifeCycleDataQueries
     public Task<bool> HasLifeCycleDataAsync(
         [GraphQLType<LocaleType>] string? locale,
         ApplicationDbContext context,
+        AccessPolicyService accessPolicyService,
         IResolverContext resolverContext,
         CancellationToken cancellationToken
     )
@@ -74,6 +77,8 @@ public sealed class LifeCycleDataQueries
         return HasDataAsync(
             context.LifeCycleData,
             locale,
+            context,
+            accessPolicyService,
             resolverContext,
             cancellationToken
         );
@@ -82,16 +87,17 @@ public sealed class LifeCycleDataQueries
     public Task<LifeCycleData?> GetLifeCycleDataAsync(
         Guid id,
         [GraphQLType<LocaleType>] string? locale,
-        LifeCycleDataByIdDataLoader byId,
-        AccessRightsService accessRightsService,
+        ApplicationDbContext context,
+        AccessPolicyService accessPolicyService,
         CancellationToken cancellationToken
     )
     {
         return GetDataAsync(
             id,
             locale,
-            byId,
-            accessRightsService,
+            context.LifeCycleData,
+            context,
+            accessPolicyService,
             cancellationToken
         );
     }

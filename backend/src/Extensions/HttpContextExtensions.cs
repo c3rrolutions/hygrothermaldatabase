@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Database.Authentication;
 using Microsoft.AspNetCore.Http;
@@ -16,8 +15,8 @@ public static class HttpContextExtensions
         var bearerTokenPrefix = $"{OpenIdConnectConstants.AuthorizationHeaderBearer} ";
         return httpContext.Request?.Headers?.Authorization
             .FirstOrDefault(
-                x => x is not null
-                     && x.TrimStart().StartsWith(bearerTokenPrefix, StringComparison.Ordinal)
+                _ => _ is not null
+                     && _.TrimStart().StartsWith(bearerTokenPrefix, StringComparison.Ordinal)
             )
             ?.TrimStart()
             ?[bearerTokenPrefix.Length..]

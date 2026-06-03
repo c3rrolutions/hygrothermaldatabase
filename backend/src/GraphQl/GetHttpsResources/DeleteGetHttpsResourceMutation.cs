@@ -130,7 +130,7 @@ public sealed class DeleteGetHttpsResourceMutation
                 )
             );
         }
-        if (errors.Count >= 1)
+        if (errors.Count > 0)
         {
             return NewPayload(null, errors);
         }

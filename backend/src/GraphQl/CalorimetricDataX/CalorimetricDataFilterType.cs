@@ -13,24 +13,24 @@ public sealed class CalorimetricDataFilterType
     {
         base.Configure(descriptor);
         descriptor.Name(nameof(CalorimetricDataFilterType)[..^"FilterType".Length] + GraphQlConstants.FilterInputSuffix);
-        descriptor.Field(x => x.GValues);
-        descriptor.Field(x => x.UValues);
+        descriptor.Field(_ => _.GValues);
+        descriptor.Field(_ => _.UValues);
 
         // TODO Why are the fields below not included by `base.Configure` above?
         // AuditableEntityFilterType.Configure
-        descriptor.Field(x => x.Id);
-        descriptor.Field(x => x.CreatedAt);
-        descriptor.Field(x => x.UpdatedAt);
+        descriptor.Field(_ => _.Id);
+        descriptor.Field(_ => _.CreatedAt);
+        descriptor.Field(_ => _.UpdatedAt);
         // DataFilterTypeBase.Configure
-        descriptor.Field(x => x.UserId);
-        descriptor.Field(x => x.Locale);
-        descriptor.Field(x => x.Name);
-        descriptor.Field(x => x.Description);
-        descriptor.Field(x => x.ComponentId);
-        descriptor.Field(x => x.CreatorId);
-        descriptor.Field(x => x.AppliedMethod);
-        descriptor.Field(x => x.Approvals);
-        descriptor.Field(x => x.Resources);
-        descriptor.Field(x => x.Warnings);
+        descriptor.Field(_ => _.UserId);
+        descriptor.Field(_ => _.Locale);
+        descriptor.Field(_ => _.Name);
+        descriptor.Field(_ => _.Description);
+        descriptor.Field(_ => _.ComponentId);
+        descriptor.Field(_ => _.CreatorId);
+        descriptor.Field(_ => _.AppliedMethod);
+        descriptor.Field(_ => _.Approvals);
+        descriptor.Field(_ => _.Resources);
+        descriptor.Field(_ => _.Warnings);
     }
 }

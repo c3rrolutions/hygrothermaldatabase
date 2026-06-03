@@ -146,6 +146,7 @@ public sealed class GetHttpsResource
     public ICollection<FileMetaInformation> ArchivedFilesMetaInformation { get; private set; } = [];
 
     // Note that at least one data ID is always present. So `Guid.Empty` will never be used.
+    [NotMapped]
     [Projectable]
     public Guid DataId => CalorimetricDataId ?? GeometricDataId ?? HygrothermalDataId ?? LifeCycleDataId ?? OpticalDataId ?? PhotovoltaicDataId ?? Guid.Empty;
 

@@ -173,7 +173,7 @@ public sealed class CreateGetHttpsResourceMutation
             );
         }
         // Note that `dataFormat` is only `null`, when `validateResourceResult` failed.
-        if (errors.Count >= 1 || dataFormat is null)
+        if (errors.Count > 0 || dataFormat is null)
         {
             return NewPayload(null, errors);
         }

@@ -23,6 +23,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using NodaTime;
+using DurationType = HotChocolate.Types.NodaTime.DurationType;
 
 namespace Database.Configuration;
 
@@ -54,6 +55,7 @@ public static class GraphQlConfiguration
             .AddMutationConventions(new MutationConventionOptions { ApplyToAllMutations = false })
             // Extensions
             .AddNodaTime()
+            .BindRuntimeType<TimeSpan, DurationType>()
             // .AddTypeConverter<OffsetDateTime, DateTimeOffset>(
             //     _ => _.ToDateTimeOffset()
             // )

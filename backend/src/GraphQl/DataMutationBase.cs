@@ -123,7 +123,7 @@ where TError : class
                 );
             }
         }
-        if (errors.Count >= 1)
+        if (errors.Count > 0)
         {
             return new Result<DataFormat, IReadOnlyList<TError>>.Error(errors);
         }

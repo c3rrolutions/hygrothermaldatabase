@@ -317,11 +317,18 @@ type Query {
   ): Boolean! @cost(weight: "10")
   hygrothermalData(id: Uuid!, locale: Locale): HygrothermalData
     @cost(weight: "10")
+  institutionAccessPolicies: [InstitutionAccessPolicy!]! @cost(weight: "10")
+  institutionAccessPolicy(institutionId: Uuid!): InstitutionAccessPolicy
+    @cost(weight: "10")
   lifeCycleData(id: Uuid!, locale: Locale): LifeCycleData @cost(weight: "10")
   "Fetches an object given its ID."
   node("ID of the object." id: ID!): Node @cost(weight: "10")
   "Lookup nodes by a list of IDs."
   nodes("The list of node IDs." ids: [ID!]!): [Node]! @cost(weight: "10")
+  openIdConnectApplicationAccessPolicies: [OpenIdConnectApplicationAccessPolicy!]!
+    @cost(weight: "10")
+  openIdConnectApplicationAccessPolicy(clientId: String!): OpenIdConnectApplicationAccessPolicy
+    @cost(weight: "10")
   opticalData(id: Uuid!, locale: Locale): OpticalData @cost(weight: "10")
   pendingGetHttpsResources(
     "Returns the elements in the list that come after the specified cursor."
@@ -345,14 +352,20 @@ type Query {
     @cost(weight: "10")
   photovoltaicData(id: Uuid!, locale: Locale): PhotovoltaicData
     @cost(weight: "10")
+  userAccessPolicies: [UserAccessPolicy!]! @cost(weight: "10")
+  userAccessPolicy(userId: Uuid!): UserAccessPolicy @cost(weight: "10")
   verificationCode: String!
 }
 
 type Mutation {
   addDataApproval(input: AddDataApprovalInput!): AddDataApprovalPayload!
     @cost(weight: "10")
-  addInstitutionAccessRights(input: AddInstitutionAccessRightsInput!): AddInstitutionAccessRightsPayload!
+  clearDataAccessPolicy: ClearDataAccessPolicyPayload! @cost(weight: "10")
+  clearInstitutionAccessPolicies: ClearInstitutionAccessPoliciesPayload!
     @cost(weight: "10")
+  clearOpenIdConnectApplicationAccessPolicies: ClearOpenIdConnectApplicationAccessPoliciesPayload!
+    @cost(weight: "10")
+  clearUserAccessPolicies: ClearUserAccessPoliciesPayload! @cost(weight: "10")
   createCalorimetricData(input: CreateCalorimetricDataInput!): CreateCalorimetricDataPayload!
     @cost(weight: "10")
   createGeometricData(input: CreateGeometricDataInput!): CreateGeometricDataPayload!
@@ -371,7 +384,25 @@ type Mutation {
     where: CreateResponseApprovalsPropositionInput @cost(weight: "10")
   ): CreateResponseApprovalsPayload! @cost(weight: "10")
   deleteData(input: DeleteDataInput!): DeleteDataPayload! @cost(weight: "10")
+  deleteDataAccessPolicy(input: DeleteDataAccessPolicyInput!): DeleteDataAccessPolicyPayload!
+    @cost(weight: "10")
+  deleteDataAccessPolicyOfInstitution(
+    input: DeleteDataAccessPolicyOfInstitutionInput!
+  ): DeleteDataAccessPolicyOfInstitutionPayload! @cost(weight: "10")
+  deleteDataAccessPolicyOfOpenIdConnectApplication(
+    input: DeleteDataAccessPolicyOfOpenIdConnectApplicationInput!
+  ): DeleteDataAccessPolicyOfOpenIdConnectApplicationPayload!
+    @cost(weight: "10")
+  deleteDataAccessPolicyOfUser(input: DeleteDataAccessPolicyOfUserInput!): DeleteDataAccessPolicyOfUserPayload!
+    @cost(weight: "10")
   deleteGetHttpsResource(input: DeleteGetHttpsResourceInput!): DeleteGetHttpsResourcePayload!
+    @cost(weight: "10")
+  deleteInstitutionAccessPolicy(input: DeleteInstitutionAccessPolicyInput!): DeleteInstitutionAccessPolicyPayload!
+    @cost(weight: "10")
+  deleteOpenIdConnectApplicationAccessPolicy(
+    input: DeleteOpenIdConnectApplicationAccessPolicyInput!
+  ): DeleteOpenIdConnectApplicationAccessPolicyPayload! @cost(weight: "10")
+  deleteUserAccessPolicy(input: DeleteUserAccessPolicyInput!): DeleteUserAccessPolicyPayload!
     @cost(weight: "10")
   publishData(input: PublishDataInput!): PublishDataPayload! @cost(weight: "10")
   recomputeGetHttpsResourceHashValues(
@@ -380,16 +411,27 @@ type Mutation {
   removeDataApproval(input: RemoveDataApprovalInput!): RemoveDataApprovalPayload!
     @cost(weight: "10")
   retractData(input: RetractDataInput!): RetractDataPayload! @cost(weight: "10")
+  setDataAccessLimitForInstitution(
+    input: SetDataAccessLimitForInstitutionInput!
+  ): SetDataAccessLimitForInstitutionPayload! @cost(weight: "10")
+  setDataAccessLimitForOpenIdConnectApplication(
+    input: SetDataAccessLimitForOpenIdConnectApplicationInput!
+  ): SetDataAccessLimitForOpenIdConnectApplicationPayload! @cost(weight: "10")
+  setDataAccessLimitForUser(input: SetDataAccessLimitForUserInput!): SetDataAccessLimitForUserPayload!
+    @cost(weight: "10")
   setGetHttpsResourceParent(input: SetGetHttpsResourceParentInput!): SetGetHttpsResourceParentPayload!
+    @cost(weight: "10")
+  setInstitutionAccessLimit(input: SetInstitutionAccessLimitInput!): SetInstitutionAccessLimitPayload!
+    @cost(weight: "10")
+  setOpenIdConnectApplicationAccessLimit(
+    input: SetOpenIdConnectApplicationAccessLimitInput!
+  ): SetOpenIdConnectApplicationAccessLimitPayload! @cost(weight: "10")
+  setUserAccessLimit(input: SetUserAccessLimitInput!): SetUserAccessLimitPayload!
     @cost(weight: "10")
   updateChildGetHttpsResource(input: UpdateChildGetHttpsResourceInput!): UpdateChildGetHttpsResourcePayload!
     @cost(weight: "10")
   updateData(input: UpdateDataInput!): UpdateDataPayload! @cost(weight: "10")
-  updateDataAccessRights(input: UpdateDataAccessRightsInput!): UpdateDataAccessRightsPayload!
-    @cost(weight: "10")
   updateDatabase(input: UpdateDatabaseInput!): UpdateDatabasePayload!
-    @cost(weight: "10")
-  updateInstitutionAccessRights(input: UpdateInstitutionAccessRightsInput!): UpdateInstitutionAccessRightsPayload!
     @cost(weight: "10")
   updateResponseApprovals(
     where: UpdateResponseApprovalsPropositionInput @cost(weight: "10")
@@ -407,18 +449,6 @@ type AddDataApprovalError implements UserError {
 type AddDataApprovalPayload {
   dataApproval: DataApproval
   errors: [AddDataApprovalError!]
-  query: Query!
-}
-
-type AddInstitutionAccessRightsError implements UserError {
-  code: AddInstitutionAccessRightsErrorCode!
-  message: String!
-  path: [String!]!
-}
-
-type AddInstitutionAccessRightsPayload {
-  errors: [AddInstitutionAccessRightsError!]
-  institutionAccessRights: InstitutionAccessRights
   query: Query!
 }
 
@@ -445,6 +475,7 @@ type CalculateMethodPayload {
 }
 
 type CalorimetricData implements Node & Data {
+  accessPolicy: DataAccessPolicy
   appliedMethod: AppliedMethod!
   approval: ResponseApproval! @cost(weight: "3")
   approvals: [DataApproval!]!
@@ -453,15 +484,11 @@ type CalorimetricData implements Node & Data {
   createdAt: DateTime!
   creator: Institution @cost(weight: "3")
   creatorId: Uuid!
-  dataAccessRights: DataAccessRights!
   database: Database @cost(weight: "3")
   databaseId: Uuid!
   description: String
   gValues: [Float!]!
   id: ID!
-  isRestrictedByApplication(applicationId: String!): Boolean!
-  isRestrictedByInstitutions(institutions: [Uuid!]!): Boolean!
-  isRestrictedByUser(alreadyAccesedCount: NonNegativeInt!, uuid: Uuid!): Boolean!
   locale: Locale!
   name: String
   resources(
@@ -502,9 +529,62 @@ type CielabColor {
   observer: CalorimetricObserver
 }
 
+type ClearDataAccessPolicyError implements UserError {
+  code: ClearDataAccessPolicyErrorCode!
+  message: String!
+  path: [String!]!
+}
+
+type ClearDataAccessPolicyPayload {
+  dataAccessPolicy: [DataAccessPolicy!]
+  errors: [ClearDataAccessPolicyError!]
+  query: Query!
+}
+
+type ClearInstitutionAccessPoliciesError implements UserError {
+  code: ClearInstitutionAccessPoliciesErrorCode!
+  message: String!
+  path: [String!]!
+}
+
+type ClearInstitutionAccessPoliciesPayload {
+  errors: [ClearInstitutionAccessPoliciesError!]
+  institutionAccessPolicies: [InstitutionAccessPolicy!]
+  query: Query!
+}
+
+type ClearOpenIdConnectApplicationAccessPoliciesError implements UserError {
+  code: ClearOpenIdConnectApplicationAccessPoliciesErrorCode!
+  message: String!
+  path: [String!]!
+}
+
+type ClearOpenIdConnectApplicationAccessPoliciesPayload {
+  errors: [ClearOpenIdConnectApplicationAccessPoliciesError!]
+  openIdConnectApplicationAccessPolicies: [OpenIdConnectApplicationAccessPolicy!]
+  query: Query!
+}
+
+type ClearUserAccessPoliciesError implements UserError {
+  code: ClearUserAccessPoliciesErrorCode!
+  message: String!
+  path: [String!]!
+}
+
+type ClearUserAccessPoliciesPayload {
+  errors: [ClearUserAccessPoliciesError!]
+  query: Query!
+  userAccessPolicies: [UserAccessPolicy!]
+}
+
 type Component {
   name: String!
   uuid: Uuid!
+}
+
+type CountSinceTime {
+  accessCount: NonNegativeInt!
+  startTime: DateTime
 }
 
 type CreateCalorimetricDataError implements UserError {
@@ -619,14 +699,15 @@ type CurrentInstitution {
   uuid: Uuid!
 }
 
-type DataAccessRights {
-  allowedApplications: [String!]
-  allowedInstitutions: [Uuid!]
-  allowedUserAndQuantity: [KeyValuePairOfGuidAndNullableUInt32!]
-  hasRestrictions: Boolean!
-  hasRestrictionsByApplication: Boolean!
-  hasRestrictionsByInstitution: Boolean!
-  hasRestrictionsByUser: Boolean!
+type DataAccessPolicy {
+  areInstitutionsRestricted: Boolean!
+  areOpenIdConnectApplicationsRestricted: Boolean!
+  areUsersRestricted: Boolean!
+  combinator: LogicalCombinator!
+  institutionAccessPolicies: [InstitutionAccessPolicy!]
+  isRestricted: Boolean!
+  openIdConnectApplicationAccessPolicies: [OpenIdConnectApplicationAccessPolicy!]
+  userAccessPolicies: [UserAccessPolicy!]
 }
 
 type DataApproval implements Approval {
@@ -684,6 +765,54 @@ type DataFormat {
   uuid: Uuid!
 }
 
+type DeleteDataAccessPolicyError implements UserError {
+  code: DeleteDataAccessPolicyErrorCode!
+  message: String!
+  path: [String!]!
+}
+
+type DeleteDataAccessPolicyOfInstitutionError implements UserError {
+  code: DeleteDataAccessPolicyOfInstitutionErrorCode!
+  message: String!
+  path: [String!]!
+}
+
+type DeleteDataAccessPolicyOfInstitutionPayload {
+  dataAccessPolicy: DataAccessPolicy
+  errors: [DeleteDataAccessPolicyOfInstitutionError!]
+  query: Query!
+}
+
+type DeleteDataAccessPolicyOfOpenIdConnectApplicationError implements UserError {
+  code: DeleteDataAccessPolicyOfOpenIdConnectApplicationErrorCode!
+  message: String!
+  path: [String!]!
+}
+
+type DeleteDataAccessPolicyOfOpenIdConnectApplicationPayload {
+  dataAccessPolicy: DataAccessPolicy
+  errors: [DeleteDataAccessPolicyOfOpenIdConnectApplicationError!]
+  query: Query!
+}
+
+type DeleteDataAccessPolicyOfUserError implements UserError {
+  code: DeleteDataAccessPolicyOfUserErrorCode!
+  message: String!
+  path: [String!]!
+}
+
+type DeleteDataAccessPolicyOfUserPayload {
+  dataAccessPolicy: DataAccessPolicy
+  errors: [DeleteDataAccessPolicyOfUserError!]
+  query: Query!
+}
+
+type DeleteDataAccessPolicyPayload {
+  dataAccessPolicy: DataAccessPolicy
+  errors: [DeleteDataAccessPolicyError!]
+  query: Query!
+}
+
 type DeleteDataError implements UserError {
   code: DeleteDataErrorCode!
   message: String!
@@ -707,6 +836,42 @@ type DeleteGetHttpsResourcePayload {
   query: Query!
 }
 
+type DeleteInstitutionAccessPolicyError implements UserError {
+  code: DeleteInstitutionAccessPolicyErrorCode!
+  message: String!
+  path: [String!]!
+}
+
+type DeleteInstitutionAccessPolicyPayload {
+  errors: [DeleteInstitutionAccessPolicyError!]
+  institutionAccessPolicy: InstitutionAccessPolicy
+  query: Query!
+}
+
+type DeleteOpenIdConnectApplicationAccessPolicyError implements UserError {
+  code: DeleteOpenIdConnectApplicationAccessPolicyErrorCode!
+  message: String!
+  path: [String!]!
+}
+
+type DeleteOpenIdConnectApplicationAccessPolicyPayload {
+  errors: [DeleteOpenIdConnectApplicationAccessPolicyError!]
+  openIdConnectApplicationAccessPolicy: OpenIdConnectApplicationAccessPolicy
+  query: Query!
+}
+
+type DeleteUserAccessPolicyError implements UserError {
+  code: DeleteUserAccessPolicyErrorCode!
+  message: String!
+  path: [String!]!
+}
+
+type DeleteUserAccessPolicyPayload {
+  errors: [DeleteUserAccessPolicyError!]
+  query: Query!
+  userAccessPolicy: UserAccessPolicy
+}
+
 type FileMetaInformation {
   dataFormat: DataFormat @cost(weight: "3")
   dataFormatId: Uuid!
@@ -714,6 +879,7 @@ type FileMetaInformation {
 }
 
 type GeometricData implements Node & Data {
+  accessPolicy: DataAccessPolicy
   appliedMethod: AppliedMethod!
   approval: ResponseApproval! @cost(weight: "3")
   approvals: [DataApproval!]!
@@ -722,15 +888,11 @@ type GeometricData implements Node & Data {
   createdAt: DateTime!
   creator: Institution @cost(weight: "3")
   creatorId: Uuid!
-  dataAccessRights: DataAccessRights!
   database: Database @cost(weight: "3")
   databaseId: Uuid!
   description: String
   heights: [Float!]!
   id: ID!
-  isRestrictedByApplication(applicationId: String!): Boolean!
-  isRestrictedByInstitutions(institutions: [Uuid!]!): Boolean!
-  isRestrictedByUser(alreadyAccesedCount: NonNegativeInt!, uuid: Uuid!): Boolean!
   locale: Locale!
   name: String
   resources(
@@ -823,6 +985,7 @@ type GetHttpsResourceTreeRoot implements GetHttpsResourceTreeVertex {
 }
 
 type HygrothermalData implements Node & Data {
+  accessPolicy: DataAccessPolicy
   appliedMethod: AppliedMethod!
   approval: ResponseApproval! @cost(weight: "3")
   approvals: [DataApproval!]!
@@ -831,14 +994,10 @@ type HygrothermalData implements Node & Data {
   createdAt: DateTime!
   creator: Institution @cost(weight: "3")
   creatorId: Uuid!
-  dataAccessRights: DataAccessRights!
   database: Database @cost(weight: "3")
   databaseId: Uuid!
   description: String
   id: ID!
-  isRestrictedByApplication(applicationId: String!): Boolean!
-  isRestrictedByInstitutions(institutions: [Uuid!]!): Boolean!
-  isRestrictedByUser(alreadyAccesedCount: NonNegativeInt!, uuid: Uuid!): Boolean!
   locale: Locale!
   name: String
   resources(
@@ -875,27 +1034,16 @@ type Institution {
   uuid: Uuid!
 }
 
-type InstitutionAccessRights {
-  allowedDatasetsPerTime: NonNegativeInt
-  allowedUserCount: NonNegativeInt
-  createdAt: DateTime!
-  hasRestrictions: Boolean!
-  hasRestrictionsByTime: Boolean!
-  hasRestrictionsByUser: Boolean!
-  id: Uuid!
+type InstitutionAccessPolicy {
+  accessCountSinceStartTime: CountSinceTime
   institutionId: Uuid!
-  period: Duration!
-  updatedAt: DateTime!
-  userAlreadyAccessed: [Uuid!]!
-  version: NonNegativeInt!
-}
-
-type KeyValuePairOfGuidAndNullableUInt32 {
-  key: Uuid!
-  value: NonNegativeInt
+  isAllowed: Boolean!
+  isWithinTimeSpan: Boolean!
+  upperAccessLimitPerTimeDuration: UpperLimitPerDuration
 }
 
 type LifeCycleData implements Node & Data {
+  accessPolicy: DataAccessPolicy
   appliedMethod: AppliedMethod!
   approval: ResponseApproval! @cost(weight: "3")
   approvals: [DataApproval!]!
@@ -904,14 +1052,10 @@ type LifeCycleData implements Node & Data {
   createdAt: DateTime!
   creator: Institution @cost(weight: "3")
   creatorId: Uuid!
-  dataAccessRights: DataAccessRights!
   database: Database @cost(weight: "3")
   databaseId: Uuid!
   description: String
   id: ID!
-  isRestrictedByApplication(applicationId: String!): Boolean!
-  isRestrictedByInstitutions(institutions: [Uuid!]!): Boolean!
-  isRestrictedByUser(alreadyAccesedCount: NonNegativeInt!, uuid: Uuid!): Boolean!
   locale: Locale!
   name: String
   resources(
@@ -969,7 +1113,16 @@ type OpenEndedDateTimeRange {
   until: DateTime @cost(weight: "10")
 }
 
+type OpenIdConnectApplicationAccessPolicy {
+  accessCountSinceStartTime: CountSinceTime
+  clientId: String!
+  isAllowed: Boolean!
+  isWithinTimeSpan: Boolean!
+  upperAccessLimitPerTimeDuration: UpperLimitPerDuration
+}
+
 type OpticalData implements Node & Data {
+  accessPolicy: DataAccessPolicy
   appliedMethod: AppliedMethod!
   approval: ResponseApproval! @cost(weight: "3")
   approvals: [DataApproval!]!
@@ -981,15 +1134,11 @@ type OpticalData implements Node & Data {
   createdAt: DateTime!
   creator: Institution @cost(weight: "3")
   creatorId: Uuid!
-  dataAccessRights: DataAccessRights!
   database: Database @cost(weight: "3")
   databaseId: Uuid!
   description: String
   id: ID!
   infraredEmittances: [Float!]!
-  isRestrictedByApplication(applicationId: String!): Boolean!
-  isRestrictedByInstitutions(institutions: [Uuid!]!): Boolean!
-  isRestrictedByUser(alreadyAccesedCount: NonNegativeInt!, uuid: Uuid!): Boolean!
   locale: Locale!
   name: String
   nearnormalHemisphericalSolarReflectances: [Float!]!
@@ -1040,6 +1189,7 @@ type PageInfo {
 }
 
 type PhotovoltaicData implements Node & Data {
+  accessPolicy: DataAccessPolicy
   appliedMethod: AppliedMethod!
   approval: ResponseApproval! @cost(weight: "3")
   approvals: [DataApproval!]!
@@ -1048,14 +1198,10 @@ type PhotovoltaicData implements Node & Data {
   createdAt: DateTime!
   creator: Institution @cost(weight: "3")
   creatorId: Uuid!
-  dataAccessRights: DataAccessRights!
   database: Database @cost(weight: "3")
   databaseId: Uuid!
   description: String
   id: ID!
-  isRestrictedByApplication(applicationId: String!): Boolean!
-  isRestrictedByInstitutions(institutions: [Uuid!]!): Boolean!
-  isRestrictedByUser(alreadyAccesedCount: NonNegativeInt!, uuid: Uuid!): Boolean!
   locale: Locale!
   name: String
   resources(
@@ -1161,6 +1307,42 @@ type RetractDataPayload {
   query: Query!
 }
 
+type SetDataAccessLimitForInstitutionError implements UserError {
+  code: SetDataAccessLimitForInstitutionErrorCode!
+  message: String!
+  path: [String!]!
+}
+
+type SetDataAccessLimitForInstitutionPayload {
+  dataAccessPolicy: DataAccessPolicy
+  errors: [SetDataAccessLimitForInstitutionError!]
+  query: Query!
+}
+
+type SetDataAccessLimitForOpenIdConnectApplicationError implements UserError {
+  code: SetDataAccessLimitForOpenIdConnectApplicationErrorCode!
+  message: String!
+  path: [String!]!
+}
+
+type SetDataAccessLimitForOpenIdConnectApplicationPayload {
+  dataAccessPolicy: DataAccessPolicy
+  errors: [SetDataAccessLimitForOpenIdConnectApplicationError!]
+  query: Query!
+}
+
+type SetDataAccessLimitForUserError implements UserError {
+  code: SetDataAccessLimitForUserErrorCode!
+  message: String!
+  path: [String!]!
+}
+
+type SetDataAccessLimitForUserPayload {
+  dataAccessPolicy: DataAccessPolicy
+  errors: [SetDataAccessLimitForUserError!]
+  query: Query!
+}
+
 type SetGetHttpsResourceParentError implements UserError {
   code: SetGetHttpsResourceParentErrorCode!
   message: String!
@@ -1171,6 +1353,42 @@ type SetGetHttpsResourceParentPayload {
   errors: [SetGetHttpsResourceParentError!]
   getHttpsResource: GetHttpsResource
   query: Query!
+}
+
+type SetInstitutionAccessLimitError implements UserError {
+  code: SetInstitutionAccessLimitErrorCode!
+  message: String!
+  path: [String!]!
+}
+
+type SetInstitutionAccessLimitPayload {
+  errors: [SetInstitutionAccessLimitError!]
+  institutionAccessPolicy: InstitutionAccessPolicy
+  query: Query!
+}
+
+type SetOpenIdConnectApplicationAccessLimitError implements UserError {
+  code: SetOpenIdConnectApplicationAccessLimitErrorCode!
+  message: String!
+  path: [String!]!
+}
+
+type SetOpenIdConnectApplicationAccessLimitPayload {
+  errors: [SetOpenIdConnectApplicationAccessLimitError!]
+  openIdConnectApplicationAccessPolicy: OpenIdConnectApplicationAccessPolicy
+  query: Query!
+}
+
+type SetUserAccessLimitError implements UserError {
+  code: SetUserAccessLimitErrorCode!
+  message: String!
+  path: [String!]!
+}
+
+type SetUserAccessLimitPayload {
+  errors: [SetUserAccessLimitError!]
+  query: Query!
+  userAccessPolicy: UserAccessPolicy
 }
 
 "`ISO 52022` is an example of the abbreviation of a standardizer and the main number of the identifier."
@@ -1205,18 +1423,6 @@ type UpdateChildGetHttpsResourcePayload {
   query: Query!
 }
 
-type UpdateDataAccessRightsError implements UserError {
-  code: UpdateDataAccessRightsErrorCode!
-  message: String!
-  path: [String!]!
-}
-
-type UpdateDataAccessRightsPayload {
-  dataAccessRights: DataAccessRights
-  errors: [UpdateDataAccessRightsError!]
-  query: Query!
-}
-
 type UpdateDatabaseError {
   code: UpdateDatabaseErrorCode!
   message: String!
@@ -1238,18 +1444,6 @@ type UpdateDataError implements UserError {
 type UpdateDataPayload {
   data: Data
   errors: [UpdateDataError!]
-  query: Query!
-}
-
-type UpdateInstitutionAccessRightsError implements UserError {
-  code: UpdateInstitutionAccessRightsErrorCode!
-  message: String!
-  path: [String!]!
-}
-
-type UpdateInstitutionAccessRightsPayload {
-  errors: [UpdateInstitutionAccessRightsError!]
-  institutionAccessRights: InstitutionAccessRights
   query: Query!
 }
 
@@ -1277,6 +1471,11 @@ type UpdateRootGetHttpsResourcePayload {
   query: Query!
 }
 
+type UpperLimitPerDuration {
+  duration: Duration
+  upperLimit: NonNegativeInt!
+}
+
 type User implements Node {
   createdAt: DateTime!
   id: ID!
@@ -1284,6 +1483,14 @@ type User implements Node {
   subject: String!
   updatedAt: DateTime!
   uuid: Uuid!
+}
+
+type UserAccessPolicy {
+  accessCountSinceStartTime: CountSinceTime
+  isAllowed: Boolean!
+  isWithinTimeSpan: Boolean!
+  upperAccessLimitPerTimeDuration: UpperLimitPerDuration
+  userId: Uuid!
 }
 
 type UserInfo {
@@ -1309,6 +1516,7 @@ interface Approval {
 }
 
 interface Data {
+  accessPolicy: DataAccessPolicy
   appliedMethod: AppliedMethod!
   approval: ResponseApproval!
   approvals: [DataApproval!]!
@@ -1317,14 +1525,10 @@ interface Data {
   createdAt: DateTime!
   creator: Institution
   creatorId: Uuid!
-  dataAccessRights: DataAccessRights!
   database: Database
   databaseId: Uuid!
   description: String
   id: ID!
-  isRestrictedByApplication(applicationId: String!): Boolean!
-  isRestrictedByInstitutions(institutions: [Uuid!]!): Boolean!
-  isRestrictedByUser(alreadyAccesedCount: NonNegativeInt!, uuid: Uuid!): Boolean!
   locale: Locale!
   name: String
   resources: [GetHttpsResource!]!
@@ -1363,13 +1567,6 @@ input AddDataApprovalInput {
   statement: ReferenceInput!
   timestamp: DateTime!
   variables: Any!
-}
-
-input AddInstitutionAccessRightsInput {
-  allowedDatasetsPerTimeSpan: NonNegativeInt
-  allowedUserCount: NonNegativeInt
-  institutionId: Uuid!
-  periodInDays: Int!
 }
 
 input AppliedMethodInput {
@@ -1673,6 +1870,29 @@ input DecimalPropositionInput {
   notLessThanOrEqualTo: Decimal @cost(weight: "10")
 }
 
+input DeleteDataAccessPolicyInput {
+  dataId: Uuid!
+  dataKind: DataKind!
+}
+
+input DeleteDataAccessPolicyOfInstitutionInput {
+  dataId: Uuid!
+  dataKind: DataKind!
+  institutionId: Uuid!
+}
+
+input DeleteDataAccessPolicyOfOpenIdConnectApplicationInput {
+  clientId: String!
+  dataId: Uuid!
+  dataKind: DataKind!
+}
+
+input DeleteDataAccessPolicyOfUserInput {
+  dataId: Uuid!
+  dataKind: DataKind!
+  userId: Uuid!
+}
+
 input DeleteDataInput {
   dataId: Uuid!
   dataKind: DataKind!
@@ -1680,6 +1900,18 @@ input DeleteDataInput {
 
 input DeleteGetHttpsResourceInput {
   getHttpsResourceId: Uuid!
+}
+
+input DeleteInstitutionAccessPolicyInput {
+  institutionId: Uuid!
+}
+
+input DeleteOpenIdConnectApplicationAccessPolicyInput {
+  clientId: String!
+}
+
+input DeleteUserAccessPolicyInput {
+  userId: Uuid!
 }
 
 input DurationPropositionInput {
@@ -1885,6 +2117,16 @@ input HygrothermalDataSortInput {
   updatedAt: SortEnumType @cost(weight: "10")
 }
 
+input InstitutionAccessPolicyPropositionInput {
+  and: [InstitutionAccessPolicyPropositionInput!]
+  institutionId: UuidPropositionInput
+  or: [InstitutionAccessPolicyPropositionInput!]
+}
+
+input InstitutionAccessPolicySortInput {
+  institutionId: SortEnumType @cost(weight: "10")
+}
+
 input IntPropositionInput {
   equalTo: Int @cost(weight: "10")
   greaterThan: Int @cost(weight: "10")
@@ -1911,11 +2153,6 @@ input JsonValueKindPropositionInput {
   in: [JsonValueKind!] @cost(weight: "10")
   notEqualTo: JsonValueKind @cost(weight: "10")
   notIn: [JsonValueKind!] @cost(weight: "10")
-}
-
-input KeyValuePairOfGuidAndNullableUInt32Input {
-  key: Uuid!
-  value: NonNegativeInt
 }
 
 input LifeCycleDataPropositionInput {
@@ -2090,6 +2327,16 @@ input NumerationSortInput {
   suffix: SortEnumType @cost(weight: "10")
 }
 
+input OpenIdConnectApplicationAccessPolicyPropositionInput {
+  and: [OpenIdConnectApplicationAccessPolicyPropositionInput!]
+  clientId: StringPropositionInput
+  or: [OpenIdConnectApplicationAccessPolicyPropositionInput!]
+}
+
+input OpenIdConnectApplicationAccessPolicySortInput {
+  clientId: SortEnumType @cost(weight: "10")
+}
+
 input OpticalDataPropositionInput {
   and: [OpticalDataPropositionInput!]
   appliedMethod: AppliedMethodPropositionInput
@@ -2260,10 +2507,46 @@ input RootGetHttpsResourceInput {
   description: String!
 }
 
+input SetDataAccessLimitForInstitutionInput {
+  dataId: Uuid!
+  dataKind: DataKind!
+  institutionId: Uuid!
+  upperAccessLimitPerTimeDuration: UpperLimitPerDurationInput
+}
+
+input SetDataAccessLimitForOpenIdConnectApplicationInput {
+  clientId: String!
+  dataId: Uuid!
+  dataKind: DataKind!
+  upperAccessLimitPerTimeDuration: UpperLimitPerDurationInput
+}
+
+input SetDataAccessLimitForUserInput {
+  dataId: Uuid!
+  dataKind: DataKind!
+  upperAccessLimitPerTimeDuration: UpperLimitPerDurationInput
+  userId: Uuid!
+}
+
 input SetGetHttpsResourceParentInput {
   appliedConversionMethod: ToTreeVertexAppliedConversionMethodInput!
   getHttpsResourceId: Uuid!
   parentId: Uuid!
+}
+
+input SetInstitutionAccessLimitInput {
+  institutionId: Uuid!
+  upperAccessLimitPerTimeDuration: UpperLimitPerDurationInput
+}
+
+input SetOpenIdConnectApplicationAccessLimitInput {
+  clientId: String!
+  upperAccessLimitPerTimeDuration: UpperLimitPerDurationInput
+}
+
+input SetUserAccessLimitInput {
+  upperAccessLimitPerTimeDuration: UpperLimitPerDurationInput
+  userId: Uuid!
 }
 
 input ShortPropositionInput {
@@ -2381,14 +2664,6 @@ input UpdateChildGetHttpsResourceInput {
   getHttpsResourceId: Uuid!
 }
 
-input UpdateDataAccessRightsInput {
-  allowedApplications: [String!]
-  allowedInstitutions: [Uuid!]
-  allowedUserAndQuantity: [KeyValuePairOfGuidAndNullableUInt32Input!]
-  dataId: Uuid!
-  dataKind: DataKind!
-}
-
 input UpdateDatabaseInput {
   databaseId: Uuid!
   description: String!
@@ -2406,13 +2681,6 @@ input UpdateDataInput {
   locale: String!
   name: String
   warnings: [String!]!
-}
-
-input UpdateInstitutionAccessRightsInput {
-  allowedDatasetsPerTimeSpan: NonNegativeInt
-  allowedUserCount: NonNegativeInt
-  institutionId: Uuid!
-  periodInDays: Int!
 }
 
 input UpdateResponseApprovalsPropositionInput {
@@ -2435,6 +2703,11 @@ input UpdateRootGetHttpsResourceInput {
   dataFormatId: Uuid!
   description: String!
   getHttpsResourceId: Uuid!
+}
+
+input UpperLimitPerDurationInput {
+  duration: Duration
+  upperLimit: NonNegativeInt!
 }
 
 input UriSortInput {
@@ -2476,6 +2749,16 @@ input UrlPropositionInput {
   notLessThanOrEqualTo: Url @cost(weight: "10")
 }
 
+input UserAccessPolicyPropositionInput {
+  and: [UserAccessPolicyPropositionInput!]
+  or: [UserAccessPolicyPropositionInput!]
+  userId: UuidPropositionInput
+}
+
+input UserAccessPolicySortInput {
+  userId: SortEnumType @cost(weight: "10")
+}
+
 input UuidPropositionInput {
   equalTo: Uuid @cost(weight: "10")
   greaterThan: Uuid @cost(weight: "10")
@@ -2509,13 +2792,6 @@ enum AddDataApprovalErrorCode {
   WRONG_STATEMENT
 }
 
-enum AddInstitutionAccessRightsErrorCode {
-  UNKNOWN
-  UNAUTHENTICATED
-  UNAUTHORIZED
-  ALREADY_EXISTS
-}
-
 "Defines when a policy shall be executed."
 enum ApplyPolicy {
   "Before the resolver was executed."
@@ -2535,6 +2811,31 @@ enum CalculateMethodErrorCode {
 enum CalorimetricObserver {
   TWO_DEGREES
   TEN_DEGREES
+}
+
+enum ClearDataAccessPolicyErrorCode {
+  UNKNOWN
+  UNAUTHENTICATED
+  UNAUTHORIZED
+  UNKNOWN_DATA
+}
+
+enum ClearInstitutionAccessPoliciesErrorCode {
+  UNKNOWN
+  UNAUTHENTICATED
+  UNAUTHORIZED
+}
+
+enum ClearOpenIdConnectApplicationAccessPoliciesErrorCode {
+  UNKNOWN
+  UNAUTHENTICATED
+  UNAUTHORIZED
+}
+
+enum ClearUserAccessPoliciesErrorCode {
+  UNKNOWN
+  UNAUTHENTICATED
+  UNAUTHORIZED
 }
 
 enum CoatedSide {
@@ -2664,6 +2965,37 @@ enum DataKind {
   PHOTOVOLTAIC_DATA
 }
 
+enum DeleteDataAccessPolicyErrorCode {
+  UNKNOWN
+  UNAUTHENTICATED
+  UNAUTHORIZED
+  UNKNOWN_DATA
+}
+
+enum DeleteDataAccessPolicyOfInstitutionErrorCode {
+  UNKNOWN
+  UNAUTHENTICATED
+  UNAUTHORIZED
+  UNKNOWN_DATA
+  UNKNOWN_INSTITUTION
+}
+
+enum DeleteDataAccessPolicyOfOpenIdConnectApplicationErrorCode {
+  UNKNOWN
+  UNAUTHENTICATED
+  UNAUTHORIZED
+  UNKNOWN_DATA
+  UNKNOWN_APPLICATION
+}
+
+enum DeleteDataAccessPolicyOfUserErrorCode {
+  UNKNOWN
+  UNAUTHENTICATED
+  UNAUTHORIZED
+  UNKNOWN_DATA
+  UNKNOWN_USER
+}
+
 enum DeleteDataErrorCode {
   UNAUTHENTICATED
   UNAUTHORIZED
@@ -2682,6 +3014,27 @@ enum DeleteGetHttpsResourceErrorCode {
   HAS_CHILDREN
 }
 
+enum DeleteInstitutionAccessPolicyErrorCode {
+  UNKNOWN
+  UNAUTHENTICATED
+  UNAUTHORIZED
+  UNKNOWN_POLICY
+}
+
+enum DeleteOpenIdConnectApplicationAccessPolicyErrorCode {
+  UNKNOWN
+  UNAUTHENTICATED
+  UNAUTHORIZED
+  UNKNOWN_POLICY
+}
+
+enum DeleteUserAccessPolicyErrorCode {
+  UNKNOWN
+  UNAUTHENTICATED
+  UNAUTHORIZED
+  UNKNOWN_POLICY
+}
+
 enum Illuminant {
   A
   D65
@@ -2696,6 +3049,11 @@ enum JsonValueKind {
   TRUE
   FALSE
   NULL
+}
+
+enum LogicalCombinator {
+  ALL
+  SOME
 }
 
 enum OpticalComponentSubtype {
@@ -2763,6 +3121,30 @@ enum RetractDataErrorCode {
   NOT_PUBLISHED
 }
 
+enum SetDataAccessLimitForInstitutionErrorCode {
+  UNKNOWN
+  UNAUTHENTICATED
+  UNAUTHORIZED
+  UNKNOWN_DATA
+  UNKNOWN_INSTITUTION
+}
+
+enum SetDataAccessLimitForOpenIdConnectApplicationErrorCode {
+  UNKNOWN
+  UNAUTHENTICATED
+  UNAUTHORIZED
+  UNKNOWN_DATA
+  UNKNOWN_APPLICATION
+}
+
+enum SetDataAccessLimitForUserErrorCode {
+  UNKNOWN
+  UNAUTHENTICATED
+  UNAUTHORIZED
+  UNKNOWN_DATA
+  UNKNOWN_USER
+}
+
 enum SetGetHttpsResourceParentErrorCode {
   UNKNOWN
   UNAUTHORIZED
@@ -2772,6 +3154,24 @@ enum SetGetHttpsResourceParentErrorCode {
   ILLEGAL_PARENT
   UNKNOWN_METHOD
   CREATING_RESPONSE_APPROVAL_FAILED
+}
+
+enum SetInstitutionAccessLimitErrorCode {
+  UNKNOWN
+  UNAUTHENTICATED
+  UNAUTHORIZED
+}
+
+enum SetOpenIdConnectApplicationAccessLimitErrorCode {
+  UNKNOWN
+  UNAUTHENTICATED
+  UNAUTHORIZED
+}
+
+enum SetUserAccessLimitErrorCode {
+  UNKNOWN
+  UNAUTHENTICATED
+  UNAUTHORIZED
 }
 
 enum SortEnumType {
@@ -2816,16 +3216,6 @@ enum UpdateChildGetHttpsResourceErrorCode {
   CREATING_RESPONSE_APPROVAL_FAILED
 }
 
-enum UpdateDataAccessRightsErrorCode {
-  UNKNOWN
-  UNAUTHENTICATED
-  UNAUTHORIZED
-  UNKNOWN_DATA
-  UNKNOWN_INSTITUTION
-  UNKNOWN_USER
-  UNKNOWN_APPLICATION
-}
-
 enum UpdateDatabaseErrorCode {
   UNKNOWN
   UNAUTHORIZED
@@ -2837,13 +3227,6 @@ enum UpdateDataErrorCode {
   UNAUTHORIZED
   UNKNOWN_DATA
   CREATING_RESPONSE_APPROVAL_FAILED
-}
-
-enum UpdateInstitutionAccessRightsErrorCode {
-  UNKNOWN
-  UNAUTHENTICATED
-  UNAUTHORIZED
-  UNKNOWN_ACCESS_RIGHTS
 }
 
 enum UpdateResponseApprovalsErrorCode {

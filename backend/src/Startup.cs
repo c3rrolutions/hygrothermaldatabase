@@ -226,6 +226,7 @@ public sealed class Startup(
                     .MapEnum<CoatedSide>(ApplicationDbContext.CoatedSideTypeName, _appSettings.Database.SchemaName)
                     .MapEnum<DataKind>(ApplicationDbContext.DataKindTypeName, _appSettings.Database.SchemaName)
                     .MapEnum<Illuminant>(ApplicationDbContext.IlluminantTypeName, _appSettings.Database.SchemaName)
+                    .MapEnum<LogicalCombinator>(ApplicationDbContext.LogicalCombinatorTypeName, _appSettings.Database.SchemaName)
                     .MapEnum<OpticalComponentSubtype>(ApplicationDbContext.OpticalComponentSubtypeTypeName, _appSettings.Database.SchemaName)
                     .MapEnum<OpticalComponentType>(ApplicationDbContext.OpticalComponentTypeTypeName, _appSettings.Database.SchemaName)
                     .MapEnum<PublishingState>(ApplicationDbContext.PublishingStateTypeName, _appSettings.Database.SchemaName)
@@ -286,7 +287,7 @@ public sealed class Startup(
 
     public static void ConfigureCustomServices(IServiceCollection services)
     {
-        services.AddScoped<AccessRightsService>();
+        services.AddScoped<AccessPolicyService>();
         services.AddScoped<ApiRequestService>();
         services.AddScoped<ResponseApprovalService>();
         services.AddScoped<UserService>();

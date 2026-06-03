@@ -12,10 +12,10 @@ public class GetHttpsResourceSortType
     )
     {
         base.Configure(descriptor);
-        descriptor.Field(x => x.Description);
-        descriptor.Field(x => x.HashValue);
-        descriptor.Field(x => x.DataFormatId);
-        descriptor.Field(x => x.AppliedConversionMethod);
-        descriptor.Field(x => x.Parent);
+        descriptor.Field(_ => _.Description);
+        descriptor.Field(_ => _.HashValue);
+        descriptor.Field(_ => _.DataFormatId);
+        descriptor.Field(_ => _.AppliedConversionMethod);
+        descriptor.Field(_ => _.Parent);
     }
 }

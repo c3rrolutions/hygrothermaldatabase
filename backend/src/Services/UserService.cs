@@ -20,7 +20,7 @@ public sealed class UserService(
     /// <summary>
     /// Get client ID from user claims.
     /// </summary>
-    public string? GetOpenIdConnectClientId()
+    public string? GetOpenIdConnectAuthorizedPartyClientId()
     {
         return httpContextAccessor.HttpContext?.User.GetClaim(OpenIddictConstants.Claims.AuthorizedParty);
     }

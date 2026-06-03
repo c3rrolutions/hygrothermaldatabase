@@ -34,7 +34,7 @@ public sealed class DataType(AppSettings appSettings)
         descriptor
             .Field(_ => _.CreatedAt);
         descriptor
-            .Field(x => x.Locale)
+            .Field(_ => _.Locale)
             .Type<NonNullType<LocaleType>>();
         descriptor
             .Field(DatabaseIdFieldName)
@@ -44,7 +44,7 @@ public sealed class DataType(AppSettings appSettings)
             .Field(ResourceTreeFieldName)
             .Type<NonNullType<ObjectType<GetHttpsResourceTree>>>();
         descriptor
-            .Field(x => x.Approval)
+            .Field(_ => _.Approval)
             .Type<NonNullType<ObjectType<ResponseApproval>>>();
         descriptor
             .Field(DataType.DatabaseIdFieldName[..^2].FirstCharToLower())

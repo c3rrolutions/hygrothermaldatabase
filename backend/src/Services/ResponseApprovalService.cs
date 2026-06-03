@@ -92,7 +92,7 @@ public sealed class ResponseApprovalService(
         logger.QueryAndVariablesAndResponse(query, variables, response);
         var typedResponse = JsonSerializer.Deserialize<GraphQLResponse<JsonElement>>(response, JsonSerializerSettings.GraphQl)
              ?? throw new JsonException($"Failed to deserialize the GraphQL response: {response}");
-        if (typedResponse.Errors is not null && typedResponse.Errors.Length >= 1)
+        if (typedResponse.Errors is not null && typedResponse.Errors.Length > 0)
         {
             throw new GraphQLException($"The GraphQL response contains the following errors: {string.Join(", ", typedResponse.Errors.Select(_ => $"'{_.Message}' [{string.Join(", ", _.Extensions?.Select(e => $"{e.Key}: '{e.Value}'") ?? [])}] ({string.Join(".", _.Path?.Select(p => p.ToString()) ?? [])})"))}");
         }

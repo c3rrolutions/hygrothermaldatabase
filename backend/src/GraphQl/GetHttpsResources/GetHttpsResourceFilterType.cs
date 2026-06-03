@@ -13,18 +13,18 @@ public class GetHttpsResourceFilterType
     {
         base.Configure(descriptor);
         descriptor.Name(nameof(GetHttpsResourceFilterType)[..^"FilterType".Length] + GraphQlConstants.FilterInputSuffix);
-        descriptor.Field(x => x.Description);
-        descriptor.Field(x => x.HashValue);
-        descriptor.Field(x => x.DataFormatId);
-        descriptor.Field(x => x.AppliedConversionMethod);
-        descriptor.Field(x => x.ArchivedFilesMetaInformation);
-        descriptor.Field(x => x.Parent);
-        // descriptor.Field(x => x.Data);
-        descriptor.Field(x => x.CalorimetricData);
-        descriptor.Field(x => x.GeometricData);
-        descriptor.Field(x => x.HygrothermalData);
-        descriptor.Field(x => x.LifeCycleData);
-        descriptor.Field(x => x.OpticalData);
-        descriptor.Field(x => x.PhotovoltaicData);
+        descriptor.Field(_ => _.Description);
+        descriptor.Field(_ => _.HashValue);
+        descriptor.Field(_ => _.DataFormatId);
+        descriptor.Field(_ => _.AppliedConversionMethod);
+        descriptor.Field(_ => _.ArchivedFilesMetaInformation);
+        descriptor.Field(_ => _.Parent);
+        // descriptor.Field(_ => _.Data);
+        descriptor.Field(_ => _.CalorimetricData);
+        descriptor.Field(_ => _.GeometricData);
+        descriptor.Field(_ => _.HygrothermalData);
+        descriptor.Field(_ => _.LifeCycleData);
+        descriptor.Field(_ => _.OpticalData);
+        descriptor.Field(_ => _.PhotovoltaicData);
     }
 }

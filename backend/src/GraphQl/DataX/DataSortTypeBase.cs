@@ -13,11 +13,11 @@ public abstract class DataSortTypeBase<TData>
     )
     {
         base.Configure(descriptor);
-        descriptor.Field(x => x.Locale);
-        descriptor.Field(x => x.Name);
-        descriptor.Field(x => x.Description);
-        descriptor.Field(x => x.ComponentId);
-        descriptor.Field(x => x.CreatorId);
-        descriptor.Field(x => x.AppliedMethod);
+        descriptor.Field(_ => _.Locale);
+        descriptor.Field(_ => _.Name);
+        descriptor.Field(_ => _.Description);
+        descriptor.Field(_ => _.ComponentId);
+        descriptor.Field(_ => _.CreatorId);
+        descriptor.Field(_ => _.AppliedMethod);
     }
 }

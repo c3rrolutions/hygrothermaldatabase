@@ -25,7 +25,7 @@ public sealed class OpticalDataQueries
     public Task<HotChocolate.Types.Pagination.Connection<OpticalData>> GetAllOpticalDataAsync(
         [GraphQLType<LocaleType>] string? locale,
         ApplicationDbContext context,
-        AccessRightsService accessRightsService,
+        AccessPolicyService accessPolicyService,
         IResolverContext resolverContext,
         CancellationToken cancellationToken
     )
@@ -33,7 +33,8 @@ public sealed class OpticalDataQueries
         return GetAllDataAsync(
             context.OpticalData,
             locale,
-            accessRightsService,
+            context,
+            accessPolicyService,
             resolverContext,
             cancellationToken
         );
@@ -47,7 +48,7 @@ public sealed class OpticalDataQueries
     public Task<HotChocolate.Types.Pagination.Connection<OpticalData>> GetAllPendingOpticalDataAsync(
         [GraphQLType<LocaleType>] string? locale,
         ApplicationDbContext context,
-        AccessRightsService accessRightsService,
+        AccessPolicyService accessPolicyService,
         IResolverContext resolverContext,
         CommonAuthorization authorization,
         CancellationToken cancellationToken
@@ -56,7 +57,8 @@ public sealed class OpticalDataQueries
         return GetAllPendingDataAsync(
             context.OpticalData,
             locale,
-            accessRightsService,
+            context,
+            accessPolicyService,
             resolverContext,
             authorization,
             cancellationToken
@@ -67,6 +69,7 @@ public sealed class OpticalDataQueries
     public Task<bool> HasOpticalDataAsync(
         [GraphQLType<LocaleType>] string? locale,
         ApplicationDbContext context,
+        AccessPolicyService accessPolicyService,
         IResolverContext resolverContext,
         CancellationToken cancellationToken
     )
@@ -74,6 +77,8 @@ public sealed class OpticalDataQueries
         return HasDataAsync(
             context.OpticalData,
             locale,
+            context,
+            accessPolicyService,
             resolverContext,
             cancellationToken
         );
@@ -82,16 +87,17 @@ public sealed class OpticalDataQueries
     public Task<OpticalData?> GetOpticalDataAsync(
         Guid id,
         [GraphQLType<LocaleType>] string? locale,
-        OpticalDataByIdDataLoader byId,
-        AccessRightsService accessRightsService,
+        ApplicationDbContext context,
+        AccessPolicyService accessPolicyService,
         CancellationToken cancellationToken
     )
     {
         return GetDataAsync(
             id,
             locale,
-            byId,
-            accessRightsService,
+            context.OpticalData,
+            context,
+            accessPolicyService,
             cancellationToken
         );
     }

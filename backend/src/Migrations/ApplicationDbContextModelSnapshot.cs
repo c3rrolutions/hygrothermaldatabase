@@ -6,9 +6,7 @@ using Database.Data;
 using Database.Enumerations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NodaTime;
-using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
@@ -29,12 +27,111 @@ namespace Database.Migrations
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "database", "coated_side", new[] { "both", "neither", "non_prime", "not_applicable", "prime", "unknown" });
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "database", "data_kind", new[] { "calorimetric_data", "geometric_data", "hygrothermal_data", "life_cycle_data", "optical_data", "photovoltaic_data" });
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "database", "illuminant", new[] { "a", "d65" });
+            NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "database", "logical_combinator", new[] { "all", "some" });
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "database", "optical_component_subtype", new[] { "acid_etched_glass", "applied_film", "cellular_shade", "chromogenic", "coated", "coating", "diffusing_shade", "embedded_coating", "film", "fritted_glass", "interlayer", "laminate", "monolithic", "perforated_screen", "pleated_shade", "roller_shade", "roman_shade", "sandblasted_glass", "shade_material", "venetian_blind", "vertical_louver", "woven_shade" });
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "database", "optical_component_type", new[] { "glazing", "shading" });
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "database", "publishing_state", new[] { "pending", "published", "retracted" });
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "database", "standardizer", new[] { "aerc", "agi", "ashrae", "breeam", "bs", "bsi", "cen", "cie", "dgnb", "din", "dvwg", "iec", "ies", "ift", "iso", "jis", "leed", "nfrc", "riba", "ul", "unece", "vdi", "vff", "well" });
             NpgsqlModelBuilderExtensions.HasPostgresExtension(modelBuilder, "pgcrypto");
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+
+            modelBuilder.Entity("Database.Data.AccessPolicies.InstitutionAccessPolicy", b =>
+                {
+                    b.Property<Guid>("InstitutionId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.ComplexProperty(typeof(Dictionary<string, object>), "AccessCountSinceStartTime", "Database.Data.AccessPolicies.InstitutionAccessPolicy.AccessCountSinceStartTime#CountSinceTime", b1 =>
+                        {
+                            b1.Property<long>("AccessCount");
+
+                            b1.Property<DateTimeOffset?>("StartTime");
+
+                            b1
+                                .ToJson("AccessCountSinceStartTime")
+                                .HasColumnType("jsonb");
+                        });
+
+                    b.ComplexProperty(typeof(Dictionary<string, object>), "UpperAccessLimitPerTimeDuration", "Database.Data.AccessPolicies.InstitutionAccessPolicy.UpperAccessLimitPerTimeDuration#UpperLimitPerDuration", b1 =>
+                        {
+                            b1.Property<TimeSpan?>("Duration");
+
+                            b1.Property<long>("UpperLimit");
+
+                            b1
+                                .ToJson("UpperAccessLimitPerTimeDuration")
+                                .HasColumnType("jsonb");
+                        });
+
+                    b.HasKey("InstitutionId");
+
+                    b.ToTable("institution_access_policy", "database");
+                });
+
+            modelBuilder.Entity("Database.Data.AccessPolicies.OpenIdConnectApplicationAccessPolicy", b =>
+                {
+                    b.Property<string>("ClientId")
+                        .HasColumnType("text");
+
+                    b.ComplexProperty(typeof(Dictionary<string, object>), "AccessCountSinceStartTime", "Database.Data.AccessPolicies.OpenIdConnectApplicationAccessPolicy.AccessCountSinceStartTime#CountSinceTime", b1 =>
+                        {
+                            b1.Property<long>("AccessCount");
+
+                            b1.Property<DateTimeOffset?>("StartTime");
+
+                            b1
+                                .ToJson("AccessCountSinceStartTime")
+                                .HasColumnType("jsonb");
+                        });
+
+                    b.ComplexProperty(typeof(Dictionary<string, object>), "UpperAccessLimitPerTimeDuration", "Database.Data.AccessPolicies.OpenIdConnectApplicationAccessPolicy.UpperAccessLimitPerTimeDuration#UpperLimitPerDuration", b1 =>
+                        {
+                            b1.Property<TimeSpan?>("Duration");
+
+                            b1.Property<long>("UpperLimit");
+
+                            b1
+                                .ToJson("UpperAccessLimitPerTimeDuration")
+                                .HasColumnType("jsonb");
+                        });
+
+                    b.HasKey("ClientId");
+
+                    b.ToTable("open_id_connect_application_access_policy", "database");
+                });
+
+            modelBuilder.Entity("Database.Data.AccessPolicies.UserAccessPolicy", b =>
+                {
+                    b.Property<Guid>("UserId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.ComplexProperty(typeof(Dictionary<string, object>), "AccessCountSinceStartTime", "Database.Data.AccessPolicies.UserAccessPolicy.AccessCountSinceStartTime#CountSinceTime", b1 =>
+                        {
+                            b1.Property<long>("AccessCount");
+
+                            b1.Property<DateTimeOffset?>("StartTime");
+
+                            b1
+                                .ToJson("AccessCountSinceStartTime")
+                                .HasColumnType("jsonb");
+                        });
+
+                    b.ComplexProperty(typeof(Dictionary<string, object>), "UpperAccessLimitPerTimeDuration", "Database.Data.AccessPolicies.UserAccessPolicy.UpperAccessLimitPerTimeDuration#UpperLimitPerDuration", b1 =>
+                        {
+                            b1.Property<TimeSpan?>("Duration");
+
+                            b1.Property<long>("UpperLimit");
+
+                            b1
+                                .ToJson("UpperAccessLimitPerTimeDuration")
+                                .HasColumnType("jsonb");
+                        });
+
+                    b.HasKey("UserId");
+
+                    b.ToTable("user_access_policy", "database");
+                });
 
             modelBuilder.Entity("Database.Data.CalorimetricData", b =>
                 {
@@ -92,6 +189,73 @@ namespace Database.Migrations
                     b.PrimitiveCollection<string[]>("Warnings")
                         .IsRequired()
                         .HasColumnType("text[]");
+
+                    b.ComplexProperty(typeof(Dictionary<string, object>), "AccessPolicy", "Database.Data.CalorimetricData.AccessPolicy#DataAccessPolicy", b1 =>
+                        {
+                            b1.Property<LogicalCombinator>("Combinator");
+
+                            b1.ComplexCollection(typeof(List<Dictionary<string, object>>), "InstitutionAccessPolicies", "Database.Data.CalorimetricData.AccessPolicy#DataAccessPolicy.InstitutionAccessPolicies#InstitutionAccessPolicy", b2 =>
+                                {
+                                    b2.Property<Guid>("InstitutionId");
+
+                                    b2.ComplexProperty(typeof(Dictionary<string, object>), "AccessCountSinceStartTime", "Database.Data.CalorimetricData.AccessPolicy#DataAccessPolicy.InstitutionAccessPolicies#InstitutionAccessPolicy.AccessCountSinceStartTime#CountSinceTime", b3 =>
+                                        {
+                                            b3.Property<long>("AccessCount");
+
+                                            b3.Property<DateTimeOffset?>("StartTime");
+                                        });
+
+                                    b2.ComplexProperty(typeof(Dictionary<string, object>), "UpperAccessLimitPerTimeDuration", "Database.Data.CalorimetricData.AccessPolicy#DataAccessPolicy.InstitutionAccessPolicies#InstitutionAccessPolicy.UpperAccessLimitPerTimeDuration#UpperLimitPerDuration", b3 =>
+                                        {
+                                            b3.Property<TimeSpan?>("Duration");
+
+                                            b3.Property<long>("UpperLimit");
+                                        });
+                                });
+
+                            b1.ComplexCollection(typeof(List<Dictionary<string, object>>), "OpenIdConnectApplicationAccessPolicies", "Database.Data.CalorimetricData.AccessPolicy#DataAccessPolicy.OpenIdConnectApplicationAccessPolicies#OpenIdConnectApplicationAccessPolicy", b2 =>
+                                {
+                                    b2.Property<string>("ClientId")
+                                        .IsRequired();
+
+                                    b2.ComplexProperty(typeof(Dictionary<string, object>), "AccessCountSinceStartTime", "Database.Data.CalorimetricData.AccessPolicy#DataAccessPolicy.OpenIdConnectApplicationAccessPolicies#OpenIdConnectApplicationAccessPolicy.AccessCountSinceStartTime#CountSinceTime", b3 =>
+                                        {
+                                            b3.Property<long>("AccessCount");
+
+                                            b3.Property<DateTimeOffset?>("StartTime");
+                                        });
+
+                                    b2.ComplexProperty(typeof(Dictionary<string, object>), "UpperAccessLimitPerTimeDuration", "Database.Data.CalorimetricData.AccessPolicy#DataAccessPolicy.OpenIdConnectApplicationAccessPolicies#OpenIdConnectApplicationAccessPolicy.UpperAccessLimitPerTimeDuration#UpperLimitPerDuration", b3 =>
+                                        {
+                                            b3.Property<TimeSpan?>("Duration");
+
+                                            b3.Property<long>("UpperLimit");
+                                        });
+                                });
+
+                            b1.ComplexCollection(typeof(List<Dictionary<string, object>>), "UserAccessPolicies", "Database.Data.CalorimetricData.AccessPolicy#DataAccessPolicy.UserAccessPolicies#UserAccessPolicy", b2 =>
+                                {
+                                    b2.Property<Guid>("UserId");
+
+                                    b2.ComplexProperty(typeof(Dictionary<string, object>), "AccessCountSinceStartTime", "Database.Data.CalorimetricData.AccessPolicy#DataAccessPolicy.UserAccessPolicies#UserAccessPolicy.AccessCountSinceStartTime#CountSinceTime", b3 =>
+                                        {
+                                            b3.Property<long>("AccessCount");
+
+                                            b3.Property<DateTimeOffset?>("StartTime");
+                                        });
+
+                                    b2.ComplexProperty(typeof(Dictionary<string, object>), "UpperAccessLimitPerTimeDuration", "Database.Data.CalorimetricData.AccessPolicy#DataAccessPolicy.UserAccessPolicies#UserAccessPolicy.UpperAccessLimitPerTimeDuration#UpperLimitPerDuration", b3 =>
+                                        {
+                                            b3.Property<TimeSpan?>("Duration");
+
+                                            b3.Property<long>("UpperLimit");
+                                        });
+                                });
+
+                            b1
+                                .ToJson("AccessPolicy")
+                                .HasColumnType("jsonb");
+                        });
 
                     b.HasKey("Id");
 
@@ -161,6 +325,73 @@ namespace Database.Migrations
                     b.PrimitiveCollection<double[]>("Widths")
                         .IsRequired()
                         .HasColumnType("double precision[]");
+
+                    b.ComplexProperty(typeof(Dictionary<string, object>), "AccessPolicy", "Database.Data.GeometricData.AccessPolicy#DataAccessPolicy", b1 =>
+                        {
+                            b1.Property<LogicalCombinator>("Combinator");
+
+                            b1.ComplexCollection(typeof(List<Dictionary<string, object>>), "InstitutionAccessPolicies", "Database.Data.GeometricData.AccessPolicy#DataAccessPolicy.InstitutionAccessPolicies#InstitutionAccessPolicy", b2 =>
+                                {
+                                    b2.Property<Guid>("InstitutionId");
+
+                                    b2.ComplexProperty(typeof(Dictionary<string, object>), "AccessCountSinceStartTime", "Database.Data.GeometricData.AccessPolicy#DataAccessPolicy.InstitutionAccessPolicies#InstitutionAccessPolicy.AccessCountSinceStartTime#CountSinceTime", b3 =>
+                                        {
+                                            b3.Property<long>("AccessCount");
+
+                                            b3.Property<DateTimeOffset?>("StartTime");
+                                        });
+
+                                    b2.ComplexProperty(typeof(Dictionary<string, object>), "UpperAccessLimitPerTimeDuration", "Database.Data.GeometricData.AccessPolicy#DataAccessPolicy.InstitutionAccessPolicies#InstitutionAccessPolicy.UpperAccessLimitPerTimeDuration#UpperLimitPerDuration", b3 =>
+                                        {
+                                            b3.Property<TimeSpan?>("Duration");
+
+                                            b3.Property<long>("UpperLimit");
+                                        });
+                                });
+
+                            b1.ComplexCollection(typeof(List<Dictionary<string, object>>), "OpenIdConnectApplicationAccessPolicies", "Database.Data.GeometricData.AccessPolicy#DataAccessPolicy.OpenIdConnectApplicationAccessPolicies#OpenIdConnectApplicationAccessPolicy", b2 =>
+                                {
+                                    b2.Property<string>("ClientId")
+                                        .IsRequired();
+
+                                    b2.ComplexProperty(typeof(Dictionary<string, object>), "AccessCountSinceStartTime", "Database.Data.GeometricData.AccessPolicy#DataAccessPolicy.OpenIdConnectApplicationAccessPolicies#OpenIdConnectApplicationAccessPolicy.AccessCountSinceStartTime#CountSinceTime", b3 =>
+                                        {
+                                            b3.Property<long>("AccessCount");
+
+                                            b3.Property<DateTimeOffset?>("StartTime");
+                                        });
+
+                                    b2.ComplexProperty(typeof(Dictionary<string, object>), "UpperAccessLimitPerTimeDuration", "Database.Data.GeometricData.AccessPolicy#DataAccessPolicy.OpenIdConnectApplicationAccessPolicies#OpenIdConnectApplicationAccessPolicy.UpperAccessLimitPerTimeDuration#UpperLimitPerDuration", b3 =>
+                                        {
+                                            b3.Property<TimeSpan?>("Duration");
+
+                                            b3.Property<long>("UpperLimit");
+                                        });
+                                });
+
+                            b1.ComplexCollection(typeof(List<Dictionary<string, object>>), "UserAccessPolicies", "Database.Data.GeometricData.AccessPolicy#DataAccessPolicy.UserAccessPolicies#UserAccessPolicy", b2 =>
+                                {
+                                    b2.Property<Guid>("UserId");
+
+                                    b2.ComplexProperty(typeof(Dictionary<string, object>), "AccessCountSinceStartTime", "Database.Data.GeometricData.AccessPolicy#DataAccessPolicy.UserAccessPolicies#UserAccessPolicy.AccessCountSinceStartTime#CountSinceTime", b3 =>
+                                        {
+                                            b3.Property<long>("AccessCount");
+
+                                            b3.Property<DateTimeOffset?>("StartTime");
+                                        });
+
+                                    b2.ComplexProperty(typeof(Dictionary<string, object>), "UpperAccessLimitPerTimeDuration", "Database.Data.GeometricData.AccessPolicy#DataAccessPolicy.UserAccessPolicies#UserAccessPolicy.UpperAccessLimitPerTimeDuration#UpperLimitPerDuration", b3 =>
+                                        {
+                                            b3.Property<TimeSpan?>("Duration");
+
+                                            b3.Property<long>("UpperLimit");
+                                        });
+                                });
+
+                            b1
+                                .ToJson("AccessPolicy")
+                                .HasColumnType("jsonb");
+                        });
 
                     b.HasKey("Id");
 
@@ -327,62 +558,79 @@ namespace Database.Migrations
                         .IsRequired()
                         .HasColumnType("text[]");
 
+                    b.ComplexProperty(typeof(Dictionary<string, object>), "AccessPolicy", "Database.Data.HygrothermalData.AccessPolicy#DataAccessPolicy", b1 =>
+                        {
+                            b1.Property<LogicalCombinator>("Combinator");
+
+                            b1.ComplexCollection(typeof(List<Dictionary<string, object>>), "InstitutionAccessPolicies", "Database.Data.HygrothermalData.AccessPolicy#DataAccessPolicy.InstitutionAccessPolicies#InstitutionAccessPolicy", b2 =>
+                                {
+                                    b2.Property<Guid>("InstitutionId");
+
+                                    b2.ComplexProperty(typeof(Dictionary<string, object>), "AccessCountSinceStartTime", "Database.Data.HygrothermalData.AccessPolicy#DataAccessPolicy.InstitutionAccessPolicies#InstitutionAccessPolicy.AccessCountSinceStartTime#CountSinceTime", b3 =>
+                                        {
+                                            b3.Property<long>("AccessCount");
+
+                                            b3.Property<DateTimeOffset?>("StartTime");
+                                        });
+
+                                    b2.ComplexProperty(typeof(Dictionary<string, object>), "UpperAccessLimitPerTimeDuration", "Database.Data.HygrothermalData.AccessPolicy#DataAccessPolicy.InstitutionAccessPolicies#InstitutionAccessPolicy.UpperAccessLimitPerTimeDuration#UpperLimitPerDuration", b3 =>
+                                        {
+                                            b3.Property<TimeSpan?>("Duration");
+
+                                            b3.Property<long>("UpperLimit");
+                                        });
+                                });
+
+                            b1.ComplexCollection(typeof(List<Dictionary<string, object>>), "OpenIdConnectApplicationAccessPolicies", "Database.Data.HygrothermalData.AccessPolicy#DataAccessPolicy.OpenIdConnectApplicationAccessPolicies#OpenIdConnectApplicationAccessPolicy", b2 =>
+                                {
+                                    b2.Property<string>("ClientId")
+                                        .IsRequired();
+
+                                    b2.ComplexProperty(typeof(Dictionary<string, object>), "AccessCountSinceStartTime", "Database.Data.HygrothermalData.AccessPolicy#DataAccessPolicy.OpenIdConnectApplicationAccessPolicies#OpenIdConnectApplicationAccessPolicy.AccessCountSinceStartTime#CountSinceTime", b3 =>
+                                        {
+                                            b3.Property<long>("AccessCount");
+
+                                            b3.Property<DateTimeOffset?>("StartTime");
+                                        });
+
+                                    b2.ComplexProperty(typeof(Dictionary<string, object>), "UpperAccessLimitPerTimeDuration", "Database.Data.HygrothermalData.AccessPolicy#DataAccessPolicy.OpenIdConnectApplicationAccessPolicies#OpenIdConnectApplicationAccessPolicy.UpperAccessLimitPerTimeDuration#UpperLimitPerDuration", b3 =>
+                                        {
+                                            b3.Property<TimeSpan?>("Duration");
+
+                                            b3.Property<long>("UpperLimit");
+                                        });
+                                });
+
+                            b1.ComplexCollection(typeof(List<Dictionary<string, object>>), "UserAccessPolicies", "Database.Data.HygrothermalData.AccessPolicy#DataAccessPolicy.UserAccessPolicies#UserAccessPolicy", b2 =>
+                                {
+                                    b2.Property<Guid>("UserId");
+
+                                    b2.ComplexProperty(typeof(Dictionary<string, object>), "AccessCountSinceStartTime", "Database.Data.HygrothermalData.AccessPolicy#DataAccessPolicy.UserAccessPolicies#UserAccessPolicy.AccessCountSinceStartTime#CountSinceTime", b3 =>
+                                        {
+                                            b3.Property<long>("AccessCount");
+
+                                            b3.Property<DateTimeOffset?>("StartTime");
+                                        });
+
+                                    b2.ComplexProperty(typeof(Dictionary<string, object>), "UpperAccessLimitPerTimeDuration", "Database.Data.HygrothermalData.AccessPolicy#DataAccessPolicy.UserAccessPolicies#UserAccessPolicy.UpperAccessLimitPerTimeDuration#UpperLimitPerDuration", b3 =>
+                                        {
+                                            b3.Property<TimeSpan?>("Duration");
+
+                                            b3.Property<long>("UpperLimit");
+                                        });
+                                });
+
+                            b1
+                                .ToJson("AccessPolicy")
+                                .HasColumnType("jsonb");
+                        });
+
                     b.HasKey("Id");
 
                     b.HasIndex("CreatedAt", "Id")
                         .IsUnique();
 
                     b.ToTable("hygrothermal_data", "database");
-                });
-
-            modelBuilder.Entity("Database.Data.InstitutionAccessRights", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasDefaultValueSql("gen_random_uuid()");
-
-                    b.Property<long?>("AllowedDatasetsPerTime")
-                        .HasColumnType("bigint");
-
-                    b.Property<long?>("AllowedUserCount")
-                        .HasColumnType("bigint");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("now()");
-
-                    b.Property<Guid>("InstitutionId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Duration>("Period")
-                        .HasColumnType("interval");
-
-                    b.Property<DateTimeOffset>("UpdatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("now()");
-
-                    b.PrimitiveCollection<List<Guid>>("UserAlreadyAccessed")
-                        .IsRequired()
-                        .HasColumnType("uuid[]");
-
-                    b.Property<uint>("Version")
-                        .IsConcurrencyToken()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("xid")
-                        .HasColumnName("xmin");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("InstitutionId")
-                        .IsUnique();
-
-                    b.HasIndex("CreatedAt", "Id")
-                        .IsUnique();
-
-                    b.ToTable("institution_access_rights", "database");
                 });
 
             modelBuilder.Entity("Database.Data.LifeCycleData", b =>
@@ -433,6 +681,73 @@ namespace Database.Migrations
                     b.PrimitiveCollection<string[]>("Warnings")
                         .IsRequired()
                         .HasColumnType("text[]");
+
+                    b.ComplexProperty(typeof(Dictionary<string, object>), "AccessPolicy", "Database.Data.LifeCycleData.AccessPolicy#DataAccessPolicy", b1 =>
+                        {
+                            b1.Property<LogicalCombinator>("Combinator");
+
+                            b1.ComplexCollection(typeof(List<Dictionary<string, object>>), "InstitutionAccessPolicies", "Database.Data.LifeCycleData.AccessPolicy#DataAccessPolicy.InstitutionAccessPolicies#InstitutionAccessPolicy", b2 =>
+                                {
+                                    b2.Property<Guid>("InstitutionId");
+
+                                    b2.ComplexProperty(typeof(Dictionary<string, object>), "AccessCountSinceStartTime", "Database.Data.LifeCycleData.AccessPolicy#DataAccessPolicy.InstitutionAccessPolicies#InstitutionAccessPolicy.AccessCountSinceStartTime#CountSinceTime", b3 =>
+                                        {
+                                            b3.Property<long>("AccessCount");
+
+                                            b3.Property<DateTimeOffset?>("StartTime");
+                                        });
+
+                                    b2.ComplexProperty(typeof(Dictionary<string, object>), "UpperAccessLimitPerTimeDuration", "Database.Data.LifeCycleData.AccessPolicy#DataAccessPolicy.InstitutionAccessPolicies#InstitutionAccessPolicy.UpperAccessLimitPerTimeDuration#UpperLimitPerDuration", b3 =>
+                                        {
+                                            b3.Property<TimeSpan?>("Duration");
+
+                                            b3.Property<long>("UpperLimit");
+                                        });
+                                });
+
+                            b1.ComplexCollection(typeof(List<Dictionary<string, object>>), "OpenIdConnectApplicationAccessPolicies", "Database.Data.LifeCycleData.AccessPolicy#DataAccessPolicy.OpenIdConnectApplicationAccessPolicies#OpenIdConnectApplicationAccessPolicy", b2 =>
+                                {
+                                    b2.Property<string>("ClientId")
+                                        .IsRequired();
+
+                                    b2.ComplexProperty(typeof(Dictionary<string, object>), "AccessCountSinceStartTime", "Database.Data.LifeCycleData.AccessPolicy#DataAccessPolicy.OpenIdConnectApplicationAccessPolicies#OpenIdConnectApplicationAccessPolicy.AccessCountSinceStartTime#CountSinceTime", b3 =>
+                                        {
+                                            b3.Property<long>("AccessCount");
+
+                                            b3.Property<DateTimeOffset?>("StartTime");
+                                        });
+
+                                    b2.ComplexProperty(typeof(Dictionary<string, object>), "UpperAccessLimitPerTimeDuration", "Database.Data.LifeCycleData.AccessPolicy#DataAccessPolicy.OpenIdConnectApplicationAccessPolicies#OpenIdConnectApplicationAccessPolicy.UpperAccessLimitPerTimeDuration#UpperLimitPerDuration", b3 =>
+                                        {
+                                            b3.Property<TimeSpan?>("Duration");
+
+                                            b3.Property<long>("UpperLimit");
+                                        });
+                                });
+
+                            b1.ComplexCollection(typeof(List<Dictionary<string, object>>), "UserAccessPolicies", "Database.Data.LifeCycleData.AccessPolicy#DataAccessPolicy.UserAccessPolicies#UserAccessPolicy", b2 =>
+                                {
+                                    b2.Property<Guid>("UserId");
+
+                                    b2.ComplexProperty(typeof(Dictionary<string, object>), "AccessCountSinceStartTime", "Database.Data.LifeCycleData.AccessPolicy#DataAccessPolicy.UserAccessPolicies#UserAccessPolicy.AccessCountSinceStartTime#CountSinceTime", b3 =>
+                                        {
+                                            b3.Property<long>("AccessCount");
+
+                                            b3.Property<DateTimeOffset?>("StartTime");
+                                        });
+
+                                    b2.ComplexProperty(typeof(Dictionary<string, object>), "UpperAccessLimitPerTimeDuration", "Database.Data.LifeCycleData.AccessPolicy#DataAccessPolicy.UserAccessPolicies#UserAccessPolicy.UpperAccessLimitPerTimeDuration#UpperLimitPerDuration", b3 =>
+                                        {
+                                            b3.Property<TimeSpan?>("Duration");
+
+                                            b3.Property<long>("UpperLimit");
+                                        });
+                                });
+
+                            b1
+                                .ToJson("AccessPolicy")
+                                .HasColumnType("jsonb");
+                        });
 
                     b.HasKey("Id");
 
@@ -524,6 +839,73 @@ namespace Database.Migrations
                         .IsRequired()
                         .HasColumnType("text[]");
 
+                    b.ComplexProperty(typeof(Dictionary<string, object>), "AccessPolicy", "Database.Data.OpticalData.AccessPolicy#DataAccessPolicy", b1 =>
+                        {
+                            b1.Property<LogicalCombinator>("Combinator");
+
+                            b1.ComplexCollection(typeof(List<Dictionary<string, object>>), "InstitutionAccessPolicies", "Database.Data.OpticalData.AccessPolicy#DataAccessPolicy.InstitutionAccessPolicies#InstitutionAccessPolicy", b2 =>
+                                {
+                                    b2.Property<Guid>("InstitutionId");
+
+                                    b2.ComplexProperty(typeof(Dictionary<string, object>), "AccessCountSinceStartTime", "Database.Data.OpticalData.AccessPolicy#DataAccessPolicy.InstitutionAccessPolicies#InstitutionAccessPolicy.AccessCountSinceStartTime#CountSinceTime", b3 =>
+                                        {
+                                            b3.Property<long>("AccessCount");
+
+                                            b3.Property<DateTimeOffset?>("StartTime");
+                                        });
+
+                                    b2.ComplexProperty(typeof(Dictionary<string, object>), "UpperAccessLimitPerTimeDuration", "Database.Data.OpticalData.AccessPolicy#DataAccessPolicy.InstitutionAccessPolicies#InstitutionAccessPolicy.UpperAccessLimitPerTimeDuration#UpperLimitPerDuration", b3 =>
+                                        {
+                                            b3.Property<TimeSpan?>("Duration");
+
+                                            b3.Property<long>("UpperLimit");
+                                        });
+                                });
+
+                            b1.ComplexCollection(typeof(List<Dictionary<string, object>>), "OpenIdConnectApplicationAccessPolicies", "Database.Data.OpticalData.AccessPolicy#DataAccessPolicy.OpenIdConnectApplicationAccessPolicies#OpenIdConnectApplicationAccessPolicy", b2 =>
+                                {
+                                    b2.Property<string>("ClientId")
+                                        .IsRequired();
+
+                                    b2.ComplexProperty(typeof(Dictionary<string, object>), "AccessCountSinceStartTime", "Database.Data.OpticalData.AccessPolicy#DataAccessPolicy.OpenIdConnectApplicationAccessPolicies#OpenIdConnectApplicationAccessPolicy.AccessCountSinceStartTime#CountSinceTime", b3 =>
+                                        {
+                                            b3.Property<long>("AccessCount");
+
+                                            b3.Property<DateTimeOffset?>("StartTime");
+                                        });
+
+                                    b2.ComplexProperty(typeof(Dictionary<string, object>), "UpperAccessLimitPerTimeDuration", "Database.Data.OpticalData.AccessPolicy#DataAccessPolicy.OpenIdConnectApplicationAccessPolicies#OpenIdConnectApplicationAccessPolicy.UpperAccessLimitPerTimeDuration#UpperLimitPerDuration", b3 =>
+                                        {
+                                            b3.Property<TimeSpan?>("Duration");
+
+                                            b3.Property<long>("UpperLimit");
+                                        });
+                                });
+
+                            b1.ComplexCollection(typeof(List<Dictionary<string, object>>), "UserAccessPolicies", "Database.Data.OpticalData.AccessPolicy#DataAccessPolicy.UserAccessPolicies#UserAccessPolicy", b2 =>
+                                {
+                                    b2.Property<Guid>("UserId");
+
+                                    b2.ComplexProperty(typeof(Dictionary<string, object>), "AccessCountSinceStartTime", "Database.Data.OpticalData.AccessPolicy#DataAccessPolicy.UserAccessPolicies#UserAccessPolicy.AccessCountSinceStartTime#CountSinceTime", b3 =>
+                                        {
+                                            b3.Property<long>("AccessCount");
+
+                                            b3.Property<DateTimeOffset?>("StartTime");
+                                        });
+
+                                    b2.ComplexProperty(typeof(Dictionary<string, object>), "UpperAccessLimitPerTimeDuration", "Database.Data.OpticalData.AccessPolicy#DataAccessPolicy.UserAccessPolicies#UserAccessPolicy.UpperAccessLimitPerTimeDuration#UpperLimitPerDuration", b3 =>
+                                        {
+                                            b3.Property<TimeSpan?>("Duration");
+
+                                            b3.Property<long>("UpperLimit");
+                                        });
+                                });
+
+                            b1
+                                .ToJson("AccessPolicy")
+                                .HasColumnType("jsonb");
+                        });
+
                     b.HasKey("Id");
 
                     b.HasIndex("CreatedAt", "Id")
@@ -580,6 +962,73 @@ namespace Database.Migrations
                     b.PrimitiveCollection<string[]>("Warnings")
                         .IsRequired()
                         .HasColumnType("text[]");
+
+                    b.ComplexProperty(typeof(Dictionary<string, object>), "AccessPolicy", "Database.Data.PhotovoltaicData.AccessPolicy#DataAccessPolicy", b1 =>
+                        {
+                            b1.Property<LogicalCombinator>("Combinator");
+
+                            b1.ComplexCollection(typeof(List<Dictionary<string, object>>), "InstitutionAccessPolicies", "Database.Data.PhotovoltaicData.AccessPolicy#DataAccessPolicy.InstitutionAccessPolicies#InstitutionAccessPolicy", b2 =>
+                                {
+                                    b2.Property<Guid>("InstitutionId");
+
+                                    b2.ComplexProperty(typeof(Dictionary<string, object>), "AccessCountSinceStartTime", "Database.Data.PhotovoltaicData.AccessPolicy#DataAccessPolicy.InstitutionAccessPolicies#InstitutionAccessPolicy.AccessCountSinceStartTime#CountSinceTime", b3 =>
+                                        {
+                                            b3.Property<long>("AccessCount");
+
+                                            b3.Property<DateTimeOffset?>("StartTime");
+                                        });
+
+                                    b2.ComplexProperty(typeof(Dictionary<string, object>), "UpperAccessLimitPerTimeDuration", "Database.Data.PhotovoltaicData.AccessPolicy#DataAccessPolicy.InstitutionAccessPolicies#InstitutionAccessPolicy.UpperAccessLimitPerTimeDuration#UpperLimitPerDuration", b3 =>
+                                        {
+                                            b3.Property<TimeSpan?>("Duration");
+
+                                            b3.Property<long>("UpperLimit");
+                                        });
+                                });
+
+                            b1.ComplexCollection(typeof(List<Dictionary<string, object>>), "OpenIdConnectApplicationAccessPolicies", "Database.Data.PhotovoltaicData.AccessPolicy#DataAccessPolicy.OpenIdConnectApplicationAccessPolicies#OpenIdConnectApplicationAccessPolicy", b2 =>
+                                {
+                                    b2.Property<string>("ClientId")
+                                        .IsRequired();
+
+                                    b2.ComplexProperty(typeof(Dictionary<string, object>), "AccessCountSinceStartTime", "Database.Data.PhotovoltaicData.AccessPolicy#DataAccessPolicy.OpenIdConnectApplicationAccessPolicies#OpenIdConnectApplicationAccessPolicy.AccessCountSinceStartTime#CountSinceTime", b3 =>
+                                        {
+                                            b3.Property<long>("AccessCount");
+
+                                            b3.Property<DateTimeOffset?>("StartTime");
+                                        });
+
+                                    b2.ComplexProperty(typeof(Dictionary<string, object>), "UpperAccessLimitPerTimeDuration", "Database.Data.PhotovoltaicData.AccessPolicy#DataAccessPolicy.OpenIdConnectApplicationAccessPolicies#OpenIdConnectApplicationAccessPolicy.UpperAccessLimitPerTimeDuration#UpperLimitPerDuration", b3 =>
+                                        {
+                                            b3.Property<TimeSpan?>("Duration");
+
+                                            b3.Property<long>("UpperLimit");
+                                        });
+                                });
+
+                            b1.ComplexCollection(typeof(List<Dictionary<string, object>>), "UserAccessPolicies", "Database.Data.PhotovoltaicData.AccessPolicy#DataAccessPolicy.UserAccessPolicies#UserAccessPolicy", b2 =>
+                                {
+                                    b2.Property<Guid>("UserId");
+
+                                    b2.ComplexProperty(typeof(Dictionary<string, object>), "AccessCountSinceStartTime", "Database.Data.PhotovoltaicData.AccessPolicy#DataAccessPolicy.UserAccessPolicies#UserAccessPolicy.AccessCountSinceStartTime#CountSinceTime", b3 =>
+                                        {
+                                            b3.Property<long>("AccessCount");
+
+                                            b3.Property<DateTimeOffset?>("StartTime");
+                                        });
+
+                                    b2.ComplexProperty(typeof(Dictionary<string, object>), "UpperAccessLimitPerTimeDuration", "Database.Data.PhotovoltaicData.AccessPolicy#DataAccessPolicy.UserAccessPolicies#UserAccessPolicy.UpperAccessLimitPerTimeDuration#UpperLimitPerDuration", b3 =>
+                                        {
+                                            b3.Property<TimeSpan?>("Duration");
+
+                                            b3.Property<long>("UpperLimit");
+                                        });
+                                });
+
+                            b1
+                                .ToJson("AccessPolicy")
+                                .HasColumnType("jsonb");
+                        });
 
                     b.HasKey("Id");
 
@@ -1176,37 +1625,12 @@ namespace Database.Migrations
                                 .IsRequired();
                         });
 
-                    b.OwnsOne("Database.Data.DataAccessRights", "DataAccessRights", b1 =>
-                        {
-                            b1.Property<Guid>("CalorimetricDataId")
-                                .HasColumnType("uuid");
-
-                            b1.PrimitiveCollection<string[]>("AllowedApplications")
-                                .HasColumnType("text[]");
-
-                            b1.PrimitiveCollection<Guid[]>("AllowedInstitutions")
-                                .HasColumnType("uuid[]");
-
-                            b1.Property<string>("AllowedUserAndQuantity")
-                                .HasColumnType("jsonb");
-
-                            b1.HasKey("CalorimetricDataId");
-
-                            b1.ToTable("calorimetric_data", "database");
-
-                            b1.WithOwner()
-                                .HasForeignKey("CalorimetricDataId");
-                        });
-
                     b.Navigation("AppliedMethod")
                         .IsRequired();
 
                     b.Navigation("Approval");
 
                     b.Navigation("Approvals");
-
-                    b.Navigation("DataAccessRights")
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("Database.Data.GeometricData", b =>
@@ -1530,37 +1954,12 @@ namespace Database.Migrations
                                 .IsRequired();
                         });
 
-                    b.OwnsOne("Database.Data.DataAccessRights", "DataAccessRights", b1 =>
-                        {
-                            b1.Property<Guid>("GeometricDataId")
-                                .HasColumnType("uuid");
-
-                            b1.PrimitiveCollection<string[]>("AllowedApplications")
-                                .HasColumnType("text[]");
-
-                            b1.PrimitiveCollection<Guid[]>("AllowedInstitutions")
-                                .HasColumnType("uuid[]");
-
-                            b1.Property<string>("AllowedUserAndQuantity")
-                                .HasColumnType("jsonb");
-
-                            b1.HasKey("GeometricDataId");
-
-                            b1.ToTable("geometric_data", "database");
-
-                            b1.WithOwner()
-                                .HasForeignKey("GeometricDataId");
-                        });
-
                     b.Navigation("AppliedMethod")
                         .IsRequired();
 
                     b.Navigation("Approval");
 
                     b.Navigation("Approvals");
-
-                    b.Navigation("DataAccessRights")
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("Database.Data.GetHttpsResource", b =>
@@ -2013,37 +2412,12 @@ namespace Database.Migrations
                                 .IsRequired();
                         });
 
-                    b.OwnsOne("Database.Data.DataAccessRights", "DataAccessRights", b1 =>
-                        {
-                            b1.Property<Guid>("HygrothermalDataId")
-                                .HasColumnType("uuid");
-
-                            b1.PrimitiveCollection<string[]>("AllowedApplications")
-                                .HasColumnType("text[]");
-
-                            b1.PrimitiveCollection<Guid[]>("AllowedInstitutions")
-                                .HasColumnType("uuid[]");
-
-                            b1.Property<string>("AllowedUserAndQuantity")
-                                .HasColumnType("jsonb");
-
-                            b1.HasKey("HygrothermalDataId");
-
-                            b1.ToTable("hygrothermal_data", "database");
-
-                            b1.WithOwner()
-                                .HasForeignKey("HygrothermalDataId");
-                        });
-
                     b.Navigation("AppliedMethod")
                         .IsRequired();
 
                     b.Navigation("Approval");
 
                     b.Navigation("Approvals");
-
-                    b.Navigation("DataAccessRights")
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("Database.Data.LifeCycleData", b =>
@@ -2367,37 +2741,12 @@ namespace Database.Migrations
                                 .IsRequired();
                         });
 
-                    b.OwnsOne("Database.Data.DataAccessRights", "DataAccessRights", b1 =>
-                        {
-                            b1.Property<Guid>("LifeCycleDataId")
-                                .HasColumnType("uuid");
-
-                            b1.PrimitiveCollection<string[]>("AllowedApplications")
-                                .HasColumnType("text[]");
-
-                            b1.PrimitiveCollection<Guid[]>("AllowedInstitutions")
-                                .HasColumnType("uuid[]");
-
-                            b1.Property<string>("AllowedUserAndQuantity")
-                                .HasColumnType("jsonb");
-
-                            b1.HasKey("LifeCycleDataId");
-
-                            b1.ToTable("lifeCycle_data", "database");
-
-                            b1.WithOwner()
-                                .HasForeignKey("LifeCycleDataId");
-                        });
-
                     b.Navigation("AppliedMethod")
                         .IsRequired();
 
                     b.Navigation("Approval");
 
                     b.Navigation("Approvals");
-
-                    b.Navigation("DataAccessRights")
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("Database.Data.OpticalData", b =>
@@ -2758,28 +3107,6 @@ namespace Database.Migrations
                                 .IsRequired();
                         });
 
-                    b.OwnsOne("Database.Data.DataAccessRights", "DataAccessRights", b1 =>
-                        {
-                            b1.Property<Guid>("OpticalDataId")
-                                .HasColumnType("uuid");
-
-                            b1.PrimitiveCollection<string[]>("AllowedApplications")
-                                .HasColumnType("text[]");
-
-                            b1.PrimitiveCollection<Guid[]>("AllowedInstitutions")
-                                .HasColumnType("uuid[]");
-
-                            b1.Property<string>("AllowedUserAndQuantity")
-                                .HasColumnType("jsonb");
-
-                            b1.HasKey("OpticalDataId");
-
-                            b1.ToTable("optical_data", "database");
-
-                            b1.WithOwner()
-                                .HasForeignKey("OpticalDataId");
-                        });
-
                     b.Navigation("AppliedMethod")
                         .IsRequired();
 
@@ -2788,9 +3115,6 @@ namespace Database.Migrations
                     b.Navigation("Approvals");
 
                     b.Navigation("CielabColors");
-
-                    b.Navigation("DataAccessRights")
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("Database.Data.PhotovoltaicData", b =>
@@ -3114,37 +3438,12 @@ namespace Database.Migrations
                                 .IsRequired();
                         });
 
-                    b.OwnsOne("Database.Data.DataAccessRights", "DataAccessRights", b1 =>
-                        {
-                            b1.Property<Guid>("PhotovoltaicDataId")
-                                .HasColumnType("uuid");
-
-                            b1.PrimitiveCollection<string[]>("AllowedApplications")
-                                .HasColumnType("text[]");
-
-                            b1.PrimitiveCollection<Guid[]>("AllowedInstitutions")
-                                .HasColumnType("uuid[]");
-
-                            b1.Property<string>("AllowedUserAndQuantity")
-                                .HasColumnType("jsonb");
-
-                            b1.HasKey("PhotovoltaicDataId");
-
-                            b1.ToTable("photovoltaic_data", "database");
-
-                            b1.WithOwner()
-                                .HasForeignKey("PhotovoltaicDataId");
-                        });
-
                     b.Navigation("AppliedMethod")
                         .IsRequired();
 
                     b.Navigation("Approval");
 
                     b.Navigation("Approvals");
-
-                    b.Navigation("DataAccessRights")
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("OpenIddict.EntityFrameworkCore.Models.OpenIddictEntityFrameworkCoreAuthorization", b =>

@@ -147,7 +147,7 @@ public sealed class MethodQueries
         );
         if (response.Data?.Data is null)
         {
-            if (response.Errors?.Length >= 1)
+            if (response.Errors?.Length > 0)
             {
                 foreach (var error in response.Errors)
                 {

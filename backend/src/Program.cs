@@ -159,10 +159,10 @@ public sealed class Program
         IServiceProvider services
     )
     {
-        using var dbContext =
+        using var databaseContext =
             services.GetRequiredService<IDbContextFactory<ApplicationDbContext>>()
                 .CreateDbContext();
-        var pendingMigrations = dbContext.Database.GetPendingMigrations();
+        var pendingMigrations = databaseContext.Database.GetPendingMigrations();
         if (pendingMigrations.Any())
         {
             throw new InvalidOperationException($"The database is not up to date. The pending migrations are: {string.Join(", ", pendingMigrations)}. Apply them by running `./database.mk migrate`.");
@@ -175,10 +175,10 @@ public sealed class Program
     {
         try
         {
-            using var dbContext =
+            using var databaseContext =
                 services.GetRequiredService<IDbContextFactory<ApplicationDbContext>>()
                     .CreateDbContext();
-            await dbContext.Database.EnsureCreatedAsync();
+            await databaseContext.Database.EnsureCreatedAsync();
         }
         catch (Exception exception)
         {

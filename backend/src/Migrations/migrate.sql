@@ -2247,3 +2247,358 @@ BEGIN
 END $EF$;
 COMMIT;
 
+START TRANSACTION;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20260603191121_RevampAccessPolicies') THEN
+    DROP TABLE database.institution_access_rights;
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20260603191121_RevampAccessPolicies') THEN
+    ALTER TABLE database.photovoltaic_data DROP COLUMN "DataAccessRights_AllowedApplications";
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20260603191121_RevampAccessPolicies') THEN
+    ALTER TABLE database.photovoltaic_data DROP COLUMN "DataAccessRights_AllowedInstitutions";
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20260603191121_RevampAccessPolicies') THEN
+    ALTER TABLE database.optical_data DROP COLUMN "DataAccessRights_AllowedApplications";
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20260603191121_RevampAccessPolicies') THEN
+    ALTER TABLE database.optical_data DROP COLUMN "DataAccessRights_AllowedInstitutions";
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20260603191121_RevampAccessPolicies') THEN
+    ALTER TABLE database."lifeCycle_data" DROP COLUMN "DataAccessRights_AllowedApplications";
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20260603191121_RevampAccessPolicies') THEN
+    ALTER TABLE database."lifeCycle_data" DROP COLUMN "DataAccessRights_AllowedInstitutions";
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20260603191121_RevampAccessPolicies') THEN
+    ALTER TABLE database.hygrothermal_data DROP COLUMN "DataAccessRights_AllowedApplications";
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20260603191121_RevampAccessPolicies') THEN
+    ALTER TABLE database.hygrothermal_data DROP COLUMN "DataAccessRights_AllowedInstitutions";
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20260603191121_RevampAccessPolicies') THEN
+    ALTER TABLE database.geometric_data DROP COLUMN "DataAccessRights_AllowedApplications";
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20260603191121_RevampAccessPolicies') THEN
+    ALTER TABLE database.geometric_data DROP COLUMN "DataAccessRights_AllowedInstitutions";
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20260603191121_RevampAccessPolicies') THEN
+    ALTER TABLE database.calorimetric_data DROP COLUMN "DataAccessRights_AllowedApplications";
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20260603191121_RevampAccessPolicies') THEN
+    ALTER TABLE database.calorimetric_data DROP COLUMN "DataAccessRights_AllowedInstitutions";
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20260603191121_RevampAccessPolicies') THEN
+    ALTER TABLE database.photovoltaic_data DROP COLUMN "DataAccessRights_AllowedUserAndQuantity";
+    ALTER TABLE database.photovoltaic_data ADD COLUMN "AccessPolicy" jsonb;
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20260603191121_RevampAccessPolicies') THEN
+    ALTER TABLE database.optical_data DROP COLUMN "DataAccessRights_AllowedUserAndQuantity";
+    ALTER TABLE database.optical_data ADD COLUMN "AccessPolicy" jsonb;
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20260603191121_RevampAccessPolicies') THEN
+    ALTER TABLE database."lifeCycle_data" DROP COLUMN "DataAccessRights_AllowedUserAndQuantity";
+    ALTER TABLE database."lifeCycle_data" ADD COLUMN "AccessPolicy" jsonb;
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20260603191121_RevampAccessPolicies') THEN
+    ALTER TABLE database.hygrothermal_data DROP COLUMN "DataAccessRights_AllowedUserAndQuantity";
+    ALTER TABLE database.hygrothermal_data ADD COLUMN "AccessPolicy" jsonb;
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20260603191121_RevampAccessPolicies') THEN
+    ALTER TABLE database.geometric_data DROP COLUMN "DataAccessRights_AllowedUserAndQuantity";
+    ALTER TABLE database.geometric_data ADD COLUMN "AccessPolicy" jsonb;
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20260603191121_RevampAccessPolicies') THEN
+    ALTER TABLE database.calorimetric_data DROP COLUMN "DataAccessRights_AllowedUserAndQuantity";
+    ALTER TABLE database.calorimetric_data ADD COLUMN "AccessPolicy" jsonb;
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20260603191121_RevampAccessPolicies') THEN
+        IF NOT EXISTS(SELECT 1 FROM pg_namespace WHERE nspname = 'database') THEN
+            CREATE SCHEMA database;
+        END IF;
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20260603191121_RevampAccessPolicies') THEN
+    CREATE TYPE database.logical_combinator AS ENUM ('all', 'some');
+        IF NOT EXISTS(SELECT 1 FROM pg_namespace WHERE nspname = 'database') THEN
+            CREATE SCHEMA database;
+        END IF;
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20260603191121_RevampAccessPolicies') THEN
+    CREATE EXTENSION IF NOT EXISTS pgcrypto;
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20260603191121_RevampAccessPolicies') THEN
+    CREATE TABLE database.institution_access_policy (
+        "InstitutionId" uuid NOT NULL,
+        "AccessCountSinceStartTime" jsonb,
+        "UpperAccessLimitPerTimeDuration" jsonb,
+        CONSTRAINT "PK_institution_access_policy" PRIMARY KEY ("InstitutionId")
+    );
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20260603191121_RevampAccessPolicies') THEN
+    CREATE TABLE database.open_id_connect_application_access_policy (
+        "ClientId" text NOT NULL,
+        "AccessCountSinceStartTime" jsonb,
+        "UpperAccessLimitPerTimeDuration" jsonb,
+        CONSTRAINT "PK_open_id_connect_application_access_policy" PRIMARY KEY ("ClientId")
+    );
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20260603191121_RevampAccessPolicies') THEN
+    CREATE TABLE database.user_access_policy (
+        "UserId" uuid NOT NULL,
+        "AccessCountSinceStartTime" jsonb,
+        "UpperAccessLimitPerTimeDuration" jsonb,
+        CONSTRAINT "PK_user_access_policy" PRIMARY KEY ("UserId")
+    );
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20260603191121_RevampAccessPolicies') THEN
+    INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+    VALUES ('20260603191121_RevampAccessPolicies', '10.0.8');
+    END IF;
+END $EF$;
+COMMIT;
+
+START TRANSACTION;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20260603194435_FixCasingOfLifeCycleDataTableName') THEN
+    ALTER TABLE database.get_https_resource DROP CONSTRAINT "FK_get_https_resource_lifeCycle_data_LifeCycleDataId";
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20260603194435_FixCasingOfLifeCycleDataTableName') THEN
+    DROP TABLE database."lifeCycle_data_Approvals";
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20260603194435_FixCasingOfLifeCycleDataTableName') THEN
+    DROP TABLE database."lifeCycle_data_Arguments";
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20260603194435_FixCasingOfLifeCycleDataTableName') THEN
+    DROP TABLE database."lifeCycle_data_Sources";
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20260603194435_FixCasingOfLifeCycleDataTableName') THEN
+    ALTER TABLE database."lifeCycle_data" DROP CONSTRAINT "PK_lifeCycle_data";
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20260603194435_FixCasingOfLifeCycleDataTableName') THEN
+    ALTER TABLE database."lifeCycle_data" RENAME TO life_cycle_data;
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20260603194435_FixCasingOfLifeCycleDataTableName') THEN
+    ALTER INDEX database."IX_lifeCycle_data_CreatedAt_Id" RENAME TO "IX_life_cycle_data_CreatedAt_Id";
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20260603194435_FixCasingOfLifeCycleDataTableName') THEN
+    ALTER TABLE database.life_cycle_data ADD CONSTRAINT "PK_life_cycle_data" PRIMARY KEY ("Id");
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20260603194435_FixCasingOfLifeCycleDataTableName') THEN
+    CREATE TABLE database."life_cycle_data_Approvals" (
+        "LifeCycleDataId" uuid NOT NULL,
+        "Id" integer GENERATED BY DEFAULT AS IDENTITY,
+        "ApproverId" uuid NOT NULL,
+        "Timestamp" timestamp with time zone NOT NULL,
+        "Signature" text NOT NULL,
+        "KeyFingerprint" text NOT NULL,
+        "Query" text NOT NULL,
+        "Variables" jsonb NOT NULL DEFAULT ('{}'),
+        "Message" text NOT NULL,
+        "Statement_Standard_Year" integer,
+        "Statement_Standard_Numeration_Prefix" text,
+        "Statement_Standard_Numeration_MainNumber" text,
+        "Statement_Standard_Numeration_Suffix" text,
+        "Statement_Standard_Standardizers" database.standardizer[],
+        "Statement_Standard_Locator" text,
+        "Statement_Standard_Title" text,
+        "Statement_Standard_Abstract" text,
+        "Statement_Standard_Section" text,
+        "Statement_Publication_Authors" text[],
+        "Statement_Publication_Doi" text,
+        "Statement_Publication_ArXiv" text,
+        "Statement_Publication_Urn" text,
+        "Statement_Publication_WebAddress" text,
+        "Statement_Publication_Title" text,
+        "Statement_Publication_Abstract" text,
+        "Statement_Publication_Section" text,
+        "Statement_Publication_Exists" boolean,
+        "Statement_Exists" boolean NOT NULL,
+        CONSTRAINT "PK_life_cycle_data_Approvals" PRIMARY KEY ("LifeCycleDataId", "Id"),
+        CONSTRAINT "FK_life_cycle_data_Approvals_life_cycle_data_LifeCycleDataId" FOREIGN KEY ("LifeCycleDataId") REFERENCES database.life_cycle_data ("Id") ON DELETE CASCADE
+    );
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20260603194435_FixCasingOfLifeCycleDataTableName') THEN
+    CREATE TABLE database."life_cycle_data_Arguments" (
+        "AppliedMethodLifeCycleDataId" uuid NOT NULL,
+        "Id" integer GENERATED BY DEFAULT AS IDENTITY,
+        "Name" text NOT NULL,
+        "Value" jsonb NOT NULL,
+        CONSTRAINT "PK_life_cycle_data_Arguments" PRIMARY KEY ("AppliedMethodLifeCycleDataId", "Id"),
+        CONSTRAINT "FK_life_cycle_data_Arguments_life_cycle_data_AppliedMethodLife~" FOREIGN KEY ("AppliedMethodLifeCycleDataId") REFERENCES database.life_cycle_data ("Id") ON DELETE CASCADE
+    );
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20260603194435_FixCasingOfLifeCycleDataTableName') THEN
+    CREATE TABLE database."life_cycle_data_Sources" (
+        "AppliedMethodLifeCycleDataId" uuid NOT NULL,
+        "Id" integer GENERATED BY DEFAULT AS IDENTITY,
+        "Name" text NOT NULL,
+        "Value_DataId" uuid NOT NULL,
+        "Value_DataTimestamp" timestamp with time zone NOT NULL,
+        "Value_DataKind" database.data_kind NOT NULL,
+        "Value_DatabaseId" uuid NOT NULL,
+        CONSTRAINT "PK_life_cycle_data_Sources" PRIMARY KEY ("AppliedMethodLifeCycleDataId", "Id"),
+        CONSTRAINT "FK_life_cycle_data_Sources_life_cycle_data_AppliedMethodLifeCy~" FOREIGN KEY ("AppliedMethodLifeCycleDataId") REFERENCES database.life_cycle_data ("Id") ON DELETE CASCADE
+    );
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20260603194435_FixCasingOfLifeCycleDataTableName') THEN
+    ALTER TABLE database.get_https_resource ADD CONSTRAINT "FK_get_https_resource_life_cycle_data_LifeCycleDataId" FOREIGN KEY ("LifeCycleDataId") REFERENCES database.life_cycle_data ("Id") ON DELETE CASCADE;
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20260603194435_FixCasingOfLifeCycleDataTableName') THEN
+    INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+    VALUES ('20260603194435_FixCasingOfLifeCycleDataTableName', '10.0.8');
+    END IF;
+END $EF$;
+COMMIT;
+

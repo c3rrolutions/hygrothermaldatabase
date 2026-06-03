@@ -145,7 +145,7 @@ where TError : class
             errors.AddRange(validateRootResourceErrors);
         }
         // Note that `dataFormat` is only `null`, when `validateRootResourceResult` failed.
-        if (errors.Count >= 1 || dataFormat is null)
+        if (errors.Count > 0 || dataFormat is null)
         {
             return new Result<DataFormat, TPayload>.Error(
                 NewPayload(null, errors)

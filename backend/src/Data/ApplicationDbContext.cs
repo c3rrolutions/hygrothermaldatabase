@@ -12,10 +12,10 @@ using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using SchemaNameOptionsExtension = Database.Data.Extensions.SchemaNameOptionsExtension;
 using NodaTime;
-using System.Text.Json;
 using Database.GraphQl;
+using Database.Data.Extensions;
+using Database.Data.AccessPolicies;
 
 namespace Database.Data;
 
@@ -33,6 +33,7 @@ public sealed class ApplicationDbContext
     internal const string CoatedSideTypeName = "coated_side";
     internal const string DataKindTypeName = "data_kind";
     internal const string IlluminantTypeName = "illuminant";
+    internal const string LogicalCombinatorTypeName = "logical_combinator";
     internal const string OpticalComponentSubtypeTypeName = "optical_component_subtype";
     internal const string OpticalComponentTypeTypeName = "optical_component_type";
     internal const string PublishingStateTypeName = "publishing_state";
@@ -55,7 +56,9 @@ public sealed class ApplicationDbContext
     public DbSet<GetHttpsResource> GetHttpsResources { get; private set; } = default!;
     public DbSet<User> Users { get; private set; } = default!;
     public DbSet<DataProtectionKey> DataProtectionKeys { get; private set; } = default!;
-    public DbSet<InstitutionAccessRights> InstitutionAccessRights { get; private set; } = default!;
+    public DbSet<UserAccessPolicy> UserAccessPolicies { get; private set; } = default!;
+    public DbSet<InstitutionAccessPolicy> InstitutionAccessPolicies { get; private set; } = default!;
+    public DbSet<OpenIdConnectApplicationAccessPolicy> OpenIdConnectApplicationAccessPolicies { get; private set; } = default!;
 
     public IQueryable<GetHttpsResource> GetHttpsResourcesWithData =>
         GetHttpsResources.AsQueryable()
@@ -184,14 +187,15 @@ public sealed class ApplicationDbContext
 
     public Task<IData?> GetDataAsync(Guid id, DataKind dataKind, CancellationToken cancellationToken)
     {
-        return Data(dataKind).SingleOrDefaultAsync(x => x.Id == id, cancellationToken);
+        return Data(dataKind).SingleOrDefaultAsync(_ => _.Id == id, cancellationToken);
     }
 
     public IAsyncEnumerable<IData> GetAllDataAsync(
-        Expression<Func<IData, bool>> where,
-        QueryContext<IData> queryContext
+        Expression<Func<IData, bool>>? where = null,
+        QueryContext<IData>? queryContext = null
     )
     {
+        where ??= _ => true;
         return (
             CalorimetricData.AsQueryable<IData>()
             .Where(where)
@@ -258,18 +262,27 @@ public sealed class ApplicationDbContext
         where TData : class, IData
     {
         builder
-            .OwnsOne(
-                data => data.DataAccessRights,
-                dataAccessRights =>
-                {
-                    dataAccessRights
-                        .Property(_ => _.AllowedUserAndQuantity)
-                        .HasConversion(
-                            dictionary => JsonSerializer.Serialize(dictionary),
-                            stringValue => JsonSerializer.Deserialize<Dictionary<Guid, uint?>>(stringValue) ?? new()
-                        );
-                }
+            .ComplexProperty(
+                data => data.AccessPolicy,
+                _ => _.ToJson()
             );
+        // .OwnsOne(
+        //     dataAccessPolicy =>
+        //     {
+        //         dataAccessPolicy
+        //             // The issues
+        //             // https://github.com/dotnet/efcore/issues/33170#issuecomment-1966366300
+        //             // https://github.com/dotnet/efcore/issues/31238
+        //             // track the missing support of complex properties in owned types,
+        //             // which would be used as below:
+        //             // .ComplexProperty(_ => _.GrantedUserAndQuantity, d => d.ToJson())
+        //             .Property(_ => _.GrantedUserAndQuantity)
+        //             .HasConversion(
+        //                 dictionary => JsonSerializer.Serialize(dictionary),
+        //                 stringValue => JsonSerializer.Deserialize<Dictionary<Guid, uint?>>(stringValue) ?? new()
+        //             );
+        //     }
+        // );
         builder
             .OwnsOne(
                 data => data.AppliedMethod,
@@ -281,7 +294,7 @@ public sealed class ApplicationDbContext
             );
         builder
             .OwnsOne(
-                x => x.Approval,
+                _ => _.Approval,
                 approval =>
                 {
                     approval
@@ -291,7 +304,7 @@ public sealed class ApplicationDbContext
             );
         builder
             .OwnsMany(
-                x => x.Approvals,
+                _ => _.Approvals,
                 approvals =>
                 {
                     approvals
@@ -490,11 +503,16 @@ public sealed class ApplicationDbContext
         return builder;
     }
 
-    private static void ConfigureIdentityEntities(
-        ModelBuilder builder
-    )
+    private static
+        EntityTypeBuilder<TAccessPolicy>
+        ConfigureAccessPolicy<TAccessPolicy>(
+            EntityTypeBuilder<TAccessPolicy> builder
+        )
+        where TAccessPolicy : AccessPolicyBase
     {
-        // https://stackoverflow.com/questions/19902756/asp-net-identity-dbcontext-confusion/35722688#35722688
+        builder.ComplexProperty(_ => _.UpperAccessLimitPerTimeDuration, _ => _.ToJson());
+        builder.ComplexProperty(_ => _.AccessCountSinceStartTime, _ => _.ToJson());
+        return builder;
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -502,7 +520,6 @@ public sealed class ApplicationDbContext
         base.OnModelCreating(modelBuilder);
         modelBuilder.HasDefaultSchema(_schemaName);
         modelBuilder.HasPostgresExtension("pgcrypto"); // https://www.npgsql.org/efcore/modeling/generated-properties.html#guiduuid-generation
-        ConfigureIdentityEntities(modelBuilder);
         ConfigureEntity(
             ConfigureGetHttpsResource(modelBuilder.Entity<GetHttpsResource>())
         )
@@ -530,23 +547,23 @@ public sealed class ApplicationDbContext
         ConfigureCalorimetricData(
             ConfigureData(
                 ConfigureEntity(modelBuilder.Entity<CalorimetricData>())
-            ).ToTable("calorimetric_data")
-        );
+            )
+        ).ToTable("calorimetric_data");
         ConfigureGeometricData(
             ConfigureData(
                 ConfigureEntity(modelBuilder.Entity<GeometricData>())
-            ).ToTable("geometric_data")
-        );
+            )
+        ).ToTable("geometric_data");
         ConfigureHygrothermalData(
             ConfigureData(
                 ConfigureEntity(modelBuilder.Entity<HygrothermalData>())
-            ).ToTable("hygrothermal_data")
-        );
+            )
+        ).ToTable("hygrothermal_data");
         ConfigureLifeCycleData(
             ConfigureData(
                 ConfigureEntity(modelBuilder.Entity<LifeCycleData>())
-            ).ToTable("lifeCycle_data")
-        );
+            )
+        ).ToTable("lifeCycle_data");
         ConfigureOpticalData(
             ConfigureData(
                 ConfigureEntity(modelBuilder.Entity<OpticalData>())
@@ -555,16 +572,21 @@ public sealed class ApplicationDbContext
         ConfigurePhotovoltaicData(
             ConfigureData(
                 ConfigureEntity(modelBuilder.Entity<PhotovoltaicData>())
-            ).ToTable("photovoltaic_data")
-        );
-        ConfigureEntity(
-                modelBuilder.Entity<User>()
             )
-            .ToTable("user");
+        ).ToTable("photovoltaic_data");
+        ConfigureAccessPolicy(
+            modelBuilder.Entity<UserAccessPolicy>()
+        ).ToTable("user_access_policy");
+        ConfigureAccessPolicy(
+            modelBuilder.Entity<InstitutionAccessPolicy>()
+        ).ToTable("institution_access_policy");
+        ConfigureAccessPolicy(
+            modelBuilder.Entity<OpenIdConnectApplicationAccessPolicy>()
+        ).ToTable("open_id_connect_application_access_policy");
         ConfigureEntity(
-                modelBuilder.Entity<InstitutionAccessRights>()
-            )
-            .ToTable("institution_access_rights");
+            modelBuilder.Entity<User>()
+        )
+        .ToTable("user");
         foreach (var entityType in modelBuilder.Model.GetEntityTypes())
         {
             if (typeof(IEntity).IsAssignableFrom(entityType.ClrType))

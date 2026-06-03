@@ -28,57 +28,57 @@ public sealed class GetHttpsResourceType
             .Field(_ => _.FileExtension)
             .Ignore();
         descriptor
-            .Field(x => x.ParentId)
+            .Field(_ => _.ParentId)
             .Ignore();
         descriptor
-            .Field(x => x.Parent)
+            .Field(_ => _.Parent)
             .Cost(0)
             .ResolveWith<GetHttpsResourceResolvers>(t => t.GetParent(default!, default!, default!));
         descriptor
-            .Field(x => x.Children)
+            .Field(_ => _.Children)
             .Cost(0)
             .ResolveWith<GetHttpsResourceResolvers>(t => t.GetChildren(default!, default!, default!));
         descriptor
-            .Field(x => x.DataId)
+            .Field(_ => _.DataId)
             .Ignore();
         descriptor
-            .Field(x => x.CalorimetricDataId)
+            .Field(_ => _.CalorimetricDataId)
             .Ignore();
         descriptor
-            .Field(x => x.CalorimetricData)
+            .Field(_ => _.CalorimetricData)
             .Ignore();
         descriptor
-            .Field(x => x.GeometricDataId)
+            .Field(_ => _.GeometricDataId)
             .Ignore();
         descriptor
-            .Field(x => x.GeometricData)
+            .Field(_ => _.GeometricData)
             .Ignore();
         descriptor
-            .Field(x => x.HygrothermalDataId)
+            .Field(_ => _.HygrothermalDataId)
             .Ignore();
         descriptor
-            .Field(x => x.HygrothermalData)
+            .Field(_ => _.HygrothermalData)
             .Ignore();
         descriptor
-            .Field(x => x.LifeCycleDataId)
+            .Field(_ => _.LifeCycleDataId)
             .Ignore();
         descriptor
-            .Field(x => x.LifeCycleData)
+            .Field(_ => _.LifeCycleData)
             .Ignore();
         descriptor
-            .Field(x => x.OpticalDataId)
+            .Field(_ => _.OpticalDataId)
             .Ignore();
         descriptor
-            .Field(x => x.OpticalData)
+            .Field(_ => _.OpticalData)
             .Ignore();
         descriptor
-            .Field(x => x.PhotovoltaicDataId)
+            .Field(_ => _.PhotovoltaicDataId)
             .Ignore();
         descriptor
-            .Field(x => x.PhotovoltaicData)
+            .Field(_ => _.PhotovoltaicData)
             .Ignore();
         descriptor
-            .Field(x => x.Data)
+            .Field(_ => _.Data)
             .Cost(0)
             .ResolveWith<GetHttpsResourceResolvers>(t =>
                 t.GetData(default!, default!, default!, default!, default!, default!, default!, default!));

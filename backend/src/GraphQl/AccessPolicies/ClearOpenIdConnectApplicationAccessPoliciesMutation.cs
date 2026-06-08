@@ -11,12 +11,18 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Database.GraphQl.AccessPolicies;
 
+public sealed record ClearOpenIdConnectApplicationAccessPoliciesInput
+(
+    DataReferenceInput? Data
+);
+
 [SuppressMessage("Naming", "CA1707")]
 public enum ClearOpenIdConnectApplicationAccessPoliciesErrorCode
 {
     UNKNOWN,
     UNAUTHENTICATED,
-    UNAUTHORIZED
+    UNAUTHORIZED,
+    UNKNOWN_DATA
 }
 
 public sealed record ClearOpenIdConnectApplicationAccessPoliciesError(
@@ -27,16 +33,16 @@ public sealed record ClearOpenIdConnectApplicationAccessPoliciesError(
 : UserErrorBase<ClearOpenIdConnectApplicationAccessPoliciesErrorCode>(Code, Message, Path);
 
 public sealed record ClearOpenIdConnectApplicationAccessPoliciesPayload(
-   IReadOnlyCollection<OpenIdConnectApplicationAccessPolicy>? OpenIdConnectApplicationAccessPolicies,
+   DataAccessPolicy? DataAccessPolicy,
    IReadOnlyCollection<ClearOpenIdConnectApplicationAccessPoliciesError>? Errors
 ) : Payload;
 
 [ExtendObjectType(nameof(Mutation))]
 public sealed class ClearOpenIdConnectApplicationAccessPoliciesMutation
-: MutationBase<IReadOnlyCollection<OpenIdConnectApplicationAccessPolicy>, ClearOpenIdConnectApplicationAccessPoliciesPayload, ClearOpenIdConnectApplicationAccessPoliciesError, ClearOpenIdConnectApplicationAccessPoliciesErrorCode>
+: DataMutationBase<DataAccessPolicy, ClearOpenIdConnectApplicationAccessPoliciesPayload, ClearOpenIdConnectApplicationAccessPoliciesError, ClearOpenIdConnectApplicationAccessPoliciesErrorCode>
 {
     protected override ClearOpenIdConnectApplicationAccessPoliciesPayload NewPayload(
-        IReadOnlyCollection<OpenIdConnectApplicationAccessPolicy>? data,
+        DataAccessPolicy? data,
         IReadOnlyCollection<ClearOpenIdConnectApplicationAccessPoliciesError>? errors
     ) => new(data, errors);
 
@@ -47,6 +53,7 @@ public sealed class ClearOpenIdConnectApplicationAccessPoliciesMutation
     ) => new(code, message, path);
 
     public async Task<ClearOpenIdConnectApplicationAccessPoliciesPayload> ClearOpenIdConnectApplicationAccessPoliciesAsync(
+        ClearOpenIdConnectApplicationAccessPoliciesInput input,
         ApplicationDbContext context,
         CommonAuthorization authorization,
         CancellationToken cancellationToken
@@ -63,9 +70,29 @@ public sealed class ClearOpenIdConnectApplicationAccessPoliciesMutation
         {
             return authorizeErrorPayload;
         }
-        var accessPolicies = await context.OpenIdConnectApplicationAccessPolicies.ToListAsync(cancellationToken);
-        context.OpenIdConnectApplicationAccessPolicies.RemoveRange(accessPolicies);
+
+        if (input.Data is not null)
+        {
+            if ((await FetchDataAsync(
+                    input.Data,
+                    ClearOpenIdConnectApplicationAccessPoliciesErrorCode.UNKNOWN_DATA,
+                    context,
+                    cancellationToken
+                )
+                ).Failed(out var _, out var fetchDataErrorPayload)
+            )
+            {
+                return fetchDataErrorPayload;
+            }
+        }
+
+        var dataAccessPolicy = await context.DataAccessPolicies
+            .SingleAsync(
+                _ => _.DataId == (input.Data == null ? null : input.Data.DataId),
+                cancellationToken
+            );
+        dataAccessPolicy.OpenIdConnectApplicationAccessPolicies.Clear();
         await context.SaveChangesAsync(cancellationToken);
-        return NewPayload(accessPolicies, null);
+        return NewPayload(dataAccessPolicy, null);
     }
 }

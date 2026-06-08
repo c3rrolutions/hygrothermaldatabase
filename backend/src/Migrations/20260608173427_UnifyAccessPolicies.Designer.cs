@@ -5,6 +5,7 @@ using Database.Data;
 using Database.Enumerations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NodaTime;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
@@ -14,9 +15,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Database.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260608173427_UnifyAccessPolicies")]
+    partial class UnifyAccessPolicies
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -116,25 +119,14 @@ namespace Database.Migrations
 
                     b.ToTable("data_access_policy", "database", t =>
                         {
-                            t.HasTrigger("LC_TRIGGER_data_access_policy_can_only_be_deleted_after_data");
-
                             t.HasTrigger("LC_TRIGGER_data_access_policy_data_id_cannot_change");
 
-                            t.HasTrigger("LC_TRIGGER_data_access_policy_global_policy_cannot_be_deleted");
-
-                            t.HasTrigger("data_access_policy_can_only_be_deleted_after_data");
-
                             t.HasTrigger("data_access_policy_data_id_cannot_change");
-
-                            t.HasTrigger("data_access_policy_global_policy_cannot_be_deleted");
 
                             t.HasCheckConstraint("CK_DataAccessPolicy_At_Most_One_Data_Set", "NUM_NONNULLS(\"CalorimetricDataId\", \"GeometricDataId\", \"HygrothermalDataId\", \"LifeCycleDataId\", \"OpticalDataId\", \"PhotovoltaicDataId\") <= 1");
                         });
 
-                    b
-                        .HasAnnotation("LC_TRIGGER_data_access_policy_can_only_be_deleted_after_data", "CREATE FUNCTION \"database\".\"LC_TRIGGER_data_access_policy_can_only_be_deleted_after_data\"() RETURNS trigger as $LC_TRIGGER_data_access_policy_can_only_be_deleted_after_data$\r\nBEGIN\r\n  IF (\n    (OLD.\"CalorimetricDataId\" IS NOT NULL AND EXISTS (\n    SELECT 1 FROM database.\"calorimetric_data\" \n    WHERE \"Id\" = OLD.\"CalorimetricDataId\"\n)) OR (OLD.\"GeometricDataId\" IS NOT NULL AND EXISTS (\n    SELECT 1 FROM database.\"geometric_data\" \n    WHERE \"Id\" = OLD.\"GeometricDataId\"\n)) OR (OLD.\"HygrothermalDataId\" IS NOT NULL AND EXISTS (\n    SELECT 1 FROM database.\"hygrothermal_data\" \n    WHERE \"Id\" = OLD.\"HygrothermalDataId\"\n)) OR (OLD.\"LifeCycleDataId\" IS NOT NULL AND EXISTS (\n    SELECT 1 FROM database.\"lifeCycle_data\" \n    WHERE \"Id\" = OLD.\"LifeCycleDataId\"\n)) OR (OLD.\"OpticalDataId\" IS NOT NULL AND EXISTS (\n    SELECT 1 FROM database.\"optical_data\" \n    WHERE \"Id\" = OLD.\"OpticalDataId\"\n)) OR (OLD.\"PhotovoltaicDataId\" IS NOT NULL AND EXISTS (\n    SELECT 1 FROM database.\"photovoltaic_data\" \n    WHERE \"Id\" = OLD.\"PhotovoltaicDataId\"\n))\n) THEN\n    RAISE EXCEPTION 'You cannot delete a data access policy without also deleting the corresponding data.';\nEND IF;\r\nRETURN OLD;\r\nEND;\r\n$LC_TRIGGER_data_access_policy_can_only_be_deleted_after_data$ LANGUAGE plpgsql;\r\nCREATE TRIGGER LC_TRIGGER_data_access_policy_can_only_be_deleted_after_data BEFORE DELETE\r\nON \"database\".\"data_access_policy\"\r\nFOR EACH ROW EXECUTE PROCEDURE \"database\".\"LC_TRIGGER_data_access_policy_can_only_be_deleted_after_data\"();")
-                        .HasAnnotation("LC_TRIGGER_data_access_policy_data_id_cannot_change", "CREATE FUNCTION \"database\".\"LC_TRIGGER_data_access_policy_data_id_cannot_change\"() RETURNS trigger as $LC_TRIGGER_data_access_policy_data_id_cannot_change$\r\nBEGIN\r\n  IF COALESCE(OLD.\"CalorimetricDataId\", OLD.\"GeometricDataId\", OLD.\"HygrothermalDataId\", OLD.\"LifeCycleDataId\", OLD.\"OpticalDataId\", OLD.\"PhotovoltaicDataId\") <> COALESCE(NEW.\"CalorimetricDataId\", NEW.\"GeometricDataId\", NEW.\"HygrothermalDataId\", NEW.\"LifeCycleDataId\", NEW.\"OpticalDataId\", NEW.\"PhotovoltaicDataId\")\nTHEN\n    RAISE EXCEPTION 'You cannot change the data ID of a data access policy.';\nEND IF;\r\nRETURN NEW;\r\nEND;\r\n$LC_TRIGGER_data_access_policy_data_id_cannot_change$ LANGUAGE plpgsql;\r\nCREATE TRIGGER LC_TRIGGER_data_access_policy_data_id_cannot_change BEFORE UPDATE\r\nON \"database\".\"data_access_policy\"\r\nFOR EACH ROW EXECUTE PROCEDURE \"database\".\"LC_TRIGGER_data_access_policy_data_id_cannot_change\"();")
-                        .HasAnnotation("LC_TRIGGER_data_access_policy_global_policy_cannot_be_deleted", "CREATE FUNCTION \"database\".\"LC_TRIGGER_data_access_policy_global_policy_cannot_be_deleted\"() RETURNS trigger as $LC_TRIGGER_data_access_policy_global_policy_cannot_be_deleted$\r\nBEGIN\r\n  IF OLD.\"CalorimetricDataId\" IS NULL AND OLD.\"GeometricDataId\" IS NULL AND OLD.\"HygrothermalDataId\" IS NULL AND OLD.\"LifeCycleDataId\" IS NULL AND OLD.\"OpticalDataId\" IS NULL AND OLD.\"PhotovoltaicDataId\" IS NULL\nTHEN\n    RAISE EXCEPTION 'You cannot delete the global data access policy.';\nEND IF;\r\nRETURN OLD;\r\nEND;\r\n$LC_TRIGGER_data_access_policy_global_policy_cannot_be_deleted$ LANGUAGE plpgsql;\r\nCREATE TRIGGER LC_TRIGGER_data_access_policy_global_policy_cannot_be_deleted BEFORE DELETE\r\nON \"database\".\"data_access_policy\"\r\nFOR EACH ROW EXECUTE PROCEDURE \"database\".\"LC_TRIGGER_data_access_policy_global_policy_cannot_be_deleted\"();");
+                    b.HasAnnotation("LC_TRIGGER_data_access_policy_data_id_cannot_change", "CREATE FUNCTION \"database\".\"LC_TRIGGER_data_access_policy_data_id_cannot_change\"() RETURNS trigger as $LC_TRIGGER_data_access_policy_data_id_cannot_change$\r\nBEGIN\r\n  IF COALESCE(OLD.\"CalorimetricDataId\", OLD.\"GeometricDataId\", OLD.\"HygrothermalDataId\", OLD.\"LifeCycleDataId\", OLD.\"OpticalDataId\", OLD.\"PhotovoltaicDataId\") <> COALESCE(NEW.\"CalorimetricDataId\", NEW.\"GeometricDataId\", NEW.\"HygrothermalDataId\", NEW.\"LifeCycleDataId\", NEW.\"OpticalDataId\", NEW.\"PhotovoltaicDataId\")\nTHEN\n    RAISE EXCEPTION 'You cannot change the data ID of a data access policy.';\nEND IF;\r\nRETURN NEW;\r\nEND;\r\n$LC_TRIGGER_data_access_policy_data_id_cannot_change$ LANGUAGE plpgsql;\r\nCREATE TRIGGER LC_TRIGGER_data_access_policy_data_id_cannot_change BEFORE UPDATE\r\nON \"database\".\"data_access_policy\"\r\nFOR EACH ROW EXECUTE PROCEDURE \"database\".\"LC_TRIGGER_data_access_policy_data_id_cannot_change\"();");
                 });
 
             modelBuilder.Entity("Database.Data.AccessPolicies.InstitutionAccessPolicy", b =>

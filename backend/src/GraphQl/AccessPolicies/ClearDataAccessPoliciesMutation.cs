@@ -7,11 +7,12 @@ using Database.Data;
 using Database.Data.AccessPolicies;
 using Database.Extensions;
 using HotChocolate.Types;
+using Microsoft.EntityFrameworkCore;
 
 namespace Database.GraphQl.AccessPolicy;
 
 [SuppressMessage("Naming", "CA1707")]
-public enum ClearDataAccessPolicyErrorCode
+public enum ClearDataAccessPoliciesErrorCode
 {
     UNKNOWN,
     UNAUTHENTICATED,
@@ -19,42 +20,42 @@ public enum ClearDataAccessPolicyErrorCode
     UNKNOWN_DATA
 }
 
-public sealed record ClearDataAccessPolicyError(
-    ClearDataAccessPolicyErrorCode Code,
+public sealed record ClearDataAccessPoliciesError(
+    ClearDataAccessPoliciesErrorCode Code,
     string Message,
     IReadOnlyList<string> Path
 )
-: UserErrorBase<ClearDataAccessPolicyErrorCode>(Code, Message, Path);
+: UserErrorBase<ClearDataAccessPoliciesErrorCode>(Code, Message, Path);
 
-public sealed record ClearDataAccessPolicyPayload(
+public sealed record ClearDataAccessPoliciesPayload(
    IReadOnlyCollection<DataAccessPolicy>? DataAccessPolicy,
-   IReadOnlyCollection<ClearDataAccessPolicyError>? Errors
+   IReadOnlyCollection<ClearDataAccessPoliciesError>? Errors
 ) : Payload;
 
 [ExtendObjectType(nameof(Mutation))]
-public sealed class ClearDataAccessPolicyMutation
-: MutationBase<IReadOnlyCollection<DataAccessPolicy>, ClearDataAccessPolicyPayload, ClearDataAccessPolicyError, ClearDataAccessPolicyErrorCode>
+public sealed class ClearDataAccessPoliciesMutation
+: MutationBase<IReadOnlyCollection<DataAccessPolicy>, ClearDataAccessPoliciesPayload, ClearDataAccessPoliciesError, ClearDataAccessPoliciesErrorCode>
 {
-    protected override ClearDataAccessPolicyPayload NewPayload(
+    protected override ClearDataAccessPoliciesPayload NewPayload(
         IReadOnlyCollection<DataAccessPolicy>? data,
-        IReadOnlyCollection<ClearDataAccessPolicyError>? errors
+        IReadOnlyCollection<ClearDataAccessPoliciesError>? errors
     ) => new(data, errors);
 
-    protected override ClearDataAccessPolicyError NewError(
-        ClearDataAccessPolicyErrorCode code,
+    protected override ClearDataAccessPoliciesError NewError(
+        ClearDataAccessPoliciesErrorCode code,
         string message,
         IReadOnlyList<string> path
     ) => new(code, message, path);
 
-    public async Task<ClearDataAccessPolicyPayload> ClearDataAccessPolicyAsync(
+    public async Task<ClearDataAccessPoliciesPayload> ClearDataAccessPoliciesAsync(
         ApplicationDbContext context,
         CommonAuthorization authorization,
         CancellationToken cancellationToken
     )
     {
         if ((await AuthorizeAsync(
-                ClearDataAccessPolicyErrorCode.UNAUTHENTICATED,
-                ClearDataAccessPolicyErrorCode.UNAUTHORIZED,
+                ClearDataAccessPoliciesErrorCode.UNAUTHENTICATED,
+                ClearDataAccessPoliciesErrorCode.UNAUTHORIZED,
                 authorization,
                 cancellationToken
             )
@@ -63,16 +64,9 @@ public sealed class ClearDataAccessPolicyMutation
         {
             return authorizeErrorPayload;
         }
-        var accessPolicies = new List<DataAccessPolicy>();
-        await foreach (var data in context.GetAllDataAsync())
-        {
-            if (data.AccessPolicy is not null)
-            {
-                accessPolicies.Add(data.AccessPolicy);
-                data.AccessPolicy = null;
-            }
-        }
+        var policies = await context.DataAccessPolicies.ToListAsync(cancellationToken);
+        context.DataAccessPolicies.RemoveRange(policies);
         await context.SaveChangesAsync(cancellationToken);
-        return NewPayload(accessPolicies, null);
+        return NewPayload(policies, null);
     }
 }

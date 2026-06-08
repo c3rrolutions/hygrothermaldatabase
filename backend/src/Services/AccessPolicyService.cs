@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using NodaTime;
 using Database.Data;
-using Database.Enumerations;
 using Database.ApiRequests;
 
 namespace Database.Services;
@@ -35,7 +34,7 @@ public sealed class AccessPolicyService(
         {
             institutionIds = [currentInstitution.Uuid];
         }
-        var filteredData = FilterData(data, openIdConnectClientId, currentUser, institutionIds, databaseContext);
+        var filteredData = FilterData(data, currentUser, institutionIds, openIdConnectClientId, databaseContext);
         var (postProcessedData, result) = await then(filteredData);
         await IncrementAccessCounts(
             postProcessedData,
@@ -50,102 +49,26 @@ public sealed class AccessPolicyService(
 
     private static IQueryable<TData> FilterData<TData>(
         IQueryable<TData> data,
-        string? openIdConnectClientId,
         QueryCurrentUserOrInstitution.CurrentUser? currentUser,
         IReadOnlyList<Guid>? institutionIds,
+        string? openIdConnectClientId,
         ApplicationDbContext databaseContext
     )
         where TData : class, IData
     {
         return data.Where(_ =>
-            _.AccessPolicy == null || !_.AccessPolicy.IsRestricted || (
-                _.AccessPolicy.Combinator == LogicalCombinator.ALL && (
-                    (!_.AccessPolicy.AreUsersRestricted || (
-                        currentUser != null
-                        && _.AccessPolicy.UserAccessPolicies != null
-                        && _.AccessPolicy.UserAccessPolicies
-                            .Where(_ => _.UserId == currentUser.Uuid)
-                            .Any(_ => _.IsAllowed)
-                        )
-                    )
-                    &&
-                    (!_.AccessPolicy.AreInstitutionsRestricted || (
-                        institutionIds != null
-                        && _.AccessPolicy.InstitutionAccessPolicies != null
-                        && _.AccessPolicy.InstitutionAccessPolicies
-                            .Where(_ => institutionIds.Contains(_.InstitutionId))
-                            .Any(_ => _.IsAllowed)
-                        )
-                    )
-                    &&
-                    (!_.AccessPolicy.AreOpenIdConnectApplicationsRestricted || (
-                        openIdConnectClientId != null
-                        && _.AccessPolicy.OpenIdConnectApplicationAccessPolicies != null
-                        && _.AccessPolicy.OpenIdConnectApplicationAccessPolicies
-                            .Where(_ => _.ClientId == openIdConnectClientId)
-                            .Any(_ => _.IsAllowed)
-                        )
-                    )
-                )
-                ||
-                _.AccessPolicy.Combinator == LogicalCombinator.SOME && (
-                    (!_.AccessPolicy.AreUsersRestricted || (
-                        currentUser != null
-                        && _.AccessPolicy.UserAccessPolicies != null
-                        && _.AccessPolicy.UserAccessPolicies
-                            .Where(_ => _.UserId == currentUser.Uuid)
-                            .Any(_ => _.IsAllowed)
-                        )
-                    )
-                    ||
-                    (!_.AccessPolicy.AreInstitutionsRestricted || (
-                        institutionIds != null
-                        && _.AccessPolicy.InstitutionAccessPolicies != null
-                        && _.AccessPolicy.InstitutionAccessPolicies
-                            .Where(_ => institutionIds.Contains(_.InstitutionId))
-                            .Any(_ => _.IsAllowed)
-                        )
-                    )
-                    ||
-                    (!_.AccessPolicy.AreOpenIdConnectApplicationsRestricted || (
-                        openIdConnectClientId != null
-                        && _.AccessPolicy.OpenIdConnectApplicationAccessPolicies != null
-                        && _.AccessPolicy.OpenIdConnectApplicationAccessPolicies
-                            .Where(_ => _.ClientId == openIdConnectClientId)
-                            .Any(_ => _.IsAllowed)
-                        )
-                    )
-                )
+            (
+                _.AccessPolicy == null
+                || _.AccessPolicy.IsAccessAllowed(currentUser, institutionIds, openIdConnectClientId)
             )
             &&
             (
-                !databaseContext.UserAccessPolicies.AsQueryable().Any() || (
-                    currentUser != null
-                    && databaseContext.UserAccessPolicies.AsQueryable()
-                        .Where(_ => _.UserId == currentUser.Uuid)
-                        .Any(_ => _.IsAllowed)
-                )
-            )
-            &&
-            (
-                !databaseContext.InstitutionAccessPolicies.AsQueryable().Any() || (
-                    institutionIds != null
-                    && databaseContext.InstitutionAccessPolicies.AsQueryable()
-                        .Where(_ => institutionIds.Contains(_.InstitutionId))
-                        .Any(_ => _.IsAllowed)
-                )
-            )
-            &&
-            (
-                !databaseContext.OpenIdConnectApplicationAccessPolicies.AsQueryable().Any() || (
-                    openIdConnectClientId != null
-                    && databaseContext.OpenIdConnectApplicationAccessPolicies.AsQueryable()
-                        .Where(_ => _.ClientId == openIdConnectClientId)
-                        .Any(_ => _.IsAllowed)
+                !databaseContext.DataAccessPolicies.Any(_ =>
+                    _.DataId == null
+                    && !_.IsAccessAllowed(currentUser, institutionIds, openIdConnectClientId)
                 )
             )
         );
-
     }
 
     private async Task IncrementAccessCounts<TData>(
@@ -158,59 +81,39 @@ public sealed class AccessPolicyService(
     )
         where TData : class, IData
     {
-        foreach (var data in allData)
+        if (currentUser is null && institutionIds is null && openIdConnectClientId is null)
         {
-            databaseContext.Attach(data);
-            if (currentUser is not null)
-            {
-                foreach (var userAccessPolicy in
-                    data.AccessPolicy?.UserAccessPolicies
-                        ?.Where(_ => _.UserId == currentUser.Uuid)
-                        ?? []
-                )
-                {
-                    userAccessPolicy?.IncrementAccessCount(clock);
-                }
-            }
-            if (institutionIds is not null)
-            {
-                foreach (var institutionAccessPolicy in
-                    data.AccessPolicy?.InstitutionAccessPolicies
-                        ?.Where(_ => institutionIds.Contains(_.InstitutionId))
-                        ?? []
-                )
-                {
-                    institutionAccessPolicy?.IncrementAccessCount(clock);
-                }
-            }
-            if (openIdConnectClientId is not null)
-            {
-                foreach (var applicationAccessPolicy in
-                    data.AccessPolicy?.OpenIdConnectApplicationAccessPolicies
-                        ?.Where(_ => _.ClientId == openIdConnectClientId)
-                        ?? []
-                )
-                {
-                    applicationAccessPolicy?.IncrementAccessCount(clock);
-                }
-            }
+            return;
         }
+        var allDataIds = allData.Select(_ => _.Id).ToArray();
         if (currentUser is not null)
         {
             foreach (var userAccessPolicy in
-                await databaseContext.UserAccessPolicies.AsQueryable()
-                    .Where(_ => _.UserId == currentUser.Uuid)
+                await databaseContext.UserAccessPolicies
+                    .Where(_ =>
+                        _.DataAccessPolicy != null && (
+                            _.DataAccessPolicy.DataId == null
+                            || allDataIds.Contains(_.DataAccessPolicy.DataId ?? Guid.Empty)
+                        )
+                        && _.UserId == currentUser.Uuid
+                    )
                     .ToListAsync(cancellationToken)
             )
             {
-                userAccessPolicy?.IncrementAccessCount(clock);
+                userAccessPolicy.IncrementAccessCount(clock);
             }
         }
         if (institutionIds is not null)
         {
             foreach (var institutionAccessPolicy in
-                await databaseContext.InstitutionAccessPolicies.AsQueryable()
-                    .Where(_ => institutionIds.Contains(_.InstitutionId))
+                await databaseContext.InstitutionAccessPolicies
+                    .Where(_ =>
+                        _.DataAccessPolicy != null && (
+                            _.DataAccessPolicy.DataId == null
+                            || allDataIds.Contains(_.DataAccessPolicy.DataId ?? Guid.Empty)
+                        )
+                        && institutionIds.Contains(_.InstitutionId)
+                    )
                     .ToListAsync(cancellationToken)
             )
             {
@@ -220,12 +123,18 @@ public sealed class AccessPolicyService(
         if (openIdConnectClientId is not null)
         {
             foreach (var applicationAccessPolicy in
-                await databaseContext.OpenIdConnectApplicationAccessPolicies.AsQueryable()
-                    .Where(_ => _.ClientId == openIdConnectClientId)
+                await databaseContext.OpenIdConnectApplicationAccessPolicies
+                    .Where(_ =>
+                        _.DataAccessPolicy != null && (
+                            _.DataAccessPolicy.DataId == null
+                            || allDataIds.Contains(_.DataAccessPolicy.DataId ?? Guid.Empty)
+                        )
+                        && _.ClientId == openIdConnectClientId
+                    )
                     .ToListAsync(cancellationToken)
             )
             {
-                applicationAccessPolicy?.IncrementAccessCount(clock);
+                applicationAccessPolicy.IncrementAccessCount(clock);
             }
         }
         await databaseContext.SaveChangesAsync(cancellationToken);

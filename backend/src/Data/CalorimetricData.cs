@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Threading.Tasks;
+using Database.Data.AccessPolicies;
 using Database.Extractors;
 
 namespace Database.Data;
@@ -9,6 +10,8 @@ namespace Database.Data;
 public sealed class CalorimetricData
     : DataX
 {
+    public const string TableName = "calorimetric_data";
+
     public CalorimetricData(
         Guid? userId,
         string locale,
@@ -66,6 +69,9 @@ public sealed class CalorimetricData
 
     [InverseProperty(nameof(GetHttpsResource.CalorimetricData))]
     public override ICollection<GetHttpsResource> Resources { get; } = [];
+
+    [InverseProperty(nameof(DataAccessPolicy.CalorimetricData))]
+    public override DataAccessPolicy? AccessPolicy { get; set; }
 
     public double[] GValues { get; private set; }
     public double[] UValues { get; private set; }

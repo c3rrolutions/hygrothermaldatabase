@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Database.ApiRequests;
 using Database.Authorization;
 using Database.Data;
+using Database.Data.AccessPolicies;
 using Database.Extensions;
 using Database.GraphQl.DataX;
 using Database.GraphQl.Scalars;
@@ -51,6 +52,7 @@ public sealed record CreateGeometricDataInput(
             Thicknesses
         );
         data.Resources.Add(RootResource.ToDomainModel(fileExtension));
+        data.AccessPolicy = new DataAccessPolicy();
         return data;
     }
 };

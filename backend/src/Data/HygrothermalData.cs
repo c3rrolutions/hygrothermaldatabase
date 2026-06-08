@@ -2,12 +2,15 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Threading.Tasks;
+using Database.Data.AccessPolicies;
 
 namespace Database.Data;
 
 public sealed class HygrothermalData
     : DataX
 {
+    public const string TableName = "hygrothermal_data";
+
     public HygrothermalData(
         Guid? userId,
         string locale,
@@ -57,6 +60,9 @@ public sealed class HygrothermalData
 
     [InverseProperty(nameof(GetHttpsResource.HygrothermalData))]
     public override ICollection<GetHttpsResource> Resources { get; } = [];
+
+    [InverseProperty(nameof(DataAccessPolicy.HygrothermalData))]
+    public override DataAccessPolicy? AccessPolicy { get; set; }
 
     public override Task ExtractAndSetValuesFromFile(
         string filePath,

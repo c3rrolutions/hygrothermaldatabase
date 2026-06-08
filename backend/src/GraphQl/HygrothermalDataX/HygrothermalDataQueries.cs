@@ -18,8 +18,6 @@ public sealed class HygrothermalDataQueries
 : DataQueriesBase<HygrothermalData>
 {
     [UsePaging]
-    // [UseProjection] // We disabled projections because when requesting `id` all results had the
-    // same `id` and when also requesting `uuid`, the latter was always the empty UUID `000...`.
     [UseFiltering<HygrothermalDataFilterType>]
     [UseSorting<HygrothermalDataSortType>]
     public Task<HotChocolate.Types.Pagination.Connection<HygrothermalData>> GetAllHygrothermalDataAsync(
@@ -41,8 +39,6 @@ public sealed class HygrothermalDataQueries
     }
 
     [UsePaging]
-    // [UseProjection] // We disabled projections because when requesting `id` all results had the
-    // same `id` and when also requesting `uuid`, the latter was always the empty UUID `000...`.
     [UseFiltering<HygrothermalDataFilterType>]
     [UseSorting<HygrothermalDataSortType>]
     public Task<HotChocolate.Types.Pagination.Connection<HygrothermalData>> GetAllPendingHygrothermalDataAsync(

@@ -5,12 +5,16 @@ using System.Threading.Tasks;
 using Database.Enumerations;
 using Database.Enumerations.DataPoints;
 using Database.Extractors;
+using Database.Data.AccessPolicies;
 
 namespace Database.Data;
 
 public sealed class OpticalData
     : DataX
 {
+    public const string TableName = "optical_data";
+
+
     public OpticalData(
         Guid? userId,
         string locale,
@@ -98,6 +102,9 @@ public sealed class OpticalData
 
     [InverseProperty(nameof(GetHttpsResource.OpticalData))]
     public override ICollection<GetHttpsResource> Resources { get; } = [];
+
+    [InverseProperty(nameof(DataAccessPolicy.OpticalData))]
+    public override DataAccessPolicy? AccessPolicy { get; set; }
 
     public OpticalComponentType? Type { get; private set; }
     public OpticalComponentSubtype? Subtype { get; private set; }

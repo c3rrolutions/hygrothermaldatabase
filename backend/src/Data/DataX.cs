@@ -101,7 +101,7 @@ public abstract class DataX : AuditableEntity, IData
     // strictly enforced by PostgreSQL database constraints.
     public abstract ICollection<GetHttpsResource> Resources { get; }
 
-    public DataAccessPolicy? AccessPolicy { get; set; }
+    public abstract DataAccessPolicy? AccessPolicy { get; set; }
 
     public PublishingState PublishingState { get; private set; } = PublishingState.PENDING;
 

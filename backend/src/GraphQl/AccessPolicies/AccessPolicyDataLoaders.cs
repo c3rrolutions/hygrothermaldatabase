@@ -15,53 +15,73 @@ public sealed class InstitutionAccessPolicyLoaders
 : DataLoaders
 {
     [DataLoader]
-    public static async ValueTask<IReadOnlyDictionary<Guid, UserAccessPolicy>> GetUserAccessPolicyByUserIdAsync(
-        IReadOnlyList<Guid> userIds,
+    public static async ValueTask<IReadOnlyDictionary<Guid, DataAccessPolicy>> GetDataAccessPolicyByDataIdAsync(
+        IReadOnlyList<Guid> dataIds,
+        QueryContext<DataAccessPolicy> queryContext,
+        IDbContextFactory<ApplicationDbContext> databaseContextFactory,
+        CancellationToken cancellationToken
+    )
+    {
+        await using var databaseContext =
+            databaseContextFactory.CreateDbContext();
+        return await databaseContext.DataAccessPolicies
+            .AsNoTrackingWithIdentityResolution()
+            .Where(_ => dataIds.Contains(_.DataId ?? Guid.Empty))
+            .With(queryContext, Sorting.DefaultEntityOrder)
+            .ToDictionaryAsync(_ => _.DataId ?? Guid.Empty, cancellationToken);
+    }
+
+    [DataLoader]
+    public static ValueTask<IReadOnlyDictionary<Guid, UserAccessPolicy[]>> GetUserAccessPoliciesByDataAccessPolicyIdAsync(
+        IReadOnlyList<Guid> ids,
         QueryContext<UserAccessPolicy> queryContext,
         IDbContextFactory<ApplicationDbContext> databaseContextFactory,
         CancellationToken cancellationToken
     )
     {
-        await using var databaseContext =
-            databaseContextFactory.CreateDbContext();
-        return await databaseContext.UserAccessPolicies
-            .AsNoTrackingWithIdentityResolution()
-            .Where(_ => userIds.Contains(_.UserId))
-            .With(queryContext, _ => _.AddDescending(_ => _.UserId))
-            .ToDictionaryAsync(_ => _.UserId, cancellationToken);
+        return GetManyByOneIdAsync(
+            ids,
+            (databaseContext) => databaseContext.UserAccessPolicies,
+            _ => _.DataAccessPolicyId,
+            queryContext,
+            databaseContextFactory,
+            cancellationToken
+        );
     }
 
     [DataLoader]
-    public static async ValueTask<IReadOnlyDictionary<Guid, InstitutionAccessPolicy>> GetInstitutionAccessPolicyByInstitutionIdAsync(
-        IReadOnlyList<Guid> institutionIds,
+    public static ValueTask<IReadOnlyDictionary<Guid, InstitutionAccessPolicy[]>> GetInstitutionAccessPoliciesByDataAccessPolicyIdAsync(
+        IReadOnlyList<Guid> ids,
         QueryContext<InstitutionAccessPolicy> queryContext,
         IDbContextFactory<ApplicationDbContext> databaseContextFactory,
         CancellationToken cancellationToken
     )
     {
-        await using var databaseContext =
-            databaseContextFactory.CreateDbContext();
-        return await databaseContext.InstitutionAccessPolicies
-            .AsNoTrackingWithIdentityResolution()
-            .Where(_ => institutionIds.Contains(_.InstitutionId))
-            .With(queryContext, _ => _.AddDescending(_ => _.InstitutionId))
-            .ToDictionaryAsync(_ => _.InstitutionId, cancellationToken);
+        return GetManyByOneIdAsync(
+            ids,
+            (databaseContext) => databaseContext.InstitutionAccessPolicies,
+            _ => _.DataAccessPolicyId,
+            queryContext,
+            databaseContextFactory,
+            cancellationToken
+        );
     }
 
     [DataLoader]
-    public static async ValueTask<IReadOnlyDictionary<string, OpenIdConnectApplicationAccessPolicy>> GetOpenIdConnectApplicationAccessPolicyByClientIdAsync(
-        IReadOnlyList<string> clientIds,
+    public static ValueTask<IReadOnlyDictionary<Guid, OpenIdConnectApplicationAccessPolicy[]>> GetOpenIdConnectApplicationAccessPoliciesByDataAccessPolicyIdAsync(
+        IReadOnlyList<Guid> ids,
         QueryContext<OpenIdConnectApplicationAccessPolicy> queryContext,
         IDbContextFactory<ApplicationDbContext> databaseContextFactory,
         CancellationToken cancellationToken
     )
     {
-        await using var databaseContext =
-            databaseContextFactory.CreateDbContext();
-        return await databaseContext.OpenIdConnectApplicationAccessPolicies
-            .AsNoTrackingWithIdentityResolution()
-            .Where(_ => clientIds.Contains(_.ClientId ?? ""))
-            .With(queryContext, _ => _.AddDescending(_ => _.ClientId))
-            .ToDictionaryAsync(_ => _.ClientId ?? "", cancellationToken);
+        return GetManyByOneIdAsync(
+            ids,
+            (databaseContext) => databaseContext.OpenIdConnectApplicationAccessPolicies,
+            _ => _.DataAccessPolicyId,
+            queryContext,
+            databaseContextFactory,
+            cancellationToken
+        );
     }
 }

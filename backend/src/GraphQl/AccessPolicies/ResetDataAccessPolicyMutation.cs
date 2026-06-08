@@ -6,18 +6,19 @@ using Database.Authorization;
 using Database.Data;
 using Database.Data.AccessPolicies;
 using Database.Extensions;
+using GraphQL.Client.Abstractions.Utilities;
 using HotChocolate.Types;
 using Microsoft.EntityFrameworkCore;
 
 namespace Database.GraphQl.AccessPolicies;
 
-public sealed record ClearInstitutionAccessPoliciesInput
+public sealed record ResetDataAccessPolicyInput
 (
     DataReferenceInput? Data
 );
 
 [SuppressMessage("Naming", "CA1707")]
-public enum ClearInstitutionAccessPoliciesErrorCode
+public enum ResetDataAccessPolicyErrorCode
 {
     UNKNOWN,
     UNAUTHENTICATED,
@@ -25,43 +26,43 @@ public enum ClearInstitutionAccessPoliciesErrorCode
     UNKNOWN_DATA
 }
 
-public sealed record ClearInstitutionAccessPoliciesError(
-    ClearInstitutionAccessPoliciesErrorCode Code,
+public sealed record ResetDataAccessPolicyError(
+    ResetDataAccessPolicyErrorCode Code,
     string Message,
     IReadOnlyList<string> Path
 )
-: UserErrorBase<ClearInstitutionAccessPoliciesErrorCode>(Code, Message, Path);
+: UserErrorBase<ResetDataAccessPolicyErrorCode>(Code, Message, Path);
 
-public sealed record ClearInstitutionAccessPoliciesPayload(
+public sealed record ResetDataAccessPolicyPayload(
    DataAccessPolicy? DataAccessPolicy,
-   IReadOnlyCollection<ClearInstitutionAccessPoliciesError>? Errors
+   IReadOnlyCollection<ResetDataAccessPolicyError>? Errors
 ) : Payload;
 
 [ExtendObjectType(nameof(Mutation))]
-public sealed class ClearInstitutionAccessPoliciesMutation
-: DataMutationBase<DataAccessPolicy, ClearInstitutionAccessPoliciesPayload, ClearInstitutionAccessPoliciesError, ClearInstitutionAccessPoliciesErrorCode>
+public sealed class ResetDataAccessPolicyMutation
+: DataMutationBase<DataAccessPolicy, ResetDataAccessPolicyPayload, ResetDataAccessPolicyError, ResetDataAccessPolicyErrorCode>
 {
-    protected override ClearInstitutionAccessPoliciesPayload NewPayload(
+    protected override ResetDataAccessPolicyPayload NewPayload(
         DataAccessPolicy? data,
-        IReadOnlyCollection<ClearInstitutionAccessPoliciesError>? errors
+        IReadOnlyCollection<ResetDataAccessPolicyError>? errors
     ) => new(data, errors);
 
-    protected override ClearInstitutionAccessPoliciesError NewError(
-        ClearInstitutionAccessPoliciesErrorCode code,
+    protected override ResetDataAccessPolicyError NewError(
+        ResetDataAccessPolicyErrorCode code,
         string message,
         IReadOnlyList<string> path
     ) => new(code, message, path);
 
-    public async Task<ClearInstitutionAccessPoliciesPayload> ClearInstitutionAccessPoliciesAsync(
-        ClearInstitutionAccessPoliciesInput input,
+    public async Task<ResetDataAccessPolicyPayload> ResetDataAccessPolicyAsync(
+        ResetDataAccessPolicyInput input,
         ApplicationDbContext context,
         CommonAuthorization authorization,
         CancellationToken cancellationToken
     )
     {
         if ((await AuthorizeAsync(
-                ClearInstitutionAccessPoliciesErrorCode.UNAUTHENTICATED,
-                ClearInstitutionAccessPoliciesErrorCode.UNAUTHORIZED,
+                ResetDataAccessPolicyErrorCode.UNAUTHENTICATED,
+                ResetDataAccessPolicyErrorCode.UNAUTHORIZED,
                 authorization,
                 cancellationToken
             )
@@ -75,11 +76,11 @@ public sealed class ClearInstitutionAccessPoliciesMutation
         {
             if ((await FetchDataAsync(
                     input.Data,
-                    ClearInstitutionAccessPoliciesErrorCode.UNKNOWN_DATA,
+                    ResetDataAccessPolicyErrorCode.UNKNOWN_DATA,
                     context,
                     cancellationToken
                 )
-                ).Failed(out var _, out var fetchDataErrorPayload)
+                ).Failed(out var data, out var fetchDataErrorPayload)
             )
             {
                 return fetchDataErrorPayload;
@@ -91,7 +92,7 @@ public sealed class ClearInstitutionAccessPoliciesMutation
                 _ => _.DataId == (input.Data == null ? null : input.Data.DataId),
                 cancellationToken
             );
-        dataAccessPolicy.InstitutionAccessPolicies.Clear();
+        dataAccessPolicy.Reset();
         await context.SaveChangesAsync(cancellationToken);
         return NewPayload(dataAccessPolicy, null);
     }

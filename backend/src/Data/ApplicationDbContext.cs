@@ -16,6 +16,7 @@ using NodaTime;
 using Database.GraphQl;
 using Database.Data.Extensions;
 using Database.Data.AccessPolicies;
+using Npgsql.EntityFrameworkCore.PostgreSQL.ValueGeneration;
 
 namespace Database.Data;
 
@@ -56,6 +57,7 @@ public sealed class ApplicationDbContext
     public DbSet<GetHttpsResource> GetHttpsResources { get; private set; } = default!;
     public DbSet<User> Users { get; private set; } = default!;
     public DbSet<DataProtectionKey> DataProtectionKeys { get; private set; } = default!;
+    public DbSet<DataAccessPolicy> DataAccessPolicies { get; private set; } = default!;
     public DbSet<UserAccessPolicy> UserAccessPolicies { get; private set; } = default!;
     public DbSet<InstitutionAccessPolicy> InstitutionAccessPolicies { get; private set; } = default!;
     public DbSet<OpenIdConnectApplicationAccessPolicy> OpenIdConnectApplicationAccessPolicies { get; private set; } = default!;
@@ -235,54 +237,12 @@ public sealed class ApplicationDbContext
     }
 
     private static
-        EntityTypeBuilder<TEntity>
-        ConfigureEntity<TEntity>(
-            EntityTypeBuilder<TEntity> builder
-        )
-        where TEntity : Entity
-    {
-        // https://www.npgsql.org/efcore/modeling/generated-properties.html#guiduuid-generation
-        builder
-            .HasKey(e => e.Id);
-        builder
-            .Property(e => e.Id)
-            .HasDefaultValueSql("gen_random_uuid()");
-        // https://www.npgsql.org/efcore/modeling/concurrency.html#the-postgresql-xmin-system-column
-        builder
-            .Property(e => e.Version)
-            .IsRowVersion();
-        return builder;
-    }
-
-    private static
         EntityTypeBuilder<TData>
         ConfigureData<TData>(
             EntityTypeBuilder<TData> builder
         )
         where TData : class, IData
     {
-        builder
-            .ComplexProperty(
-                data => data.AccessPolicy,
-                _ => _.ToJson()
-            );
-        // .OwnsOne(
-        //     dataAccessPolicy =>
-        //     {
-        //         dataAccessPolicy
-        //             // The issues
-        //             // https://github.com/dotnet/efcore/issues/33170#issuecomment-1966366300
-        //             // https://github.com/dotnet/efcore/issues/31238
-        //             // track the missing support of complex properties in owned types,
-        //             // which would be used as below:
-        //             // .ComplexProperty(_ => _.GrantedUserAndQuantity, d => d.ToJson())
-        //             .Property(_ => _.GrantedUserAndQuantity)
-        //             .HasConversion(
-        //                 dictionary => JsonSerializer.Serialize(dictionary),
-        //                 stringValue => JsonSerializer.Deserialize<Dictionary<Guid, uint?>>(stringValue) ?? new()
-        //             );
-        //     }
-        // );
         builder
             .OwnsOne(
                 data => data.AppliedMethod,
@@ -419,6 +379,11 @@ public sealed class ApplicationDbContext
             .WithOne(_ => _.CalorimetricData)
             .HasForeignKey(_ => _.CalorimetricDataId)
             .OnDelete(DeleteBehavior.Cascade);
+        builder
+            .HasOne(_ => _.AccessPolicy)
+            .WithOne(_ => _.CalorimetricData)
+            .HasForeignKey<DataAccessPolicy>(_ => _.CalorimetricDataId)
+            .OnDelete(DeleteBehavior.Cascade);
         return builder;
     }
 
@@ -432,6 +397,11 @@ public sealed class ApplicationDbContext
             .HasMany(_ => _.Resources)
             .WithOne(_ => _.GeometricData)
             .HasForeignKey(_ => _.GeometricDataId)
+            .OnDelete(DeleteBehavior.Cascade);
+        builder
+            .HasOne(_ => _.AccessPolicy)
+            .WithOne(_ => _.GeometricData)
+            .HasForeignKey<DataAccessPolicy>(_ => _.GeometricDataId)
             .OnDelete(DeleteBehavior.Cascade);
         return builder;
     }
@@ -447,6 +417,11 @@ public sealed class ApplicationDbContext
             .WithOne(_ => _.HygrothermalData)
             .HasForeignKey(_ => _.HygrothermalDataId)
             .OnDelete(DeleteBehavior.Cascade);
+        builder
+            .HasOne(_ => _.AccessPolicy)
+            .WithOne(_ => _.HygrothermalData)
+            .HasForeignKey<DataAccessPolicy>(_ => _.HygrothermalDataId)
+            .OnDelete(DeleteBehavior.Cascade);
         return builder;
     }
 
@@ -461,6 +436,11 @@ public sealed class ApplicationDbContext
             .WithOne(_ => _.LifeCycleData)
             .HasForeignKey(_ => _.LifeCycleDataId)
             .OnDelete(DeleteBehavior.Cascade);
+        builder
+            .HasOne(_ => _.AccessPolicy)
+            .WithOne(_ => _.LifeCycleData)
+            .HasForeignKey<DataAccessPolicy>(_ => _.LifeCycleDataId)
+            .OnDelete(DeleteBehavior.Cascade);
         return builder;
     }
 
@@ -474,6 +454,11 @@ public sealed class ApplicationDbContext
             .HasMany(_ => _.Resources)
             .WithOne(_ => _.OpticalData)
             .HasForeignKey(_ => _.OpticalDataId)
+            .OnDelete(DeleteBehavior.Cascade);
+        builder
+            .HasOne(_ => _.AccessPolicy)
+            .WithOne(_ => _.OpticalData)
+            .HasForeignKey<DataAccessPolicy>(_ => _.OpticalDataId)
             .OnDelete(DeleteBehavior.Cascade);
         builder.OwnsMany(
             data => data.CielabColors
@@ -500,18 +485,183 @@ public sealed class ApplicationDbContext
             .WithOne(_ => _.PhotovoltaicData)
             .HasForeignKey(_ => _.PhotovoltaicDataId)
             .OnDelete(DeleteBehavior.Cascade);
+        builder
+            .HasOne(_ => _.AccessPolicy)
+            .WithOne(_ => _.PhotovoltaicData)
+            .HasForeignKey<DataAccessPolicy>(_ => _.PhotovoltaicDataId)
+            .OnDelete(DeleteBehavior.Cascade);
         return builder;
     }
 
     private static
-        EntityTypeBuilder<TAccessPolicy>
-        ConfigureAccessPolicy<TAccessPolicy>(
-            EntityTypeBuilder<TAccessPolicy> builder
+        EntityTypeBuilder<DataAccessPolicy>
+        ConfigureDataAccessPolicy(
+            EntityTypeBuilder<DataAccessPolicy> builder
         )
-        where TAccessPolicy : AccessPolicyBase
     {
-        builder.ComplexProperty(_ => _.UpperAccessLimitPerTimeDuration, _ => _.ToJson());
-        builder.ComplexProperty(_ => _.AccessCountSinceStartTime, _ => _.ToJson());
+        // each data entity has at most one access policy and there is at most one global access policy (no data ID)
+        builder
+            .HasIndex(_ => new
+            {
+                _.CalorimetricDataId,
+                _.GeometricDataId,
+                _.HygrothermalDataId,
+                _.LifeCycleDataId,
+                _.OpticalDataId,
+                _.PhotovoltaicDataId
+            })
+            .IsUnique(true)
+            .AreNullsDistinct(false);
+        // configure one-to-many associations
+        builder
+            .HasMany(_ => _.UserAccessPolicies)
+            .WithOne(_ => _.DataAccessPolicy)
+            .HasForeignKey(_ => _.DataAccessPolicyId)
+            .OnDelete(DeleteBehavior.Cascade);
+        builder
+            .HasMany(_ => _.InstitutionAccessPolicies)
+            .WithOne(_ => _.DataAccessPolicy)
+            .HasForeignKey(_ => _.DataAccessPolicyId)
+            .OnDelete(DeleteBehavior.Cascade);
+        builder
+            .HasMany(_ => _.OpenIdConnectApplicationAccessPolicies)
+            .WithOne(_ => _.DataAccessPolicy)
+            .HasForeignKey(_ => _.DataAccessPolicyId)
+            .OnDelete(DeleteBehavior.Cascade);
+        // add partial indexes, see https://www.postgresql.org/docs/18/indexes-partial.html
+        builder
+            .HasIndex(_ => new { _.CalorimetricDataId })
+            .HasFilter(
+                $"""
+                {nameof(DataAccessPolicy.CalorimetricDataId).Enquote()} IS NOT NULL
+                """
+            )
+            .IsUnique(true);
+        builder
+            .HasIndex(_ => new { _.GeometricDataId })
+            .HasFilter(
+                $"""
+                {nameof(DataAccessPolicy.GeometricDataId).Enquote()} IS NOT NULL
+                """
+            )
+            .IsUnique(true);
+        builder
+            .HasIndex(_ => new { _.HygrothermalDataId })
+            .HasFilter(
+                $"""
+                {nameof(DataAccessPolicy.HygrothermalDataId).Enquote()} IS NOT NULL
+                """
+            )
+            .IsUnique(true);
+        builder
+            .HasIndex(_ => new { _.LifeCycleDataId })
+            .HasFilter(
+                $"""
+                {nameof(DataAccessPolicy.LifeCycleDataId).Enquote()} IS NOT NULL
+                """
+            )
+            .IsUnique(true);
+        builder
+            .HasIndex(_ => new { _.OpticalDataId })
+            .HasFilter(
+                $"""
+                {nameof(DataAccessPolicy.OpticalDataId).Enquote()} IS NOT NULL
+                """
+            )
+            .IsUnique(true);
+        builder
+            .HasIndex(_ => new { _.PhotovoltaicDataId })
+            .HasFilter(
+                $"""
+                {nameof(DataAccessPolicy.PhotovoltaicDataId).Enquote()} IS NOT NULL
+                """
+            )
+            .IsUnique(true);
+        builder
+            .BeforeUpdate(trigger => trigger
+                .SetTriggerName(DataAccessPolicy.DataIdCannotChangeTriggerName)
+                .Action(action => action
+                    .ExecuteRawSql(
+                        $"""
+                        IF COALESCE({string.Join(", ", DataAccessPolicy.DataIdFieldAndDataTableNames.Select(_ => $"OLD.{_.Field.Enquote()}"))}) <> COALESCE({string.Join(", ", DataAccessPolicy.DataIdFieldAndDataTableNames.Select(_ => $"NEW.{_.Field.Enquote()}"))})
+                        THEN
+                            RAISE EXCEPTION 'You cannot change the data ID of a data access policy.';
+                        END IF;
+                        """
+                    )
+                )
+            );
+        builder
+            .BeforeDelete(trigger => trigger
+                .SetTriggerName(DataAccessPolicy.GlobalPolicyCannotBeDeletedTriggerName)
+                .Action(action => action
+                    .ExecuteRawSql(
+                        $"""
+                        IF {string.Join(" AND ", DataAccessPolicy.DataIdFieldAndDataTableNames.Select(_ => $"OLD.{_.Field.Enquote()} IS NULL"))}
+                        THEN
+                            RAISE EXCEPTION 'You cannot delete the global data access policy.';
+                        END IF;
+                        """
+                    )
+                )
+            );
+        builder
+            .BeforeDelete(trigger => trigger
+                .SetTriggerName(DataAccessPolicy.CanOnlyBeDeletedAlongsideCorrespondingDataTriggerName)
+                .Action(action => action
+                    .ExecuteRawSql(
+                        $"""
+                        IF (
+                            {string.Join(" OR ", DataAccessPolicy.DataIdFieldAndDataTableNames.Select(_ => $"""
+                            (OLD.{_.Field.Enquote()} IS NOT NULL AND EXISTS (
+                                SELECT 1 FROM database.{_.Table.Enquote()} 
+                                WHERE "Id" = OLD.{_.Field.Enquote()}
+                            ))
+                            """
+                            ))}
+                        ) THEN
+                            RAISE EXCEPTION 'You cannot delete a data access policy without also deleting the corresponding data.';
+                        END IF;
+                        """
+                    )
+                )
+            );
+        return builder;
+    }
+
+    private static
+        EntityTypeBuilder<UserAccessPolicy>
+        ConfigureUserAccessPolicy(
+            EntityTypeBuilder<UserAccessPolicy> builder
+        )
+    {
+        builder
+            .HasIndex(_ => new { _.DataAccessPolicyId, _.UserId })
+            .IsUnique(true);
+        return builder;
+    }
+
+    private static
+        EntityTypeBuilder<InstitutionAccessPolicy>
+        ConfigureInstitutionAccessPolicy(
+            EntityTypeBuilder<InstitutionAccessPolicy> builder
+        )
+    {
+        builder
+            .HasIndex(_ => new { _.DataAccessPolicyId, _.InstitutionId })
+            .IsUnique(true);
+        return builder;
+    }
+
+    private static
+        EntityTypeBuilder<OpenIdConnectApplicationAccessPolicy>
+        ConfigureOpenIdConnectApplicationAccessPolicy(
+            EntityTypeBuilder<OpenIdConnectApplicationAccessPolicy> builder
+        )
+    {
+        builder
+            .HasIndex(_ => new { _.DataAccessPolicyId, _.ClientId })
+            .IsUnique(true);
         return builder;
     }
 
@@ -520,10 +670,9 @@ public sealed class ApplicationDbContext
         base.OnModelCreating(modelBuilder);
         modelBuilder.HasDefaultSchema(_schemaName);
         modelBuilder.HasPostgresExtension("pgcrypto"); // https://www.npgsql.org/efcore/modeling/generated-properties.html#guiduuid-generation
-        ConfigureEntity(
-            ConfigureGetHttpsResource(modelBuilder.Entity<GetHttpsResource>())
-        )
-        .ToTable(
+        ConfigureGetHttpsResource(
+            modelBuilder.Entity<GetHttpsResource>()
+        ).ToTable(
             GetHttpsResource.TableName,
             _ =>
             {
@@ -546,56 +695,72 @@ public sealed class ApplicationDbContext
         );
         ConfigureCalorimetricData(
             ConfigureData(
-                ConfigureEntity(modelBuilder.Entity<CalorimetricData>())
+                modelBuilder.Entity<CalorimetricData>()
             )
-        ).ToTable("calorimetric_data");
+        ).ToTable(global::Database.Data.CalorimetricData.TableName);
         ConfigureGeometricData(
             ConfigureData(
-                ConfigureEntity(modelBuilder.Entity<GeometricData>())
+                modelBuilder.Entity<GeometricData>()
             )
-        ).ToTable("geometric_data");
+        ).ToTable(global::Database.Data.GeometricData.TableName);
         ConfigureHygrothermalData(
             ConfigureData(
-                ConfigureEntity(modelBuilder.Entity<HygrothermalData>())
+                modelBuilder.Entity<HygrothermalData>()
             )
-        ).ToTable("hygrothermal_data");
+        ).ToTable(global::Database.Data.HygrothermalData.TableName);
         ConfigureLifeCycleData(
             ConfigureData(
-                ConfigureEntity(modelBuilder.Entity<LifeCycleData>())
+                modelBuilder.Entity<LifeCycleData>()
             )
-        ).ToTable("lifeCycle_data");
+        ).ToTable(global::Database.Data.LifeCycleData.TableName);
         ConfigureOpticalData(
             ConfigureData(
-                ConfigureEntity(modelBuilder.Entity<OpticalData>())
+                modelBuilder.Entity<OpticalData>()
             )
-        ).ToTable("optical_data");
+        ).ToTable(global::Database.Data.OpticalData.TableName);
         ConfigurePhotovoltaicData(
             ConfigureData(
-                ConfigureEntity(modelBuilder.Entity<PhotovoltaicData>())
+                modelBuilder.Entity<PhotovoltaicData>()
             )
-        ).ToTable("photovoltaic_data");
-        ConfigureAccessPolicy(
+        ).ToTable(global::Database.Data.PhotovoltaicData.TableName);
+        ConfigureDataAccessPolicy(
+            modelBuilder.Entity<DataAccessPolicy>()
+        ).ToTable(
+            DataAccessPolicy.TableName,
+            _ =>
+            {
+                _.HasCheckConstraint(
+                    $"CK_{nameof(DataAccessPolicy)}_At_Most_One_Data_Set",
+                    $"NUM_NONNULLS({string.Join(", ", DataAccessPolicy.DataIdFieldAndDataTableNames.Select(_ => _.Field.Enquote()))}) <= 1"
+                );
+                foreach (var triggerName in DataAccessPolicy.TriggerNames)
+                {
+                    _.HasTrigger(triggerName);
+                }
+            }
+        );
+        ConfigureUserAccessPolicy(
             modelBuilder.Entity<UserAccessPolicy>()
         ).ToTable("user_access_policy");
-        ConfigureAccessPolicy(
+        ConfigureInstitutionAccessPolicy(
             modelBuilder.Entity<InstitutionAccessPolicy>()
         ).ToTable("institution_access_policy");
-        ConfigureAccessPolicy(
+        ConfigureOpenIdConnectApplicationAccessPolicy(
             modelBuilder.Entity<OpenIdConnectApplicationAccessPolicy>()
         ).ToTable("open_id_connect_application_access_policy");
-        ConfigureEntity(
-            modelBuilder.Entity<User>()
-        )
-        .ToTable("user");
+        modelBuilder.Entity<User>()
+            .ToTable("user");
         foreach (var entityType in modelBuilder.Model.GetEntityTypes())
         {
             if (typeof(IEntity).IsAssignableFrom(entityType.ClrType))
             {
                 var entity = modelBuilder.Entity(entityType.ClrType);
+                entity.HasKey(nameof(IEntity.Id));
                 // https://www.npgsql.org/efcore/modeling/generated-properties.html#guiduuid-generation
                 entity
                     .Property(nameof(IEntity.Id))
-                    .HasDefaultValueSql("gen_random_uuid()");
+                    .HasDefaultValueSql("uuidv7()")
+                    .HasValueGenerator<NpgsqlSequentialGuidValueGenerator>();
                 // https://www.npgsql.org/efcore/modeling/concurrency.html#the-postgresql-xmin-system-column
                 entity
                     .Property(nameof(IEntity.Version))

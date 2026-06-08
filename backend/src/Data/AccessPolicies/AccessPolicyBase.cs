@@ -6,12 +6,15 @@ using NodaTime;
 namespace Database.Data.AccessPolicies;
 
 public abstract class AccessPolicyBase
+    : AuditableEntity
 {
+    public abstract DataAccessPolicy? DataAccessPolicy { get; set; }
+
     public UpperLimitPerDuration? UpperAccessLimitPerTimeDuration { get; set; }
     public CountSinceTime? AccessCountSinceStartTime { get; set; }
 
     [Projectable]
-    public bool IsAllowed => UpperAccessLimitPerTimeDuration is null || (
+    public bool IsAccessAllowed => UpperAccessLimitPerTimeDuration is null || (
         UpperAccessLimitPerTimeDuration.UpperLimit > 0 && (
             AccessCountSinceStartTime is null || (
                 IsWithinTimeSpan

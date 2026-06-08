@@ -11,12 +11,18 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Database.GraphQl.AccessPolicies;
 
+public sealed record ClearUserAccessPoliciesInput
+(
+    DataReferenceInput? Data
+);
+
 [SuppressMessage("Naming", "CA1707")]
 public enum ClearUserAccessPoliciesErrorCode
 {
     UNKNOWN,
     UNAUTHENTICATED,
-    UNAUTHORIZED
+    UNAUTHORIZED,
+    UNKNOWN_DATA
 }
 
 public sealed record ClearUserAccessPoliciesError(
@@ -27,16 +33,16 @@ public sealed record ClearUserAccessPoliciesError(
 : UserErrorBase<ClearUserAccessPoliciesErrorCode>(Code, Message, Path);
 
 public sealed record ClearUserAccessPoliciesPayload(
-   IReadOnlyCollection<UserAccessPolicy>? UserAccessPolicies,
+   DataAccessPolicy? DataAccessPolicy,
    IReadOnlyCollection<ClearUserAccessPoliciesError>? Errors
 ) : Payload;
 
 [ExtendObjectType(nameof(Mutation))]
 public sealed class ClearUserAccessPoliciesMutation
-: MutationBase<IReadOnlyCollection<UserAccessPolicy>, ClearUserAccessPoliciesPayload, ClearUserAccessPoliciesError, ClearUserAccessPoliciesErrorCode>
+: DataMutationBase<DataAccessPolicy, ClearUserAccessPoliciesPayload, ClearUserAccessPoliciesError, ClearUserAccessPoliciesErrorCode>
 {
     protected override ClearUserAccessPoliciesPayload NewPayload(
-        IReadOnlyCollection<UserAccessPolicy>? data,
+        DataAccessPolicy? data,
         IReadOnlyCollection<ClearUserAccessPoliciesError>? errors
     ) => new(data, errors);
 
@@ -47,6 +53,7 @@ public sealed class ClearUserAccessPoliciesMutation
     ) => new(code, message, path);
 
     public async Task<ClearUserAccessPoliciesPayload> ClearUserAccessPoliciesAsync(
+        ClearUserAccessPoliciesInput input,
         ApplicationDbContext context,
         CommonAuthorization authorization,
         CancellationToken cancellationToken
@@ -63,9 +70,29 @@ public sealed class ClearUserAccessPoliciesMutation
         {
             return authorizeErrorPayload;
         }
-        var accessPolicies = await context.UserAccessPolicies.ToListAsync(cancellationToken);
-        context.UserAccessPolicies.RemoveRange(accessPolicies);
+
+        if (input.Data is not null)
+        {
+            if ((await FetchDataAsync(
+                    input.Data,
+                    ClearUserAccessPoliciesErrorCode.UNKNOWN_DATA,
+                    context,
+                    cancellationToken
+                )
+                ).Failed(out var _, out var fetchDataErrorPayload)
+            )
+            {
+                return fetchDataErrorPayload;
+            }
+        }
+
+        var dataAccessPolicy = await context.DataAccessPolicies
+            .SingleAsync(
+                _ => _.DataId == (input.Data == null ? null : input.Data.DataId),
+                cancellationToken
+            );
+        dataAccessPolicy.UserAccessPolicies.Clear();
         await context.SaveChangesAsync(cancellationToken);
-        return NewPayload(accessPolicies, null);
+        return NewPayload(dataAccessPolicy, null);
     }
 }

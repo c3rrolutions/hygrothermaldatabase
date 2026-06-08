@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Mime;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,8 +14,10 @@ using Database.Filters;
 using Database.Services;
 using Database.Utilities;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.WebUtilities;
@@ -92,7 +95,12 @@ public sealed class FileUploadController(
     // TODO Add this `[RequireAntiforgeryToken]` once we know where to set the generation token cookie!
     [Authorize(AuthenticationSchemes = AuthenticationConstants.CookieAndBearerTokenAuthenticationScheme)]
     [AllowAnonymous]
+    [Consumes(MediaTypeNames.Multipart.FormData)]
+    [AcceptsMultipartFormFile] // see `AcceptsMultipartFormFileAttribute` below
     [Produces(MediaTypeNames.Application.Json)]
+    [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> UploadFile(
         [FromQuery] Guid getHttpsResourceUuid,
         [FromServices] ApplicationDbContext context,
@@ -222,5 +230,26 @@ public sealed class FileUploadController(
         }
 
         return mediaType.Encoding;
+    }
+
+    // solely for the OpenAPI documentation
+    private sealed record FormFile(IFormFile File);
+
+    // solely for the OpenAPI documentation
+    private sealed class AcceptsMultipartFormFileAttribute : Attribute, IEndpointParameterMetadataProvider
+    {
+        public static void PopulateMetadata(ParameterInfo parameter, EndpointBuilder builder)
+        {
+        }
+
+        public static void PopulateMetadata(MethodInfo method, EndpointBuilder builder)
+        {
+            builder.Metadata.Add(
+                new AcceptsMetadata(
+                    [MediaTypeNames.Multipart.FormData],
+                    typeof(FormFile)
+                )
+            );
+        }
     }
 }

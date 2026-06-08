@@ -19,8 +19,8 @@ public sealed class GetHttpsResource
     public const string FilesDirectoryPath = "./files/";
     public const string TableName = "get_https_resource";
 
-    public const string DataIdsMustMatchTriggerName = "data_ids_must_match";
-    public const string DataIdCannotChangeTriggerName = "data_id_cannot_change";
+    public const string DataIdsMustMatchTriggerName = $"{TableName}_data_ids_must_match";
+    public const string DataIdCannotChangeTriggerName = $"{TableName}_data_id_cannot_change";
     public static readonly ImmutableArray<string> TriggerNames = [
         DataIdsMustMatchTriggerName,
         DataIdCannotChangeTriggerName

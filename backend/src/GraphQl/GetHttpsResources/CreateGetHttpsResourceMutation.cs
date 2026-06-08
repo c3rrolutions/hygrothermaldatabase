@@ -35,12 +35,12 @@ public sealed record CreateGetHttpsResourceInput(
             Sha256FileHasher.ComputeForString(""), // The correct hash value is computed when the file for this resource is being uploaded.
             DataFormatId,
             fileExtension,
-            DataKind == DataKind.CALORIMETRIC_DATA ? DataId : null,
-            DataKind == DataKind.GEOMETRIC_DATA ? DataId : null,
-            DataKind == DataKind.HYGROTHERMAL_DATA ? DataId : null,
-            DataKind == DataKind.LIFE_CYCLE_DATA ? DataId : null,
-            DataKind == DataKind.OPTICAL_DATA ? DataId : null,
-            DataKind == DataKind.PHOTOVOLTAIC_DATA ? DataId : null,
+            DataKind is DataKind.CALORIMETRIC_DATA ? DataId : null,
+            DataKind is DataKind.GEOMETRIC_DATA ? DataId : null,
+            DataKind is DataKind.HYGROTHERMAL_DATA ? DataId : null,
+            DataKind is DataKind.LIFE_CYCLE_DATA ? DataId : null,
+            DataKind is DataKind.OPTICAL_DATA ? DataId : null,
+            DataKind is DataKind.PHOTOVOLTAIC_DATA ? DataId : null,
             ParentId,
             ArchivedFilesMetaInformation.Select(i => i.ToDomainModel()).ToList(),
             AppliedConversionMethod.ToDomainModel()

@@ -18,8 +18,6 @@ public sealed class LifeCycleDataQueries
 : DataQueriesBase<LifeCycleData>
 {
     [UsePaging]
-    // [UseProjection] // We disabled projections because when requesting `id` all results had the
-    // same `id` and when also requesting `uuid`, the latter was always the empty UUID `000...`.
     [UseFiltering<LifeCycleDataFilterType>]
     [UseSorting<LifeCycleDataSortType>]
     public Task<HotChocolate.Types.Pagination.Connection<LifeCycleData>> GetAllLifeCycleDataAsync(
@@ -41,8 +39,6 @@ public sealed class LifeCycleDataQueries
     }
 
     [UsePaging]
-    // [UseProjection] // We disabled projections because when requesting `id` all results had the
-    // same `id` and when also requesting `uuid`, the latter was always the empty UUID `000...`.
     [UseFiltering<LifeCycleDataFilterType>]
     [UseSorting<LifeCycleDataSortType>]
     public Task<HotChocolate.Types.Pagination.Connection<LifeCycleData>> GetAllPendingLifeCycleDataAsync(

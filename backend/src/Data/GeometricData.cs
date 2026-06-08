@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Threading.Tasks;
+using Database.Data.AccessPolicies;
 using Database.Extractors;
 
 namespace Database.Data;
@@ -9,6 +10,8 @@ namespace Database.Data;
 public sealed class GeometricData
     : DataX
 {
+    public const string TableName = "geometric_data";
+
     public GeometricData(
         Guid? userId,
         string locale,
@@ -69,6 +72,9 @@ public sealed class GeometricData
 
     [InverseProperty(nameof(GetHttpsResource.GeometricData))]
     public override ICollection<GetHttpsResource> Resources { get; } = [];
+
+    [InverseProperty(nameof(DataAccessPolicy.GeometricData))]
+    public override DataAccessPolicy? AccessPolicy { get; set; }
 
     public double[] Widths { get; private set; }
     public double[] Heights { get; private set; }

@@ -31,11 +31,15 @@ public abstract class DataTypeBase<TData, TDataByIdDataLoader>
         descriptor
             .Field(_ => _.Resources)
             .Cost(1)
-            .ResolveWith<DataResolvers>(_ => _.GetHttpsResources(default!, default!, default!, default!));
+            .ResolveWith<DataResolvers>(_ => _.GetHttpsResourcesAsync(default!, default!, default!, default!));
         descriptor
             .Field(DataType.ResourceTreeFieldName)
             .Cost(1)
             .ResolveWith<DataResolvers>(_ => _.GetHttpsResourceTree(default!));
+        descriptor
+            .Field(_ => _.AccessPolicy)
+            .Cost(1)
+            .ResolveWith<DataResolvers>(_ => _.GetDataAccessPolicyAsync(default!, default!, default!, default!, default!));
         descriptor
             .Field(_ => _.Approval)
             .Cost(3)

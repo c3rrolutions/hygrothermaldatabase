@@ -19,8 +19,6 @@ public sealed class PhotovoltaicDataQueries
 : DataQueriesBase<PhotovoltaicData>
 {
     [UsePaging]
-    // [UseProjection] // We disabled projections because when requesting `id` all results had the
-    // same `id` and when also requesting `uuid`, the latter was always the empty UUID `000...`.
     [UseFiltering<PhotovoltaicDataFilterType>]
     [UseSorting<PhotovoltaicDataSortType>]
     public Task<HotChocolate.Types.Pagination.Connection<PhotovoltaicData>> GetAllPhotovoltaicDataAsync(
@@ -42,8 +40,6 @@ public sealed class PhotovoltaicDataQueries
     }
 
     [UsePaging]
-    // [UseProjection] // We disabled projections because when requesting `id` all results had the
-    // same `id` and when also requesting `uuid`, the latter was always the empty UUID `000...`.
     [UseFiltering<PhotovoltaicDataFilterType>]
     [UseSorting<PhotovoltaicDataSortType>]
     public Task<HotChocolate.Types.Pagination.Connection<PhotovoltaicData>> GetAllPendingPhotovoltaicDataAsync(

@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using Database.Data.AccessPolicies;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.EntityFrameworkCore.Migrations;
 using NodaTime;
 
@@ -12,6 +12,7 @@ namespace Database.Migrations
     public partial class RevampAccessPolicies : Migration
     {
         /// <inheritdoc />
+        [SuppressMessage("Performance", "CA1861")]
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
@@ -197,6 +198,7 @@ namespace Database.Migrations
         }
 
         /// <inheritdoc />
+        [SuppressMessage("Performance", "CA1861")]
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(

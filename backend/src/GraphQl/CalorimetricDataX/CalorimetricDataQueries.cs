@@ -39,8 +39,6 @@ public sealed class CalorimetricDataQueries
     }
 
     [UsePaging]
-    // [UseProjection] // We disabled projections because when requesting `id` all results had the
-    // same `id` and when also requesting `uuid`, the latter was always the empty UUID `000...`.
     [UseFiltering<CalorimetricDataFilterType>]
     [UseSorting<CalorimetricDataSortType>]
     public Task<HotChocolate.Types.Pagination.Connection<CalorimetricData>> GetAllPendingCalorimetricDataAsync(

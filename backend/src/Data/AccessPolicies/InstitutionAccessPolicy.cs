@@ -1,13 +1,18 @@
 using System;
-using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Database.Data.AccessPolicies;
 
-[PrimaryKey(nameof(InstitutionId))]
 public sealed class InstitutionAccessPolicy(
+    Guid dataAccessPolicyId,
     Guid institutionId
 )
 : AccessPolicyBase
 {
+    [InverseProperty(nameof(DataAccessPolicy.InstitutionAccessPolicies))]
+    public override DataAccessPolicy? DataAccessPolicy { get; set; }
+
+    public Guid DataAccessPolicyId { get; private set; } = dataAccessPolicyId;
+
     public Guid InstitutionId { get; private set; } = institutionId;
 }

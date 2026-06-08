@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Database.ApiRequests;
 using Database.Authorization;
 using Database.Data;
+using Database.Data.AccessPolicies;
 using Database.Enumerations;
 using Database.Extensions;
 using Database.GraphQl.DataX;
@@ -67,6 +68,8 @@ public sealed record CreateOpticalDataInput(
             CielabColors.Select(c => c.ToDomainModel()).ToList()
         );
         data.Resources.Add(RootResource.ToDomainModel(fileExtension));
+        data.AccessPolicy = new DataAccessPolicy();
+        data.AccessPolicy = new DataAccessPolicy();
         return data;
     }
 };

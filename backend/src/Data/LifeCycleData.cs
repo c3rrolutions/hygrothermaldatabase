@@ -2,12 +2,15 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Threading.Tasks;
+using Database.Data.AccessPolicies;
 
 namespace Database.Data;
 
 public sealed class LifeCycleData
     : DataX
 {
+    public const string TableName = "lifeCycle_data";
+
     public LifeCycleData(
         Guid? userId,
         string locale,
@@ -57,6 +60,9 @@ public sealed class LifeCycleData
 
     [InverseProperty(nameof(GetHttpsResource.LifeCycleData))]
     public override ICollection<GetHttpsResource> Resources { get; } = [];
+
+    [InverseProperty(nameof(DataAccessPolicy.LifeCycleData))]
+    public override DataAccessPolicy? AccessPolicy { get; set; }
 
     public override Task ExtractAndSetValuesFromFile(
         string filePath,

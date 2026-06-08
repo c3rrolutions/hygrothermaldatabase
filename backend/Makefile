@@ -22,7 +22,7 @@ help : ## Print this help
 
 # See https://learn.microsoft.com/en-us/dotnet/core/testing/microsoft-testing-platform-run-and-debug?tabs=dotnetcli
 list : ARGS =
-list : ## List tests, for example, `make list-tests ARGS='--filter "FullyQualifiedName~LoggedInUser_CreatesComponent"'`
+list : ## List tests, for example, `make list ARGS='--filter "FullyQualifiedName~LoggedInUser_CreatesComponent"'`
 	dotnet run \
 		--project ./test/*.Tests.csproj \
 		--list-tests \
@@ -67,7 +67,7 @@ licenses : ## Print licenses
 trace : ## Trace the dotnet process `Database`
 	dotnet tool run \
 		dotnet-trace collect \
-			--process-id $$(dotnet tool run dotnet-trace ps | grep Database | awk '{print $$1}') \
+			--process-id "$$(dotnet tool run dotnet-trace ps | grep Database | awk '{print $$1}')" \
 			--format speedscope \
 			--providers Microsoft-Windows-DotNETRuntime
 .PHONY : trace
@@ -225,6 +225,6 @@ migration : ## Add migration with name `${NAME}`, generate corresponding idempot
 		--output $${rollback_path} && \
 	sed -i -e "$(shell printf '1s/^\357\273\277//')" -e "s/\r//" $${migrate_path} $${rollback_path} && \
 	cat $${migrate_path} >> ./src/Migrations/migrate.sql && \
-	$(MAKE) dos2unix
+	$(MAKE) dos2unix && \
 	echo "Review the generated C# and SQL files and make necessary adjustments consistently across all the files. In particular, keep $${migrate_path} and ./src/Migrations/migrate.sql in sync."
 .PHONY : migration

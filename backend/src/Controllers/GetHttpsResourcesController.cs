@@ -290,7 +290,12 @@ public sealed class GetHttpsResourcesController(
         }
         return CreatedAtAction(
             nameof(Get),
-            new
+            getHttpsResource.FileExtension is null
+            ? new
+            {
+                id = getHttpsResource.Id,
+            }
+            : new
             {
                 id = getHttpsResource.Id,
                 extension = getHttpsResource.FileExtension

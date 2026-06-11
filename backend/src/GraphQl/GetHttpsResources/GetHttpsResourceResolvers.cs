@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Database.ApiRequests;
+using Database.Controllers;
 using Database.Data;
 using Database.GraphQl.CalorimetricDataX;
 using Database.GraphQl.GeometricDataX;
@@ -10,6 +11,7 @@ using Database.GraphQl.LifeCycleDataX;
 using Database.GraphQl.OpticalDataX;
 using Database.GraphQl.PhotovoltaicDataX;
 using HotChocolate;
+using Microsoft.AspNetCore.Routing;
 
 namespace Database.GraphQl.GetHttpsResources;
 
@@ -73,12 +75,26 @@ public sealed class GetHttpsResourceResolvers
 
     public Uri GetLocator(
         [Parent] GetHttpsResource getHttpsResource,
-        AppSettings appSettings
+        AppSettings appSettings,
+        LinkGenerator linkGenerator
     )
     {
         return new UriBuilder(appSettings.Uri)
         {
-            Path = $"/api/resources/{getHttpsResource.FileName}"
+            Path = linkGenerator.GetPathByAction(
+                controller: nameof(GetHttpsResourcesController),
+                action: nameof(GetHttpsResourcesController.Get),
+                values: getHttpsResource.FileExtension is null
+                    ? new
+                    {
+                        id = getHttpsResource.Id
+                    }
+                    : new
+                    {
+                        id = getHttpsResource.Id,
+                        extension = getHttpsResource.FileExtension
+                    }
+            )
         }.Uri;
     }
 

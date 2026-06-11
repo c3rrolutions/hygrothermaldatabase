@@ -30,6 +30,8 @@ export default {
     `/data/photovoltaic/${encodeURIComponent(String(id))}` as Route,
   createData: "/data/create" as Route,
   uploadFile: "/upload-file" as Route,
+  resource: (id: Scalars["Uuid"]["output"]) =>
+    `/api/resources/${encodeURIComponent(String(id))}` as Route,
   login: "/connect/login" as Route,
   logout: "/connect/logout" as Route,
   graphQl: "/graphql/" as Route,

@@ -8,6 +8,12 @@ namespace Database.Data;
 
 public abstract class DataX : AuditableEntity, IData
 {
+    protected static string AssertExistenceOfRootResourceTriggerName(DataKind kind) =>
+        $"{kind.ToString().ToLowerInvariant()}_assert_existence_of_root_resource";
+
+    protected static string CreateDataAccessPolicyIfNecessaryTriggerName(DataKind kind) =>
+        $"create_{kind.ToString().ToLowerInvariant()}_access_policy_if_necessary";
+
     public DataX(
         Guid? userId,
         string locale,

@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Threading.Tasks;
 using Database.Data.AccessPolicies;
+using Database.Enumerations;
 
 namespace Database.Data;
 
@@ -10,6 +12,17 @@ public sealed class LifeCycleData
     : DataX
 {
     public const string TableName = "lifeCycle_data";
+
+    public static readonly DataKind Kind = DataKind.LIFE_CYCLE_DATA;
+
+    public new static readonly string AssertExistenceOfRootResourceTriggerName =
+        DataX.AssertExistenceOfRootResourceTriggerName(Kind);
+    public new static readonly string CreateDataAccessPolicyIfNecessaryTriggerName =
+        DataX.CreateDataAccessPolicyIfNecessaryTriggerName(Kind);
+    public static readonly ImmutableArray<string> TriggerNames = [
+        AssertExistenceOfRootResourceTriggerName,
+        CreateDataAccessPolicyIfNecessaryTriggerName
+    ];
 
     public LifeCycleData(
         Guid? userId,

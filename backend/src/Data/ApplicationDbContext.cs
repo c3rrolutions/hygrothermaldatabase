@@ -341,7 +341,7 @@ public sealed class ApplicationDbContext
                            AND (
                                SELECT COUNT({nameof(GetHttpsResource.Id).Enquote()})
                                FROM {_schemaName}.{GetHttpsResource.TableName.Enquote()}
-                               WHERE {nameof(GetHttpsResource.Id).Enquote()} = NEW.{nameof(GetHttpsResource.ParentId).Enquote()} AND COALESCE({string.Join(", ", GetHttpsResource.DataIdFieldNames.Select(_ => _.Enquote()))}) = COALESCE({string.Join(", ", GetHttpsResource.DataIdFieldNames.Select(_ => $"NEW.{_.Enquote()}"))})
+                               WHERE {nameof(GetHttpsResource.Id).Enquote()} = NEW.{nameof(GetHttpsResource.ParentId).Enquote()} AND COALESCE({string.Join(", ", GetHttpsResource.DataIdFieldAndDataTableNames.Select(_ => _.Field.Enquote()))}) = COALESCE({string.Join(", ", GetHttpsResource.DataIdFieldAndDataTableNames.Select(_ => $"NEW.{_.Field.Enquote()}"))})
                            )
                            <> 1
                         THEN
@@ -357,9 +357,63 @@ public sealed class ApplicationDbContext
                 .Action(action => action
                     .ExecuteRawSql(
                         $"""
-                        IF COALESCE({string.Join(", ", GetHttpsResource.DataIdFieldNames.Select(_ => $"OLD.{_.Enquote()}"))}) <> COALESCE({string.Join(", ", GetHttpsResource.DataIdFieldNames.Select(_ => $"NEW.{_.Enquote()}"))})
+                        IF COALESCE({string.Join(", ", GetHttpsResource.DataIdFieldAndDataTableNames.Select(_ => $"OLD.{_.Field.Enquote()}"))}) <> COALESCE({string.Join(", ", GetHttpsResource.DataIdFieldAndDataTableNames.Select(_ => $"NEW.{_.Field.Enquote()}"))})
                         THEN
                             RAISE EXCEPTION 'You cannot change the data ID of a resource.';
+                        END IF;
+                        """
+                    )
+                )
+            );
+        builder
+            .BeforeDelete(trigger => trigger
+                .SetTriggerName(GetHttpsResource.RootCanOnlyBeDeletedAlongsideItsDataTriggerName)
+                .Action(action => action
+                    .ExecuteRawSql(
+                        $"""
+                        IF OLD.{nameof(GetHttpsResource.ParentId).Enquote()} IS NULL AND (
+                            {string.Join(" OR ", GetHttpsResource.DataIdFieldAndDataTableNames.Select(_ => $"""
+                            (OLD.{_.Field.Enquote()} IS NOT NULL AND EXISTS (
+                                SELECT 1 FROM {_schemaName}.{_.Table.Enquote()} 
+                                WHERE {nameof(IData.Id).Enquote()} = OLD.{_.Field.Enquote()}
+                            ))
+                            """
+                            ))}
+                        ) THEN
+                            RAISE EXCEPTION 'You cannot delete a root resource without also deleting the corresponding data in the same transaction.';
+                        END IF;
+                        """
+                    )
+                )
+            );
+        return builder;
+    }
+
+    private
+        EntityTypeBuilder<TData>
+        AddTriggerThatAssertsExistenceOfRootResource<TData>(
+            EntityTypeBuilder<TData> builder,
+            string triggerName,
+            string dataIdColumn
+        )
+        where TData : class, IData
+    {
+        // In the generated migration turn `CREATE TRIGGER` into `CREATE
+        // CONSTRAINT TRIGGER` and add `DEFERRABLE INITIALLY DEFERRED` before
+        // `FOR EACH ...` .
+        builder
+            .AfterInsert(trigger => trigger
+                .SetTriggerName(triggerName)
+                .Action(action => action
+                    .ExecuteRawSql(
+                        $"""
+                        IF NOT EXISTS (
+                            SELECT 1 FROM {_schemaName}.{GetHttpsResource.TableName.Enquote()}
+                            WHERE {nameof(GetHttpsResource.ParentId).Enquote()} IS NULL
+                            AND {dataIdColumn.Enquote()} = NEW.{nameof(IData.Id)}
+                        )
+                        THEN
+                            RAISE EXCEPTION 'You cannot insert data without also inserting the corresponding root resource in the same transaction.';
                         END IF;
                         """
                     )
@@ -369,6 +423,45 @@ public sealed class ApplicationDbContext
     }
 
     private static
+        EntityTypeBuilder<TData>
+        AddTriggerThatCreatesDataAccessPolicyIfNecessary<TData>(
+            EntityTypeBuilder<TData> builder,
+            string triggerName,
+            string dataIdColumn
+        )
+        where TData : class, IData
+    {
+        // In the generated migration turn `CREATE TRIGGER` into `CREATE
+        // CONSTRAINT TRIGGER` and add `DEFERRABLE INITIALLY DEFERRED` before
+        // `FOR EACH ...` .
+        builder
+            .AfterInsert(trigger => trigger
+                .SetTriggerName(triggerName)
+                .Action(action => action
+                    .ExecuteRawSql(
+                        $"""
+                        INSERT INTO {DataAccessPolicy.TableName.Enquote()}
+                        ({dataIdColumn.Enquote()}, {nameof(DataAccessPolicy.Combinator).Enquote()})
+                        VALUES (NEW.{nameof(IEntity.Id).Enquote()}, '{LogicalCombinator.ALL.ToString().ToLowerInvariant()}')
+                        ON CONFLICT ({dataIdColumn.Enquote()}) DO NOTHING;
+                        RETURN NEW;
+                        """
+                    )
+                // an alternative is
+                // .InsertIfNotExists(
+                //     insertedData => new DataAccessPolicy
+                //     {
+                //         CalorimetricDataId = insertedData.Id,
+                //         Combinator = LogicalCombinator.ALL
+                //     },
+                //     data => new { data.CalorimetricDataId }
+                // )
+                )
+            );
+        return builder;
+    }
+
+    private
         EntityTypeBuilder<CalorimetricData>
         ConfigureCalorimetricData(
             EntityTypeBuilder<CalorimetricData> builder
@@ -384,10 +477,20 @@ public sealed class ApplicationDbContext
             .WithOne(_ => _.CalorimetricData)
             .HasForeignKey<DataAccessPolicy>(_ => _.CalorimetricDataId)
             .OnDelete(DeleteBehavior.Cascade);
+        AddTriggerThatAssertsExistenceOfRootResource(
+            builder,
+            global::Database.Data.CalorimetricData.AssertExistenceOfRootResourceTriggerName,
+            nameof(GetHttpsResource.CalorimetricDataId)
+        );
+        AddTriggerThatCreatesDataAccessPolicyIfNecessary(
+            builder,
+            global::Database.Data.CalorimetricData.CreateDataAccessPolicyIfNecessaryTriggerName,
+            nameof(DataAccessPolicy.CalorimetricDataId)
+        );
         return builder;
     }
 
-    private static
+    private
         EntityTypeBuilder<GeometricData>
         ConfigureGeometricData(
             EntityTypeBuilder<GeometricData> builder
@@ -403,10 +506,20 @@ public sealed class ApplicationDbContext
             .WithOne(_ => _.GeometricData)
             .HasForeignKey<DataAccessPolicy>(_ => _.GeometricDataId)
             .OnDelete(DeleteBehavior.Cascade);
+        AddTriggerThatAssertsExistenceOfRootResource(
+            builder,
+            global::Database.Data.GeometricData.AssertExistenceOfRootResourceTriggerName,
+            nameof(GetHttpsResource.GeometricDataId)
+        );
+        AddTriggerThatCreatesDataAccessPolicyIfNecessary(
+            builder,
+            global::Database.Data.GeometricData.CreateDataAccessPolicyIfNecessaryTriggerName,
+            nameof(DataAccessPolicy.GeometricDataId)
+        );
         return builder;
     }
 
-    private static
+    private
         EntityTypeBuilder<HygrothermalData>
         ConfigureHygrothermalData(
             EntityTypeBuilder<HygrothermalData> builder
@@ -422,10 +535,20 @@ public sealed class ApplicationDbContext
             .WithOne(_ => _.HygrothermalData)
             .HasForeignKey<DataAccessPolicy>(_ => _.HygrothermalDataId)
             .OnDelete(DeleteBehavior.Cascade);
+        AddTriggerThatAssertsExistenceOfRootResource(
+            builder,
+            global::Database.Data.HygrothermalData.AssertExistenceOfRootResourceTriggerName,
+            nameof(GetHttpsResource.HygrothermalDataId)
+        );
+        AddTriggerThatCreatesDataAccessPolicyIfNecessary(
+            builder,
+            global::Database.Data.HygrothermalData.CreateDataAccessPolicyIfNecessaryTriggerName,
+            nameof(DataAccessPolicy.HygrothermalDataId)
+        );
         return builder;
     }
 
-    private static
+    private
         EntityTypeBuilder<LifeCycleData>
         ConfigureLifeCycleData(
             EntityTypeBuilder<LifeCycleData> builder
@@ -441,10 +564,20 @@ public sealed class ApplicationDbContext
             .WithOne(_ => _.LifeCycleData)
             .HasForeignKey<DataAccessPolicy>(_ => _.LifeCycleDataId)
             .OnDelete(DeleteBehavior.Cascade);
+        AddTriggerThatAssertsExistenceOfRootResource(
+            builder,
+            global::Database.Data.LifeCycleData.AssertExistenceOfRootResourceTriggerName,
+            nameof(GetHttpsResource.LifeCycleDataId)
+        );
+        AddTriggerThatCreatesDataAccessPolicyIfNecessary(
+            builder,
+            global::Database.Data.LifeCycleData.CreateDataAccessPolicyIfNecessaryTriggerName,
+            nameof(DataAccessPolicy.LifeCycleDataId)
+        );
         return builder;
     }
 
-    private static
+    private
         EntityTypeBuilder<OpticalData>
         ConfigureOpticalData(
             EntityTypeBuilder<OpticalData> builder
@@ -471,10 +604,20 @@ public sealed class ApplicationDbContext
                 );
             }
         );
+        AddTriggerThatAssertsExistenceOfRootResource(
+            builder,
+            global::Database.Data.OpticalData.AssertExistenceOfRootResourceTriggerName,
+            nameof(GetHttpsResource.OpticalDataId)
+        );
+        AddTriggerThatCreatesDataAccessPolicyIfNecessary(
+            builder,
+            global::Database.Data.OpticalData.CreateDataAccessPolicyIfNecessaryTriggerName,
+            nameof(DataAccessPolicy.OpticalDataId)
+        );
         return builder;
     }
 
-    private static
+    private
         EntityTypeBuilder<PhotovoltaicData>
         ConfigurePhotovoltaicData(
             EntityTypeBuilder<PhotovoltaicData> builder
@@ -490,10 +633,20 @@ public sealed class ApplicationDbContext
             .WithOne(_ => _.PhotovoltaicData)
             .HasForeignKey<DataAccessPolicy>(_ => _.PhotovoltaicDataId)
             .OnDelete(DeleteBehavior.Cascade);
+        AddTriggerThatAssertsExistenceOfRootResource(
+            builder,
+            global::Database.Data.PhotovoltaicData.AssertExistenceOfRootResourceTriggerName,
+            nameof(GetHttpsResource.PhotovoltaicDataId)
+        );
+        AddTriggerThatCreatesDataAccessPolicyIfNecessary(
+            builder,
+            global::Database.Data.PhotovoltaicData.CreateDataAccessPolicyIfNecessaryTriggerName,
+            nameof(DataAccessPolicy.PhotovoltaicDataId)
+        );
         return builder;
     }
 
-    private static
+    private
         EntityTypeBuilder<DataAccessPolicy>
         ConfigureDataAccessPolicy(
             EntityTypeBuilder<DataAccessPolicy> builder
@@ -614,13 +767,13 @@ public sealed class ApplicationDbContext
                         IF (
                             {string.Join(" OR ", DataAccessPolicy.DataIdFieldAndDataTableNames.Select(_ => $"""
                             (OLD.{_.Field.Enquote()} IS NOT NULL AND EXISTS (
-                                SELECT 1 FROM database.{_.Table.Enquote()} 
-                                WHERE "Id" = OLD.{_.Field.Enquote()}
+                                SELECT 1 FROM {_schemaName}.{_.Table.Enquote()}
+                                WHERE {nameof(IData.Id).Enquote()} = OLD.{_.Field.Enquote()}
                             ))
                             """
                             ))}
                         ) THEN
-                            RAISE EXCEPTION 'You cannot delete a data access policy without also deleting the corresponding data.';
+                            RAISE EXCEPTION 'You cannot delete a data access policy without also deleting the corresponding data in the same transaction.';
                         END IF;
                         """
                     )
@@ -685,7 +838,7 @@ public sealed class ApplicationDbContext
                 );
                 _.HasCheckConstraint(
                     $"CK_{nameof(GetHttpsResource)}_Exactly_One_Data_Set",
-                    $"NUM_NONNULLS({string.Join(", ", GetHttpsResource.DataIdFieldNames.Select(_ => _.Enquote()))}) = 1"
+                    $"NUM_NONNULLS({string.Join(", ", GetHttpsResource.DataIdFieldAndDataTableNames.Select(_ => _.Field.Enquote()))}) = 1"
                 );
                 foreach (var triggerName in GetHttpsResource.TriggerNames)
                 {
@@ -697,32 +850,86 @@ public sealed class ApplicationDbContext
             ConfigureData(
                 modelBuilder.Entity<CalorimetricData>()
             )
-        ).ToTable(global::Database.Data.CalorimetricData.TableName);
+        ).ToTable(
+            global::Database.Data.CalorimetricData.TableName,
+            _ =>
+            {
+                foreach (var triggerName in global::Database.Data.CalorimetricData.TriggerNames)
+                {
+                    _.HasTrigger(triggerName);
+                }
+            }
+        );
         ConfigureGeometricData(
             ConfigureData(
                 modelBuilder.Entity<GeometricData>()
             )
-        ).ToTable(global::Database.Data.GeometricData.TableName);
+        ).ToTable(
+            global::Database.Data.GeometricData.TableName,
+            _ =>
+            {
+                foreach (var triggerName in global::Database.Data.GeometricData.TriggerNames)
+                {
+                    _.HasTrigger(triggerName);
+                }
+            }
+        );
         ConfigureHygrothermalData(
             ConfigureData(
                 modelBuilder.Entity<HygrothermalData>()
             )
-        ).ToTable(global::Database.Data.HygrothermalData.TableName);
+        ).ToTable(
+            global::Database.Data.HygrothermalData.TableName,
+            _ =>
+            {
+                foreach (var triggerName in global::Database.Data.HygrothermalData.TriggerNames)
+                {
+                    _.HasTrigger(triggerName);
+                }
+            }
+        );
         ConfigureLifeCycleData(
             ConfigureData(
                 modelBuilder.Entity<LifeCycleData>()
             )
-        ).ToTable(global::Database.Data.LifeCycleData.TableName);
+        ).ToTable(
+            global::Database.Data.LifeCycleData.TableName,
+            _ =>
+            {
+                foreach (var triggerName in global::Database.Data.LifeCycleData.TriggerNames)
+                {
+                    _.HasTrigger(triggerName);
+                }
+            }
+        );
         ConfigureOpticalData(
             ConfigureData(
                 modelBuilder.Entity<OpticalData>()
             )
-        ).ToTable(global::Database.Data.OpticalData.TableName);
+        ).ToTable(
+            global::Database.Data.OpticalData.TableName,
+            _ =>
+            {
+                foreach (var triggerName in global::Database.Data.OpticalData.TriggerNames)
+                {
+                    _.HasTrigger(triggerName);
+                }
+            }
+        );
         ConfigurePhotovoltaicData(
             ConfigureData(
                 modelBuilder.Entity<PhotovoltaicData>()
             )
-        ).ToTable(global::Database.Data.PhotovoltaicData.TableName);
+        ).ToTable(
+            global::Database.Data.PhotovoltaicData.TableName,
+            _ =>
+            {
+                foreach (var triggerName in global::Database.Data.PhotovoltaicData.TriggerNames)
+                {
+                    _.HasTrigger(triggerName);
+                }
+            }
+        );
         ConfigureDataAccessPolicy(
             modelBuilder.Entity<DataAccessPolicy>()
         ).ToTable(

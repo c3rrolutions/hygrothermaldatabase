@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Threading.Tasks;
 using Database.Enumerations;
 using Database.Enumerations.DataPoints;
 using Database.Extractors;
 using Database.Data.AccessPolicies;
+using Database.Enumerations;
 
 namespace Database.Data;
 
@@ -13,6 +15,17 @@ public sealed class OpticalData
     : DataX
 {
     public const string TableName = "optical_data";
+
+    public static readonly DataKind Kind = DataKind.OPTICAL_DATA;
+
+    public new static readonly string AssertExistenceOfRootResourceTriggerName =
+        DataX.AssertExistenceOfRootResourceTriggerName(Kind);
+    public new static readonly string CreateDataAccessPolicyIfNecessaryTriggerName =
+        DataX.CreateDataAccessPolicyIfNecessaryTriggerName(Kind);
+    public static readonly ImmutableArray<string> TriggerNames = [
+        AssertExistenceOfRootResourceTriggerName,
+        CreateDataAccessPolicyIfNecessaryTriggerName
+    ];
 
 
     public OpticalData(

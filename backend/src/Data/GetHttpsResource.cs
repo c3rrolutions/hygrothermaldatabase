@@ -21,18 +21,20 @@ public sealed class GetHttpsResource
 
     public const string DataIdsMustMatchTriggerName = $"{TableName}_data_ids_must_match";
     public const string DataIdCannotChangeTriggerName = $"{TableName}_data_id_cannot_change";
+    public const string RootCanOnlyBeDeletedAlongsideItsDataTriggerName = $"{TableName}_root_can_only_be_deleted_alongside_its_data";
     public static readonly ImmutableArray<string> TriggerNames = [
         DataIdsMustMatchTriggerName,
-        DataIdCannotChangeTriggerName
+        DataIdCannotChangeTriggerName,
+        RootCanOnlyBeDeletedAlongsideItsDataTriggerName
     ];
 
-    public static readonly ImmutableArray<string> DataIdFieldNames = [
-        nameof(CalorimetricDataId),
-        nameof(GeometricDataId),
-        nameof(HygrothermalDataId),
-        nameof(LifeCycleDataId),
-        nameof(OpticalDataId),
-        nameof(PhotovoltaicDataId)
+    public static readonly ImmutableArray<(string Field, string Table)> DataIdFieldAndDataTableNames = [
+        (nameof(CalorimetricDataId), CalorimetricData.TableName),
+        (nameof(GeometricDataId), GeometricData.TableName),
+        (nameof(HygrothermalDataId), HygrothermalData.TableName),
+        (nameof(LifeCycleDataId), LifeCycleData.TableName),
+        (nameof(OpticalDataId), OpticalData.TableName),
+        (nameof(PhotovoltaicDataId), PhotovoltaicData.TableName)
     ];
 
     // Constructor for EF Core because navigation properties cannot be set using a constructor: https://learn.microsoft.com/en-us/ef/core/modeling/constructors#binding-to-mapped-properties

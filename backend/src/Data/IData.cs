@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Database.Data.AccessPolicies;
@@ -32,6 +33,9 @@ public interface IData : IEntity, IAuditable
     string Locale { get; }
     DataAccessPolicy? AccessPolicy { get; set; }
     PublishingState PublishingState { get; }
+
+    [NotMapped]
+    DataKind Kind { get; }
 
     void Update(
         string locale,

@@ -7,7 +7,6 @@ using Database.Enumerations;
 using Database.Enumerations.DataPoints;
 using Database.Extractors;
 using Database.Data.AccessPolicies;
-using Database.Enumerations;
 
 namespace Database.Data;
 
@@ -16,12 +15,12 @@ public sealed class OpticalData
 {
     public const string TableName = "optical_data";
 
-    public static readonly DataKind Kind = DataKind.OPTICAL_DATA;
+    public static readonly DataKind TheKind = DataKind.OPTICAL_DATA;
 
     public new static readonly string AssertExistenceOfRootResourceTriggerName =
-        DataX.AssertExistenceOfRootResourceTriggerName(Kind);
+        DataX.AssertExistenceOfRootResourceTriggerName(TheKind);
     public new static readonly string CreateDataAccessPolicyIfNecessaryTriggerName =
-        DataX.CreateDataAccessPolicyIfNecessaryTriggerName(Kind);
+        DataX.CreateDataAccessPolicyIfNecessaryTriggerName(TheKind);
     public static readonly ImmutableArray<string> TriggerNames = [
         AssertExistenceOfRootResourceTriggerName,
         CreateDataAccessPolicyIfNecessaryTriggerName
@@ -112,6 +111,9 @@ public sealed class OpticalData
         InfraredEmittances = infraredEmittances;
         ColorRenderingIndices = colorRenderingIndices;
     }
+
+    [NotMapped]
+    public override DataKind Kind => TheKind;
 
     [InverseProperty(nameof(GetHttpsResource.OpticalData))]
     public override ICollection<GetHttpsResource> Resources { get; } = [];

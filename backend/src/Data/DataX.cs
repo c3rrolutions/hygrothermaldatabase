@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Threading.Tasks;
 using Database.Data.AccessPolicies;
 using Database.Enumerations;
@@ -108,6 +109,9 @@ public abstract class DataX : AuditableEntity, IData
     public abstract ICollection<GetHttpsResource> Resources { get; }
 
     public abstract DataAccessPolicy? AccessPolicy { get; set; }
+
+    [NotMapped]
+    public abstract DataKind Kind { get; }
 
     public PublishingState PublishingState { get; private set; } = PublishingState.PENDING;
 

@@ -13,12 +13,12 @@ public sealed class HygrothermalData
 {
     public const string TableName = "hygrothermal_data";
 
-    public static readonly DataKind Kind = DataKind.HYGROTHERMAL_DATA;
+    public static readonly DataKind TheKind = DataKind.HYGROTHERMAL_DATA;
 
     public new static readonly string AssertExistenceOfRootResourceTriggerName =
-        DataX.AssertExistenceOfRootResourceTriggerName(Kind);
+        DataX.AssertExistenceOfRootResourceTriggerName(TheKind);
     public new static readonly string CreateDataAccessPolicyIfNecessaryTriggerName =
-        DataX.CreateDataAccessPolicyIfNecessaryTriggerName(Kind);
+        DataX.CreateDataAccessPolicyIfNecessaryTriggerName(TheKind);
     public static readonly ImmutableArray<string> TriggerNames = [
         AssertExistenceOfRootResourceTriggerName,
         CreateDataAccessPolicyIfNecessaryTriggerName
@@ -70,6 +70,9 @@ public sealed class HygrothermalData
     )
     {
     }
+
+    [NotMapped]
+    public override DataKind Kind => TheKind;
 
     [InverseProperty(nameof(GetHttpsResource.HygrothermalData))]
     public override ICollection<GetHttpsResource> Resources { get; } = [];

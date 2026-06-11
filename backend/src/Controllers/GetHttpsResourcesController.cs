@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Database.ApiRequests;
 using Database.Authentication;
 using Database.Authorization;
 using Database.Data;
@@ -33,7 +34,7 @@ public static partial class Log
         Level = LogLevel.Information,
         Message = "Uploaded file '{FileNameForDisplay}' to '{FilePath}'.")]
     public static partial void SavedUploadedFile(
-        this ILogger<FileUploadController> logger,
+        this ILogger<GetHttpsResourcesController> logger,
         string? fileNameForDisplay,
         string filePath
     );
@@ -42,7 +43,7 @@ public static partial class Log
         Level = LogLevel.Error,
         Message = "Failed to create response approval for data with ID {DataId}.")]
     public static partial void FailedToCreateResponseApproval(
-        this ILogger<FileUploadController> logger,
+        this ILogger<GetHttpsResourcesController> logger,
         Guid dataId,
         Exception exception
     );
@@ -51,8 +52,8 @@ public static partial class Log
 // Inspired by https://docs.microsoft.com/en-us/aspnet/core/mvc/models/file-uploads?view=aspnetcore-5.0#upload-large-files-with-streaming
 // and https://github.com/dotnet/AspNetCore.Docs/blob/b4599432690b8753fc2eac23d52957f47e01997a/aspnetcore/mvc/models/file-uploads/samples/3.x/SampleApp/
 [ApiController]
-public sealed class FileUploadController(
-    ILogger<FileUploadController> logger
+public sealed class GetHttpsResourcesController(
+    ILogger<GetHttpsResourcesController> logger
 ) : Controller
 {
     // Get the default form options so that we can use them to set the default
@@ -72,36 +73,114 @@ public sealed class FileUploadController(
     }
 
     // Disposable types implement a finalizer.
-    ~FileUploadController()
+    ~GetHttpsResourcesController()
     {
         Dispose(false);
     }
 
-    // The following upload methods:
-    //
-    // 1. Disable the form value model binding to take control of handling
-    //    potentially large files.
-    //
-    // 2. Typically, antiforgery tokens are sent in request body. Since we
-    //    don't want to read the request body early, the tokens are sent via
-    //    headers. The antiforgery token filter first looks for tokens in the
-    //    request header and then falls back to reading the body.
+    [HttpGet("~/api/resources/{id:guid}")]
+    [HttpGet("~/api/resources/{id:guid}.{extension}")]
+    [EndpointName("GetResourceById")]
+    [EndpointDescription("Get an HTTP resource")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Get(
+        [FromRoute] Guid id,
+        [FromServices] ApplicationDbContext context,
+        [FromServices] AccessPolicyService accessPolicyService,
+        [FromServices] IDataFormatByIdDataLoader dataFormatByIdDataLoader,
+        CancellationToken cancellationToken,
+        [FromRoute] string? extension = null
+    )
+    {
+        var getHttpsResource = await context.GetHttpsResourcesWithData.AsQueryable()
+            .Where(_ => _.Id == id)
+            .SingleOrDefaultAsync(cancellationToken);
+        if (getHttpsResource is null)
+        {
+            return Problem(
+                title: "Resource Not Found",
+                detail: $"There is no GET HTTPS resource with ID `{id:D}`.",
+                statusCode: StatusCodes.Status404NotFound,
+                instance: HttpContext.Request.Path
+            );
+        }
+        if (extension is not null && extension != getHttpsResource.FileExtension)
+        {
+            return Problem(
+                title: "Extension Not Found",
+                detail: $"There is no GET HTTPS resource with ID `{id:D}` and the extension `{extension}`. The resource's extension is `{getHttpsResource.FileExtension}`.",
+                statusCode: StatusCodes.Status404NotFound,
+                instance: HttpContext.Request.Path
+            );
+        }
+        if (!getHttpsResource.DoesFileExist())
+        {
+            return Problem(
+                title: "Content Not Found",
+                detail: $"The GET HTTPS resource with ID `{id:D}` and the extension `{getHttpsResource.FileExtension}` does not have content.",
+                statusCode: StatusCodes.Status404NotFound,
+                instance: HttpContext.Request.Path
+            );
+        }
+        if (getHttpsResource.Data is null)
+        {
+            ModelState.AddModelError(
+                nameof(id),
+                $"There is no data set associated with the GET HTTPS resource with ID `{id:D}`."
+            );
+            return BadRequest(ModelState);
+        }
+        if (!await accessPolicyService.Apply<IData, bool>(
+            context.Data(getHttpsResource.Data.Kind).AsNoTracking()
+                .Where(_ => _.Id == getHttpsResource.DataId),
+            async policedData =>
+            {
+                var node = await policedData.SingleOrDefaultAsync(cancellationToken);
+                return node is null
+                    ? ([], false)
+                    : ([node], true);
+            },
+            context,
+            cancellationToken
+        ))
+        {
+            return Unauthorized();
+        }
+        var dataFormat = await dataFormatByIdDataLoader.LoadAsync(getHttpsResource.DataFormatId);
+        if (dataFormat is null)
+        {
+            ModelState.AddModelError(
+                nameof(id),
+                $"Failed to fetch the content type of the GET HTTPS resource with ID `{id:D}`. Please try again in a few minutes."
+            );
+            return BadRequest(ModelState);
+        }
+        return PhysicalFile(
+            physicalPath: getHttpsResource.AbsoluteFilePath,
+            contentType: dataFormat.MediaType,
+            fileDownloadName: getHttpsResource.FileName,
+            enableRangeProcessing: true
+        );
+    }
 
-    [HttpPost("~/api/upload-file")]
-    [EndpointName("UploadFile")]
-    [EndpointDescription("Upload file for GET HTTP resource")]
+    [HttpPost("~/api/resources/{id:guid}")]
+    [EndpointName("UploadResource")]
+    [EndpointDescription("Upload file for a GET HTTP resource")]
     [DisableFormValueModelBinding]
     [DisableRequestSizeLimit]
-    // TODO Add this `[RequireAntiforgeryToken]` once we know where to set the generation token cookie!
     [Authorize(AuthenticationSchemes = AuthenticationConstants.CookieAndBearerTokenAuthenticationScheme)]
     [Consumes(MediaTypeNames.Multipart.FormData)]
     [AcceptsMultipartFormFile] // see `AcceptsMultipartFormFileAttribute` below
     [Produces(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status201Created)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> UploadFile(
-        [FromQuery] Guid getHttpsResourceUuid,
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Upload(
+        [FromRoute] Guid id,
         [FromServices] ApplicationDbContext context,
         [FromServices] ResponseApprovalService responseApprovalService,
         [FromServices] CommonAuthorization authorization,
@@ -115,27 +194,28 @@ public sealed class FileUploadController(
         if (!MultipartRequestHelper.IsMultipartContentType(Request.ContentType))
         {
             ModelState.AddModelError(
-                "File",
+                "file",
                 "The request content is not multipart."
             );
             return BadRequest(ModelState);
         }
         var getHttpsResource = await context.GetHttpsResourcesWithData.AsQueryable()
-                .Where(_ => _.Id == getHttpsResourceUuid)
-                .SingleOrDefaultAsync(cancellationToken);
+            .Where(_ => _.Id == id)
+            .SingleOrDefaultAsync(cancellationToken);
         if (getHttpsResource is null)
         {
-            ModelState.AddModelError(
-                "GetHttpsResourceUuid",
-                $"There is no GET HTTPS resource with UUID {getHttpsResourceUuid:D}."
+            return Problem(
+                title: "Not Found",
+                detail: $"There is no GET HTTPS resource with ID `{id:D}`.",
+                statusCode: StatusCodes.Status404NotFound,
+                instance: HttpContext.Request.Path
             );
-            return BadRequest(ModelState);
         }
         if (getHttpsResource.Data is null)
         {
             ModelState.AddModelError(
-                "GetHttpsResourceUuid",
-                $"There is no data set associated with the GET HTTPS resource with UUID {getHttpsResourceUuid:D}."
+                nameof(id),
+                $"There is no data set associated with the GET HTTPS resource with ID `{id:D}`."
             );
             return BadRequest(ModelState);
         }
@@ -161,7 +241,7 @@ public sealed class FileUploadController(
                     )
                 )
                 {
-                    ModelState.AddModelError("File", "There is no content-disposition header.");
+                    ModelState.AddModelError("file", "There is no content-disposition header.");
                     return BadRequest(ModelState);
                 }
                 var streamedFileContent = await FileHelpers.ProcessStreamedFile(
@@ -208,7 +288,14 @@ public sealed class FileUploadController(
             // TODO How can this be reported to the user?
             logger.FailedToCreateResponseApproval(getHttpsResource.Data.Id, exception);
         }
-        return Created(nameof(FileUploadController), null);
+        return CreatedAtAction(
+            nameof(Get),
+            new
+            {
+                id = getHttpsResource.Id,
+                extension = getHttpsResource.FileExtension
+            }
+        );
     }
 
     private static Encoding GetEncoding(MultipartSection section)
@@ -235,7 +322,8 @@ public sealed class FileUploadController(
     private sealed record FormFile(IFormFile File);
 
     // solely for the OpenAPI documentation
-    private sealed class AcceptsMultipartFormFileAttribute : Attribute, IEndpointParameterMetadataProvider
+    [AttributeUsage(AttributeTargets.Method)]
+    internal sealed class AcceptsMultipartFormFileAttribute : Attribute, IEndpointParameterMetadataProvider
     {
         public static void PopulateMetadata(ParameterInfo parameter, EndpointBuilder builder)
         {

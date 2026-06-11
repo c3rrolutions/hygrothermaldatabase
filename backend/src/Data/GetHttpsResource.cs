@@ -6,7 +6,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Database.Enumerations;
 using Database.Extensions;
 using Database.Utilities;
 using EntityFrameworkCore.Projectables;
@@ -145,6 +144,9 @@ public sealed class GetHttpsResource
     public string FilePath =>
         Path.Combine(FilesDirectoryPath, FileName);
 
+    public string AbsoluteFilePath =>
+        Path.GetFullPath(FilePath);
+
     public ICollection<FileMetaInformation> ArchivedFilesMetaInformation { get; private set; } = [];
 
     // Note that at least one data ID is always present. So `Guid.Empty` will never be used.
@@ -155,29 +157,44 @@ public sealed class GetHttpsResource
     [NotMapped]
     public IData? Data => CalorimetricData ?? GeometricData ?? HygrothermalData ?? LifeCycleData ?? OpticalData ?? PhotovoltaicData as IData;
 
+    [NotMapped]
+    public Enumerations.DataKind? DataKind
+    {
+        get
+        {
+            if (CalorimetricDataId is not null) return Enumerations.DataKind.CALORIMETRIC_DATA;
+            if (GeometricDataId is not null) return Enumerations.DataKind.GEOMETRIC_DATA;
+            if (HygrothermalDataId is not null) return Enumerations.DataKind.HYGROTHERMAL_DATA;
+            if (LifeCycleDataId is not null) return Enumerations.DataKind.LIFE_CYCLE_DATA;
+            if (OpticalDataId is not null) return Enumerations.DataKind.OPTICAL_DATA;
+            if (PhotovoltaicDataId is not null) return Enumerations.DataKind.PHOTOVOLTAIC_DATA;
+            return null;
+        }
+    }
+
     [Projectable]
-    public Guid? GetDataId(DataKind dataKind) =>
+    public Guid? GetDataId(Enumerations.DataKind dataKind) =>
         dataKind switch
         {
-            DataKind.CALORIMETRIC_DATA => CalorimetricDataId,
-            DataKind.GEOMETRIC_DATA => GeometricDataId,
-            DataKind.HYGROTHERMAL_DATA => HygrothermalDataId,
-            DataKind.LIFE_CYCLE_DATA => LifeCycleDataId,
-            DataKind.OPTICAL_DATA => OpticalDataId,
-            DataKind.PHOTOVOLTAIC_DATA => PhotovoltaicDataId,
+            Enumerations.DataKind.CALORIMETRIC_DATA => CalorimetricDataId,
+            Enumerations.DataKind.GEOMETRIC_DATA => GeometricDataId,
+            Enumerations.DataKind.HYGROTHERMAL_DATA => HygrothermalDataId,
+            Enumerations.DataKind.LIFE_CYCLE_DATA => LifeCycleDataId,
+            Enumerations.DataKind.OPTICAL_DATA => OpticalDataId,
+            Enumerations.DataKind.PHOTOVOLTAIC_DATA => PhotovoltaicDataId,
             _ => null, // throw new ArgumentOutOfRangeException(nameof(dataKind), $"Unsupported data kind {dataKind}"),
         };
 
     [Projectable]
-    public IData? GetData(DataKind dataKind) =>
+    public IData? GetData(Enumerations.DataKind dataKind) =>
         dataKind switch
         {
-            DataKind.CALORIMETRIC_DATA => CalorimetricData,
-            DataKind.GEOMETRIC_DATA => GeometricData,
-            DataKind.HYGROTHERMAL_DATA => HygrothermalData,
-            DataKind.LIFE_CYCLE_DATA => LifeCycleData,
-            DataKind.OPTICAL_DATA => OpticalData,
-            DataKind.PHOTOVOLTAIC_DATA => PhotovoltaicData,
+            Enumerations.DataKind.CALORIMETRIC_DATA => CalorimetricData,
+            Enumerations.DataKind.GEOMETRIC_DATA => GeometricData,
+            Enumerations.DataKind.HYGROTHERMAL_DATA => HygrothermalData,
+            Enumerations.DataKind.LIFE_CYCLE_DATA => LifeCycleData,
+            Enumerations.DataKind.OPTICAL_DATA => OpticalData,
+            Enumerations.DataKind.PHOTOVOLTAIC_DATA => PhotovoltaicData,
             _ => null, //throw new ArgumentOutOfRangeException(nameof(dataKind), $"Unsupported data kind {dataKind}"),
         };
 

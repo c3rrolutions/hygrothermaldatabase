@@ -14,12 +14,12 @@ public sealed class CalorimetricData
 {
     public const string TableName = "calorimetric_data";
 
-    public static readonly DataKind Kind = DataKind.CALORIMETRIC_DATA;
+    public static readonly DataKind TheKind = DataKind.CALORIMETRIC_DATA;
 
     public new static readonly string AssertExistenceOfRootResourceTriggerName =
-        DataX.AssertExistenceOfRootResourceTriggerName(Kind);
+        DataX.AssertExistenceOfRootResourceTriggerName(TheKind);
     public new static readonly string CreateDataAccessPolicyIfNecessaryTriggerName =
-        DataX.CreateDataAccessPolicyIfNecessaryTriggerName(Kind);
+        DataX.CreateDataAccessPolicyIfNecessaryTriggerName(TheKind);
     public static readonly ImmutableArray<string> TriggerNames = [
         AssertExistenceOfRootResourceTriggerName,
         CreateDataAccessPolicyIfNecessaryTriggerName
@@ -79,6 +79,9 @@ public sealed class CalorimetricData
         GValues = gValues;
         UValues = uValues;
     }
+
+    [NotMapped]
+    public override DataKind Kind => TheKind;
 
     [InverseProperty(nameof(GetHttpsResource.CalorimetricData))]
     public override ICollection<GetHttpsResource> Resources { get; } = [];

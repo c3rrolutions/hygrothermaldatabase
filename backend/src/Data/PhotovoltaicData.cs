@@ -13,12 +13,12 @@ public sealed class PhotovoltaicData
 {
     public const string TableName = "photovoltaic_data";
 
-    public static readonly DataKind Kind = DataKind.PHOTOVOLTAIC_DATA;
+    public static readonly DataKind TheKind = DataKind.PHOTOVOLTAIC_DATA;
 
     public new static readonly string AssertExistenceOfRootResourceTriggerName =
-        DataX.AssertExistenceOfRootResourceTriggerName(Kind);
+        DataX.AssertExistenceOfRootResourceTriggerName(TheKind);
     public new static readonly string CreateDataAccessPolicyIfNecessaryTriggerName =
-        DataX.CreateDataAccessPolicyIfNecessaryTriggerName(Kind);
+        DataX.CreateDataAccessPolicyIfNecessaryTriggerName(TheKind);
     public static readonly ImmutableArray<string> TriggerNames = [
         AssertExistenceOfRootResourceTriggerName,
         CreateDataAccessPolicyIfNecessaryTriggerName
@@ -70,6 +70,9 @@ public sealed class PhotovoltaicData
     )
     {
     }
+
+    [NotMapped]
+    public override DataKind Kind => TheKind;
 
     [InverseProperty(nameof(GetHttpsResource.PhotovoltaicData))]
     public override ICollection<GetHttpsResource> Resources { get; } = [];

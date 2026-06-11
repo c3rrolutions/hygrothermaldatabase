@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Database.Data;
 using Database.Services;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -247,6 +248,12 @@ public sealed class Program
             );
             loggerConfiguration
                 .ReadFrom.Configuration(webHostBuilderContext.Configuration);
+        });
+        builder.WebHost.ConfigureKestrel(_ =>
+        {
+            // matches the keep-alive timeout configured for `/api/resources/` in NGINX
+            _.Limits.KeepAliveTimeout = TimeSpan.FromSeconds(300);
+            _.Limits.RequestHeadersTimeout = TimeSpan.FromSeconds(30);
         });
         return builder;
     }

@@ -94,7 +94,6 @@ public sealed class FileUploadController(
     [DisableRequestSizeLimit]
     // TODO Add this `[RequireAntiforgeryToken]` once we know where to set the generation token cookie!
     [Authorize(AuthenticationSchemes = AuthenticationConstants.CookieAndBearerTokenAuthenticationScheme)]
-    [AllowAnonymous]
     [Consumes(MediaTypeNames.Multipart.FormData)]
     [AcceptsMultipartFormFile] // see `AcceptsMultipartFormFileAttribute` below
     [Produces(MediaTypeNames.Application.Json)]

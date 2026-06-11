@@ -21,6 +21,12 @@ public static class AuthConfiguration
 {
     private static readonly TimeSpan s_cookieExpirationTimeSpan = TimeSpan.FromDays(1);
 
+    private static readonly Dictionary<string, string> s_policyNameToOpenIdConnectScope = new()
+    {
+        { AuthorizationPolicies.ReadScopePolicy, OpenIdConnectScope.ReadApiScope },
+        { AuthorizationPolicies.WriteScopePolicy, OpenIdConnectScope.WriteApiScope },
+    };
+
     private static void BootstrapCertificates(IClock clock)
     {
         using var store = new X509Store(OpenIdConnectConstants.CertificateStoreName, OpenIdConnectConstants.CertificateStoreLocation);
@@ -154,6 +160,36 @@ public static class AuthConfiguration
                 AuthenticationConstants.CookieAndBearerTokenAuthenticationScheme,
                 _ => { }
             );
+        services.AddAuthorization(_ =>
+            {
+                _.AddPolicy(AuthorizationPolicies.AuthenticatedPolicy, policy =>
+                    {
+                        policy.AuthenticationSchemes =
+                        [
+                            AuthenticationConstants.CookieAndBearerTokenAuthenticationScheme
+                        ];
+                        policy.RequireAuthenticatedUser();
+                    }
+                );
+                foreach (var (policyName, scope) in s_policyNameToOpenIdConnectScope)
+                {
+                    _.AddPolicy(policyName, policy =>
+                        {
+                            policy.AuthenticationSchemes =
+                            [
+                                AuthenticationConstants.CookieAndBearerTokenAuthenticationScheme
+                            ];
+                            policy.RequireAuthenticatedUser();
+                            policy.RequireAssertion(context =>
+                                {
+                                    return context.User.HasScope(scope);
+                                }
+                            );
+                        }
+                    );
+                }
+            }
+        );
     }
 
     private static void ConfigureTaskScheduling(

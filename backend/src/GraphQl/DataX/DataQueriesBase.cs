@@ -56,6 +56,7 @@ where TData : class, IData
     {
         if (!await authorization.IsDatabaseOperator(cancellationToken))
         {
+            authorization.ReportUnauthorizedError(resolverContext);
             return await Enumerable.Empty<TData>()
                 .AsQueryable()
                 .ToPageAsync(resolverContext.GetPagingArguments(), cancellationToken)

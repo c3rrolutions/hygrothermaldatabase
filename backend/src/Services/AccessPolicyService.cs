@@ -34,8 +34,8 @@ public sealed class AccessPolicyService(
         {
             institutionIds = [currentInstitution.Uuid];
         }
-        var filteredData = FilterData(data, currentUser, institutionIds, openIdConnectClientId, databaseContext);
-        var (postProcessedData, result) = await then(filteredData);
+        var policedData = PoliceData(data, currentUser, institutionIds, openIdConnectClientId, databaseContext);
+        var (postProcessedData, result) = await then(policedData);
         await IncrementAccessCounts(
             postProcessedData,
             openIdConnectClientId,
@@ -47,7 +47,7 @@ public sealed class AccessPolicyService(
         return result;
     }
 
-    private static IQueryable<TData> FilterData<TData>(
+    private static IQueryable<TData> PoliceData<TData>(
         IQueryable<TData> data,
         QueryCurrentUserOrInstitution.CurrentUser? currentUser,
         IReadOnlyList<Guid>? institutionIds,

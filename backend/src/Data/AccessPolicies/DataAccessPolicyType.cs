@@ -51,6 +51,7 @@ public sealed class DataAccessPolicyType
         {
             if (!await authorization.IsDatabaseOperator(cancellationToken))
             {
+                authorization.ReportUnauthorizedError(resolverContext);
                 return Array.Empty<UserAccessPolicy>();
             }
             return await byId
@@ -70,6 +71,7 @@ public sealed class DataAccessPolicyType
         {
             if (!await authorization.IsDatabaseOperator(cancellationToken))
             {
+                authorization.ReportUnauthorizedError(resolverContext);
                 return Array.Empty<InstitutionAccessPolicy>();
             }
             return await byId
@@ -89,6 +91,7 @@ public sealed class DataAccessPolicyType
         {
             if (!await authorization.IsDatabaseOperator(cancellationToken))
             {
+                authorization.ReportUnauthorizedError(resolverContext);
                 return Array.Empty<OpenIdConnectApplicationAccessPolicy>();
             }
             return await byId

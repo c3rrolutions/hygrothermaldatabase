@@ -8,6 +8,8 @@ BEGIN
         DELETE FROM database.institution_access_policy;
         DELETE FROM database.open_id_connect_application_access_policy;
 
+        INSERT INTO database.data_access_policy ("Combinator") VALUES ('all'::database.logical_combinator);
+
         INSERT INTO database.data_access_policy ("CalorimetricDataId", "Combinator")
             SELECT "Id", 'all'::database.logical_combinator
             FROM database."calorimetric_data";

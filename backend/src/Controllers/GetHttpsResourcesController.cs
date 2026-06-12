@@ -20,7 +20,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -78,9 +77,30 @@ public sealed class GetHttpsResourcesController(
         Dispose(false);
     }
 
-    [HttpGet("~/api/resources/{id:guid}")]
-    [HttpGet("~/api/resources/{id:guid}.{extension}")]
-    [EndpointName("GetResourceById")]
+    private const string GetByIdRouteName = "GetResourceById";
+    private const string GetByIdAndExtensionRouteName = "GetResourceByIdAndExtension";
+
+    public static string ConstructGetActionRouteName(GetHttpsResource getHttpsResource) =>
+        getHttpsResource.FileExtension is null
+        ? GetByIdRouteName
+        : GetByIdAndExtensionRouteName;
+
+    public static object CreateGetActionRouteValues(GetHttpsResource getHttpsResource) =>
+        getHttpsResource.FileExtension is null
+        ? new
+        {
+            id = getHttpsResource.Id,
+        }
+        : new
+        {
+            id = getHttpsResource.Id,
+            extension = getHttpsResource.FileExtension
+        };
+
+    [HttpGet("~/api/resources/{id:guid}", Name = GetByIdRouteName)]
+    [HttpGet("~/api/resources/{id:guid}.{extension}", Name = GetByIdAndExtensionRouteName)]
+    [Authorize(AuthenticationSchemes = AuthenticationConstants.CookieAndBearerTokenAuthenticationScheme)]
+    [AllowAnonymous]
     [EndpointDescription("Get an HTTP resource")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -166,14 +186,21 @@ public sealed class GetHttpsResourcesController(
         );
     }
 
-    [HttpPost("~/api/resources/{id:guid}")]
-    [EndpointName("UploadResource")]
+    public const string UploadRouteName = "UploadResource";
+
+    public static object CreateUploadActionRouteValues(GetHttpsResource getHttpsResource) =>
+        new
+        {
+            id = getHttpsResource.Id,
+        };
+
+    [HttpPost("~/api/resources/{id:guid}", Name = UploadRouteName)]
     [EndpointDescription("Upload file for a GET HTTP resource")]
     [DisableFormValueModelBinding]
     [DisableRequestSizeLimit]
     [Authorize(AuthenticationSchemes = AuthenticationConstants.CookieAndBearerTokenAuthenticationScheme)]
     [Consumes(MediaTypeNames.Multipart.FormData)]
-    [AcceptsMultipartFormFile] // see `AcceptsMultipartFormFileAttribute` below
+    [AcceptsMultipartFormFile]
     [Produces(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -288,18 +315,10 @@ public sealed class GetHttpsResourcesController(
             // TODO How can this be reported to the user?
             logger.FailedToCreateResponseApproval(getHttpsResource.Data.Id, exception);
         }
-        return CreatedAtAction(
-            nameof(Get),
-            getHttpsResource.FileExtension is null
-            ? new
-            {
-                id = getHttpsResource.Id,
-            }
-            : new
-            {
-                id = getHttpsResource.Id,
-                extension = getHttpsResource.FileExtension
-            }
+        return CreatedAtRoute(
+            ConstructGetActionRouteName(getHttpsResource),
+            CreateGetActionRouteValues(getHttpsResource),
+            null
         );
     }
 

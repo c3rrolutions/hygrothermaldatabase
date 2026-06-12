@@ -4,16 +4,14 @@ using System.Threading;
 using System.Threading.Tasks;
 using Database.Authorization;
 using Database.Data.AccessPolicies;
-using Database.GraphQl.AccessPolicies;
 using Database.GraphQl.Extensions;
-using GreenDonut;
 using GreenDonut.Data;
 using HotChocolate;
 using HotChocolate.Data;
 using HotChocolate.Resolvers;
 using HotChocolate.Types;
 
-namespace Database.GraphQl;
+namespace Database.GraphQl.AccessPolicies;
 
 public sealed class DataAccessPolicyType
     : ObjectType<DataAccessPolicy>
@@ -56,7 +54,8 @@ public sealed class DataAccessPolicyType
             }
             return await byId
                 .With(resolverContext.GetQueryContext<UserAccessPolicy>())
-                .LoadRequiredAsync(dataAccessPolicy.Id, cancellationToken);
+                .LoadAsync(dataAccessPolicy.Id, cancellationToken)
+                ?? [];
         }
 
         [UseFiltering<InstitutionAccessPolicyFilterType>]
@@ -76,7 +75,8 @@ public sealed class DataAccessPolicyType
             }
             return await byId
                 .With(resolverContext.GetQueryContext<InstitutionAccessPolicy>())
-                .LoadRequiredAsync(dataAccessPolicy.Id, cancellationToken);
+                .LoadAsync(dataAccessPolicy.Id, cancellationToken)
+                ?? [];
         }
 
         [UseFiltering<OpenIdConnectApplicationAccessPolicyFilterType>]
@@ -96,7 +96,8 @@ public sealed class DataAccessPolicyType
             }
             return await byId
                 .With(resolverContext.GetQueryContext<OpenIdConnectApplicationAccessPolicy>())
-                .LoadRequiredAsync(dataAccessPolicy.Id, cancellationToken);
+                .LoadAsync(dataAccessPolicy.Id, cancellationToken)
+                ?? [];
         }
     }
 }

@@ -81,19 +81,9 @@ public sealed class GetHttpsResourceResolvers
     {
         return new UriBuilder(appSettings.Uri)
         {
-            Path = linkGenerator.GetPathByAction(
-                controller: nameof(GetHttpsResourcesController),
-                action: nameof(GetHttpsResourcesController.Get),
-                values: getHttpsResource.FileExtension is null
-                    ? new
-                    {
-                        id = getHttpsResource.Id
-                    }
-                    : new
-                    {
-                        id = getHttpsResource.Id,
-                        extension = getHttpsResource.FileExtension
-                    }
+            Path = linkGenerator.GetPathByRouteValues(
+                routeName: GetHttpsResourcesController.ConstructGetActionRouteName(getHttpsResource),
+                values: GetHttpsResourcesController.CreateGetActionRouteValues(getHttpsResource)
             )
         }.Uri;
     }

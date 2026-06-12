@@ -3195,7 +3195,7 @@ BEGIN
       IF NOT EXISTS (
         SELECT 1 FROM database."get_https_resource"
         WHERE "ParentId" IS NULL
-        AND "CalorimetricDataId" = NEW.Id
+        AND "CalorimetricDataId" = NEW."Id"
     )
     THEN
         RAISE EXCEPTION 'You cannot insert data without also inserting the corresponding root resource in the same transaction.';
@@ -3214,11 +3214,10 @@ BEGIN
     IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20260611161712_AssertExistenceOfAccessPolicyAndRootResourceInPostgreSql') THEN
     CREATE FUNCTION "database"."LC_TRIGGER_create_calorimetric_data_access_policy_if_necessary"() RETURNS trigger as $LC_TRIGGER_create_calorimetric_data_access_policy_if_necessary$
     BEGIN
-      INSERT INTO "data_access_policy"
+      INSERT INTO database."data_access_policy"
     ("CalorimetricDataId", "Combinator")
     VALUES (NEW."Id", 'all')
-    ON CONFLICT ("CalorimetricDataId") DO NOTHING;
-    RETURN NEW;
+    ON CONFLICT ("CalorimetricDataId") WHERE "CalorimetricDataId" IS NOT NULL DO NOTHING;
     RETURN NEW;
     END;
     $LC_TRIGGER_create_calorimetric_data_access_policy_if_necessary$ LANGUAGE plpgsql;
@@ -3233,11 +3232,10 @@ BEGIN
     IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20260611161712_AssertExistenceOfAccessPolicyAndRootResourceInPostgreSql') THEN
     CREATE FUNCTION "database"."LC_TRIGGER_create_geometric_data_access_policy_if_necessary"() RETURNS trigger as $LC_TRIGGER_create_geometric_data_access_policy_if_necessary$
     BEGIN
-      INSERT INTO "data_access_policy"
+      INSERT INTO database."data_access_policy"
     ("GeometricDataId", "Combinator")
     VALUES (NEW."Id", 'all')
-    ON CONFLICT ("GeometricDataId") DO NOTHING;
-    RETURN NEW;
+    ON CONFLICT ("GeometricDataId") WHERE "GeometricDataId" IS NOT NULL DO NOTHING;
     RETURN NEW;
     END;
     $LC_TRIGGER_create_geometric_data_access_policy_if_necessary$ LANGUAGE plpgsql;
@@ -3255,7 +3253,7 @@ BEGIN
       IF NOT EXISTS (
         SELECT 1 FROM database."get_https_resource"
         WHERE "ParentId" IS NULL
-        AND "GeometricDataId" = NEW.Id
+        AND "GeometricDataId" = NEW."Id"
     )
     THEN
         RAISE EXCEPTION 'You cannot insert data without also inserting the corresponding root resource in the same transaction.';
@@ -3311,11 +3309,10 @@ BEGIN
     IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20260611161712_AssertExistenceOfAccessPolicyAndRootResourceInPostgreSql') THEN
     CREATE FUNCTION "database"."LC_TRIGGER_create_hygrothermal_data_access_policy_if_necessary"() RETURNS trigger as $LC_TRIGGER_create_hygrothermal_data_access_policy_if_necessary$
     BEGIN
-      INSERT INTO "data_access_policy"
+      INSERT INTO database."data_access_policy"
     ("HygrothermalDataId", "Combinator")
     VALUES (NEW."Id", 'all')
-    ON CONFLICT ("HygrothermalDataId") DO NOTHING;
-    RETURN NEW;
+    ON CONFLICT ("HygrothermalDataId") WHERE "HygrothermalDataId" IS NOT NULL DO NOTHING;
     RETURN NEW;
     END;
     $LC_TRIGGER_create_hygrothermal_data_access_policy_if_necessary$ LANGUAGE plpgsql;
@@ -3333,7 +3330,7 @@ BEGIN
       IF NOT EXISTS (
         SELECT 1 FROM database."get_https_resource"
         WHERE "ParentId" IS NULL
-        AND "HygrothermalDataId" = NEW.Id
+        AND "HygrothermalDataId" = NEW."Id"
     )
     THEN
         RAISE EXCEPTION 'You cannot insert data without also inserting the corresponding root resource in the same transaction.';
@@ -3352,11 +3349,10 @@ BEGIN
     IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20260611161712_AssertExistenceOfAccessPolicyAndRootResourceInPostgreSql') THEN
     CREATE FUNCTION "database"."LC_TRIGGER_create_life_cycle_data_access_policy_if_necessary"() RETURNS trigger as $LC_TRIGGER_create_life_cycle_data_access_policy_if_necessary$
     BEGIN
-      INSERT INTO "data_access_policy"
+      INSERT INTO database."data_access_policy"
     ("LifeCycleDataId", "Combinator")
     VALUES (NEW."Id", 'all')
-    ON CONFLICT ("LifeCycleDataId") DO NOTHING;
-    RETURN NEW;
+    ON CONFLICT ("LifeCycleDataId") WHERE "LifeCycleDataId" IS NOT NULL DO NOTHING;
     RETURN NEW;
     END;
     $LC_TRIGGER_create_life_cycle_data_access_policy_if_necessary$ LANGUAGE plpgsql;
@@ -3374,7 +3370,7 @@ BEGIN
       IF NOT EXISTS (
         SELECT 1 FROM database."get_https_resource"
         WHERE "ParentId" IS NULL
-        AND "LifeCycleDataId" = NEW.Id
+        AND "LifeCycleDataId" = NEW."Id"
     )
     THEN
         RAISE EXCEPTION 'You cannot insert data without also inserting the corresponding root resource in the same transaction.';
@@ -3393,11 +3389,10 @@ BEGIN
     IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20260611161712_AssertExistenceOfAccessPolicyAndRootResourceInPostgreSql') THEN
     CREATE FUNCTION "database"."LC_TRIGGER_create_optical_data_access_policy_if_necessary"() RETURNS trigger as $LC_TRIGGER_create_optical_data_access_policy_if_necessary$
     BEGIN
-      INSERT INTO "data_access_policy"
+      INSERT INTO database."data_access_policy"
     ("OpticalDataId", "Combinator")
     VALUES (NEW."Id", 'all')
-    ON CONFLICT ("OpticalDataId") DO NOTHING;
-    RETURN NEW;
+    ON CONFLICT ("OpticalDataId") WHERE "OpticalDataId" IS NOT NULL DO NOTHING;
     RETURN NEW;
     END;
     $LC_TRIGGER_create_optical_data_access_policy_if_necessary$ LANGUAGE plpgsql;
@@ -3415,7 +3410,7 @@ BEGIN
       IF NOT EXISTS (
         SELECT 1 FROM database."get_https_resource"
         WHERE "ParentId" IS NULL
-        AND "OpticalDataId" = NEW.Id
+        AND "OpticalDataId" = NEW."Id"
     )
     THEN
         RAISE EXCEPTION 'You cannot insert data without also inserting the corresponding root resource in the same transaction.';
@@ -3434,11 +3429,10 @@ BEGIN
     IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20260611161712_AssertExistenceOfAccessPolicyAndRootResourceInPostgreSql') THEN
     CREATE FUNCTION "database"."LC_TRIGGER_create_photovoltaic_data_access_policy_if_necessary"() RETURNS trigger as $LC_TRIGGER_create_photovoltaic_data_access_policy_if_necessary$
     BEGIN
-      INSERT INTO "data_access_policy"
+      INSERT INTO database."data_access_policy"
     ("PhotovoltaicDataId", "Combinator")
     VALUES (NEW."Id", 'all')
-    ON CONFLICT ("PhotovoltaicDataId") DO NOTHING;
-    RETURN NEW;
+    ON CONFLICT ("PhotovoltaicDataId") WHERE "PhotovoltaicDataId" IS NOT NULL DO NOTHING;
     RETURN NEW;
     END;
     $LC_TRIGGER_create_photovoltaic_data_access_policy_if_necessary$ LANGUAGE plpgsql;
@@ -3456,7 +3450,7 @@ BEGIN
       IF NOT EXISTS (
         SELECT 1 FROM database."get_https_resource"
         WHERE "ParentId" IS NULL
-        AND "PhotovoltaicDataId" = NEW.Id
+        AND "PhotovoltaicDataId" = NEW."Id"
     )
     THEN
         RAISE EXCEPTION 'You cannot insert data without also inserting the corresponding root resource in the same transaction.';

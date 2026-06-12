@@ -86,11 +86,10 @@ public sealed class ClearInstitutionAccessPoliciesMutation
             }
         }
 
+        var dataId = input.Data?.DataId;
         var dataAccessPolicy = await context.DataAccessPolicies
-            .SingleAsync(
-                _ => _.DataId == (input.Data == null ? null : input.Data.DataId),
-                cancellationToken
-            );
+            .Include(_ => _.InstitutionAccessPolicies)
+            .SingleAsync(_ => _.DataId == dataId, cancellationToken);
         dataAccessPolicy.InstitutionAccessPolicies.Clear();
         await context.SaveChangesAsync(cancellationToken);
         return NewPayload(dataAccessPolicy, null);

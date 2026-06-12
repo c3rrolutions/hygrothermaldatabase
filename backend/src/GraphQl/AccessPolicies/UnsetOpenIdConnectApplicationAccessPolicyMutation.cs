@@ -91,10 +91,11 @@ public sealed class UnsetOpenIdConnectApplicationAccessPolicyMutation
             }
         }
 
+        var dataId = input.Data?.DataId;
         var applicationAccessPolicy = await context.OpenIdConnectApplicationAccessPolicies
             .SingleOrDefaultAsync(_ =>
                 _.DataAccessPolicy != null
-                && _.DataAccessPolicy.DataId == (input.Data == null ? null : input.Data.DataId)
+                && _.DataAccessPolicy.DataId == dataId
                 && _.ClientId == input.ClientId,
                 cancellationToken
             );

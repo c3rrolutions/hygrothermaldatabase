@@ -36,10 +36,10 @@ public sealed class GetHttpsResourceTree(
     )
     {
         return (
-            await byId
+            (await byId
                 .With(resolverContext.GetQueryContext<GetHttpsResource>())
-                .LoadRequiredAsync(data.Id, cancellationToken)
-            )
+                .LoadAsync(data.Id, cancellationToken)
+            ) ?? [])
             .Select(_ =>
                 new GetHttpsResourceTreeNonRootVertex(_)
             )

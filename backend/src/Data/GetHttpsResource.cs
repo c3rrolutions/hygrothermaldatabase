@@ -158,43 +158,43 @@ public sealed class GetHttpsResource
     public IData? Data => CalorimetricData ?? GeometricData ?? HygrothermalData ?? LifeCycleData ?? OpticalData ?? PhotovoltaicData as IData;
 
     [NotMapped]
-    public Enumerations.DataKind? DataKind
+    public Database.Enumerations.DataKind? DataKind
     {
         get
         {
-            if (CalorimetricDataId is not null) return Enumerations.DataKind.CALORIMETRIC_DATA;
-            if (GeometricDataId is not null) return Enumerations.DataKind.GEOMETRIC_DATA;
-            if (HygrothermalDataId is not null) return Enumerations.DataKind.HYGROTHERMAL_DATA;
-            if (LifeCycleDataId is not null) return Enumerations.DataKind.LIFE_CYCLE_DATA;
-            if (OpticalDataId is not null) return Enumerations.DataKind.OPTICAL_DATA;
-            if (PhotovoltaicDataId is not null) return Enumerations.DataKind.PHOTOVOLTAIC_DATA;
+            if (CalorimetricDataId is not null) return Database.Enumerations.DataKind.CALORIMETRIC_DATA;
+            if (GeometricDataId is not null) return Database.Enumerations.DataKind.GEOMETRIC_DATA;
+            if (HygrothermalDataId is not null) return Database.Enumerations.DataKind.HYGROTHERMAL_DATA;
+            if (LifeCycleDataId is not null) return Database.Enumerations.DataKind.LIFE_CYCLE_DATA;
+            if (OpticalDataId is not null) return Database.Enumerations.DataKind.OPTICAL_DATA;
+            if (PhotovoltaicDataId is not null) return Database.Enumerations.DataKind.PHOTOVOLTAIC_DATA;
             return null;
         }
     }
 
     [Projectable]
-    public Guid? GetDataId(Enumerations.DataKind dataKind) =>
+    public Guid? GetDataId(Database.Enumerations.DataKind dataKind) =>
         dataKind switch
         {
-            Enumerations.DataKind.CALORIMETRIC_DATA => CalorimetricDataId,
-            Enumerations.DataKind.GEOMETRIC_DATA => GeometricDataId,
-            Enumerations.DataKind.HYGROTHERMAL_DATA => HygrothermalDataId,
-            Enumerations.DataKind.LIFE_CYCLE_DATA => LifeCycleDataId,
-            Enumerations.DataKind.OPTICAL_DATA => OpticalDataId,
-            Enumerations.DataKind.PHOTOVOLTAIC_DATA => PhotovoltaicDataId,
+            Database.Enumerations.DataKind.CALORIMETRIC_DATA => CalorimetricDataId,
+            Database.Enumerations.DataKind.GEOMETRIC_DATA => GeometricDataId,
+            Database.Enumerations.DataKind.HYGROTHERMAL_DATA => HygrothermalDataId,
+            Database.Enumerations.DataKind.LIFE_CYCLE_DATA => LifeCycleDataId,
+            Database.Enumerations.DataKind.OPTICAL_DATA => OpticalDataId,
+            Database.Enumerations.DataKind.PHOTOVOLTAIC_DATA => PhotovoltaicDataId,
             _ => null, // throw new ArgumentOutOfRangeException(nameof(dataKind), $"Unsupported data kind {dataKind}"),
         };
 
     [Projectable]
-    public IData? GetData(Enumerations.DataKind dataKind) =>
+    public IData? GetData(Database.Enumerations.DataKind dataKind) =>
         dataKind switch
         {
-            Enumerations.DataKind.CALORIMETRIC_DATA => CalorimetricData,
-            Enumerations.DataKind.GEOMETRIC_DATA => GeometricData,
-            Enumerations.DataKind.HYGROTHERMAL_DATA => HygrothermalData,
-            Enumerations.DataKind.LIFE_CYCLE_DATA => LifeCycleData,
-            Enumerations.DataKind.OPTICAL_DATA => OpticalData,
-            Enumerations.DataKind.PHOTOVOLTAIC_DATA => PhotovoltaicData,
+            Database.Enumerations.DataKind.CALORIMETRIC_DATA => CalorimetricData,
+            Database.Enumerations.DataKind.GEOMETRIC_DATA => GeometricData,
+            Database.Enumerations.DataKind.HYGROTHERMAL_DATA => HygrothermalData,
+            Database.Enumerations.DataKind.LIFE_CYCLE_DATA => LifeCycleData,
+            Database.Enumerations.DataKind.OPTICAL_DATA => OpticalData,
+            Database.Enumerations.DataKind.PHOTOVOLTAIC_DATA => PhotovoltaicData,
             _ => null, //throw new ArgumentOutOfRangeException(nameof(dataKind), $"Unsupported data kind {dataKind}"),
         };
 

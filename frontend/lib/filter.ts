@@ -325,7 +325,7 @@ type FieldFilterDefinition<
   | ListFilterDefinition<TPropositionInput, TKey>
   | ObjectFilterDefinition<TPropositionInput, TKey>;
 
-type AnyFilterDefinition = FieldFilterDefinition<any, any>;
+export type AnyFilterDefinition = FieldFilterDefinition<any, any>;
 
 export type FilterDefinition<TPropositionInput> = {
   [TKey in keyof TPropositionInput]: FieldFilterDefinition<
@@ -373,47 +373,64 @@ const isObjectFilterState = (
   return value.operator === undefined;
 };
 
-export type FilterStateReducerContext = readonly AnyFilterDefinition[];
-
 export const createFilterStateReducer = <TOutput>(
   reduceScalar: (
     scalar: ScalarFilterState,
-    context: FilterStateReducerContext,
+    context: ScalarFilterDefinition<any, any>,
   ) => TOutput,
   reduceList: (
     list: ListFilterState,
-    reduce: (filter: FilterState) => TOutput,
+    context: ListFilterDefinition<any, any>,
+    reduce: () => TOutput,
   ) => TOutput,
   reduceObject: (
     object: ObjectFilterState,
-    context: FilterStateReducerContext,
-    reduce: (filter: FilterState) => TOutput,
+    context: ObjectFilterDefinition<any, any>,
+    reduce: () => TOutput,
   ) => TOutput,
 ) => {
   return (
     root: ObjectFilterState,
-    initialContext: FilterStateReducerContext,
+    rootFilterDefinitions: readonly AnyFilterDefinition[],
   ): TOutput => {
     const reduce = (
       filter: FilterState,
-      context: FilterStateReducerContext,
+      context: AnyFilterDefinition,
     ): TOutput => {
       if (isScalarFilterState(filter)) {
+        if (context.type == "list" || context.type == "object") {
+          console.error("Filter: ", filter, "Context: ", context);
+          throw Error(`Expected scalar filter definition, got ${context.type}`);
+        }
         return reduceScalar(filter, context);
       }
       if (isListFilterState(filter)) {
-        return reduceList(filter, (x) => reduce(x, context));
+        if (context.type != "list") {
+          console.error("Filter: ", filter, "Context: ", context);
+          throw Error(`Expected list filter definition, got ${context.type}`);
+        }
+        return reduceList(filter, context, () =>
+          reduce(filter.value, context.item),
+        );
       }
       if (isObjectFilterState(filter)) {
-        const subContext = (
-          context[filter.index] as ObjectFilterDefinition<any, keyof any>
-        ).items;
-        return reduceObject(filter, context, (x) => reduce(x, subContext));
+        if (context.type != "object") {
+          console.error("Filter: ", filter, "Context: ", context);
+          throw Error(`Expected object filter definition, got ${context.type}`);
+        }
+        return reduceObject(filter, context, () =>
+          reduce(filter.value, context.items[filter.index]),
+        );
       }
       return assertNever(filter);
     };
-    return reduceObject(root, initialContext, (object) =>
-      reduce(object, initialContext),
+    const rootFilterDefinition: ObjectFilterDefinition<any, any> = {
+      type: "object",
+      field: "root",
+      items: rootFilterDefinitions as FilterDefinition<any>[],
+    };
+    return reduceObject(root, rootFilterDefinition, () =>
+      reduce(root.value, rootFilterDefinition.items[root.index]),
     );
   };
 };
@@ -426,13 +443,13 @@ export const createFilterDefinitionReducer = <
   reduceScalar: (scalar: ScalarFilterDefinition<any, any>) => TScalarOutput,
   reduceList: (
     list: ListFilterDefinition<any, any>,
-    reduce: (
+    reduceValue: (
       filter: AnyFilterDefinition,
     ) => TScalarOutput | TListOutput | TObjectOutput,
   ) => TListOutput,
   reduceObject: (
     object: ObjectFilterDefinition<any, any>,
-    reduce: (
+    reduceValue: (
       filter: AnyFilterDefinition,
     ) => TScalarOutput | TListOutput | TObjectOutput,
   ) => TObjectOutput,
@@ -461,8 +478,8 @@ export const createFilterDefinitionReducer = <
 
 // to GraphQL filter input, for example, to `{ name: { contains: "Simon" } }`
 export const toWhereClause = <TPropositionInput>(
-  filter: ObjectFilterState,
-  configs: readonly FilterDefinition<TPropositionInput>[],
+  root: ObjectFilterState,
+  rootFilterDefinitions: readonly FilterDefinition<TPropositionInput>[],
 ): TPropositionInput =>
   // the initial context type is `readonly FilterDefinition<TPropositionInput>[]` and subsequent
   // types are of the form `readonly FilterDefinition<TPropositionInput[keyof TPropositionInput]>[]`
@@ -470,13 +487,13 @@ export const toWhereClause = <TPropositionInput>(
     (scalar, _) => ({
       [scalar.operator]: scalar.value,
     }),
-    (list, reduce) => ({
-      [list.operator]: reduce(list.value),
+    (list, _, reduceValue) => ({
+      [list.operator]: reduceValue(),
     }),
-    (object, context, reduce) => ({
-      [context[object.index].field]: reduce(object.value),
+    (object, context, reduceValue) => ({
+      [context.items[object.index].field]: reduceValue(),
     }),
-  )(filter, configs as FilterStateReducerContext) as TPropositionInput;
+  )(root, rootFilterDefinitions as AnyFilterDefinition[]) as TPropositionInput;
 
 export const getInitialFilterSubformValues = (
   filterDefinition: AnyFilterDefinition,

@@ -20,9 +20,14 @@ public sealed class UserService(
     /// <summary>
     /// Get client ID from user claims.
     /// </summary>
-    public string? GetOpenIdConnectAuthorizedPartyClientId()
+    public string? GetOpenIdConnectApplicationClientId()
     {
-        return httpContextAccessor.HttpContext?.User.GetClaim(OpenIddictConstants.Claims.AuthorizedParty);
+        // `client_id` (Standard OAuth2 Claim) is the client ID of the application that requested the access token
+        // `azp` (Authorized Party - Standard OpenID Connect Claim) is the the client ID of the application to which the ID token or access token was issued
+        // `oi_prst` (OpenIddict Presenter - Private Internal Claim) is OpenIddict's proprietary, internal equivalent to `client_id` or `azp`
+        return httpContextAccessor.HttpContext?.User.GetClaim(OpenIddictConstants.Claims.ClientId)
+            ?? httpContextAccessor.HttpContext?.User.GetClaim(OpenIddictConstants.Claims.AuthorizedParty)
+            ?? httpContextAccessor.HttpContext?.User.GetClaim(OpenIddictConstants.Claims.Private.Presenter);
     }
 
     public async Task<T> SwitchUserOrInstitutionAsync<T>(

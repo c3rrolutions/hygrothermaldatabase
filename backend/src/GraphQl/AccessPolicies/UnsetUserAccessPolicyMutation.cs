@@ -92,10 +92,11 @@ public sealed class UnsetUserAccessPolicyMutation
             }
         }
 
+        var dataId = input.Data?.DataId;
         var userAccessPolicy = await context.UserAccessPolicies
             .SingleOrDefaultAsync(_ =>
                 _.DataAccessPolicy != null
-                && _.DataAccessPolicy.DataId == (input.Data == null ? null : input.Data.DataId)
+                && _.DataAccessPolicy.DataId == dataId
                 && _.UserId == input.UserId,
                 cancellationToken
             );

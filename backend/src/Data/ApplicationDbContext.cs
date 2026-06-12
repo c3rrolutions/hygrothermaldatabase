@@ -410,7 +410,7 @@ public sealed class ApplicationDbContext
                         IF NOT EXISTS (
                             SELECT 1 FROM {_schemaName}.{GetHttpsResource.TableName.Enquote()}
                             WHERE {nameof(GetHttpsResource.ParentId).Enquote()} IS NULL
-                            AND {dataIdColumn.Enquote()} = NEW.{nameof(IData.Id)}
+                            AND {dataIdColumn.Enquote()} = NEW.{nameof(IData.Id).Enquote()}
                         )
                         THEN
                             RAISE EXCEPTION 'You cannot insert data without also inserting the corresponding root resource in the same transaction.';
@@ -422,7 +422,7 @@ public sealed class ApplicationDbContext
         return builder;
     }
 
-    private static
+    private
         EntityTypeBuilder<TData>
         AddTriggerThatCreatesDataAccessPolicyIfNecessary<TData>(
             EntityTypeBuilder<TData> builder,
@@ -440,11 +440,10 @@ public sealed class ApplicationDbContext
                 .Action(action => action
                     .ExecuteRawSql(
                         $"""
-                        INSERT INTO {DataAccessPolicy.TableName.Enquote()}
+                        INSERT INTO {_schemaName}.{DataAccessPolicy.TableName.Enquote()}
                         ({dataIdColumn.Enquote()}, {nameof(DataAccessPolicy.Combinator).Enquote()})
                         VALUES (NEW.{nameof(IEntity.Id).Enquote()}, '{LogicalCombinator.ALL.ToString().ToLowerInvariant()}')
-                        ON CONFLICT ({dataIdColumn.Enquote()}) DO NOTHING;
-                        RETURN NEW;
+                        ON CONFLICT ({dataIdColumn.Enquote()}) WHERE {dataIdColumn.Enquote()} IS NOT NULL DO NOTHING;
                         """
                     )
                 // an alternative is

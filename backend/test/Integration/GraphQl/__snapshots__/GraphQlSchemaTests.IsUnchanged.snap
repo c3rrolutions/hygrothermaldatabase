@@ -265,7 +265,7 @@ type Query {
   calorimetricData(id: Uuid!, locale: Locale): CalorimetricData
     @cost(weight: "10")
   currentInstitution: CurrentInstitution @cost(weight: "10")
-  currentUser: User @cost(weight: "10")
+  currentUser: CurrentUser @cost(weight: "10")
   currentUserInfo: UserInfo! @cost(weight: "10")
   data(dataKind: DataKind!, id: Uuid!, locale: Locale): Data @cost(weight: "10")
   database: Database! @cost(weight: "10")
@@ -291,6 +291,7 @@ type Query {
       requireOneSlicingArgument: false
     )
     @cost(weight: "10")
+  globalDataAccessPolicy: DataAccessPolicy @cost(weight: "10")
   hasCalorimetricData(
     locale: Locale
     where: CalorimetricDataPropositionInput @cost(weight: "10")
@@ -317,18 +318,11 @@ type Query {
   ): Boolean! @cost(weight: "10")
   hygrothermalData(id: Uuid!, locale: Locale): HygrothermalData
     @cost(weight: "10")
-  institutionAccessPolicies: [InstitutionAccessPolicy!]! @cost(weight: "10")
-  institutionAccessPolicy(institutionId: Uuid!): InstitutionAccessPolicy
-    @cost(weight: "10")
   lifeCycleData(id: Uuid!, locale: Locale): LifeCycleData @cost(weight: "10")
   "Fetches an object given its ID."
   node("ID of the object." id: ID!): Node @cost(weight: "10")
   "Lookup nodes by a list of IDs."
   nodes("The list of node IDs." ids: [ID!]!): [Node]! @cost(weight: "10")
-  openIdConnectApplicationAccessPolicies: [OpenIdConnectApplicationAccessPolicy!]!
-    @cost(weight: "10")
-  openIdConnectApplicationAccessPolicy(clientId: String!): OpenIdConnectApplicationAccessPolicy
-    @cost(weight: "10")
   opticalData(id: Uuid!, locale: Locale): OpticalData @cost(weight: "10")
   pendingGetHttpsResources(
     "Returns the elements in the list that come after the specified cursor."
@@ -352,15 +346,12 @@ type Query {
     @cost(weight: "10")
   photovoltaicData(id: Uuid!, locale: Locale): PhotovoltaicData
     @cost(weight: "10")
-  userAccessPolicies: [UserAccessPolicy!]! @cost(weight: "10")
-  userAccessPolicy(userId: Uuid!): UserAccessPolicy @cost(weight: "10")
   verificationCode: String!
 }
 
 type Mutation {
   addDataApproval(input: AddDataApprovalInput!): AddDataApprovalPayload!
     @cost(weight: "10")
-  clearDataAccessPolicies: ClearDataAccessPoliciesPayload! @cost(weight: "10")
   clearInstitutionAccessPolicies(input: ClearInstitutionAccessPoliciesInput!): ClearInstitutionAccessPoliciesPayload!
     @cost(weight: "10")
   clearOpenIdConnectApplicationAccessPolicies(
@@ -368,6 +359,14 @@ type Mutation {
   ): ClearOpenIdConnectApplicationAccessPoliciesPayload! @cost(weight: "10")
   clearUserAccessPolicies(input: ClearUserAccessPoliciesInput!): ClearUserAccessPoliciesPayload!
     @cost(weight: "10")
+  configureDataAccessPolicies(
+    input: ConfigureDataAccessPoliciesInput!
+    where: ConfigureDataAccessPoliciesPropositionInput @cost(weight: "10")
+  ): ConfigureDataAccessPoliciesPayload! @cost(weight: "10")
+  configureDataAccessPolicy(
+    input: ConfigureDataAccessPolicyInput!
+    where: ConfigureDataAccessPolicyPropositionInput @cost(weight: "10")
+  ): ConfigureDataAccessPolicyPayload! @cost(weight: "10")
   createCalorimetricData(input: CreateCalorimetricDataInput!): CreateCalorimetricDataPayload!
     @cost(weight: "10")
   createGeometricData(input: CreateGeometricDataInput!): CreateGeometricDataPayload!
@@ -394,6 +393,11 @@ type Mutation {
   ): RecomputeGetHttpsResourceHashValuesPayload! @cost(weight: "10")
   removeDataApproval(input: RemoveDataApprovalInput!): RemoveDataApprovalPayload!
     @cost(weight: "10")
+  resetDataAccessPolicies(
+    where: ResetDataAccessPoliciesPropositionInput @cost(weight: "10")
+  ): ResetDataAccessPoliciesPayload! @cost(weight: "10")
+  resetDataAccessPolicy(input: ResetDataAccessPolicyInput!): ResetDataAccessPolicyPayload!
+    @cost(weight: "10")
   retractData(input: RetractDataInput!): RetractDataPayload! @cost(weight: "10")
   setGetHttpsResourceParent(input: SetGetHttpsResourceParentInput!): SetGetHttpsResourceParentPayload!
     @cost(weight: "10")
@@ -403,8 +407,6 @@ type Mutation {
     input: SetOpenIdConnectApplicationAccessPolicyInput!
   ): SetOpenIdConnectApplicationAccessPolicyPayload! @cost(weight: "10")
   setUserAccessPolicy(input: SetUserAccessPolicyInput!): SetUserAccessPolicyPayload!
-    @cost(weight: "10")
-  unsetDataAccessPolicy(input: UnsetDataAccessPolicyInput!): UnsetDataAccessPolicyPayload!
     @cost(weight: "10")
   unsetInstitutionAccessPolicy(input: UnsetInstitutionAccessPolicyInput!): UnsetInstitutionAccessPolicyPayload!
     @cost(weight: "10")
@@ -474,6 +476,7 @@ type CalorimetricData implements Node & Data {
   description: String
   gValues: [Float!]!
   id: ID!
+  kind: DataKind!
   locale: Locale!
   name: String
   resources(
@@ -512,18 +515,6 @@ type CielabColor {
   illuminant: Illuminant
   lStar: Float!
   observer: CalorimetricObserver
-}
-
-type ClearDataAccessPoliciesError implements UserError {
-  code: ClearDataAccessPoliciesErrorCode!
-  message: String!
-  path: [String!]!
-}
-
-type ClearDataAccessPoliciesPayload {
-  dataAccessPolicy: [DataAccessPolicy!]
-  errors: [ClearDataAccessPoliciesError!]
-  query: Query!
 }
 
 type ClearInstitutionAccessPoliciesError implements UserError {
@@ -565,6 +556,30 @@ type ClearUserAccessPoliciesPayload {
 type Component {
   name: String!
   uuid: Uuid!
+}
+
+type ConfigureDataAccessPoliciesError implements UserError {
+  code: ConfigureDataAccessPoliciesErrorCode!
+  message: String!
+  path: [String!]!
+}
+
+type ConfigureDataAccessPoliciesPayload {
+  dataAccessPolicies: [DataAccessPolicy!]
+  errors: [ConfigureDataAccessPoliciesError!]
+  query: Query!
+}
+
+type ConfigureDataAccessPolicyError implements UserError {
+  code: ConfigureDataAccessPolicyErrorCode!
+  message: String!
+  path: [String!]!
+}
+
+type ConfigureDataAccessPolicyPayload {
+  dataAccessPolicy: DataAccessPolicy
+  errors: [ConfigureDataAccessPolicyError!]
+  query: Query!
 }
 
 type CountSinceTime {
@@ -684,6 +699,14 @@ type CurrentInstitution {
   uuid: Uuid!
 }
 
+type CurrentUser {
+  databaseOperatingRepresentedInstitutions: UserRepresentedInstitutionConnection!
+  isAtLeastAssistantManagerOfDatabaseOperator: Boolean!
+  name: String!
+  representedInstitutions: UserRepresentedInstitutionConnection!
+  uuid: Uuid!
+}
+
 type DataAccessPolicy {
   calorimetricData: CalorimetricData
   calorimetricDataId: Uuid
@@ -696,21 +719,30 @@ type DataAccessPolicy {
   hygrothermalData: HygrothermalData
   hygrothermalDataId: Uuid
   id: Uuid!
-  institutionAccessPolicies: [InstitutionAccessPolicy!]!
-  isAllowed(
+  institutionAccessPolicies(
+    order: [InstitutionAccessPolicySortInput!]
+    where: InstitutionAccessPolicyPropositionInput
+  ): [InstitutionAccessPolicy!]!
+  isAccessAllowed(
     currentUser: CurrentUserInput
     institutionIds: [Uuid!]
     openIdConnectClientId: String
   ): Boolean!
   lifeCycleData: LifeCycleData
   lifeCycleDataId: Uuid
-  openIdConnectApplicationAccessPolicies: [OpenIdConnectApplicationAccessPolicy!]!
+  openIdConnectApplicationAccessPolicies(
+    order: [OpenIdConnectApplicationAccessPolicySortInput!]
+    where: OpenIdConnectApplicationAccessPolicyPropositionInput
+  ): [OpenIdConnectApplicationAccessPolicy!]!
   opticalData: OpticalData
   opticalDataId: Uuid
   photovoltaicData: PhotovoltaicData
   photovoltaicDataId: Uuid
   updatedAt: DateTime!
-  userAccessPolicies: [UserAccessPolicy!]!
+  userAccessPolicies(
+    order: [UserAccessPolicySortInput!]
+    where: UserAccessPolicyPropositionInput
+  ): [UserAccessPolicy!]!
   version: NonNegativeInt!
 }
 
@@ -813,6 +845,7 @@ type GeometricData implements Node & Data {
   description: String
   heights: [Float!]!
   id: ID!
+  kind: DataKind!
   locale: Locale!
   name: String
   resources(
@@ -847,6 +880,7 @@ type GeometricDataEdge {
 }
 
 type GetHttpsResource implements Node {
+  absoluteFilePath: String!
   appliedConversionMethod: ToTreeVertexAppliedConversionMethod
   archivedFilesMetaInformation: [FileMetaInformation!]!
   children: [GetHttpsResource!]! @cost(weight: "0")
@@ -854,6 +888,7 @@ type GetHttpsResource implements Node {
   data: Data @cost(weight: "0")
   dataFormat: DataFormat @cost(weight: "3")
   dataFormatId: Uuid!
+  dataKind: DataKind
   description: String
   doesFileExist: Boolean!
   hashValue: String!
@@ -918,6 +953,7 @@ type HygrothermalData implements Node & Data {
   databaseId: Uuid!
   description: String
   id: ID!
+  kind: DataKind!
   locale: Locale!
   name: String
   resources(
@@ -954,18 +990,32 @@ type Institution {
   uuid: Uuid!
 }
 
-type InstitutionAccessPolicy {
+type InstitutionAccessPolicy implements Node {
   accessCountSinceStartTime: CountSinceTime
   createdAt: DateTime!
   dataAccessPolicy: DataAccessPolicy
   dataAccessPolicyId: Uuid!
-  id: Uuid!
+  id: ID!
   institutionId: Uuid!
-  isAllowed: Boolean!
+  isAccessAllowed: Boolean!
   isWithinTimeSpan: Boolean!
   updatedAt: DateTime!
   upperAccessLimitPerTimeDuration: UpperLimitPerDuration
-  version: NonNegativeInt!
+  uuid: Uuid!
+}
+
+type InstitutionManagedInstitutionConnection {
+  edges: [InstitutionManagedInstitutionEdge!]!
+  totalCount: NonNegativeInt!
+}
+
+type InstitutionManagedInstitutionEdge {
+  node: InstitutionManagedInstitutionNode!
+}
+
+type InstitutionManagedInstitutionNode {
+  name: String!
+  uuid: Uuid!
 }
 
 type LifeCycleData implements Node & Data {
@@ -982,6 +1032,7 @@ type LifeCycleData implements Node & Data {
   databaseId: Uuid!
   description: String
   id: ID!
+  kind: DataKind!
   locale: Locale!
   name: String
   resources(
@@ -1039,18 +1090,18 @@ type OpenEndedDateTimeRange {
   until: DateTime @cost(weight: "10")
 }
 
-type OpenIdConnectApplicationAccessPolicy {
+type OpenIdConnectApplicationAccessPolicy implements Node {
   accessCountSinceStartTime: CountSinceTime
   clientId: String!
   createdAt: DateTime!
   dataAccessPolicy: DataAccessPolicy
   dataAccessPolicyId: Uuid!
-  id: Uuid!
-  isAllowed: Boolean!
+  id: ID!
+  isAccessAllowed: Boolean!
   isWithinTimeSpan: Boolean!
   updatedAt: DateTime!
   upperAccessLimitPerTimeDuration: UpperLimitPerDuration
-  version: NonNegativeInt!
+  uuid: Uuid!
 }
 
 type OpticalData implements Node & Data {
@@ -1071,6 +1122,7 @@ type OpticalData implements Node & Data {
   description: String
   id: ID!
   infraredEmittances: [Float!]!
+  kind: DataKind!
   locale: Locale!
   name: String
   nearnormalHemisphericalSolarReflectances: [Float!]!
@@ -1134,6 +1186,7 @@ type PhotovoltaicData implements Node & Data {
   databaseId: Uuid!
   description: String
   id: ID!
+  kind: DataKind!
   locale: Locale!
   name: String
   resources(
@@ -1214,6 +1267,30 @@ type RemoveDataApprovalError implements UserError {
 type RemoveDataApprovalPayload {
   dataApproval: DataApproval
   errors: [RemoveDataApprovalError!]
+  query: Query!
+}
+
+type ResetDataAccessPoliciesError implements UserError {
+  code: ResetDataAccessPoliciesErrorCode!
+  message: String!
+  path: [String!]!
+}
+
+type ResetDataAccessPoliciesPayload {
+  dataAccessPolicies: [DataAccessPolicy!]
+  errors: [ResetDataAccessPoliciesError!]
+  query: Query!
+}
+
+type ResetDataAccessPolicyError implements UserError {
+  code: ResetDataAccessPolicyErrorCode!
+  message: String!
+  path: [String!]!
+}
+
+type ResetDataAccessPolicyPayload {
+  dataAccessPolicy: DataAccessPolicy
+  errors: [ResetDataAccessPolicyError!]
   query: Query!
 }
 
@@ -1305,18 +1382,6 @@ type ToTreeVertexAppliedConversionMethod {
   method: Method @cost(weight: "3")
   methodId: Uuid!
   sourceName: String!
-}
-
-type UnsetDataAccessPolicyError implements UserError {
-  code: UnsetDataAccessPolicyErrorCode!
-  message: String!
-  path: [String!]!
-}
-
-type UnsetDataAccessPolicyPayload {
-  dataAccessPolicy: DataAccessPolicy
-  errors: [UnsetDataAccessPolicyError!]
-  query: Query!
 }
 
 type UnsetInstitutionAccessPolicyError implements UserError {
@@ -1429,18 +1494,18 @@ type User implements Node {
   uuid: Uuid!
 }
 
-type UserAccessPolicy {
+type UserAccessPolicy implements Node {
   accessCountSinceStartTime: CountSinceTime
   createdAt: DateTime!
   dataAccessPolicy: DataAccessPolicy
   dataAccessPolicyId: Uuid!
-  id: Uuid!
-  isAllowed: Boolean!
+  id: ID!
+  isAccessAllowed: Boolean!
   isWithinTimeSpan: Boolean!
   updatedAt: DateTime!
   upperAccessLimitPerTimeDuration: UpperLimitPerDuration
   userId: Uuid!
-  version: NonNegativeInt!
+  uuid: Uuid!
 }
 
 type UserInfo {
@@ -1453,6 +1518,22 @@ type UserInfo {
   roles: [String!]
   sub: String!
   website: String
+}
+
+type UserRepresentedInstitutionConnection {
+  edges: [UserRepresentedInstitutionEdge!]!
+  totalCount: NonNegativeInt!
+}
+
+type UserRepresentedInstitutionEdge {
+  node: UserRepresentedInstitutionNode!
+  role: InstitutionRepresentativeRole!
+}
+
+type UserRepresentedInstitutionNode {
+  managedInstitutions: InstitutionManagedInstitutionConnection!
+  name: String!
+  uuid: Uuid!
 }
 
 interface Approval {
@@ -1479,6 +1560,7 @@ interface Data {
   databaseId: Uuid!
   description: String
   id: ID!
+  kind: DataKind!
   locale: Locale!
   name: String
   resources: [GetHttpsResource!]!
@@ -1624,6 +1706,52 @@ input ClosedIntervalInput {
   upperBound: Float!
 }
 
+input ConfigureDataAccessPoliciesInput {
+  combinator: LogicalCombinator!
+}
+
+input ConfigureDataAccessPoliciesPropositionInput {
+  and: [ConfigureDataAccessPoliciesPropositionInput!]
+  calorimetricData: CalorimetricDataPropositionInput
+  combinator: LogicalCombinatorPropositionInput
+  geometricData: GeometricDataPropositionInput
+  hygrothermalData: HygrothermalDataPropositionInput
+  institutionAccessPolicies: FilterInputTypeOfInstitutionAccessPolicysPropositionInput
+  lifeCycleData: LifeCycleDataPropositionInput
+  openIdConnectApplicationAccessPolicies: FilterInputTypeOfOpenIdConnectApplicationAccessPolicysPropositionInput
+  opticalData: OpticalDataPropositionInput
+  or: [ConfigureDataAccessPoliciesPropositionInput!]
+  photovoltaicData: PhotovoltaicDataPropositionInput
+  userAccessPolicies: FilterInputTypeOfUserAccessPolicysPropositionInput
+}
+
+input ConfigureDataAccessPolicyInput {
+  combinator: LogicalCombinator!
+  data: DataReferenceInput
+}
+
+input ConfigureDataAccessPolicyPropositionInput {
+  and: [ConfigureDataAccessPolicyPropositionInput!]
+  calorimetricData: CalorimetricDataPropositionInput
+  combinator: LogicalCombinatorPropositionInput
+  geometricData: GeometricDataPropositionInput
+  hygrothermalData: HygrothermalDataPropositionInput
+  institutionAccessPolicies: FilterInputTypeOfInstitutionAccessPolicysPropositionInput
+  lifeCycleData: LifeCycleDataPropositionInput
+  openIdConnectApplicationAccessPolicies: FilterInputTypeOfOpenIdConnectApplicationAccessPolicysPropositionInput
+  opticalData: OpticalDataPropositionInput
+  or: [ConfigureDataAccessPolicyPropositionInput!]
+  photovoltaicData: PhotovoltaicDataPropositionInput
+  userAccessPolicies: FilterInputTypeOfUserAccessPolicysPropositionInput
+}
+
+input CountSinceTimePropositionInput {
+  accessCount: NonNegativeIntPropositionInput
+  and: [CountSinceTimePropositionInput!]
+  or: [CountSinceTimePropositionInput!]
+  startTime: DateTimePropositionInput
+}
+
 input CreateCalorimetricDataInput {
   appliedMethod: AppliedMethodInput!
   componentId: Uuid!
@@ -1757,6 +1885,21 @@ input CurrentUserInput {
   name: String!
   representedInstitutions: UserRepresentedInstitutionConnectionInput!
   uuid: Uuid!
+}
+
+input DataAccessPolicyPropositionInput {
+  and: [DataAccessPolicyPropositionInput!]
+  calorimetricData: CalorimetricDataPropositionInput
+  combinator: LogicalCombinatorPropositionInput
+  geometricData: GeometricDataPropositionInput
+  hygrothermalData: HygrothermalDataPropositionInput
+  institutionAccessPolicies: FilterInputTypeOfInstitutionAccessPolicysPropositionInput
+  lifeCycleData: LifeCycleDataPropositionInput
+  openIdConnectApplicationAccessPolicies: FilterInputTypeOfOpenIdConnectApplicationAccessPolicysPropositionInput
+  opticalData: OpticalDataPropositionInput
+  or: [DataAccessPolicyPropositionInput!]
+  photovoltaicData: PhotovoltaicDataPropositionInput
+  userAccessPolicies: FilterInputTypeOfUserAccessPolicysPropositionInput
 }
 
 input DataApprovalPropositionInput {
@@ -1908,6 +2051,13 @@ input FilterInputTypeOfGetHttpsResourcesPropositionInput {
   some: GetHttpsResourceTreeNonRootVertexPropositionInput @cost(weight: "10")
 }
 
+input FilterInputTypeOfInstitutionAccessPolicysPropositionInput {
+  all: InstitutionAccessPolicyPropositionInput @cost(weight: "10")
+  any: Boolean @cost(weight: "10")
+  none: InstitutionAccessPolicyPropositionInput @cost(weight: "10")
+  some: InstitutionAccessPolicyPropositionInput @cost(weight: "10")
+}
+
 input FilterInputTypeOfNamedMethodArgumentsPropositionInput {
   all: NamedMethodArgumentPropositionInput @cost(weight: "10")
   any: Boolean @cost(weight: "10")
@@ -1920,6 +2070,20 @@ input FilterInputTypeOfNamedMethodSourcesPropositionInput {
   any: Boolean @cost(weight: "10")
   none: NamedMethodSourcePropositionInput @cost(weight: "10")
   some: NamedMethodSourcePropositionInput @cost(weight: "10")
+}
+
+input FilterInputTypeOfOpenIdConnectApplicationAccessPolicysPropositionInput {
+  all: OpenIdConnectApplicationAccessPolicyPropositionInput @cost(weight: "10")
+  any: Boolean @cost(weight: "10")
+  none: OpenIdConnectApplicationAccessPolicyPropositionInput @cost(weight: "10")
+  some: OpenIdConnectApplicationAccessPolicyPropositionInput @cost(weight: "10")
+}
+
+input FilterInputTypeOfUserAccessPolicysPropositionInput {
+  all: UserAccessPolicyPropositionInput @cost(weight: "10")
+  any: Boolean @cost(weight: "10")
+  none: UserAccessPolicyPropositionInput @cost(weight: "10")
+  some: UserAccessPolicyPropositionInput @cost(weight: "10")
 }
 
 input FloatPropositionInput {
@@ -2057,9 +2221,12 @@ input HygrothermalDataSortInput {
 }
 
 input InstitutionAccessPolicyPropositionInput {
+  accessCountSinceStartTime: CountSinceTimePropositionInput
   and: [InstitutionAccessPolicyPropositionInput!]
+  dataAccessPolicy: DataAccessPolicyPropositionInput
   institutionId: UuidPropositionInput
   or: [InstitutionAccessPolicyPropositionInput!]
+  upperAccessLimitPerTimeDuration: UpperLimitPerDurationPropositionInput
 }
 
 input InstitutionAccessPolicySortInput {
@@ -2183,6 +2350,13 @@ input LocalTimePropositionInput {
   notLessThanOrEqualTo: LocalTime @cost(weight: "10")
 }
 
+input LogicalCombinatorPropositionInput {
+  equalTo: LogicalCombinator @cost(weight: "10")
+  in: [LogicalCombinator!] @cost(weight: "10")
+  notEqualTo: LogicalCombinator @cost(weight: "10")
+  notIn: [LogicalCombinator!] @cost(weight: "10")
+}
+
 input LongPropositionInput {
   equalTo: Long @cost(weight: "10")
   greaterThan: Long @cost(weight: "10")
@@ -2223,6 +2397,21 @@ input NamedMethodSourcePropositionInput {
   name: StringPropositionInput
   or: [NamedMethodSourcePropositionInput!]
   value: CrossDatabaseDataReferencePropositionInput
+}
+
+input NonNegativeIntPropositionInput {
+  equalTo: NonNegativeInt @cost(weight: "10")
+  greaterThan: NonNegativeInt @cost(weight: "10")
+  greaterThanOrEqualTo: NonNegativeInt @cost(weight: "10")
+  in: [NonNegativeInt] @cost(weight: "10")
+  lessThan: NonNegativeInt @cost(weight: "10")
+  lessThanOrEqualTo: NonNegativeInt @cost(weight: "10")
+  notEqualTo: NonNegativeInt @cost(weight: "10")
+  notGreaterThan: NonNegativeInt @cost(weight: "10")
+  notGreaterThanOrEqualTo: NonNegativeInt @cost(weight: "10")
+  notIn: [NonNegativeInt] @cost(weight: "10")
+  notLessThan: NonNegativeInt @cost(weight: "10")
+  notLessThanOrEqualTo: NonNegativeInt @cost(weight: "10")
 }
 
 input NullableOfCalorimetricObserverPropositionInput {
@@ -2281,9 +2470,12 @@ input NumerationSortInput {
 }
 
 input OpenIdConnectApplicationAccessPolicyPropositionInput {
+  accessCountSinceStartTime: CountSinceTimePropositionInput
   and: [OpenIdConnectApplicationAccessPolicyPropositionInput!]
   clientId: StringPropositionInput
+  dataAccessPolicy: DataAccessPolicyPropositionInput
   or: [OpenIdConnectApplicationAccessPolicyPropositionInput!]
+  upperAccessLimitPerTimeDuration: UpperLimitPerDurationPropositionInput
 }
 
 input OpenIdConnectApplicationAccessPolicySortInput {
@@ -2449,6 +2641,25 @@ input RemoveDataApprovalInput {
   signature: String!
 }
 
+input ResetDataAccessPoliciesPropositionInput {
+  and: [ResetDataAccessPoliciesPropositionInput!]
+  calorimetricData: CalorimetricDataPropositionInput
+  combinator: LogicalCombinatorPropositionInput
+  geometricData: GeometricDataPropositionInput
+  hygrothermalData: HygrothermalDataPropositionInput
+  institutionAccessPolicies: FilterInputTypeOfInstitutionAccessPolicysPropositionInput
+  lifeCycleData: LifeCycleDataPropositionInput
+  openIdConnectApplicationAccessPolicies: FilterInputTypeOfOpenIdConnectApplicationAccessPolicysPropositionInput
+  opticalData: OpticalDataPropositionInput
+  or: [ResetDataAccessPoliciesPropositionInput!]
+  photovoltaicData: PhotovoltaicDataPropositionInput
+  userAccessPolicies: FilterInputTypeOfUserAccessPolicysPropositionInput
+}
+
+input ResetDataAccessPolicyInput {
+  data: DataReferenceInput
+}
+
 input RetractDataInput {
   dataId: Uuid!
   dataKind: DataKind!
@@ -2591,10 +2802,6 @@ input ToTreeVertexAppliedConversionMethodSortInput {
   sourceName: SortEnumType @cost(weight: "10")
 }
 
-input UnsetDataAccessPolicyInput {
-  data: DataReferenceInput
-}
-
 input UnsetInstitutionAccessPolicyInput {
   data: DataReferenceInput
   institutionId: Uuid!
@@ -2664,6 +2871,13 @@ input UpperLimitPerDurationInput {
   upperLimit: NonNegativeInt!
 }
 
+input UpperLimitPerDurationPropositionInput {
+  and: [UpperLimitPerDurationPropositionInput!]
+  duration: DurationPropositionInput
+  or: [UpperLimitPerDurationPropositionInput!]
+  upperLimit: NonNegativeIntPropositionInput
+}
+
 input UriSortInput {
   absolutePath: SortEnumType @cost(weight: "10")
   absoluteUri: SortEnumType @cost(weight: "10")
@@ -2704,8 +2918,11 @@ input UrlPropositionInput {
 }
 
 input UserAccessPolicyPropositionInput {
+  accessCountSinceStartTime: CountSinceTimePropositionInput
   and: [UserAccessPolicyPropositionInput!]
+  dataAccessPolicy: DataAccessPolicyPropositionInput
   or: [UserAccessPolicyPropositionInput!]
+  upperAccessLimitPerTimeDuration: UpperLimitPerDurationPropositionInput
   userId: UuidPropositionInput
 }
 
@@ -2783,32 +3000,25 @@ enum CalorimetricObserver {
   TEN_DEGREES
 }
 
-enum ClearDataAccessPoliciesErrorCode {
+enum ClearInstitutionAccessPoliciesErrorCode {
   UNKNOWN
   UNAUTHENTICATED
   UNAUTHORIZED
   UNKNOWN_DATA
 }
 
-enum ClearInstitutionAccessPoliciesErrorCode {
-  UNKNOWN
-  UNAUTHENTICATED
-  UNAUTHORIZED
-  UNKNOWN_DATA_POLICY
-}
-
 enum ClearOpenIdConnectApplicationAccessPoliciesErrorCode {
   UNKNOWN
   UNAUTHENTICATED
   UNAUTHORIZED
-  UNKNOWN_DATA_POLICY
+  UNKNOWN_DATA
 }
 
 enum ClearUserAccessPoliciesErrorCode {
   UNKNOWN
   UNAUTHENTICATED
   UNAUTHORIZED
-  UNKNOWN_DATA_POLICY
+  UNKNOWN_DATA
 }
 
 enum CoatedSide {
@@ -2818,6 +3028,19 @@ enum CoatedSide {
   NEITHER
   UNKNOWN
   NOT_APPLICABLE
+}
+
+enum ConfigureDataAccessPoliciesErrorCode {
+  UNKNOWN
+  UNAUTHENTICATED
+  UNAUTHORIZED
+}
+
+enum ConfigureDataAccessPolicyErrorCode {
+  UNKNOWN
+  UNAUTHENTICATED
+  UNAUTHORIZED
+  UNKNOWN_DATA
 }
 
 enum CreateCalorimetricDataErrorCode {
@@ -3039,6 +3262,19 @@ enum RemoveDataApprovalErrorCode {
   CREATING_RESPONSE_APPROVAL_FAILED
 }
 
+enum ResetDataAccessPoliciesErrorCode {
+  UNKNOWN
+  UNAUTHENTICATED
+  UNAUTHORIZED
+}
+
+enum ResetDataAccessPolicyErrorCode {
+  UNKNOWN
+  UNAUTHENTICATED
+  UNAUTHORIZED
+  UNKNOWN_DATA
+}
+
 enum RetractDataErrorCode {
   UNAUTHENTICATED
   UNAUTHORIZED
@@ -3112,14 +3348,6 @@ enum Standardizer {
   VDI
   VFF
   WELL
-}
-
-enum UnsetDataAccessPolicyErrorCode {
-  UNKNOWN
-  UNAUTHENTICATED
-  UNAUTHORIZED
-  UNKNOWN_DATA
-  UNKNOWN_POLICY
 }
 
 enum UnsetInstitutionAccessPolicyErrorCode {

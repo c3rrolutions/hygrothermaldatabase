@@ -12,7 +12,6 @@ using Database.ApiRequests;
 using HotChocolate.Types;
 using Microsoft.EntityFrameworkCore;
 using GraphQL.Client.Abstractions.Utilities;
-using Database.Enumerations;
 
 namespace Database.GraphQl.AccessPolicies;
 
@@ -111,11 +110,9 @@ public sealed class SetInstitutionAccessPolicyMutation
             return NewPayload(null, errors);
         }
 
+        var dataId = input.Data?.DataId;
         var dataAccessPolicy = await context.DataAccessPolicies
-            .SingleAsync(
-                _ => _.DataId == (input.Data == null ? null : input.Data.DataId),
-                cancellationToken
-            );
+            .SingleAsync(_ => _.DataId == dataId, cancellationToken);
         var institutionAccessPolicy = await context.InstitutionAccessPolicies
             .SingleOrDefaultAsync(_ =>
                 _.DataAccessPolicyId == dataAccessPolicy.Id

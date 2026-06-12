@@ -1,6 +1,7 @@
-fragment CurrentUserPartial on User {
-  subject
+fragment CurrentUserPartial on CurrentUser {
+  uuid
   name
+  isAtLeastAssistantManagerOfDatabaseOperator
 }
 
 query CurrentUser {
@@ -22,5 +23,21 @@ query CurrentUserInfo {
     roles
     sub
     website
+  }
+}
+
+# Force usage of
+# `import type * as Types from '../__generated__/graphql';`
+# in
+# `./currentUser.generated.ts`
+# to prevent TypeScript error
+# `'Types' is declared but its value is never read.`
+query ZZZDeleteDataZZZ($input: DeleteDataInput!) {
+  deleteData(input: $input) {
+    errors {
+      code
+      message
+      path
+    }
   }
 }

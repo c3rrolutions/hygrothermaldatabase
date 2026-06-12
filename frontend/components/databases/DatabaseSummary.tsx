@@ -51,6 +51,7 @@ export default function DatabaseSummary({
         />
       </div>
       <div>
+        GraphQL endpoint located at{" "}
         <Typography.Link href={entity.locator}>
           {entity.locator}
         </Typography.Link>

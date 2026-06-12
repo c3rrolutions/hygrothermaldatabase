@@ -7,12 +7,27 @@ using Microsoft.EntityFrameworkCore;
 using NodaTime;
 using Database.Data;
 using Database.ApiRequests;
+using Microsoft.Extensions.Logging;
 
 namespace Database.Services;
 
+public static partial class Log
+{
+    [LoggerMessage(
+        Level = LogLevel.Information,
+        Message = "Applying data access policy for user '{UserId}', institutions '{InstitutionIds}', and OpenID Connect application '{OpenIdConnectClientId}'")]
+    internal static partial void ApplyingAccessPolicy(
+        this ILogger<AccessPolicyService> logger,
+        Guid? userId,
+        Guid[]? institutionIds,
+        string? openIdConnectClientId
+    );
+}
+
 public sealed class AccessPolicyService(
     UserService userService,
-    IClock clock
+    IClock clock,
+    ILogger<AccessPolicyService> logger
 )
 {
     public async Task<TResult> Apply<TData, TResult>(
@@ -23,17 +38,18 @@ public sealed class AccessPolicyService(
     )
         where TData : class, IData
     {
-        var openIdConnectClientId = userService.GetOpenIdConnectAuthorizedPartyClientId();
+        var openIdConnectClientId = userService.GetOpenIdConnectApplicationClientId();
         var (currentUser, currentInstitution) = await userService.FetchCurrentUserOrInstitutionAsync(cancellationToken);
-        IReadOnlyList<Guid>? institutionIds = null;
+        Guid[]? institutionIds = null;
         if (currentUser is not null)
         {
-            institutionIds = currentUser.RepresentedInstitutions.Edges.Select(e => e.Node.Uuid).ToList().AsReadOnly();
+            institutionIds = currentUser.RepresentedInstitutions.Edges.Select(e => e.Node.Uuid).ToArray();
         }
         else if (currentInstitution is not null)
         {
             institutionIds = [currentInstitution.Uuid];
         }
+        logger.ApplyingAccessPolicy(currentUser?.Uuid, institutionIds, openIdConnectClientId);
         var policedData = PoliceData(data, currentUser, institutionIds, openIdConnectClientId, databaseContext);
         var (postProcessedData, result) = await then(policedData);
         await IncrementAccessCounts(
@@ -50,7 +66,7 @@ public sealed class AccessPolicyService(
     private static IQueryable<TData> PoliceData<TData>(
         IQueryable<TData> data,
         QueryCurrentUserOrInstitution.CurrentUser? currentUser,
-        IReadOnlyList<Guid>? institutionIds,
+        Guid[]? institutionIds,
         string? openIdConnectClientId,
         ApplicationDbContext databaseContext
     )
@@ -75,7 +91,7 @@ public sealed class AccessPolicyService(
         IReadOnlyList<TData> allData,
         string? openIdConnectClientId,
         QueryCurrentUserOrInstitution.CurrentUser? currentUser,
-        IReadOnlyList<Guid>? institutionIds,
+        Guid[]? institutionIds,
         ApplicationDbContext databaseContext,
         CancellationToken cancellationToken
     )

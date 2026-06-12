@@ -86,11 +86,10 @@ public sealed class ClearOpenIdConnectApplicationAccessPoliciesMutation
             }
         }
 
+        var dataId = input.Data?.DataId;
         var dataAccessPolicy = await context.DataAccessPolicies
-            .SingleAsync(
-                _ => _.DataId == (input.Data == null ? null : input.Data.DataId),
-                cancellationToken
-            );
+            .Include(_ => _.OpenIdConnectApplicationAccessPolicies)
+            .SingleAsync(_ => _.DataId == dataId, cancellationToken);
         dataAccessPolicy.OpenIdConnectApplicationAccessPolicies.Clear();
         await context.SaveChangesAsync(cancellationToken);
         return NewPayload(dataAccessPolicy, null);

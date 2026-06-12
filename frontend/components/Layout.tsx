@@ -13,23 +13,23 @@ const navItems = [
   },
   {
     path: paths.allCalorimetricData,
-    label: "Calorimetric Data",
+    label: "Calorimetric",
   },
   {
     path: paths.allGeometricData,
-    label: "Geometric Data",
+    label: "Geometric",
   },
   {
     path: paths.allHygrothermalData,
-    label: "Hygrothermal Data",
+    label: "Hygrothermal",
   },
   {
     path: paths.allLifeCycleData,
-    label: "Life-Cycle Data",
+    label: "Life-Cycle",
   },
   {
     path: paths.allOpticalData,
-    label: "Optical Data",
+    label: "Optical",
   },
   {
     path: paths.allPhotovoltaicData,

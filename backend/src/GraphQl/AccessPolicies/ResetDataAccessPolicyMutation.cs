@@ -6,7 +6,6 @@ using Database.Authorization;
 using Database.Data;
 using Database.Data.AccessPolicies;
 using Database.Extensions;
-using GraphQL.Client.Abstractions.Utilities;
 using HotChocolate.Types;
 using Microsoft.EntityFrameworkCore;
 
@@ -87,11 +86,12 @@ public sealed class ResetDataAccessPolicyMutation
             }
         }
 
+        var dataId = input.Data?.DataId;
         var dataAccessPolicy = await context.DataAccessPolicies
-            .SingleAsync(
-                _ => _.DataId == (input.Data == null ? null : input.Data.DataId),
-                cancellationToken
-            );
+            .Include(_ => _.UserAccessPolicies)
+            .Include(_ => _.InstitutionAccessPolicies)
+            .Include(_ => _.OpenIdConnectApplicationAccessPolicies)
+            .SingleAsync(_ => _.DataId == dataId, cancellationToken);
         dataAccessPolicy.Reset();
         await context.SaveChangesAsync(cancellationToken);
         return NewPayload(dataAccessPolicy, null);

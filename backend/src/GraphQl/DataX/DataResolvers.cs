@@ -48,6 +48,7 @@ public sealed class DataResolvers
     {
         if (!await authorization.IsDatabaseOperator(cancellationToken))
         {
+            authorization.ReportUnauthorizedError(resolverContext);
             return null;
         }
         return await byId

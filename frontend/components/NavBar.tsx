@@ -11,6 +11,7 @@ import {
 import { extractAntiforgeryTokenFromCookie } from "../lib/apollo";
 import { Route } from "next";
 import { CSSProperties, useMemo } from "react";
+import { isTruthy } from "../lib/array";
 
 const firstUserOrLoginItemStyle = { marginLeft: "auto" };
 
@@ -71,11 +72,11 @@ const userItems = (currentUser: CurrentUserPartialFragment) => [
         key: paths.userInfo,
         label: <Link href={paths.userInfo}>User Info</Link>,
       },
-      {
+      currentUser.isAtLeastAssistantManagerOfDatabaseOperator && {
         key: paths.createData,
         label: <Link href={paths.createData}>Create Data</Link>,
       },
-      {
+      currentUser.isAtLeastAssistantManagerOfDatabaseOperator && {
         key: paths.uploadFile,
         label: <Link href={paths.uploadFile}>Upload File</Link>,
       },
@@ -105,7 +106,7 @@ const userItems = (currentUser: CurrentUserPartialFragment) => [
           </form>
         ),
       },
-    ],
+    ].filter(isTruthy),
   },
 ];
 

@@ -1,9 +1,11 @@
 using System;
+using System.Diagnostics.Contracts;
 
 namespace Database.Enumerations.DataPoints;
 
 public static class DataPointsEnumerationsExtensions
 {
+    [Pure]
     public static string ToJsonPathQuery(this IncidenceDirection incidenceDirection)
     {
         return incidenceDirection switch
@@ -14,6 +16,7 @@ public static class DataPointsEnumerationsExtensions
         };
     }
 
+    [Pure]
     public static string ToJsonEnum(this WavelengthsIntegral wavelengthsIntegral)
     {
         return wavelengthsIntegral switch
@@ -27,6 +30,7 @@ public static class DataPointsEnumerationsExtensions
         };
     }
 
+    [Pure]
     public static string ToJsonEnum(this EmergenceDirection emergenceDirection)
     {
         return emergenceDirection switch
@@ -37,6 +41,7 @@ public static class DataPointsEnumerationsExtensions
         };
     }
 
+    [Pure]
     public static string ToJsonProperty(this DataPointResult result)
     {
         return result switch

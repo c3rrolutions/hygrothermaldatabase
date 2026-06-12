@@ -74,10 +74,10 @@ public sealed class DataAccessPolicy()
         }
     }
 
-    // Note that at least one data ID is always present. So `Guid.Empty` will never be used.
+    // Note that for the global data access policy, all `*DataId`s are null
     [NotMapped]
     [Projectable]
-    public Guid? DataId => CalorimetricDataId ?? GeometricDataId ?? HygrothermalDataId ?? LifeCycleDataId ?? OpticalDataId ?? PhotovoltaicDataId ?? Guid.Empty;
+    public Guid? DataId => CalorimetricDataId ?? GeometricDataId ?? HygrothermalDataId ?? LifeCycleDataId ?? OpticalDataId ?? PhotovoltaicDataId ?? null;
 
     [NotMapped]
     public IData? Data => CalorimetricData ?? GeometricData ?? HygrothermalData ?? LifeCycleData ?? OpticalData ?? PhotovoltaicData as IData;
@@ -157,24 +157,30 @@ public sealed class DataAccessPolicy()
     ) =>
         (
             Combinator == LogicalCombinator.ALL && (
-                !UserAccessPolicies.Any(_ =>
-                    currentUser == null || (
-                        _.UserId == currentUser.Uuid
-                        && !_.IsAccessAllowed
+                (
+                    UserAccessPolicies.Count == 0
+                    || UserAccessPolicies.Any(_ =>
+                        currentUser != null
+                        && _.UserId == currentUser.Uuid
+                        && _.IsAccessAllowed
                     )
                 )
                 &&
-                !InstitutionAccessPolicies.Any(_ =>
-                    institutionIds == null || (
-                        institutionIds.Contains(_.InstitutionId)
-                        && !_.IsAccessAllowed
+                (
+                    InstitutionAccessPolicies.Count == 0
+                    || InstitutionAccessPolicies.Any(_ =>
+                        institutionIds != null
+                        && institutionIds.Contains(_.InstitutionId)
+                        && _.IsAccessAllowed
                     )
                 )
                 &&
-                !OpenIdConnectApplicationAccessPolicies.Any(_ =>
-                    openIdConnectClientId == null || (
-                        _.ClientId == openIdConnectClientId
-                        && !_.IsAccessAllowed
+                (
+                    OpenIdConnectApplicationAccessPolicies.Count == 0
+                    || OpenIdConnectApplicationAccessPolicies.Any(_ =>
+                        openIdConnectClientId != null
+                        && _.ClientId == openIdConnectClientId
+                        && _.IsAccessAllowed
                     )
                 )
             )
@@ -208,5 +214,12 @@ public sealed class DataAccessPolicy()
         UserAccessPolicies.Clear();
         InstitutionAccessPolicies.Clear();
         OpenIdConnectApplicationAccessPolicies.Clear();
+    }
+
+    public void Configure(
+        LogicalCombinator combinator
+    )
+    {
+        Combinator = combinator;
     }
 }

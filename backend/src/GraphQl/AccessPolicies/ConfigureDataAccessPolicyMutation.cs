@@ -1,23 +1,26 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Database.Authorization;
 using Database.Data;
 using Database.Data.AccessPolicies;
+using Database.Enumerations;
 using Database.Extensions;
 using HotChocolate.Types;
 using Microsoft.EntityFrameworkCore;
 
-namespace Database.GraphQl.AccessPolicies;
+namespace Database.GraphQl.AccessPolicy;
 
-public sealed record ClearUserAccessPoliciesInput
+public sealed record ConfigureDataAccessPolicyInput
 (
-    DataReferenceInput? Data
+    DataReferenceInput? Data,
+    LogicalCombinator Combinator
 );
 
 [SuppressMessage("Naming", "CA1707")]
-public enum ClearUserAccessPoliciesErrorCode
+public enum ConfigureDataAccessPolicyErrorCode
 {
     UNKNOWN,
     UNAUTHENTICATED,
@@ -25,43 +28,43 @@ public enum ClearUserAccessPoliciesErrorCode
     UNKNOWN_DATA
 }
 
-public sealed record ClearUserAccessPoliciesError(
-    ClearUserAccessPoliciesErrorCode Code,
+public sealed record ConfigureDataAccessPolicyError(
+    ConfigureDataAccessPolicyErrorCode Code,
     string Message,
     IReadOnlyList<string> Path
 )
-: UserErrorBase<ClearUserAccessPoliciesErrorCode>(Code, Message, Path);
+: UserErrorBase<ConfigureDataAccessPolicyErrorCode>(Code, Message, Path);
 
-public sealed record ClearUserAccessPoliciesPayload(
+public sealed record ConfigureDataAccessPolicyPayload(
    DataAccessPolicy? DataAccessPolicy,
-   IReadOnlyCollection<ClearUserAccessPoliciesError>? Errors
+   IReadOnlyCollection<ConfigureDataAccessPolicyError>? Errors
 ) : Payload;
 
 [ExtendObjectType(nameof(Mutation))]
-public sealed class ClearUserAccessPoliciesMutation
-: DataMutationBase<DataAccessPolicy, ClearUserAccessPoliciesPayload, ClearUserAccessPoliciesError, ClearUserAccessPoliciesErrorCode>
+public sealed class ConfigureDataAccessPolicyMutation
+: DataMutationBase<DataAccessPolicy, ConfigureDataAccessPolicyPayload, ConfigureDataAccessPolicyError, ConfigureDataAccessPolicyErrorCode>
 {
-    protected override ClearUserAccessPoliciesPayload NewPayload(
+    protected override ConfigureDataAccessPolicyPayload NewPayload(
         DataAccessPolicy? data,
-        IReadOnlyCollection<ClearUserAccessPoliciesError>? errors
+        IReadOnlyCollection<ConfigureDataAccessPolicyError>? errors
     ) => new(data, errors);
 
-    protected override ClearUserAccessPoliciesError NewError(
-        ClearUserAccessPoliciesErrorCode code,
+    protected override ConfigureDataAccessPolicyError NewError(
+        ConfigureDataAccessPolicyErrorCode code,
         string message,
         IReadOnlyList<string> path
     ) => new(code, message, path);
 
-    public async Task<ClearUserAccessPoliciesPayload> ClearUserAccessPoliciesAsync(
-        ClearUserAccessPoliciesInput input,
+    public async Task<ConfigureDataAccessPolicyPayload> ConfigureDataAccessPolicyAsync(
+        ConfigureDataAccessPolicyInput input,
         ApplicationDbContext context,
         CommonAuthorization authorization,
         CancellationToken cancellationToken
     )
     {
         if ((await AuthorizeAsync(
-                ClearUserAccessPoliciesErrorCode.UNAUTHENTICATED,
-                ClearUserAccessPoliciesErrorCode.UNAUTHORIZED,
+                ConfigureDataAccessPolicyErrorCode.UNAUTHENTICATED,
+                ConfigureDataAccessPolicyErrorCode.UNAUTHORIZED,
                 authorization,
                 cancellationToken
             )
@@ -75,11 +78,11 @@ public sealed class ClearUserAccessPoliciesMutation
         {
             if ((await FetchDataAsync(
                     input.Data,
-                    ClearUserAccessPoliciesErrorCode.UNKNOWN_DATA,
+                    ConfigureDataAccessPolicyErrorCode.UNKNOWN_DATA,
                     context,
                     cancellationToken
                 )
-                ).Failed(out var _, out var fetchDataErrorPayload)
+                ).Failed(out var data, out var fetchDataErrorPayload)
             )
             {
                 return fetchDataErrorPayload;
@@ -88,9 +91,8 @@ public sealed class ClearUserAccessPoliciesMutation
 
         var dataId = input.Data?.DataId;
         var dataAccessPolicy = await context.DataAccessPolicies
-            .Include(_ => _.UserAccessPolicies)
             .SingleAsync(_ => _.DataId == dataId, cancellationToken);
-        dataAccessPolicy.UserAccessPolicies.Clear();
+        dataAccessPolicy.Configure(input.Combinator);
         await context.SaveChangesAsync(cancellationToken);
         return NewPayload(dataAccessPolicy, null);
     }

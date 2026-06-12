@@ -17,7 +17,7 @@ public sealed class GetHttpsResourceType
         descriptor
             .Field("locator")
             .Cost(0)
-            .ResolveWith<GetHttpsResourceResolvers>(t => t.GetLocator(default!, default!));
+            .ResolveWith<GetHttpsResourceResolvers>(t => t.GetLocator(default!, default!, default!));
         descriptor
             .Field(_ => _.FileName)
             .Ignore();

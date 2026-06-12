@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.Contracts;
 using System.Linq;
 using Database.Authentication;
 using Microsoft.AspNetCore.Http;
@@ -10,6 +11,7 @@ public static class HttpContextExtensions
     public static void SetBearerToken(this HttpContext httpContext, string accessToken) =>
         httpContext.Request.Headers.Authorization = $"{OpenIdConnectConstants.AuthorizationHeaderBearer} {accessToken}";
 
+    [Pure]
     public static string? ExtractBearerToken(this HttpContext httpContext)
     {
         var bearerTokenPrefix = $"{OpenIdConnectConstants.AuthorizationHeaderBearer} ";

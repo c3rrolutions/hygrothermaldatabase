@@ -90,10 +90,11 @@ public sealed class UnsetInstitutionAccessPolicyMutation
             }
         }
 
+        var dataId = input.Data?.DataId;
         var institutionAccessPolicy = await context.InstitutionAccessPolicies
             .SingleOrDefaultAsync(_ =>
                 _.DataAccessPolicy != null
-                && _.DataAccessPolicy.DataId == (input.Data == null ? null : input.Data.DataId)
+                && _.DataAccessPolicy.DataId == dataId
                 && _.InstitutionId == input.InstitutionId,
                 cancellationToken
             );

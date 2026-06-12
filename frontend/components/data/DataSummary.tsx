@@ -194,6 +194,7 @@ export default function DataSummary({
                 <Typography.Link
                   href={selectedResource.value.locator}
                   target="_blank"
+                  rel="noopener" // do not add `noreferrer` because it is used by same origin or referrer checks in authentication handlers
                 >
                   {selectedResource.value.locator}
                 </Typography.Link>
@@ -258,9 +259,9 @@ export default function DataSummary({
         <>
           <Divider style={{ margin: 0 }} />
           <div>
-            <Flex gap="small">
-              {entity.approvals.map((approval) => (
-                <div>
+            <Flex vertical gap="small">
+              {entity.approvals.map((approval, index) => (
+                <div key={index}>
                   The institution{" "}
                   <EntityLink
                     entity={

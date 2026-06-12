@@ -15,6 +15,74 @@ public sealed class InstitutionAccessPolicyLoaders
 : DataLoaders
 {
     [DataLoader]
+    public static ValueTask<IReadOnlyDictionary<Guid, DataAccessPolicy>> GetDataAccessPolicyByIdAsync(
+        IReadOnlyList<Guid> ids,
+        QueryContext<DataAccessPolicy> queryContext,
+        IDbContextFactory<ApplicationDbContext> databaseContextFactory,
+        CancellationToken cancellationToken
+    )
+    {
+        return GetEntityByIdAsync(
+            ids,
+            databaseContext => databaseContext.DataAccessPolicies,
+            queryContext,
+            databaseContextFactory,
+            cancellationToken
+        );
+    }
+
+    [DataLoader]
+    public static ValueTask<IReadOnlyDictionary<Guid, UserAccessPolicy>> GetUserAccessPolicyByIdAsync(
+        IReadOnlyList<Guid> ids,
+        QueryContext<UserAccessPolicy> queryContext,
+        IDbContextFactory<ApplicationDbContext> databaseContextFactory,
+        CancellationToken cancellationToken
+    )
+    {
+        return GetEntityByIdAsync(
+            ids,
+            databaseContext => databaseContext.UserAccessPolicies,
+            queryContext,
+            databaseContextFactory,
+            cancellationToken
+        );
+    }
+
+    [DataLoader]
+    public static ValueTask<IReadOnlyDictionary<Guid, InstitutionAccessPolicy>> GetInstitutionAccessPolicyByIdAsync(
+        IReadOnlyList<Guid> ids,
+        QueryContext<InstitutionAccessPolicy> queryContext,
+        IDbContextFactory<ApplicationDbContext> databaseContextFactory,
+        CancellationToken cancellationToken
+    )
+    {
+        return GetEntityByIdAsync(
+            ids,
+            databaseContext => databaseContext.InstitutionAccessPolicies,
+            queryContext,
+            databaseContextFactory,
+            cancellationToken
+        );
+    }
+
+    [DataLoader]
+    public static ValueTask<IReadOnlyDictionary<Guid, OpenIdConnectApplicationAccessPolicy>> GetOpenIdConnectApplicationAccessPolicyByIdAsync(
+        IReadOnlyList<Guid> ids,
+        QueryContext<OpenIdConnectApplicationAccessPolicy> queryContext,
+        IDbContextFactory<ApplicationDbContext> databaseContextFactory,
+        CancellationToken cancellationToken
+    )
+    {
+        return GetEntityByIdAsync(
+            ids,
+            databaseContext => databaseContext.OpenIdConnectApplicationAccessPolicies,
+            queryContext,
+            databaseContextFactory,
+            cancellationToken
+        );
+    }
+
+    [DataLoader]
     public static async ValueTask<IReadOnlyDictionary<Guid, DataAccessPolicy>> GetDataAccessPolicyByDataIdAsync(
         IReadOnlyList<Guid> dataIds,
         QueryContext<DataAccessPolicy> queryContext,

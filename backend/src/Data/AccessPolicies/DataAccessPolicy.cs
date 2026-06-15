@@ -150,9 +150,12 @@ public sealed class DataAccessPolicy()
     public ICollection<OpenIdConnectApplicationAccessPolicy> OpenIdConnectApplicationAccessPolicies { get; } = [];
 
     [Projectable]
+    public bool IsAnyoneAllowed => IsAccessAllowed(null, null, null);
+
+    [Projectable]
     public bool IsAccessAllowed(
         QueryCurrentUserOrInstitution.CurrentUser? currentUser,
-        IReadOnlyList<Guid>? institutionIds,
+        Guid[]? institutionIds,
         string? openIdConnectClientId
     ) =>
         (
@@ -160,27 +163,21 @@ public sealed class DataAccessPolicy()
                 (
                     UserAccessPolicies.Count == 0
                     || UserAccessPolicies.Any(_ =>
-                        currentUser != null
-                        && _.UserId == currentUser.Uuid
-                        && _.IsAccessAllowed
+                        _.IsAccessAllowed(currentUser)
                     )
                 )
                 &&
                 (
                     InstitutionAccessPolicies.Count == 0
                     || InstitutionAccessPolicies.Any(_ =>
-                        institutionIds != null
-                        && institutionIds.Contains(_.InstitutionId)
-                        && _.IsAccessAllowed
+                        _.IsAccessAllowed(institutionIds)
                     )
                 )
                 &&
                 (
                     OpenIdConnectApplicationAccessPolicies.Count == 0
                     || OpenIdConnectApplicationAccessPolicies.Any(_ =>
-                        openIdConnectClientId != null
-                        && _.ClientId == openIdConnectClientId
-                        && _.IsAccessAllowed
+                        _.IsAccessAllowed(openIdConnectClientId)
                     )
                 )
             )
@@ -189,21 +186,15 @@ public sealed class DataAccessPolicy()
         (
             Combinator == LogicalCombinator.SOME && (
                 UserAccessPolicies.Any(_ =>
-                    currentUser != null
-                    && _.UserId == currentUser.Uuid
-                    && _.IsAccessAllowed
+                    _.IsAccessAllowed(currentUser)
                 )
                 ||
                 InstitutionAccessPolicies.Any(_ =>
-                    institutionIds != null
-                    && institutionIds.Contains(_.InstitutionId)
-                    && _.IsAccessAllowed
+                    _.IsAccessAllowed(institutionIds)
                 )
                 ||
                 OpenIdConnectApplicationAccessPolicies.Any(_ =>
-                    openIdConnectClientId != null
-                    && _.ClientId == openIdConnectClientId
-                    && _.IsAccessAllowed
+                    _.IsAccessAllowed(openIdConnectClientId)
                 )
             )
         );

@@ -14,7 +14,10 @@ public abstract class AccessPolicyBase
     public CountSinceTime? AccessCountSinceStartTime { get; set; }
 
     [Projectable]
-    public bool IsAccessAllowed => UpperAccessLimitPerTimeDuration is null || (
+    public bool IsAlwaysAllowed => UpperAccessLimitPerTimeDuration is null;
+
+    [Projectable]
+    public bool IsWithinAccessLimitInTimeSpan => UpperAccessLimitPerTimeDuration is null || (
         UpperAccessLimitPerTimeDuration.UpperLimit > 0 && (
             AccessCountSinceStartTime is null || (
                 IsWithinTimeSpan

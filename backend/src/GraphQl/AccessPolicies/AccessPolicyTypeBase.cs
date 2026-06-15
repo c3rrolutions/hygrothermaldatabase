@@ -16,7 +16,7 @@ public abstract class AccessPolicyTypeBase<TAccessPolicy, TAccessPolicyByIdDataL
     )
     {
         base.Configure(descriptor);
-        // descriptor.Field(_ => _.IsAccessAllowed).Ignore();
+        // descriptor.Field(_ => _.IsWithinAccessLimitInTimeSpan).Ignore();
         // descriptor.Field(_ => _.IsWithinTimeSpan).Ignore();
     }
 }

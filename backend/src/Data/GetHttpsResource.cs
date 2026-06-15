@@ -150,27 +150,20 @@ public sealed class GetHttpsResource
     public ICollection<FileMetaInformation> ArchivedFilesMetaInformation { get; private set; } = [];
 
     // Note that at least one data ID is always present. So `Guid.Empty` will never be used.
-    [NotMapped]
     [Projectable]
     public Guid DataId => CalorimetricDataId ?? GeometricDataId ?? HygrothermalDataId ?? LifeCycleDataId ?? OpticalDataId ?? PhotovoltaicDataId ?? Guid.Empty;
 
-    [NotMapped]
     public IData? Data => CalorimetricData ?? GeometricData ?? HygrothermalData ?? LifeCycleData ?? OpticalData ?? PhotovoltaicData as IData;
 
-    [NotMapped]
-    public Database.Enumerations.DataKind? DataKind
-    {
-        get
-        {
-            if (CalorimetricDataId is not null) return Database.Enumerations.DataKind.CALORIMETRIC_DATA;
-            if (GeometricDataId is not null) return Database.Enumerations.DataKind.GEOMETRIC_DATA;
-            if (HygrothermalDataId is not null) return Database.Enumerations.DataKind.HYGROTHERMAL_DATA;
-            if (LifeCycleDataId is not null) return Database.Enumerations.DataKind.LIFE_CYCLE_DATA;
-            if (OpticalDataId is not null) return Database.Enumerations.DataKind.OPTICAL_DATA;
-            if (PhotovoltaicDataId is not null) return Database.Enumerations.DataKind.PHOTOVOLTAIC_DATA;
-            return null;
-        }
-    }
+    [Projectable]
+    public Database.Enumerations.DataKind DataKind =>
+        CalorimetricDataId != null ? Database.Enumerations.DataKind.CALORIMETRIC_DATA
+        : GeometricDataId != null ? Database.Enumerations.DataKind.GEOMETRIC_DATA
+        : HygrothermalDataId != null ? Database.Enumerations.DataKind.HYGROTHERMAL_DATA
+        : LifeCycleDataId != null ? Database.Enumerations.DataKind.LIFE_CYCLE_DATA
+        : OpticalDataId != null ? Database.Enumerations.DataKind.OPTICAL_DATA
+        : PhotovoltaicDataId != null ? Database.Enumerations.DataKind.PHOTOVOLTAIC_DATA
+        : default; // the default case does not happen if the above cases are exhaustive
 
     [Projectable]
     public Guid? GetDataId(Database.Enumerations.DataKind dataKind) =>

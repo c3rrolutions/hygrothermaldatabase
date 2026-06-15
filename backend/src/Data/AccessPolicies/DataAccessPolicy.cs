@@ -6,10 +6,62 @@ using System.Linq;
 using Database.ApiRequests;
 using Database.Enumerations;
 using Database.Extensions;
+using Database.GraphQl.AccessPolicy;
 using EntityFrameworkCore.Projectables;
+using HotChocolate;
 
 namespace Database.Data.AccessPolicies;
 
+[GraphQLDescription($"""
+A data access policy decides who can access data, meaning which data shows up
+in GraphQL queries and which associated resources can be downloaded. The
+decision is made based on the authenticated user or institution, the
+institutions represented by a user, and/or the communicating OpenID Connect
+application. The access token issued by the metabase and associated with
+same-site logins or given in the HTTP Authorization header as Bearer, tells
+through the 'Subject' claim which user or institution is authenticated and
+through the 'Client ID' or 'Authorized Party' claim which OpenID Connect
+application is communicating. In the case of a user, the metabase informs us
+about the institutions he*she represents.
+
+How user, institution(s), and application are allowed/restricted is decided by
+user, institution, and application access policies associated with the data
+access policy and specific users, institutions, and applications through their
+IDs or users and institutions and client IDs for applications. Each such policy
+can allow access to a user, institution, or application and can limit the
+number of API accesses totally or within a time span, which is shifted to the
+current moment once it has passed. For example, an institution policy without a
+limit just allows access for any user representing that institution and for any
+application owned by the institution itself, and it disallows access for all
+other users and institutions. If an additional limit without duration is given,
+than exactly that number of GraphQL or REST API accesses are allowed. And if an
+additional duration is given, from the time of the first access until the
+duration passed, the given number of accesses are allowed; the start time and
+the access count are reset on the first access after the duration passed (a
+sliding window of time).
+
+The individual decisions based on user, institution, and OpenID Connect
+application, can be combined conjuctively ('and' or 'all' need to be positive)
+or disjunctively ('or' or 'any one'/'at least one' needs to be positive). This
+is configured through the combinator and the mutation
+`{nameof(ConfigureDataAccessPolicyMutation)}`. If there are no user access
+policies at all, then, in the 'all' case, no restrictions based on the user
+itself are imposed, and in the 'any' case, no allowances based on the user
+itself are given; and analogously for institution and application policies. Put
+another way, an empty list of user access policies is `true` in the 'and' case
+and `false` in the 'or' case, and analogously for institution and application
+access policies.
+
+In particular, a data access policy with the combinator 'all' and empty user,
+institution, and application policies allows access to anyone, also anonymous
+access. And one with the combinator 'or' and empty policies allows access to
+noone, no matter if authenticated or not.
+
+A data access policy is either the one-and-only global one or associated with a
+specific data entry, see the field `{nameof(DataAccessPolicy.Data)}`. It is
+global if this field is `null`. The global and individual policies are combined
+conjunctively, meaning that for access both need to allow access.
+""")]
 public sealed class DataAccessPolicy()
     : AuditableEntity
 {
@@ -75,36 +127,44 @@ public sealed class DataAccessPolicy()
     }
 
     // Note that for the global data access policy, all `*DataId`s are null
-    [NotMapped]
     [Projectable]
     public Guid? DataId => CalorimetricDataId ?? GeometricDataId ?? HygrothermalDataId ?? LifeCycleDataId ?? OpticalDataId ?? PhotovoltaicDataId ?? null;
 
-    [NotMapped]
     public IData? Data => CalorimetricData ?? GeometricData ?? HygrothermalData ?? LifeCycleData ?? OpticalData ?? PhotovoltaicData as IData;
 
     [Projectable]
-    public Guid? GetDataId(DataKind dataKind) =>
+    public Database.Enumerations.DataKind? DataKind =>
+        CalorimetricDataId != null ? Database.Enumerations.DataKind.CALORIMETRIC_DATA
+        : GeometricDataId != null ? Database.Enumerations.DataKind.GEOMETRIC_DATA
+        : HygrothermalDataId != null ? Database.Enumerations.DataKind.HYGROTHERMAL_DATA
+        : LifeCycleDataId != null ? Database.Enumerations.DataKind.LIFE_CYCLE_DATA
+        : OpticalDataId != null ? Database.Enumerations.DataKind.OPTICAL_DATA
+        : PhotovoltaicDataId != null ? Database.Enumerations.DataKind.PHOTOVOLTAIC_DATA
+        : null;
+
+    [Projectable]
+    public Guid? GetDataId(Database.Enumerations.DataKind dataKind) =>
         dataKind switch
         {
-            DataKind.CALORIMETRIC_DATA => CalorimetricDataId,
-            DataKind.GEOMETRIC_DATA => GeometricDataId,
-            DataKind.HYGROTHERMAL_DATA => HygrothermalDataId,
-            DataKind.LIFE_CYCLE_DATA => LifeCycleDataId,
-            DataKind.OPTICAL_DATA => OpticalDataId,
-            DataKind.PHOTOVOLTAIC_DATA => PhotovoltaicDataId,
+            Database.Enumerations.DataKind.CALORIMETRIC_DATA => CalorimetricDataId,
+            Database.Enumerations.DataKind.GEOMETRIC_DATA => GeometricDataId,
+            Database.Enumerations.DataKind.HYGROTHERMAL_DATA => HygrothermalDataId,
+            Database.Enumerations.DataKind.LIFE_CYCLE_DATA => LifeCycleDataId,
+            Database.Enumerations.DataKind.OPTICAL_DATA => OpticalDataId,
+            Database.Enumerations.DataKind.PHOTOVOLTAIC_DATA => PhotovoltaicDataId,
             _ => null, // throw new ArgumentOutOfRangeException(nameof(dataKind), $"Unsupported data kind {dataKind}"),
         };
 
     [Projectable]
-    public IData? GetData(DataKind dataKind) =>
+    public IData? GetData(Database.Enumerations.DataKind dataKind) =>
         dataKind switch
         {
-            DataKind.CALORIMETRIC_DATA => CalorimetricData,
-            DataKind.GEOMETRIC_DATA => GeometricData,
-            DataKind.HYGROTHERMAL_DATA => HygrothermalData,
-            DataKind.LIFE_CYCLE_DATA => LifeCycleData,
-            DataKind.OPTICAL_DATA => OpticalData,
-            DataKind.PHOTOVOLTAIC_DATA => PhotovoltaicData,
+            Database.Enumerations.DataKind.CALORIMETRIC_DATA => CalorimetricData,
+            Database.Enumerations.DataKind.GEOMETRIC_DATA => GeometricData,
+            Database.Enumerations.DataKind.HYGROTHERMAL_DATA => HygrothermalData,
+            Database.Enumerations.DataKind.LIFE_CYCLE_DATA => LifeCycleData,
+            Database.Enumerations.DataKind.OPTICAL_DATA => OpticalData,
+            Database.Enumerations.DataKind.PHOTOVOLTAIC_DATA => PhotovoltaicData,
             _ => null, //throw new ArgumentOutOfRangeException(nameof(dataKind), $"Unsupported data kind {dataKind}"),
         };
 

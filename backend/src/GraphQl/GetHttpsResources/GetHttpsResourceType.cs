@@ -78,10 +78,17 @@ public sealed class GetHttpsResourceType
             .Field(_ => _.PhotovoltaicData)
             .Ignore();
         descriptor
+            .Field(_ => _.DataId)
+            .Ignore();
+        descriptor
+            .Field(_ => _.DataKind)
+            .Ignore();
+        descriptor
             .Field(_ => _.Data)
+            .Type<NonNullType<InterfaceType<IData>>>()
             .Cost(0)
             .ResolveWith<GetHttpsResourceResolvers>(t =>
-                t.GetData(default!, default!, default!, default!, default!, default!, default!, default!));
+                t.GetData(default!, default!, default!));
         descriptor
             .Field(nameof(GetHttpsResource.DataFormatId)[..^2].FirstCharToLower())
             .Type<ObjectType<DataFormatDataLoader.DataFormat>>()

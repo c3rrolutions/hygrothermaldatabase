@@ -17,5 +17,6 @@ public class GetHttpsResourceSortType
         descriptor.Field(_ => _.DataFormatId);
         descriptor.Field(_ => _.AppliedConversionMethod);
         descriptor.Field(_ => _.Parent);
+        descriptor.Field(_ => _.DataKind);
     }
 }

@@ -32,7 +32,7 @@ query CurrentUserInfo {
 # `./currentUser.generated.ts`
 # to prevent TypeScript error
 # `'Types' is declared but its value is never read.`
-query ZZZDeleteDataZZZ($input: DeleteDataInput!) {
+mutation ZZZDeleteDataZZZ($input: DeleteDataInput!) {
   deleteData(input: $input) {
     errors {
       code

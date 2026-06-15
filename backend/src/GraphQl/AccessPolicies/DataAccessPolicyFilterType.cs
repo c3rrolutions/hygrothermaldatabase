@@ -17,6 +17,8 @@ public class DataAccessPolicyFilterType
         descriptor.Field(_ => _.UserAccessPolicies);
         descriptor.Field(_ => _.InstitutionAccessPolicies);
         descriptor.Field(_ => _.OpenIdConnectApplicationAccessPolicies);
+        descriptor.Field(_ => _.DataId);
+        descriptor.Field(_ => _.DataKind);
         // descriptor.Field(_ => _.Data);
         descriptor.Field(_ => _.CalorimetricData);
         descriptor.Field(_ => _.GeometricData);

@@ -4,12 +4,8 @@ using System.Threading.Tasks;
 using Database.ApiRequests;
 using Database.Controllers;
 using Database.Data;
-using Database.GraphQl.CalorimetricDataX;
-using Database.GraphQl.GeometricDataX;
-using Database.GraphQl.HygrothermalDataX;
-using Database.GraphQl.LifeCycleDataX;
-using Database.GraphQl.OpticalDataX;
-using Database.GraphQl.PhotovoltaicDataX;
+using Database.GraphQl.DataX;
+using GreenDonut;
 using HotChocolate;
 using Microsoft.AspNetCore.Routing;
 
@@ -17,60 +13,16 @@ namespace Database.GraphQl.GetHttpsResources;
 
 public sealed class GetHttpsResourceResolvers
 {
-    public async Task<IData?> GetData(
+    public Task<IData> GetData(
         [Parent] GetHttpsResource getHttpsResource,
-        ICalorimetricDataByIdDataLoader calorimetricDataById,
-        IHygrothermalDataByIdDataLoader hygrothermalDataById,
-        ILifeCycleDataByIdDataLoader lifeCycleDataById,
-        IOpticalDataByIdDataLoader opticalDataById,
-        IPhotovoltaicDataByIdDataLoader photovoltaicDataById,
-        IGeometricDataByIdDataLoader geometricDataById,
+        IDataByIdAndKindDataLoader dataByIdAndKindDataLoader,
         CancellationToken cancellationToken
     )
     {
-        if (getHttpsResource.CalorimetricDataId is not null)
-        {
-            return await calorimetricDataById.LoadAsync(
-                getHttpsResource.CalorimetricDataId ?? Guid.Empty,
-                cancellationToken
-            );
-        }
-        if (getHttpsResource.GeometricDataId is not null)
-        {
-            return await geometricDataById.LoadAsync(
-                getHttpsResource.GeometricDataId ?? Guid.Empty,
-                cancellationToken
-            );
-        }
-        if (getHttpsResource.HygrothermalDataId is not null)
-        {
-            return await hygrothermalDataById.LoadAsync(
-                getHttpsResource.HygrothermalDataId ?? Guid.Empty,
-                cancellationToken
-            );
-        }
-        if (getHttpsResource.LifeCycleDataId is not null)
-        {
-            return await lifeCycleDataById.LoadAsync(
-                getHttpsResource.LifeCycleDataId ?? Guid.Empty,
-                cancellationToken
-            );
-        }
-        if (getHttpsResource.OpticalDataId is not null)
-        {
-            return await opticalDataById.LoadAsync(
-                getHttpsResource.OpticalDataId ?? Guid.Empty,
-                cancellationToken
-            );
-        }
-        if (getHttpsResource.PhotovoltaicDataId is not null)
-        {
-            return await photovoltaicDataById.LoadAsync(
-                getHttpsResource.PhotovoltaicDataId ?? Guid.Empty,
-                cancellationToken
-            );
-        }
-        return null;
+        return dataByIdAndKindDataLoader.LoadRequiredAsync(
+            (getHttpsResource.DataId, getHttpsResource.DataKind),
+            cancellationToken
+        );
     }
 
     public Uri GetLocator(

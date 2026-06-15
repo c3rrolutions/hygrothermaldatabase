@@ -268,6 +268,27 @@ type Query {
   currentUser: CurrentUser @cost(weight: "10")
   currentUserInfo: UserInfo! @cost(weight: "10")
   data(dataKind: DataKind!, id: Uuid!, locale: Locale): Data @cost(weight: "10")
+  dataAccessPolicies(
+    "Returns the elements in the list that come after the specified cursor."
+    after: String
+    "Returns the elements in the list that come before the specified cursor."
+    before: String
+    "Returns the first _n_ elements from the list."
+    first: Int
+    "Returns the last _n_ elements from the list."
+    last: Int
+    order: [DataAccessPolicySortInput!] @cost(weight: "10")
+    where: DataAccessPolicyPropositionInput @cost(weight: "10")
+  ): DataAccessPolicyConnection
+    @listSize(
+      assumedSize: 100
+      slicingArguments: ["first", "last"]
+      slicingArgumentDefaultValue: 100
+      sizedFields: ["edges", "nodes"]
+      requireOneSlicingArgument: false
+    )
+    @cost(weight: "10")
+  dataAccessPolicy(dataId: Uuid!): DataAccessPolicy @cost(weight: "10")
   database: Database! @cost(weight: "10")
   geometricData(id: Uuid!, locale: Locale): GeometricData @cost(weight: "10")
   getHttpsResource(id: Uuid!): GetHttpsResource @cost(weight: "10")
@@ -318,11 +339,51 @@ type Query {
   ): Boolean! @cost(weight: "10")
   hygrothermalData(id: Uuid!, locale: Locale): HygrothermalData
     @cost(weight: "10")
+  institutionAccessPolicies(
+    "Returns the elements in the list that come after the specified cursor."
+    after: String
+    "Returns the elements in the list that come before the specified cursor."
+    before: String
+    "Returns the first _n_ elements from the list."
+    first: Int
+    "Returns the last _n_ elements from the list."
+    last: Int
+    order: [InstitutionAccessPolicySortInput!] @cost(weight: "10")
+    where: InstitutionAccessPolicyPropositionInput @cost(weight: "10")
+  ): InstitutionAccessPolicyConnection
+    @listSize(
+      assumedSize: 100
+      slicingArguments: ["first", "last"]
+      slicingArgumentDefaultValue: 100
+      sizedFields: ["edges", "nodes"]
+      requireOneSlicingArgument: false
+    )
+    @cost(weight: "10")
   lifeCycleData(id: Uuid!, locale: Locale): LifeCycleData @cost(weight: "10")
   "Fetches an object given its ID."
   node("ID of the object." id: ID!): Node @cost(weight: "10")
   "Lookup nodes by a list of IDs."
   nodes("The list of node IDs." ids: [ID!]!): [Node]! @cost(weight: "10")
+  openIdConnectApplicationAccessPolicies(
+    "Returns the elements in the list that come after the specified cursor."
+    after: String
+    "Returns the elements in the list that come before the specified cursor."
+    before: String
+    "Returns the first _n_ elements from the list."
+    first: Int
+    "Returns the last _n_ elements from the list."
+    last: Int
+    order: [OpenIdConnectApplicationAccessPolicySortInput!] @cost(weight: "10")
+    where: OpenIdConnectApplicationAccessPolicyPropositionInput @cost(weight: "10")
+  ): OpenIdConnectApplicationAccessPolicyConnection
+    @listSize(
+      assumedSize: 100
+      slicingArguments: ["first", "last"]
+      slicingArgumentDefaultValue: 100
+      sizedFields: ["edges", "nodes"]
+      requireOneSlicingArgument: false
+    )
+    @cost(weight: "10")
   opticalData(id: Uuid!, locale: Locale): OpticalData @cost(weight: "10")
   pendingGetHttpsResources(
     "Returns the elements in the list that come after the specified cursor."
@@ -363,10 +424,8 @@ type Mutation {
     input: ConfigureDataAccessPoliciesInput!
     where: ConfigureDataAccessPoliciesPropositionInput @cost(weight: "10")
   ): ConfigureDataAccessPoliciesPayload! @cost(weight: "10")
-  configureDataAccessPolicy(
-    input: ConfigureDataAccessPolicyInput!
-    where: ConfigureDataAccessPolicyPropositionInput @cost(weight: "10")
-  ): ConfigureDataAccessPolicyPayload! @cost(weight: "10")
+  configureDataAccessPolicy(input: ConfigureDataAccessPolicyInput!): ConfigureDataAccessPolicyPayload!
+    @cost(weight: "10")
   createCalorimetricData(input: CreateCalorimetricDataInput!): CreateCalorimetricDataPayload!
     @cost(weight: "10")
   createGeometricData(input: CreateGeometricDataInput!): CreateGeometricDataPayload!
@@ -707,17 +766,60 @@ type CurrentUser {
   uuid: Uuid!
 }
 
+"""
+A data access policy decides who can access data, meaning which data shows up
+in GraphQL queries and which associated resources can be downloaded. The
+decision is made based on the authenticated user or institution, the
+institutions represented by a user, and/or the communicating OpenID Connect
+application. The access token issued by the metabase and associated with
+same-site logins or given in the HTTP Authorization header as Bearer, tells
+through the 'Subject' claim which user or institution is authenticated and
+through the 'Client ID' or 'Authorized Party' claim which OpenID Connect
+application is communicating. In the case of a user, the metabase informs us
+about the institutions he*she represents.
+
+How user, institution(s), and application are allowed/restricted is decided by
+user, institution, and application access policies associated with the data
+access policy and specific users, institutions, and applications through their
+IDs or users and institutions and client IDs for applications. Each such policy
+can allow access to a user, institution, or application and can limit the
+number of API accesses totally or within a time span, which is shifted to the
+current moment once it has passed. For example, an institution policy without a
+limit just allows access for any user representing that institution and for any
+application owned by the institution itself, and it disallows access for all
+other users and institutions. If an additional limit without duration is given,
+than exactly that number of GraphQL or REST API accesses are allowed. And if an
+additional duration is given, from the time of the first access until the
+duration passed, the given number of accesses are allowed; the start time and
+the access count are reset on the first access after the duration passed (a
+sliding window of time).
+
+The individual decisions based on user, institution, and OpenID Connect
+application, can be combined conjuctively ('and' or 'all' need to be positive)
+or disjunctively ('or' or 'any one'/'at least one' needs to be positive). This
+is configured through the combinator and the mutation
+`ConfigureDataAccessPolicyMutation`. If there are no user access
+policies at all, then, in the 'all' case, no restrictions based on the user
+itself are imposed, and in the 'any' case, no allowances based on the user
+itself are given; and analogously for institution and application policies. Put
+another way, an empty list of user access policies is `true` in the 'and' case
+and `false` in the 'or' case, and analogously for institution and application
+access policies.
+
+In particular, a data access policy with the combinator 'all' and empty user,
+institution, and application policies allows access to anyone, also anonymous
+access. And one with the combinator 'or' and empty policies allows access to
+noone, no matter if authenticated or not.
+
+A data access policy is either the one-and-only global one or associated with a
+specific data entry, see the field `Data`. It is
+global if this field is `null`. The global and individual policies are combined
+conjunctively, meaning that for access both need to allow access.
+"""
 type DataAccessPolicy {
-  calorimetricData: CalorimetricData
-  calorimetricDataId: Uuid
   combinator: LogicalCombinator!
   createdAt: DateTime!
-  data(dataKind: DataKind!): Data
-  dataId(dataKind: DataKind!): Uuid
-  geometricData: GeometricData
-  geometricDataId: Uuid
-  hygrothermalData: HygrothermalData
-  hygrothermalDataId: Uuid
+  data: Data @cost(weight: "0")
   id: Uuid!
   institutionAccessPolicies(
     order: [InstitutionAccessPolicySortInput!]
@@ -728,22 +830,35 @@ type DataAccessPolicy {
     institutionIds: [Uuid!]
     openIdConnectClientId: String
   ): Boolean!
-  lifeCycleData: LifeCycleData
-  lifeCycleDataId: Uuid
+  isAnyoneAllowed: Boolean!
   openIdConnectApplicationAccessPolicies(
     order: [OpenIdConnectApplicationAccessPolicySortInput!]
     where: OpenIdConnectApplicationAccessPolicyPropositionInput
   ): [OpenIdConnectApplicationAccessPolicy!]!
-  opticalData: OpticalData
-  opticalDataId: Uuid
-  photovoltaicData: PhotovoltaicData
-  photovoltaicDataId: Uuid
   updatedAt: DateTime!
   userAccessPolicies(
     order: [UserAccessPolicySortInput!]
     where: UserAccessPolicyPropositionInput
   ): [UserAccessPolicy!]!
   version: NonNegativeInt!
+}
+
+"A connection to a list of items."
+type DataAccessPolicyConnection {
+  "A list of edges."
+  edges: [DataAccessPolicyEdge!]
+  "Information to aid in pagination."
+  pageInfo: PageInfo!
+  "Identifies the total count of items in the connection."
+  totalCount: Int! @cost(weight: "10")
+}
+
+"An edge in a connection."
+type DataAccessPolicyEdge {
+  "A cursor for use in pagination."
+  cursor: String!
+  "The item at the end of the edge."
+  node: DataAccessPolicy!
 }
 
 type DataApproval implements Approval {
@@ -885,10 +1000,9 @@ type GetHttpsResource implements Node {
   archivedFilesMetaInformation: [FileMetaInformation!]!
   children: [GetHttpsResource!]! @cost(weight: "0")
   createdAt: DateTime!
-  data: Data @cost(weight: "0")
+  data: Data! @cost(weight: "0")
   dataFormat: DataFormat @cost(weight: "3")
   dataFormatId: Uuid!
-  dataKind: DataKind
   description: String
   doesFileExist: Boolean!
   hashValue: String!
@@ -997,11 +1111,31 @@ type InstitutionAccessPolicy implements Node {
   dataAccessPolicyId: Uuid!
   id: ID!
   institutionId: Uuid!
-  isAccessAllowed: Boolean!
+  isAccessAllowed(institutionIds: [Uuid!]): Boolean!
+  isAlwaysAllowed: Boolean!
+  isWithinAccessLimitInTimeSpan: Boolean!
   isWithinTimeSpan: Boolean!
   updatedAt: DateTime!
   upperAccessLimitPerTimeDuration: UpperLimitPerDuration
   uuid: Uuid!
+}
+
+"A connection to a list of items."
+type InstitutionAccessPolicyConnection {
+  "A list of edges."
+  edges: [InstitutionAccessPolicyEdge!]
+  "Information to aid in pagination."
+  pageInfo: PageInfo!
+  "Identifies the total count of items in the connection."
+  totalCount: Int! @cost(weight: "10")
+}
+
+"An edge in a connection."
+type InstitutionAccessPolicyEdge {
+  "A cursor for use in pagination."
+  cursor: String!
+  "The item at the end of the edge."
+  node: InstitutionAccessPolicy!
 }
 
 type InstitutionManagedInstitutionConnection {
@@ -1097,11 +1231,31 @@ type OpenIdConnectApplicationAccessPolicy implements Node {
   dataAccessPolicy: DataAccessPolicy
   dataAccessPolicyId: Uuid!
   id: ID!
-  isAccessAllowed: Boolean!
+  isAccessAllowed(openIdConnectClientId: String): Boolean!
+  isAlwaysAllowed: Boolean!
+  isWithinAccessLimitInTimeSpan: Boolean!
   isWithinTimeSpan: Boolean!
   updatedAt: DateTime!
   upperAccessLimitPerTimeDuration: UpperLimitPerDuration
   uuid: Uuid!
+}
+
+"A connection to a list of items."
+type OpenIdConnectApplicationAccessPolicyConnection {
+  "A list of edges."
+  edges: [OpenIdConnectApplicationAccessPolicyEdge!]
+  "Information to aid in pagination."
+  pageInfo: PageInfo!
+  "Identifies the total count of items in the connection."
+  totalCount: Int! @cost(weight: "10")
+}
+
+"An edge in a connection."
+type OpenIdConnectApplicationAccessPolicyEdge {
+  "A cursor for use in pagination."
+  cursor: String!
+  "The item at the end of the edge."
+  node: OpenIdConnectApplicationAccessPolicy!
 }
 
 type OpticalData implements Node & Data {
@@ -1500,7 +1654,9 @@ type UserAccessPolicy implements Node {
   dataAccessPolicy: DataAccessPolicy
   dataAccessPolicyId: Uuid!
   id: ID!
-  isAccessAllowed: Boolean!
+  isAccessAllowed(currentUser: CurrentUserInput): Boolean!
+  isAlwaysAllowed: Boolean!
+  isWithinAccessLimitInTimeSpan: Boolean!
   isWithinTimeSpan: Boolean!
   updatedAt: DateTime!
   upperAccessLimitPerTimeDuration: UpperLimitPerDuration
@@ -1710,10 +1866,62 @@ input ConfigureDataAccessPoliciesInput {
   combinator: LogicalCombinator!
 }
 
+"""
+A data access policy decides who can access data, meaning which data shows up
+in GraphQL queries and which associated resources can be downloaded. The
+decision is made based on the authenticated user or institution, the
+institutions represented by a user, and/or the communicating OpenID Connect
+application. The access token issued by the metabase and associated with
+same-site logins or given in the HTTP Authorization header as Bearer, tells
+through the 'Subject' claim which user or institution is authenticated and
+through the 'Client ID' or 'Authorized Party' claim which OpenID Connect
+application is communicating. In the case of a user, the metabase informs us
+about the institutions he*she represents.
+
+How user, institution(s), and application are allowed/restricted is decided by
+user, institution, and application access policies associated with the data
+access policy and specific users, institutions, and applications through their
+IDs or users and institutions and client IDs for applications. Each such policy
+can allow access to a user, institution, or application and can limit the
+number of API accesses totally or within a time span, which is shifted to the
+current moment once it has passed. For example, an institution policy without a
+limit just allows access for any user representing that institution and for any
+application owned by the institution itself, and it disallows access for all
+other users and institutions. If an additional limit without duration is given,
+than exactly that number of GraphQL or REST API accesses are allowed. And if an
+additional duration is given, from the time of the first access until the
+duration passed, the given number of accesses are allowed; the start time and
+the access count are reset on the first access after the duration passed (a
+sliding window of time).
+
+The individual decisions based on user, institution, and OpenID Connect
+application, can be combined conjuctively ('and' or 'all' need to be positive)
+or disjunctively ('or' or 'any one'/'at least one' needs to be positive). This
+is configured through the combinator and the mutation
+`ConfigureDataAccessPolicyMutation`. If there are no user access
+policies at all, then, in the 'all' case, no restrictions based on the user
+itself are imposed, and in the 'any' case, no allowances based on the user
+itself are given; and analogously for institution and application policies. Put
+another way, an empty list of user access policies is `true` in the 'and' case
+and `false` in the 'or' case, and analogously for institution and application
+access policies.
+
+In particular, a data access policy with the combinator 'all' and empty user,
+institution, and application policies allows access to anyone, also anonymous
+access. And one with the combinator 'or' and empty policies allows access to
+noone, no matter if authenticated or not.
+
+A data access policy is either the one-and-only global one or associated with a
+specific data entry, see the field `Data`. It is
+global if this field is `null`. The global and individual policies are combined
+conjunctively, meaning that for access both need to allow access.
+"""
 input ConfigureDataAccessPoliciesPropositionInput {
   and: [ConfigureDataAccessPoliciesPropositionInput!]
   calorimetricData: CalorimetricDataPropositionInput
   combinator: LogicalCombinatorPropositionInput
+  dataId: UuidPropositionInput
+  dataKind: NullableOfDataKindPropositionInput
   geometricData: GeometricDataPropositionInput
   hygrothermalData: HygrothermalDataPropositionInput
   institutionAccessPolicies: FilterInputTypeOfInstitutionAccessPolicysPropositionInput
@@ -1728,21 +1936,6 @@ input ConfigureDataAccessPoliciesPropositionInput {
 input ConfigureDataAccessPolicyInput {
   combinator: LogicalCombinator!
   data: DataReferenceInput
-}
-
-input ConfigureDataAccessPolicyPropositionInput {
-  and: [ConfigureDataAccessPolicyPropositionInput!]
-  calorimetricData: CalorimetricDataPropositionInput
-  combinator: LogicalCombinatorPropositionInput
-  geometricData: GeometricDataPropositionInput
-  hygrothermalData: HygrothermalDataPropositionInput
-  institutionAccessPolicies: FilterInputTypeOfInstitutionAccessPolicysPropositionInput
-  lifeCycleData: LifeCycleDataPropositionInput
-  openIdConnectApplicationAccessPolicies: FilterInputTypeOfOpenIdConnectApplicationAccessPolicysPropositionInput
-  opticalData: OpticalDataPropositionInput
-  or: [ConfigureDataAccessPolicyPropositionInput!]
-  photovoltaicData: PhotovoltaicDataPropositionInput
-  userAccessPolicies: FilterInputTypeOfUserAccessPolicysPropositionInput
 }
 
 input CountSinceTimePropositionInput {
@@ -1887,10 +2080,62 @@ input CurrentUserInput {
   uuid: Uuid!
 }
 
+"""
+A data access policy decides who can access data, meaning which data shows up
+in GraphQL queries and which associated resources can be downloaded. The
+decision is made based on the authenticated user or institution, the
+institutions represented by a user, and/or the communicating OpenID Connect
+application. The access token issued by the metabase and associated with
+same-site logins or given in the HTTP Authorization header as Bearer, tells
+through the 'Subject' claim which user or institution is authenticated and
+through the 'Client ID' or 'Authorized Party' claim which OpenID Connect
+application is communicating. In the case of a user, the metabase informs us
+about the institutions he*she represents.
+
+How user, institution(s), and application are allowed/restricted is decided by
+user, institution, and application access policies associated with the data
+access policy and specific users, institutions, and applications through their
+IDs or users and institutions and client IDs for applications. Each such policy
+can allow access to a user, institution, or application and can limit the
+number of API accesses totally or within a time span, which is shifted to the
+current moment once it has passed. For example, an institution policy without a
+limit just allows access for any user representing that institution and for any
+application owned by the institution itself, and it disallows access for all
+other users and institutions. If an additional limit without duration is given,
+than exactly that number of GraphQL or REST API accesses are allowed. And if an
+additional duration is given, from the time of the first access until the
+duration passed, the given number of accesses are allowed; the start time and
+the access count are reset on the first access after the duration passed (a
+sliding window of time).
+
+The individual decisions based on user, institution, and OpenID Connect
+application, can be combined conjuctively ('and' or 'all' need to be positive)
+or disjunctively ('or' or 'any one'/'at least one' needs to be positive). This
+is configured through the combinator and the mutation
+`ConfigureDataAccessPolicyMutation`. If there are no user access
+policies at all, then, in the 'all' case, no restrictions based on the user
+itself are imposed, and in the 'any' case, no allowances based on the user
+itself are given; and analogously for institution and application policies. Put
+another way, an empty list of user access policies is `true` in the 'and' case
+and `false` in the 'or' case, and analogously for institution and application
+access policies.
+
+In particular, a data access policy with the combinator 'all' and empty user,
+institution, and application policies allows access to anyone, also anonymous
+access. And one with the combinator 'or' and empty policies allows access to
+noone, no matter if authenticated or not.
+
+A data access policy is either the one-and-only global one or associated with a
+specific data entry, see the field `Data`. It is
+global if this field is `null`. The global and individual policies are combined
+conjunctively, meaning that for access both need to allow access.
+"""
 input DataAccessPolicyPropositionInput {
   and: [DataAccessPolicyPropositionInput!]
   calorimetricData: CalorimetricDataPropositionInput
   combinator: LogicalCombinatorPropositionInput
+  dataId: UuidPropositionInput
+  dataKind: NullableOfDataKindPropositionInput
   geometricData: GeometricDataPropositionInput
   hygrothermalData: HygrothermalDataPropositionInput
   institutionAccessPolicies: FilterInputTypeOfInstitutionAccessPolicysPropositionInput
@@ -1900,6 +2145,61 @@ input DataAccessPolicyPropositionInput {
   or: [DataAccessPolicyPropositionInput!]
   photovoltaicData: PhotovoltaicDataPropositionInput
   userAccessPolicies: FilterInputTypeOfUserAccessPolicysPropositionInput
+}
+
+"""
+A data access policy decides who can access data, meaning which data shows up
+in GraphQL queries and which associated resources can be downloaded. The
+decision is made based on the authenticated user or institution, the
+institutions represented by a user, and/or the communicating OpenID Connect
+application. The access token issued by the metabase and associated with
+same-site logins or given in the HTTP Authorization header as Bearer, tells
+through the 'Subject' claim which user or institution is authenticated and
+through the 'Client ID' or 'Authorized Party' claim which OpenID Connect
+application is communicating. In the case of a user, the metabase informs us
+about the institutions he*she represents.
+
+How user, institution(s), and application are allowed/restricted is decided by
+user, institution, and application access policies associated with the data
+access policy and specific users, institutions, and applications through their
+IDs or users and institutions and client IDs for applications. Each such policy
+can allow access to a user, institution, or application and can limit the
+number of API accesses totally or within a time span, which is shifted to the
+current moment once it has passed. For example, an institution policy without a
+limit just allows access for any user representing that institution and for any
+application owned by the institution itself, and it disallows access for all
+other users and institutions. If an additional limit without duration is given,
+than exactly that number of GraphQL or REST API accesses are allowed. And if an
+additional duration is given, from the time of the first access until the
+duration passed, the given number of accesses are allowed; the start time and
+the access count are reset on the first access after the duration passed (a
+sliding window of time).
+
+The individual decisions based on user, institution, and OpenID Connect
+application, can be combined conjuctively ('and' or 'all' need to be positive)
+or disjunctively ('or' or 'any one'/'at least one' needs to be positive). This
+is configured through the combinator and the mutation
+`ConfigureDataAccessPolicyMutation`. If there are no user access
+policies at all, then, in the 'all' case, no restrictions based on the user
+itself are imposed, and in the 'any' case, no allowances based on the user
+itself are given; and analogously for institution and application policies. Put
+another way, an empty list of user access policies is `true` in the 'and' case
+and `false` in the 'or' case, and analogously for institution and application
+access policies.
+
+In particular, a data access policy with the combinator 'all' and empty user,
+institution, and application policies allows access to anyone, also anonymous
+access. And one with the combinator 'or' and empty policies allows access to
+noone, no matter if authenticated or not.
+
+A data access policy is either the one-and-only global one or associated with a
+specific data entry, see the field `Data`. It is
+global if this field is `null`. The global and individual policies are combined
+conjunctively, meaning that for access both need to allow access.
+"""
+input DataAccessPolicySortInput {
+  dataId: SortEnumType @cost(weight: "10")
+  dataKind: SortEnumType @cost(weight: "10")
 }
 
 input DataApprovalPropositionInput {
@@ -2146,6 +2446,8 @@ input GetHttpsResourcePropositionInput {
   archivedFilesMetaInformation: FilterInputTypeOfFileMetaInformationsPropositionInput
   calorimetricData: CalorimetricDataPropositionInput
   dataFormatId: UuidPropositionInput
+  dataId: UuidPropositionInput
+  dataKind: DataKindPropositionInput
   description: StringPropositionInput
   geometricData: GeometricDataPropositionInput
   hashValue: StringPropositionInput
@@ -2161,6 +2463,7 @@ input GetHttpsResourceSortInput {
   appliedConversionMethod: ToTreeVertexAppliedConversionMethodSortInput @cost(weight: "10")
   createdAt: SortEnumType @cost(weight: "10")
   dataFormatId: SortEnumType @cost(weight: "10")
+  dataKind: SortEnumType @cost(weight: "10")
   description: SortEnumType @cost(weight: "10")
   hashValue: SortEnumType @cost(weight: "10")
   id: SortEnumType @cost(weight: "10")
@@ -2173,6 +2476,8 @@ input GetHttpsResourceTreeNonRootVertexPropositionInput {
   appliedConversionMethod: ToTreeVertexAppliedConversionMethodPropositionInput
   archivedFilesMetaInformation: FilterInputTypeOfFileMetaInformationsPropositionInput
   dataFormatId: UuidPropositionInput
+  dataId: UuidPropositionInput
+  dataKind: DataKindPropositionInput
   description: StringPropositionInput
   hashValue: StringPropositionInput
   or: [GetHttpsResourceTreeNonRootVertexPropositionInput!]
@@ -2183,6 +2488,7 @@ input GetHttpsResourceTreeNonRootVertSortInput {
   appliedConversionMethod: ToTreeVertexAppliedConversionMethodSortInput @cost(weight: "10")
   createdAt: SortEnumType @cost(weight: "10")
   dataFormatId: SortEnumType @cost(weight: "10")
+  dataKind: SortEnumType @cost(weight: "10")
   description: SortEnumType @cost(weight: "10")
   hashValue: SortEnumType @cost(weight: "10")
   id: SortEnumType @cost(weight: "10")
@@ -2428,6 +2734,13 @@ input NullableOfCoatedSidePropositionInput {
   notIn: [CoatedSide] @cost(weight: "10")
 }
 
+input NullableOfDataKindPropositionInput {
+  equalTo: DataKind @cost(weight: "10")
+  in: [DataKind] @cost(weight: "10")
+  notEqualTo: DataKind @cost(weight: "10")
+  notIn: [DataKind] @cost(weight: "10")
+}
+
 input NullableOfIlluminantPropositionInput {
   equalTo: Illuminant @cost(weight: "10")
   in: [Illuminant] @cost(weight: "10")
@@ -2607,6 +2920,8 @@ input RecomputeGetHttpsResourceHashValuesPropositionInput {
   archivedFilesMetaInformation: FilterInputTypeOfFileMetaInformationsPropositionInput
   calorimetricData: CalorimetricDataPropositionInput
   dataFormatId: UuidPropositionInput
+  dataId: UuidPropositionInput
+  dataKind: DataKindPropositionInput
   description: StringPropositionInput
   geometricData: GeometricDataPropositionInput
   hashValue: StringPropositionInput
@@ -2641,10 +2956,62 @@ input RemoveDataApprovalInput {
   signature: String!
 }
 
+"""
+A data access policy decides who can access data, meaning which data shows up
+in GraphQL queries and which associated resources can be downloaded. The
+decision is made based on the authenticated user or institution, the
+institutions represented by a user, and/or the communicating OpenID Connect
+application. The access token issued by the metabase and associated with
+same-site logins or given in the HTTP Authorization header as Bearer, tells
+through the 'Subject' claim which user or institution is authenticated and
+through the 'Client ID' or 'Authorized Party' claim which OpenID Connect
+application is communicating. In the case of a user, the metabase informs us
+about the institutions he*she represents.
+
+How user, institution(s), and application are allowed/restricted is decided by
+user, institution, and application access policies associated with the data
+access policy and specific users, institutions, and applications through their
+IDs or users and institutions and client IDs for applications. Each such policy
+can allow access to a user, institution, or application and can limit the
+number of API accesses totally or within a time span, which is shifted to the
+current moment once it has passed. For example, an institution policy without a
+limit just allows access for any user representing that institution and for any
+application owned by the institution itself, and it disallows access for all
+other users and institutions. If an additional limit without duration is given,
+than exactly that number of GraphQL or REST API accesses are allowed. And if an
+additional duration is given, from the time of the first access until the
+duration passed, the given number of accesses are allowed; the start time and
+the access count are reset on the first access after the duration passed (a
+sliding window of time).
+
+The individual decisions based on user, institution, and OpenID Connect
+application, can be combined conjuctively ('and' or 'all' need to be positive)
+or disjunctively ('or' or 'any one'/'at least one' needs to be positive). This
+is configured through the combinator and the mutation
+`ConfigureDataAccessPolicyMutation`. If there are no user access
+policies at all, then, in the 'all' case, no restrictions based on the user
+itself are imposed, and in the 'any' case, no allowances based on the user
+itself are given; and analogously for institution and application policies. Put
+another way, an empty list of user access policies is `true` in the 'and' case
+and `false` in the 'or' case, and analogously for institution and application
+access policies.
+
+In particular, a data access policy with the combinator 'all' and empty user,
+institution, and application policies allows access to anyone, also anonymous
+access. And one with the combinator 'or' and empty policies allows access to
+noone, no matter if authenticated or not.
+
+A data access policy is either the one-and-only global one or associated with a
+specific data entry, see the field `Data`. It is
+global if this field is `null`. The global and individual policies are combined
+conjunctively, meaning that for access both need to allow access.
+"""
 input ResetDataAccessPoliciesPropositionInput {
   and: [ResetDataAccessPoliciesPropositionInput!]
   calorimetricData: CalorimetricDataPropositionInput
   combinator: LogicalCombinatorPropositionInput
+  dataId: UuidPropositionInput
+  dataKind: NullableOfDataKindPropositionInput
   geometricData: GeometricDataPropositionInput
   hygrothermalData: HygrothermalDataPropositionInput
   institutionAccessPolicies: FilterInputTypeOfInstitutionAccessPolicysPropositionInput

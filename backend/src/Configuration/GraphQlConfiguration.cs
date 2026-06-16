@@ -56,6 +56,8 @@ public static class GraphQlConfiguration
             // Extensions
             .AddNodaTime()
             .BindRuntimeType<TimeSpan, DurationType>()
+            .AddTypeConverter<Duration, TimeSpan>(_ => _.ToTimeSpan())
+            .AddTypeConverter<TimeSpan, Duration>(_ => Duration.FromTimeSpan(_))
             // .AddTypeConverter<OffsetDateTime, DateTimeOffset>(
             //     _ => _.ToDateTimeOffset()
             // )

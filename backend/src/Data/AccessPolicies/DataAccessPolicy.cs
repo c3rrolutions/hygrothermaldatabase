@@ -37,7 +37,8 @@ than exactly that number of GraphQL or REST API accesses are allowed. And if an
 additional duration is given, from the time of the first access until the
 duration passed, the given number of accesses are allowed; the start time and
 the access count are reset on the first access after the duration passed (a
-sliding window of time).
+sliding window of time). Note that if the limit is 0, access is explicitly
+denied for the respective user, institution, or application.
 
 The individual decisions based on user, institution, and OpenID Connect
 application, can be combined conjuctively ('and' or 'all' need to be positive)
@@ -60,6 +61,23 @@ A data access policy is either the one-and-only global one or associated with a
 specific data entry, see the field `{nameof(DataAccessPolicy.Data)}`. It is
 global if this field is `null`. The global and individual policies are combined
 conjunctively, meaning that for access both need to allow access.
+
+There are mutations to
+* reset a data access policy to its original state, in which anyone is allowed
+  access;
+* configure the logical combinator of a data access policy (as explained above);
+* clear user, institution, and applicatoin policies of a data access policy;
+* set and unset a user, institution, or applicatoin policy for a specific user,
+  institution, or application, and a specific data access policy (global or
+  associated with a specific data entry).
+
+To determine whether access policies allow/restrict access in the way you
+expected, use their `is*Allowed` fields, passing the applicable user ID,
+institution IDs, and/or client ID as argument(s). The field
+`{nameof(AccessPolicyBase.AccessCountSinceStartTime)}` informs you about the
+number of accesses that were counted for the user, institution, or application
+policy since the start time. Both are reset on the first access after the end
+of the time span or when a policy is updated via the respective 'set' mutation.
 """)]
 public sealed class DataAccessPolicy()
     : AuditableEntity

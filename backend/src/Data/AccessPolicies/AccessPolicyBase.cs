@@ -19,10 +19,9 @@ public abstract class AccessPolicyBase
     [Projectable]
     public bool IsWithinAccessLimitInTimeSpan => UpperAccessLimitPerTimeDuration is null || (
         UpperAccessLimitPerTimeDuration.UpperLimit > 0 && (
-            AccessCountSinceStartTime is null || (
-                IsWithinTimeSpan
-                && AccessCountSinceStartTime.AccessCount <= UpperAccessLimitPerTimeDuration.UpperLimit
-            )
+            AccessCountSinceStartTime is null
+            || !IsWithinTimeSpan
+            || AccessCountSinceStartTime.AccessCount < UpperAccessLimitPerTimeDuration.UpperLimit
         )
     );
 
@@ -31,7 +30,7 @@ public abstract class AccessPolicyBase
         AccessCountSinceStartTime is null
         || UpperAccessLimitPerTimeDuration is null
         || UpperAccessLimitPerTimeDuration.Duration is null
-        || AccessCountSinceStartTime.StartTime + UpperAccessLimitPerTimeDuration.Duration < DateTimeOffset.UtcNow;
+        || DateTimeOffset.UtcNow <= AccessCountSinceStartTime.StartTime + UpperAccessLimitPerTimeDuration.Duration;
 
     public void IncrementAccessCount(IClock clock)
     {

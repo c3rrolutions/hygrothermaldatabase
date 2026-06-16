@@ -41,11 +41,11 @@ sliding window of time).
 
 The individual decisions based on user, institution, and OpenID Connect
 application, can be combined conjuctively ('and' or 'all' need to be positive)
-or disjunctively ('or' or 'any one'/'at least one' needs to be positive). This
+or disjunctively ('or' or 'someone'/'at least one' needs to be positive). This
 is configured through the combinator and the mutation
 `{nameof(ConfigureDataAccessPolicyMutation)}`. If there are no user access
 policies at all, then, in the 'all' case, no restrictions based on the user
-itself are imposed, and in the 'any' case, no allowances based on the user
+itself are imposed, and in the 'some' case, no allowances based on the user
 itself are given; and analogously for institution and application policies. Put
 another way, an empty list of user access policies is `true` in the 'and' case
 and `false` in the 'or' case, and analogously for institution and application

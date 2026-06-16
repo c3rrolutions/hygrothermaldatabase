@@ -100,7 +100,6 @@ remove : ## Remove stopped services
 up : symlink dotenv ## (Re)create and start services
 	docker compose up \
 		--no-build \
-		--no-deps \
 		--no-recreate \
 		--remove-orphans \
 		--wait ${SERVICE}
@@ -144,7 +143,6 @@ logs : ## Follow logs
 exec : ## Execute the one-time command `${COMMAND}` against the `${SERVICE}` service
 	docker compose up \
 		--no-build \
-		--no-deps \
 		--no-recreate \
 		--wait \
 		${SERVICE}

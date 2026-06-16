@@ -10,6 +10,6 @@ public sealed class PublicationSortType
         ISortInputTypeDescriptor<Publication> descriptor
     )
     {
-        descriptor.Field(x => x.Exists).Ignore();
+        descriptor.Field(_ => _.Exists).Ignore();
     }
 }

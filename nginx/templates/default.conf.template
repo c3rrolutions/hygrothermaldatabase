@@ -138,24 +138,36 @@ server {
     limit_req  zone=sensitive burst=6 nodelay;
   }
 
-  location /api/upload-file {
+  location /api/resources/ {
+    # Route POST requests to the dedicated upload location
+    if ($request_method = POST) {
+      error_page 418 = @resource_post;
+      return 418;
+    }
+    # Route GET requests to the dedicated download location
+    if ($request_method = GET) {
+      error_page 418 = @resource_get;
+      return 418;
+    }
+    # Fallback for other HTTP methods (PUT, DELETE, etc.)
     proxy_pass http://backend;
-    limit_req  zone=sensitive burst=2 nodelay;
+  }
+
+  location @resource_post {
+    # Optimize for multi-gigabyte POST uploads
+    proxy_pass http://backend;
     client_max_body_size 10G;
     client_body_timeout 300s;
     proxy_read_timeout 300s;
     proxy_send_timeout 300s;
-    proxy_request_buffering off;
+    proxy_request_buffering off; 
   }
 
-  location /api/resources/ {
-    # Inspired by https://docs.nginx.com/nginx/admin-guide/web-server/serving-static-content/
-    alias /data/files/; # https://nginx.org/en/docs/http/ngx_http_core_module.html#alias
-    sendfile on;
-    sendfile_max_chunk 1m;
-    tcp_nopush on;
-    tcp_nodelay on;
-    keepalive_timeout 65s;
+  location @resource_get {
+    # Optimize for multi-gigabyte GET streaming downloads
+    proxy_pass http://backend;
+    proxy_buffering off;
+    proxy_read_timeout 300s;
   }
 
   location /openapi {

@@ -5,7 +5,7 @@ using HotChocolate.Data.Filters;
 namespace Database.GraphQl.DataX;
 
 public abstract class DataFilterTypeBase<TData>
-    : EntityFilterType<TData>
+    : AuditableEntityFilterType<TData>
     where TData : IData
 {
     protected override void Configure(
@@ -13,17 +13,16 @@ public abstract class DataFilterTypeBase<TData>
     )
     {
         base.Configure(descriptor);
-        descriptor.Field(x => x.UserId);
-        descriptor.Field(x => x.Locale);
-        descriptor.Field(x => x.Name);
-        descriptor.Field(x => x.Description);
-        descriptor.Field(x => x.ComponentId);
-        descriptor.Field(x => x.CreatorId);
-        descriptor.Field(x => x.CreatedAt);
-        descriptor.Field(x => x.AppliedMethod);
-        descriptor.Field(x => x.Approvals);
-        descriptor.Field(x => x.Resources);
-        descriptor.Field(x => x.Warnings);
+        descriptor.Field(_ => _.UserId);
+        descriptor.Field(_ => _.Locale);
+        descriptor.Field(_ => _.Name);
+        descriptor.Field(_ => _.Description);
+        descriptor.Field(_ => _.ComponentId);
+        descriptor.Field(_ => _.CreatorId);
+        descriptor.Field(_ => _.AppliedMethod);
+        descriptor.Field(_ => _.Approvals);
+        descriptor.Field(_ => _.Resources);
+        descriptor.Field(_ => _.Warnings);
     }
 
     // Inspired by https://github.com/ChilliCream/hotchocolate/blob/1319a4e3841beaec3bfbb282a909d2d1441f9c52/src/HotChocolate/Data/src/Data/Filters/FilterInputType.cs#L74

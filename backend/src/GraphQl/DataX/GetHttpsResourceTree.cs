@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Database.Data;
 using Database.GraphQl.Extensions;
+using Database.GraphQl.GetHttpsResources;
 using GreenDonut;
 using GreenDonut.Data;
 using HotChocolate.Data;
@@ -16,7 +17,7 @@ public sealed class GetHttpsResourceTree(
 )
 {
     public async Task<GetHttpsResourceTreeRoot> GetRoot(
-        GetHttpsResourceTreeRootByDataIdDataLoader byId,
+        IHttpsResourceTreeRootByDataIdDataLoader byId,
         CancellationToken cancellationToken
     )
     {
@@ -30,18 +31,17 @@ public sealed class GetHttpsResourceTree(
     [UseSorting<GetHttpsResourceTreeNonRootVertexSortType>]
     public async Task<IReadOnlyList<GetHttpsResourceTreeNonRootVertex>> GetNonRootVertices(
         IResolverContext resolverContext,
-        GetHttpsResourceTreeNonRootVerticesByDataIdDataLoader byId,
+        IHttpsResourceTreeNonRootVerticesByDataIdDataLoader byId,
         CancellationToken cancellationToken
     )
     {
-        var queryContext = resolverContext.GetQueryContext<GetHttpsResource>();
         return (
-            await byId
-                .With(queryContext)
-                .LoadRequiredAsync(data.Id, cancellationToken)
-            )
-            .Select(v =>
-                new GetHttpsResourceTreeNonRootVertex(v)
+            (await byId
+                .With(resolverContext.GetQueryContext<GetHttpsResource>())
+                .LoadAsync(data.Id, cancellationToken)
+            ) ?? [])
+            .Select(_ =>
+                new GetHttpsResourceTreeNonRootVertex(_)
             )
             .ToList()
             .AsReadOnly();

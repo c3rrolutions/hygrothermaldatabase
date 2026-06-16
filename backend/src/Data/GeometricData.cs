@@ -1,15 +1,30 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Threading.Tasks;
+using Database.Data.AccessPolicies;
+using Database.Enumerations;
 using Database.Extractors;
-using NodaTime;
 
 namespace Database.Data;
 
 public sealed class GeometricData
     : DataX
 {
+    public const string TableName = "geometric_data";
+
+    public static readonly DataKind TheKind = DataKind.GEOMETRIC_DATA;
+
+    public new static readonly string AssertExistenceOfRootResourceTriggerName =
+        DataX.AssertExistenceOfRootResourceTriggerName(TheKind);
+    public new static readonly string CreateDataAccessPolicyIfNecessaryTriggerName =
+        DataX.CreateDataAccessPolicyIfNecessaryTriggerName(TheKind);
+    public static readonly ImmutableArray<string> TriggerNames = [
+        AssertExistenceOfRootResourceTriggerName,
+        CreateDataAccessPolicyIfNecessaryTriggerName
+    ];
+
     public GeometricData(
         Guid? userId,
         string locale,
@@ -18,7 +33,7 @@ public sealed class GeometricData
         string? description,
         string[] warnings,
         Guid creatorId,
-        OffsetDateTime createdAt,
+        DateTimeOffset createdAt,
         AppliedMethod appliedMethod,
         double[] widths,
         double[] heights,
@@ -48,7 +63,7 @@ public sealed class GeometricData
         string? description,
         string[] warnings,
         Guid creatorId,
-        OffsetDateTime createdAt,
+        DateTimeOffset createdAt,
         double[] widths,
         double[] heights,
         double[] thicknesses
@@ -68,8 +83,14 @@ public sealed class GeometricData
         Thicknesses = thicknesses;
     }
 
+    [NotMapped]
+    public override DataKind Kind => TheKind;
+
     [InverseProperty(nameof(GetHttpsResource.GeometricData))]
     public override ICollection<GetHttpsResource> Resources { get; } = [];
+
+    [InverseProperty(nameof(DataAccessPolicy.GeometricData))]
+    public override DataAccessPolicy? AccessPolicy { get; set; }
 
     public double[] Widths { get; private set; }
     public double[] Heights { get; private set; }

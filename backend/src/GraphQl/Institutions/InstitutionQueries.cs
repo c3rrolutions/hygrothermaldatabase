@@ -3,12 +3,14 @@ using System.Threading.Tasks;
 using HotChocolate.Types;
 using Database.Authorization;
 using Database.ApiRequests;
+using HotChocolate.Authorization;
 
 namespace Database.GraphQl.Institutions;
 
 [ExtendObjectType(nameof(Query))]
 public sealed class InstitutionQueries
 {
+    [Authorize(Policy = AuthorizationPolicies.AuthenticatedPolicy)]
     public Task<QueryCurrentUserOrInstitution.CurrentInstitution?> GetCurrentInstitutionAsync(
         CommonAuthorization authorization,
         CancellationToken cancellationToken

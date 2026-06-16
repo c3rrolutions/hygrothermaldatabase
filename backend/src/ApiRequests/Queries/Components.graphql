@@ -3,8 +3,8 @@ query Components($ids: [Uuid!]!) {
     edges {
       node {
         id: uuid
+        name
       }
     }
   }
 }
-

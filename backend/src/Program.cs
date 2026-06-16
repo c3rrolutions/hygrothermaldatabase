@@ -4,10 +4,10 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using HotChocolate.AspNetCore;
 using Database.Data;
 using Database.Services;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -160,10 +160,10 @@ public sealed class Program
         IServiceProvider services
     )
     {
-        using var dbContext =
+        using var databaseContext =
             services.GetRequiredService<IDbContextFactory<ApplicationDbContext>>()
                 .CreateDbContext();
-        var pendingMigrations = dbContext.Database.GetPendingMigrations();
+        var pendingMigrations = databaseContext.Database.GetPendingMigrations();
         if (pendingMigrations.Any())
         {
             throw new InvalidOperationException($"The database is not up to date. The pending migrations are: {string.Join(", ", pendingMigrations)}. Apply them by running `./database.mk migrate`.");
@@ -176,10 +176,10 @@ public sealed class Program
     {
         try
         {
-            using var dbContext =
+            using var databaseContext =
                 services.GetRequiredService<IDbContextFactory<ApplicationDbContext>>()
                     .CreateDbContext();
-            await dbContext.Database.EnsureCreatedAsync();
+            await databaseContext.Database.EnsureCreatedAsync();
         }
         catch (Exception exception)
         {
@@ -248,6 +248,12 @@ public sealed class Program
             );
             loggerConfiguration
                 .ReadFrom.Configuration(webHostBuilderContext.Configuration);
+        });
+        builder.WebHost.ConfigureKestrel(_ =>
+        {
+            // matches the keep-alive timeout configured for `/api/resources/` in NGINX
+            _.Limits.KeepAliveTimeout = TimeSpan.FromSeconds(300);
+            _.Limits.RequestHeadersTimeout = TimeSpan.FromSeconds(30);
         });
         return builder;
     }

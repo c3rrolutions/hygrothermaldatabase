@@ -1,17 +1,32 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Threading.Tasks;
 using Database.Enumerations;
 using Database.Enumerations.DataPoints;
 using Database.Extractors;
-using NodaTime;
+using Database.Data.AccessPolicies;
 
 namespace Database.Data;
 
 public sealed class OpticalData
     : DataX
 {
+    public const string TableName = "optical_data";
+
+    public static readonly DataKind TheKind = DataKind.OPTICAL_DATA;
+
+    public new static readonly string AssertExistenceOfRootResourceTriggerName =
+        DataX.AssertExistenceOfRootResourceTriggerName(TheKind);
+    public new static readonly string CreateDataAccessPolicyIfNecessaryTriggerName =
+        DataX.CreateDataAccessPolicyIfNecessaryTriggerName(TheKind);
+    public static readonly ImmutableArray<string> TriggerNames = [
+        AssertExistenceOfRootResourceTriggerName,
+        CreateDataAccessPolicyIfNecessaryTriggerName
+    ];
+
+
     public OpticalData(
         Guid? userId,
         string locale,
@@ -20,7 +35,7 @@ public sealed class OpticalData
         string? description,
         string[] warnings,
         Guid creatorId,
-        OffsetDateTime createdAt,
+        DateTimeOffset createdAt,
         OpticalComponentType? type,
         OpticalComponentSubtype? subtype,
         CoatedSide? coatedSide,
@@ -65,7 +80,7 @@ public sealed class OpticalData
         string? description,
         string[] warnings,
         Guid creatorId,
-        OffsetDateTime createdAt,
+        DateTimeOffset createdAt,
         OpticalComponentType? type,
         OpticalComponentSubtype? subtype,
         CoatedSide? coatedSide,
@@ -97,8 +112,14 @@ public sealed class OpticalData
         ColorRenderingIndices = colorRenderingIndices;
     }
 
+    [NotMapped]
+    public override DataKind Kind => TheKind;
+
     [InverseProperty(nameof(GetHttpsResource.OpticalData))]
     public override ICollection<GetHttpsResource> Resources { get; } = [];
+
+    [InverseProperty(nameof(DataAccessPolicy.OpticalData))]
+    public override DataAccessPolicy? AccessPolicy { get; set; }
 
     public OpticalComponentType? Type { get; private set; }
     public OpticalComponentSubtype? Subtype { get; private set; }

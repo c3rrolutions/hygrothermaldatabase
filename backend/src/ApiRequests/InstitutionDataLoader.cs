@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Database.Services;
 using GreenDonut;
+using HotChocolate;
 using static Database.ApiRequests.QueryByIdDataLoader;
 
 namespace Database.ApiRequests;
@@ -16,8 +17,12 @@ public static class InstitutionDataLoader
         QueryByIdDataLoader.GetGraphQlEndpoint(appSettings);
 
     public sealed record Institution(
-        Guid Id
-    ) : IIdNode<Guid>;
+        [property: GraphQLIgnore] Guid Id,
+        string Name
+    ) : IIdNode<Guid>
+    {
+        public Guid Uuid => Id;
+    }
 
     private sealed record InstitutionsData(
         Connection<Institution>? Connection

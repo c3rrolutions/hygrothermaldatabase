@@ -12,6 +12,6 @@ public sealed class CalorimetricDataSortType
     )
     {
         base.Configure(descriptor);
-        descriptor.Field(x => x.Id);
+        descriptor.Field(_ => _.Id);
     }
 }

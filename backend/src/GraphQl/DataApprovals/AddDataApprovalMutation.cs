@@ -291,7 +291,7 @@ public sealed class AddDataApprovalMutation
                 )
             );
         }
-        if (errors.Count >= 1)
+        if (errors.Count > 0)
         {
             return NewPayload(null, errors);
         }

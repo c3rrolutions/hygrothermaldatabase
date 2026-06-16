@@ -4,7 +4,7 @@ public sealed class User(
     string subject,
     string name
 )
-: Entity
+: AuditableEntity
 {
     public string Subject { get; private set; } = subject;
     public string Name { get; private set; } = name;

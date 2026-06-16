@@ -120,7 +120,7 @@ public sealed class PublishDataMutation
             .Where(_ => _.GetDataId(input.DataKind) == input.DataId)
             .ToListAsync(cancellationToken);
         var resourcesWithoutFile = resources.Where(_ => !_.DoesFileExist()).ToList();
-        if (resourcesWithoutFile.Count >= 1)
+        if (resourcesWithoutFile.Count > 0)
         {
             errors.Add(
                 NewError(
@@ -130,7 +130,7 @@ public sealed class PublishDataMutation
                 )
             );
         }
-        if (errors.Count >= 1)
+        if (errors.Count > 0)
         {
             return NewPayload(null, errors);
         }

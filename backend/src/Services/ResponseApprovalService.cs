@@ -32,7 +32,8 @@ public static partial class Log
 public sealed class ResponseApprovalService(
     AppSettings appSettings,
     SigningService signingService,
-    IRequestExecutorResolver requestExecutorResolver,
+    IRequestExecutorProvider requestExecutorProvider,
+    IClock clock,
     ILogger<ResponseApprovalService> logger
 )
 {
@@ -91,13 +92,13 @@ public sealed class ResponseApprovalService(
         logger.QueryAndVariablesAndResponse(query, variables, response);
         var typedResponse = JsonSerializer.Deserialize<GraphQLResponse<JsonElement>>(response, JsonSerializerSettings.GraphQl)
              ?? throw new JsonException($"Failed to deserialize the GraphQL response: {response}");
-        if (typedResponse.Errors is not null && typedResponse.Errors.Length >= 1)
+        if (typedResponse.Errors is not null && typedResponse.Errors.Length > 0)
         {
             throw new GraphQLException($"The GraphQL response contains the following errors: {string.Join(", ", typedResponse.Errors.Select(_ => $"'{_.Message}' [{string.Join(", ", _.Extensions?.Select(e => $"{e.Key}: '{e.Value}'") ?? [])}] ({string.Join(".", _.Path?.Select(p => p.ToString()) ?? [])})"))}");
         }
         var (signature, fingerprint) = await signingService.SignData(response);
         return new ResponseApproval(
-            OffsetDateTime.UtcNow,
+            clock.GetUtcNow(),
             signature,
             fingerprint,
             query,
@@ -134,7 +135,7 @@ public sealed class ResponseApprovalService(
             .SetDocument(query)
             .SetVariableValues(variables)
             .Build();
-        var requestExecutor = await requestExecutorResolver.GetRequestExecutorAsync(cancellationToken: cancellationToken);
+        var requestExecutor = await requestExecutorProvider.GetExecutorAsync(cancellationToken: cancellationToken);
         var executionResult = await requestExecutor.ExecuteAsync(operationRequest, cancellationToken);
         var response = executionResult.ToJson(withIndentations: false);
         return (query, JsonSerializer.SerializeToElement(variables), response);

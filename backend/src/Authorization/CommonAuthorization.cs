@@ -4,6 +4,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Database.Services;
 using Database.ApiRequests;
+using HotChocolate.Resolvers;
+using HotChocolate;
 
 namespace Database.Authorization;
 
@@ -11,6 +13,9 @@ public sealed class CommonAuthorization(
     UserService userService
 )
 {
+    // This is the same code that HotChocolate returns when autheorization via the attribute `[Authorize(Policy = ...)]` fails.
+    private const string UNAUTHORIZED_CODE = "AUTH_NOT_AUTHENTICATED";
+
     public Task<T> SwitchUserOrInstitutionAsync<T>(
         Func<QueryCurrentUserOrInstitution.CurrentUser?, Task<T>> handleUser,
         Func<QueryCurrentUserOrInstitution.CurrentInstitution, Task<T>> handleInstitution,
@@ -66,6 +71,19 @@ public sealed class CommonAuthorization(
                     t.Node.Uuid == institutionId
                 )
             )
+        );
+    }
+
+    public void ReportUnauthorizedError(
+        IResolverContext resolverContext
+    )
+    {
+        resolverContext.ReportError(
+            ErrorBuilder.New()
+                .SetCode(UNAUTHORIZED_CODE)
+                .SetPath(resolverContext.Path)
+                .SetMessage($"The current user is not authorized to access this resource.")
+                .Build()
         );
     }
 }

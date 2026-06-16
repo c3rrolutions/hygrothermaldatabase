@@ -1,16 +1,16 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Database.ApiRequests;
 using Database.Authorization;
 using Database.Data;
+using Database.Data.AccessPolicies;
 using Database.Extensions;
 using Database.GraphQl.DataX;
+using Database.GraphQl.Scalars;
 using Database.Services;
-using Database.Utilities;
 using HotChocolate;
 using HotChocolate.Types;
 using NodaTime;
@@ -23,7 +23,7 @@ public sealed record CreatePhotovoltaicDataInput(
     string? Name,
     string? Description,
     string[] Warnings,
-    OffsetDateTime CreatedAt,
+    DateTimeOffset CreatedAt,
     Guid CreatorId,
     AppliedMethodInput AppliedMethod,
     RootGetHttpsResourceInput RootResource
@@ -46,6 +46,7 @@ public sealed record CreatePhotovoltaicDataInput(
             AppliedMethod.ToDomainModel()
         );
         data.Resources.Add(RootResource.ToDomainModel(fileExtension));
+        data.AccessPolicy = new DataAccessPolicy();
         return data;
     }
 };
@@ -104,6 +105,7 @@ public sealed class CreatePhotovoltaicDataMutation
         IDataByDatabaseAndIdAndKindDataLoader dataByDatabaseAndIdAndKindDataLoader,
         IDataFormatByIdDataLoader dataFormatByIdDataLoader,
         ResponseApprovalService responseApprovalService,
+        IClock clock,
         CancellationToken cancellationToken
     )
     {
@@ -133,6 +135,7 @@ public sealed class CreatePhotovoltaicDataMutation
                 CreatePhotovoltaicDataErrorCode.UNKNOWN_DATA,
                 dataFormatByIdDataLoader,
                 CreatePhotovoltaicDataErrorCode.UNKNOWN_DATA_FORMAT,
+                clock,
                 cancellationToken
             )
             ).Failed(out var dataFormat, out var validateErrorPayload)

@@ -1,14 +1,13 @@
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Database.Authorization;
 using Database.Data;
 using Database.GraphQl.DataX;
+using Database.GraphQl.Scalars;
 using Database.Services;
 using HotChocolate;
 using HotChocolate.Data;
-using HotChocolate.Data.Sorting;
 using HotChocolate.Resolvers;
 using HotChocolate.Types;
 
@@ -19,15 +18,12 @@ public sealed class OpticalDataQueries
 : DataQueriesBase<OpticalData>
 {
     [UsePaging]
-    // [UseProjection] // We disabled projections because when requesting `id` all results had the
-    // same `id` and when also requesting `uuid`, the latter was always the empty UUID `000...`.
     [UseFiltering<OpticalDataFilterType>]
     [UseSorting<OpticalDataSortType>]
-    public Task<IEnumerable<OpticalData>> GetAllOpticalDataAsync(
+    public Task<HotChocolate.Types.Pagination.Connection<OpticalData>> GetAllOpticalDataAsync(
         [GraphQLType<LocaleType>] string? locale,
         ApplicationDbContext context,
-        AccessRightsService accessRightsService,
-        ISortingContext sorting,
+        AccessPolicyService accessPolicyService,
         IResolverContext resolverContext,
         CancellationToken cancellationToken
     )
@@ -35,23 +31,20 @@ public sealed class OpticalDataQueries
         return GetAllDataAsync(
             context.OpticalData,
             locale,
-            accessRightsService,
-            sorting,
+            context,
+            accessPolicyService,
             resolverContext,
             cancellationToken
         );
     }
 
     [UsePaging]
-    // [UseProjection] // We disabled projections because when requesting `id` all results had the
-    // same `id` and when also requesting `uuid`, the latter was always the empty UUID `000...`.
     [UseFiltering<OpticalDataFilterType>]
     [UseSorting<OpticalDataSortType>]
-    public Task<IEnumerable<OpticalData>> GetAllPendingOpticalDataAsync(
+    public Task<HotChocolate.Types.Pagination.Connection<OpticalData>> GetAllPendingOpticalDataAsync(
         [GraphQLType<LocaleType>] string? locale,
         ApplicationDbContext context,
-        AccessRightsService accessRightsService,
-        ISortingContext sorting,
+        AccessPolicyService accessPolicyService,
         IResolverContext resolverContext,
         CommonAuthorization authorization,
         CancellationToken cancellationToken
@@ -60,8 +53,8 @@ public sealed class OpticalDataQueries
         return GetAllPendingDataAsync(
             context.OpticalData,
             locale,
-            accessRightsService,
-            sorting,
+            context,
+            accessPolicyService,
             resolverContext,
             authorization,
             cancellationToken
@@ -72,6 +65,7 @@ public sealed class OpticalDataQueries
     public Task<bool> HasOpticalDataAsync(
         [GraphQLType<LocaleType>] string? locale,
         ApplicationDbContext context,
+        AccessPolicyService accessPolicyService,
         IResolverContext resolverContext,
         CancellationToken cancellationToken
     )
@@ -79,6 +73,8 @@ public sealed class OpticalDataQueries
         return HasDataAsync(
             context.OpticalData,
             locale,
+            context,
+            accessPolicyService,
             resolverContext,
             cancellationToken
         );
@@ -87,16 +83,17 @@ public sealed class OpticalDataQueries
     public Task<OpticalData?> GetOpticalDataAsync(
         Guid id,
         [GraphQLType<LocaleType>] string? locale,
-        OpticalDataByIdDataLoader byId,
-        AccessRightsService accessRightsService,
+        ApplicationDbContext context,
+        AccessPolicyService accessPolicyService,
         CancellationToken cancellationToken
     )
     {
         return GetDataAsync(
             id,
             locale,
-            byId,
-            accessRightsService,
+            context.OpticalData,
+            context,
+            accessPolicyService,
             cancellationToken
         );
     }

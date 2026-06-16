@@ -226,7 +226,7 @@ public sealed class SpectralToIntegralMethod
         ImmutableArray<(int wavelength, double weight, double deltaWavelength)> wavelengthsWeights
     )
     {
-        if (spectralDataPoints == null || spectralDataPoints.Count == 0)
+        if (spectralDataPoints is null || spectralDataPoints.Count is 0)
         {
             throw new ArgumentException("The list `spectralDataPoints` is empty.");
         }

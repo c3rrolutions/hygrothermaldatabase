@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Database.Services;
 using GreenDonut;
+using HotChocolate;
 using static Database.ApiRequests.QueryByIdDataLoader;
 
 namespace Database.ApiRequests;
@@ -16,8 +17,12 @@ public static class OpenIdConnectApplicationDataLoader
         QueryByIdDataLoader.GetGraphQlEndpoint(appSettings);
 
     public sealed record OpenIdConnectApplication(
-        string Id
-    ) : IIdNode<string>;
+        [property: GraphQLIgnore] string Id,
+        string Name
+    ) : IIdNode<string>
+    {
+        string ClientId => Id;
+    }
 
     private sealed record OpenIdConnectApplicationsData(
         Connection<OpenIdConnectApplication>? Connection

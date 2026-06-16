@@ -1,7 +1,4 @@
-using System;
 using Database.Data;
-using Database.GraphQl.Publications;
-using Database.GraphQl.Standards;
 using HotChocolate.Types;
 
 namespace Database.GraphQl.References;

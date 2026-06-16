@@ -2,7 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Database.GraphQl.Scalars;
 using Database.Services;
+using HotChocolate;
+using HotChocolate.Types;
 
 namespace Database.ApiRequests;
 
@@ -16,14 +19,14 @@ public sealed class GetUserInfo(
 
     public sealed record UserInfo(
         Address? Address,
-        string? Email,
+        [GraphQLType<EmailAddressType>] string? Email,
         bool? EmailVerified,
         string Name, // is not null because the OpenId Connect client asks for the scope `Profile`
-        string? PhoneNumber,
+        [GraphQLType<PhoneNumberType>] string? PhoneNumber,
         bool? PhoneNumberVerified,
         IReadOnlyList<string>? Roles,
         string Sub, // Subject
-        string? Website
+        [GraphQLType<MyUriType>] string? Website
     );
 
     public sealed record Address(

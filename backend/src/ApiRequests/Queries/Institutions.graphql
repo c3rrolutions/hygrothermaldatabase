@@ -3,8 +3,8 @@ query Institutions($ids: [Uuid!]!) {
     edges {
       node {
         id: uuid
+        name
       }
     }
   }
 }
-

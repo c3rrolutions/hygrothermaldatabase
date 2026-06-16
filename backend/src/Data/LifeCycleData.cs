@@ -1,14 +1,29 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Threading.Tasks;
-using NodaTime;
+using Database.Data.AccessPolicies;
+using Database.Enumerations;
 
 namespace Database.Data;
 
 public sealed class LifeCycleData
     : DataX
 {
+    public const string TableName = "lifeCycle_data";
+
+    public static readonly DataKind TheKind = DataKind.LIFE_CYCLE_DATA;
+
+    public new static readonly string AssertExistenceOfRootResourceTriggerName =
+        DataX.AssertExistenceOfRootResourceTriggerName(TheKind);
+    public new static readonly string CreateDataAccessPolicyIfNecessaryTriggerName =
+        DataX.CreateDataAccessPolicyIfNecessaryTriggerName(TheKind);
+    public static readonly ImmutableArray<string> TriggerNames = [
+        AssertExistenceOfRootResourceTriggerName,
+        CreateDataAccessPolicyIfNecessaryTriggerName
+    ];
+
     public LifeCycleData(
         Guid? userId,
         string locale,
@@ -17,7 +32,7 @@ public sealed class LifeCycleData
         string? description,
         string[] warnings,
         Guid creatorId,
-        OffsetDateTime createdAt,
+        DateTimeOffset createdAt,
         AppliedMethod appliedMethod
     ) : base(
         userId,
@@ -42,7 +57,7 @@ public sealed class LifeCycleData
         string? description,
         string[] warnings,
         Guid creatorId,
-        OffsetDateTime createdAt
+        DateTimeOffset createdAt
     ) : base(
         userId,
         locale,
@@ -56,8 +71,14 @@ public sealed class LifeCycleData
     {
     }
 
+    [NotMapped]
+    public override DataKind Kind => TheKind;
+
     [InverseProperty(nameof(GetHttpsResource.LifeCycleData))]
     public override ICollection<GetHttpsResource> Resources { get; } = [];
+
+    [InverseProperty(nameof(DataAccessPolicy.LifeCycleData))]
+    public override DataAccessPolicy? AccessPolicy { get; set; }
 
     public override Task ExtractAndSetValuesFromFile(
         string filePath,

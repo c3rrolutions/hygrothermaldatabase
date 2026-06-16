@@ -46,7 +46,7 @@ public sealed class QueryCurrentUserOrInstitution(
     {
         public bool IsAtLeastAssistantManagerOfDatabaseOperator()
         {
-            return DatabaseOperatingRepresentedInstitutions.TotalCount >= 1;
+            return DatabaseOperatingRepresentedInstitutions.TotalCount > 0;
         }
     };
 
@@ -95,8 +95,8 @@ public sealed class QueryCurrentUserOrInstitution(
     {
         public bool IsDatabaseOperator()
         {
-            return DatabaseOperatingDatabases.TotalCount >= 1
-                || DatabaseOperatingManagedInstitutions.TotalCount >= 1;
+            return DatabaseOperatingDatabases.TotalCount > 0
+                || DatabaseOperatingManagedInstitutions.TotalCount > 0;
         }
     };
 
@@ -111,7 +111,17 @@ public sealed class QueryCurrentUserOrInstitution(
     public sealed record CurrentUserOrInstitution(
         CurrentUser? CurrentUser,
         CurrentInstitution? CurrentInstitution
-    );
+    )
+    {
+        public void Deconstruct(
+            out CurrentUser? currentUser,
+            out CurrentInstitution? currentInstitution
+        )
+        {
+            currentUser = CurrentUser;
+            currentInstitution = CurrentInstitution;
+        }
+    };
 
     public async Task<CurrentUserOrInstitution> Do(
         CancellationToken cancellationToken

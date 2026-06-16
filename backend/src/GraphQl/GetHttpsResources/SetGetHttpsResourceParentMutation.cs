@@ -138,7 +138,7 @@ public sealed class SetGetHttpsResourceParentMutation
             );
         }
         // Note that `dataFormat` is only `null`, when `validateResourceResult` failed.
-        if (errors.Count >= 1)
+        if (errors.Count > 0)
         {
             return NewPayload(null, errors);
         }

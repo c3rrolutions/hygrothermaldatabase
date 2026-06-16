@@ -171,6 +171,6 @@ public sealed class SigningService(
         logger.ExecuteCommandOutput(output);
         logger.ExecuteCommandDiagnostics(diagnostics);
         logger.ExecuteCommandExitCode(process.ExitCode);
-        return (process.ExitCode == 0, output, diagnostics);
+        return (process.ExitCode is 0, output, diagnostics);
     }
 }

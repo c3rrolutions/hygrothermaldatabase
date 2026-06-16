@@ -1,15 +1,30 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Threading.Tasks;
+using Database.Data.AccessPolicies;
+using Database.Enumerations;
 using Database.Extractors;
-using NodaTime;
 
 namespace Database.Data;
 
 public sealed class CalorimetricData
     : DataX
 {
+    public const string TableName = "calorimetric_data";
+
+    public static readonly DataKind TheKind = DataKind.CALORIMETRIC_DATA;
+
+    public new static readonly string AssertExistenceOfRootResourceTriggerName =
+        DataX.AssertExistenceOfRootResourceTriggerName(TheKind);
+    public new static readonly string CreateDataAccessPolicyIfNecessaryTriggerName =
+        DataX.CreateDataAccessPolicyIfNecessaryTriggerName(TheKind);
+    public static readonly ImmutableArray<string> TriggerNames = [
+        AssertExistenceOfRootResourceTriggerName,
+        CreateDataAccessPolicyIfNecessaryTriggerName
+    ];
+
     public CalorimetricData(
         Guid? userId,
         string locale,
@@ -18,7 +33,7 @@ public sealed class CalorimetricData
         string? description,
         string[] warnings,
         Guid creatorId,
-        OffsetDateTime createdAt,
+        DateTimeOffset createdAt,
         AppliedMethod appliedMethod,
         double[] gValues,
         double[] uValues
@@ -47,7 +62,7 @@ public sealed class CalorimetricData
         string? description,
         string[] warnings,
         Guid creatorId,
-        OffsetDateTime createdAt,
+        DateTimeOffset createdAt,
         double[] gValues,
         double[] uValues
     ) : base(
@@ -65,8 +80,14 @@ public sealed class CalorimetricData
         UValues = uValues;
     }
 
+    [NotMapped]
+    public override DataKind Kind => TheKind;
+
     [InverseProperty(nameof(GetHttpsResource.CalorimetricData))]
     public override ICollection<GetHttpsResource> Resources { get; } = [];
+
+    [InverseProperty(nameof(DataAccessPolicy.CalorimetricData))]
+    public override DataAccessPolicy? AccessPolicy { get; set; }
 
     public double[] GValues { get; private set; }
     public double[] UValues { get; private set; }

@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Database.Services;
 using GreenDonut;
+using HotChocolate;
 using static Database.ApiRequests.QueryByIdDataLoader;
 
 namespace Database.ApiRequests;
@@ -16,12 +17,15 @@ public static class DataFormatDataLoader
         QueryByIdDataLoader.GetGraphQlEndpoint(appSettings);
 
     public sealed record DataFormat(
-        Guid Id,
+        [property: GraphQLIgnore] Guid Id,
         string Name,
         string? Extension,
         string MediaType,
         Uri? SchemaLocator
-    ) : IIdNode<Guid>;
+    ) : IIdNode<Guid>
+    {
+        public Guid Uuid => Id;
+    }
 
     private sealed record DataFormatsData(
         Connection<DataFormat>? Connection

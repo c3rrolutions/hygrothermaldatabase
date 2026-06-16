@@ -1,37 +1,30 @@
 import { Scalars } from "../../../__generated__/graphql";
 import { PhotovoltaicDataDocument } from "../../../queries/data.generated";
-import { Skeleton, Result, App } from "antd";
-import { useEffect } from "react";
-import { stringifyApolloError } from "../../../lib/apollo";
-import DataPageHeader from "../DataPageHeader";
+import { Skeleton, Result, Card } from "antd";
 import { useQuery } from "@apollo/client/react";
+import { useQueryHandler } from "../../../lib/hooks/useQueryHandler";
+import PhotovoltaicDataSummary from "./PhotovoltaicDataSummary";
+import QueryToolbar from "../../QueryToolbar";
 
-export type PhotovoltaicDataProps = {
-  photovoltaicDataId: Scalars["Uuid"]["input"];
-};
+interface PhotovoltaicDataProps {
+  id: Scalars["Uuid"]["input"];
+}
 
-export default function PhotovoltaicData({
-  photovoltaicDataId,
-}: PhotovoltaicDataProps) {
+export default function PhotovoltaicData({ id }: PhotovoltaicDataProps) {
+  const queryVariables = {
+    id,
+  };
   const { loading, error, data } = useQuery(PhotovoltaicDataDocument, {
-    variables: {
-      uuid: photovoltaicDataId,
-    },
+    variables: queryVariables,
   });
-  const photovoltaicData = data?.photovoltaicData;
-  const { message } = App.useApp();
-
-  useEffect(() => {
-    if (error) {
-      message.error(stringifyApolloError(error));
-    }
-  }, [error]);
+  useQueryHandler({ error });
+  const theData = data?.data;
 
   if (loading) {
     return <Skeleton active avatar title />;
   }
 
-  if (!photovoltaicData) {
+  if (!theData) {
     return (
       <Result
         status="500"
@@ -42,16 +35,14 @@ export default function PhotovoltaicData({
   }
 
   return (
-    <>
-      <DataPageHeader
-        data={photovoltaicData}
-        // extra={[
-        //   <UpdatePhotovoltaicData
-        //     key="updatePhotovoltaicData"
-        //     photovoltaicDataId={photovoltaicData.uuid}
-        //   />,
-        // ]}
-      ></DataPageHeader>
-    </>
+    <div>
+      <Card style={{ marginBottom: "1em" }}>
+        <PhotovoltaicDataSummary entity={theData} />
+      </Card>
+      <QueryToolbar
+        query={PhotovoltaicDataDocument}
+        variables={queryVariables}
+      />
+    </div>
   );
 }

@@ -78,6 +78,9 @@ institution IDs, and/or client ID as argument(s). The field
 number of accesses that were counted for the user, institution, or application
 policy since the start time. Both are reset on the first access after the end
 of the time span or when a policy is updated via the respective 'set' mutation.
+
+Note that durations are represented in the
+[ISO 8601 duration format](https://scalars.graphql.org/chillicream/duration.html#sec-Result-spec)
 """)]
 public sealed class DataAccessPolicy()
     : AuditableEntity

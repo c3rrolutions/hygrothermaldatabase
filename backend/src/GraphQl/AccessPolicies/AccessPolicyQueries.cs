@@ -39,7 +39,7 @@ public sealed class AccessPolicyQueries
                 .Where(_ => _.DataId == null)
                 .SingleAsync(cancellationToken);
         }
-        return await byId.LoadAsync(dataId, cancellationToken);
+        return await byId.LoadAsync(dataId ?? Guid.Empty, cancellationToken);
     }
 
     [UsePaging]

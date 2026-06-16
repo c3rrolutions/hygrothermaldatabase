@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using NodaTime;
 using Database.Data;
-using Database.ApiRequests;
 using Microsoft.Extensions.Logging;
 
 namespace Database.Services;
@@ -50,12 +49,12 @@ public sealed class AccessPolicyService(
             institutionIds = [currentInstitution.Uuid];
         }
         logger.ApplyingAccessPolicy(currentUser?.Uuid, institutionIds, openIdConnectClientId);
-        var policedData = PoliceData(data, currentUser, institutionIds, openIdConnectClientId, databaseContext);
+        var policedData = PoliceData(data, currentUser?.Uuid, institutionIds, openIdConnectClientId, databaseContext);
         var (postProcessedData, result) = await then(policedData);
         await IncrementAccessCounts(
             postProcessedData,
             openIdConnectClientId,
-            currentUser,
+            currentUser?.Uuid,
             institutionIds,
             databaseContext,
             cancellationToken
@@ -63,9 +62,9 @@ public sealed class AccessPolicyService(
         return result;
     }
 
-    private static IQueryable<TData> PoliceData<TData>(
+    internal static IQueryable<TData> PoliceData<TData>(
         IQueryable<TData> data,
-        QueryCurrentUserOrInstitution.CurrentUser? currentUser,
+        Guid? userId,
         Guid[]? institutionIds,
         string? openIdConnectClientId,
         ApplicationDbContext databaseContext
@@ -75,13 +74,13 @@ public sealed class AccessPolicyService(
         return data.Where(_ =>
             (
                 _.AccessPolicy == null
-                || _.AccessPolicy.IsAccessAllowed(currentUser, institutionIds, openIdConnectClientId)
+                || _.AccessPolicy.IsAccessAllowed(userId, institutionIds, openIdConnectClientId)
             )
             &&
             (
                 !databaseContext.DataAccessPolicies.Any(_ =>
                     _.DataId == null
-                    && !_.IsAccessAllowed(currentUser, institutionIds, openIdConnectClientId)
+                    && !_.IsAccessAllowed(userId, institutionIds, openIdConnectClientId)
                 )
             )
         );
@@ -90,19 +89,19 @@ public sealed class AccessPolicyService(
     private async Task IncrementAccessCounts<TData>(
         IReadOnlyList<TData> allData,
         string? openIdConnectClientId,
-        QueryCurrentUserOrInstitution.CurrentUser? currentUser,
+        Guid? userId,
         Guid[]? institutionIds,
         ApplicationDbContext databaseContext,
         CancellationToken cancellationToken
     )
         where TData : class, IData
     {
-        if (currentUser is null && institutionIds is null && openIdConnectClientId is null)
+        if (userId is null && institutionIds is null && openIdConnectClientId is null)
         {
             return;
         }
         var allDataIds = allData.Select(_ => _.Id).ToArray();
-        if (currentUser is not null)
+        if (userId is not null)
         {
             foreach (var userAccessPolicy in
                 await databaseContext.UserAccessPolicies
@@ -111,7 +110,7 @@ public sealed class AccessPolicyService(
                             _.DataAccessPolicy.DataId == null
                             || allDataIds.Contains(_.DataAccessPolicy.DataId ?? Guid.Empty)
                         )
-                        && _.UserId == currentUser.Uuid
+                        && _.UserId == userId
                     )
                     .ToListAsync(cancellationToken)
             )

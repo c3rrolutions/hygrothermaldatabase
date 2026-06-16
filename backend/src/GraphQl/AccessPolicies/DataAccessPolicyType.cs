@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using Database.Authorization;
 using Database.Data;
 using Database.Data.AccessPolicies;
@@ -90,6 +91,16 @@ public sealed class DataAccessPolicyType
             .Field(_ => _.OpenIdConnectApplicationAccessPolicies)
             .Cost(1)
             .ResolveWith<Resolvers>(_ => Resolvers.GetOpenIdConnectApplicationAccessPoliciesAsync(default!, default!, default!, default!, default!));
+        descriptor
+            .Field(_ => _.IsAnyoneAllowed)
+            .Cost(0)
+            .ResolveWith<Resolvers>(t =>
+                Resolvers.IsAnyoneAllowedAsync(default!, default!, default!, default!));
+        descriptor
+            .Field(_ => _.IsAccessAllowed(default!, default!, default!))
+            .Cost(0)
+            .ResolveWith<Resolvers>(t =>
+                Resolvers.IsAccessAllowedAsync(default!, default!, default!, default!, default!, default!, default!));
     }
 
     private sealed class Resolvers
@@ -108,6 +119,45 @@ public sealed class DataAccessPolicyType
                 (dataAccessPolicy.DataId ?? Guid.Empty, dataAccessPolicy.DataKind ?? default),
                 cancellationToken
             );
+        }
+
+        public static Task<bool> IsAnyoneAllowedAsync(
+            [Parent] DataAccessPolicy dataAccessPolicy,
+            IDataAccessPolicyByDataIdDataLoader policyByDataIdDataLoader,
+            ApplicationDbContext databaseContext,
+            CancellationToken cancellationToken
+        )
+        {
+            return IsAccessAllowedAsync(dataAccessPolicy, null, null, null, policyByDataIdDataLoader, databaseContext, cancellationToken);
+        }
+
+        public static async Task<bool> IsAccessAllowedAsync(
+            [Parent] DataAccessPolicy dataAccessPolicy,
+            Guid? userId,
+            Guid[]? institutionIds,
+            string? openIdConnectClientId,
+            IDataAccessPolicyByDataIdDataLoader policyByDataIdDataLoader,
+            ApplicationDbContext databaseContext,
+            CancellationToken cancellationToken
+        )
+        {
+            if (dataAccessPolicy.DataId is null)
+            {
+                return await databaseContext.DataAccessPolicies.AsQueryable()
+                    .Where(_ => _.IsAccessAllowed(userId, institutionIds, openIdConnectClientId))
+                    .SingleOrDefaultAsync(
+                        _ => _.DataId == null,
+                        cancellationToken
+                    )
+                    is not null;
+            }
+            return await policyByDataIdDataLoader
+                .Where(_ => _.IsAccessAllowed(userId, institutionIds, openIdConnectClientId))
+                .LoadAsync(
+                    dataAccessPolicy.DataId ?? Guid.Empty,
+                    cancellationToken
+                )
+                is not null;
         }
 
         [UseFiltering<UserAccessPolicyFilterType>]

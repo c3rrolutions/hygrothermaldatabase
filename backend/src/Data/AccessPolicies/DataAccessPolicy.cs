@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
-using Database.ApiRequests;
 using Database.Enumerations;
 using Database.Extensions;
 using Database.GraphQl.AccessPolicy;
@@ -210,11 +209,14 @@ public sealed class DataAccessPolicy()
     public ICollection<OpenIdConnectApplicationAccessPolicy> OpenIdConnectApplicationAccessPolicies { get; } = [];
 
     [Projectable]
+    public bool IsGlobal => DataId is null;
+
+    [Projectable]
     public bool IsAnyoneAllowed => IsAccessAllowed(null, null, null);
 
     [Projectable]
     public bool IsAccessAllowed(
-        QueryCurrentUserOrInstitution.CurrentUser? currentUser,
+        Guid? userId,
         Guid[]? institutionIds,
         string? openIdConnectClientId
     ) =>
@@ -223,7 +225,7 @@ public sealed class DataAccessPolicy()
                 (
                     UserAccessPolicies.Count == 0
                     || UserAccessPolicies.Any(_ =>
-                        _.IsAccessAllowed(currentUser)
+                        _.IsAccessAllowed(userId)
                     )
                 )
                 &&
@@ -246,7 +248,7 @@ public sealed class DataAccessPolicy()
         (
             Combinator == LogicalCombinator.SOME && (
                 UserAccessPolicies.Any(_ =>
-                    _.IsAccessAllowed(currentUser)
+                    _.IsAccessAllowed(userId)
                 )
                 ||
                 InstitutionAccessPolicies.Any(_ =>

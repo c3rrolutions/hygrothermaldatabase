@@ -14,6 +14,9 @@ public sealed class UserAccessPolicyFilterType
         descriptor.BindFieldsExplicitly();
         descriptor.Name(nameof(UserAccessPolicyFilterType)[..^"FilterType".Length] + GraphQlConstants.FilterInputSuffix);
         descriptor.Field(_ => _.UserId);
+        descriptor.Field(_ => _.IsAlwaysAllowed);
+        descriptor.Field(_ => _.IsWithinAccessLimitInTimeSpan);
+        descriptor.Field(_ => _.IsWithinTimeSpan);
         descriptor.Field(_ => _.DataAccessPolicy);
         descriptor.Field(_ => _.UpperAccessLimitPerTimeDuration);
         descriptor.Field(_ => _.AccessCountSinceStartTime);

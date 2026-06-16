@@ -288,7 +288,7 @@ type Query {
       requireOneSlicingArgument: false
     )
     @cost(weight: "10")
-  dataAccessPolicy(dataId: Uuid!): DataAccessPolicy @cost(weight: "10")
+  dataAccessPolicy(dataId: Uuid): DataAccessPolicy @cost(weight: "10")
   database: Database! @cost(weight: "10")
   geometricData(id: Uuid!, locale: Locale): GeometricData @cost(weight: "10")
   getHttpsResource(id: Uuid!): GetHttpsResource @cost(weight: "10")
@@ -312,7 +312,6 @@ type Query {
       requireOneSlicingArgument: false
     )
     @cost(weight: "10")
-  globalDataAccessPolicy: DataAccessPolicy @cost(weight: "10")
   hasCalorimetricData(
     locale: Locale
     where: CalorimetricDataPropositionInput @cost(weight: "10")
@@ -406,6 +405,26 @@ type Query {
     )
     @cost(weight: "10")
   photovoltaicData(id: Uuid!, locale: Locale): PhotovoltaicData
+    @cost(weight: "10")
+  userAccessPolicies(
+    "Returns the elements in the list that come after the specified cursor."
+    after: String
+    "Returns the elements in the list that come before the specified cursor."
+    before: String
+    "Returns the first _n_ elements from the list."
+    first: Int
+    "Returns the last _n_ elements from the list."
+    last: Int
+    order: [UserAccessPolicySortInput!] @cost(weight: "10")
+    where: UserAccessPolicyPropositionInput @cost(weight: "10")
+  ): UserAccessPolicyConnection
+    @listSize(
+      assumedSize: 100
+      slicingArguments: ["first", "last"]
+      slicingArgumentDefaultValue: 100
+      sizedFields: ["edges", "nodes"]
+      requireOneSlicingArgument: false
+    )
     @cost(weight: "10")
   verificationCode: String!
 }
@@ -535,6 +554,12 @@ type CalorimetricData implements Node & Data {
   description: String
   gValues: [Float!]!
   id: ID!
+  IsAccessAllowed(
+    institutionIds: [Uuid!]
+    openIdConnectClientId: String
+    userId: Uuid
+  ): Boolean!
+  IsAnyoneAllowed: Boolean!
   kind: DataKind!
   locale: Locale!
   name: String
@@ -826,11 +851,12 @@ type DataAccessPolicy {
     where: InstitutionAccessPolicyPropositionInput
   ): [InstitutionAccessPolicy!]!
   isAccessAllowed(
-    currentUser: CurrentUserInput
     institutionIds: [Uuid!]
     openIdConnectClientId: String
+    userId: Uuid
   ): Boolean!
   isAnyoneAllowed: Boolean!
+  isGlobal: Boolean!
   openIdConnectApplicationAccessPolicies(
     order: [OpenIdConnectApplicationAccessPolicySortInput!]
     where: OpenIdConnectApplicationAccessPolicyPropositionInput
@@ -960,6 +986,12 @@ type GeometricData implements Node & Data {
   description: String
   heights: [Float!]!
   id: ID!
+  IsAccessAllowed(
+    institutionIds: [Uuid!]
+    openIdConnectClientId: String
+    userId: Uuid
+  ): Boolean!
+  IsAnyoneAllowed: Boolean!
   kind: DataKind!
   locale: Locale!
   name: String
@@ -1067,6 +1099,12 @@ type HygrothermalData implements Node & Data {
   databaseId: Uuid!
   description: String
   id: ID!
+  IsAccessAllowed(
+    institutionIds: [Uuid!]
+    openIdConnectClientId: String
+    userId: Uuid
+  ): Boolean!
+  IsAnyoneAllowed: Boolean!
   kind: DataKind!
   locale: Locale!
   name: String
@@ -1166,6 +1204,12 @@ type LifeCycleData implements Node & Data {
   databaseId: Uuid!
   description: String
   id: ID!
+  IsAccessAllowed(
+    institutionIds: [Uuid!]
+    openIdConnectClientId: String
+    userId: Uuid
+  ): Boolean!
+  IsAnyoneAllowed: Boolean!
   kind: DataKind!
   locale: Locale!
   name: String
@@ -1276,6 +1320,12 @@ type OpticalData implements Node & Data {
   description: String
   id: ID!
   infraredEmittances: [Float!]!
+  IsAccessAllowed(
+    institutionIds: [Uuid!]
+    openIdConnectClientId: String
+    userId: Uuid
+  ): Boolean!
+  IsAnyoneAllowed: Boolean!
   kind: DataKind!
   locale: Locale!
   name: String
@@ -1340,6 +1390,12 @@ type PhotovoltaicData implements Node & Data {
   databaseId: Uuid!
   description: String
   id: ID!
+  IsAccessAllowed(
+    institutionIds: [Uuid!]
+    openIdConnectClientId: String
+    userId: Uuid
+  ): Boolean!
+  IsAnyoneAllowed: Boolean!
   kind: DataKind!
   locale: Locale!
   name: String
@@ -1654,7 +1710,7 @@ type UserAccessPolicy implements Node {
   dataAccessPolicy: DataAccessPolicy
   dataAccessPolicyId: Uuid!
   id: ID!
-  isAccessAllowed(currentUser: CurrentUserInput): Boolean!
+  isAccessAllowed(userId: Uuid): Boolean!
   isAlwaysAllowed: Boolean!
   isWithinAccessLimitInTimeSpan: Boolean!
   isWithinTimeSpan: Boolean!
@@ -1662,6 +1718,24 @@ type UserAccessPolicy implements Node {
   upperAccessLimitPerTimeDuration: UpperLimitPerDuration
   userId: Uuid!
   uuid: Uuid!
+}
+
+"A connection to a list of items."
+type UserAccessPolicyConnection {
+  "A list of edges."
+  edges: [UserAccessPolicyEdge!]
+  "Information to aid in pagination."
+  pageInfo: PageInfo!
+  "Identifies the total count of items in the connection."
+  totalCount: Int! @cost(weight: "10")
+}
+
+"An edge in a connection."
+type UserAccessPolicyEdge {
+  "A cursor for use in pagination."
+  cursor: String!
+  "The item at the end of the edge."
+  node: UserAccessPolicy!
 }
 
 type UserInfo {
@@ -1925,6 +1999,8 @@ input ConfigureDataAccessPoliciesPropositionInput {
   geometricData: GeometricDataPropositionInput
   hygrothermalData: HygrothermalDataPropositionInput
   institutionAccessPolicies: FilterInputTypeOfInstitutionAccessPolicysPropositionInput
+  isAnyoneAllowed: BooleanPropositionInput
+  isGlobal: BooleanPropositionInput
   lifeCycleData: LifeCycleDataPropositionInput
   openIdConnectApplicationAccessPolicies: FilterInputTypeOfOpenIdConnectApplicationAccessPolicysPropositionInput
   opticalData: OpticalDataPropositionInput
@@ -2073,13 +2149,6 @@ input CrossDatabaseDataReferencePropositionInput {
   or: [CrossDatabaseDataReferencePropositionInput!]
 }
 
-input CurrentUserInput {
-  databaseOperatingRepresentedInstitutions: UserRepresentedInstitutionConnectionInput!
-  name: String!
-  representedInstitutions: UserRepresentedInstitutionConnectionInput!
-  uuid: Uuid!
-}
-
 """
 A data access policy decides who can access data, meaning which data shows up
 in GraphQL queries and which associated resources can be downloaded. The
@@ -2139,6 +2208,8 @@ input DataAccessPolicyPropositionInput {
   geometricData: GeometricDataPropositionInput
   hygrothermalData: HygrothermalDataPropositionInput
   institutionAccessPolicies: FilterInputTypeOfInstitutionAccessPolicysPropositionInput
+  isAnyoneAllowed: BooleanPropositionInput
+  isGlobal: BooleanPropositionInput
   lifeCycleData: LifeCycleDataPropositionInput
   openIdConnectApplicationAccessPolicies: FilterInputTypeOfOpenIdConnectApplicationAccessPolicysPropositionInput
   opticalData: OpticalDataPropositionInput
@@ -2531,26 +2602,15 @@ input InstitutionAccessPolicyPropositionInput {
   and: [InstitutionAccessPolicyPropositionInput!]
   dataAccessPolicy: DataAccessPolicyPropositionInput
   institutionId: UuidPropositionInput
+  isAlwaysAllowed: BooleanPropositionInput
+  isWithinAccessLimitInTimeSpan: BooleanPropositionInput
+  isWithinTimeSpan: BooleanPropositionInput
   or: [InstitutionAccessPolicyPropositionInput!]
   upperAccessLimitPerTimeDuration: UpperLimitPerDurationPropositionInput
 }
 
 input InstitutionAccessPolicySortInput {
   institutionId: SortEnumType @cost(weight: "10")
-}
-
-input InstitutionManagedInstitutionConnectionInput {
-  edges: [InstitutionManagedInstitutionEdgeInput!]!
-  totalCount: NonNegativeInt!
-}
-
-input InstitutionManagedInstitutionEdgeInput {
-  node: InstitutionManagedInstitutionNodeInput!
-}
-
-input InstitutionManagedInstitutionNodeInput {
-  name: String!
-  uuid: Uuid!
 }
 
 input IntPropositionInput {
@@ -2787,6 +2847,9 @@ input OpenIdConnectApplicationAccessPolicyPropositionInput {
   and: [OpenIdConnectApplicationAccessPolicyPropositionInput!]
   clientId: StringPropositionInput
   dataAccessPolicy: DataAccessPolicyPropositionInput
+  isAlwaysAllowed: BooleanPropositionInput
+  isWithinAccessLimitInTimeSpan: BooleanPropositionInput
+  isWithinTimeSpan: BooleanPropositionInput
   or: [OpenIdConnectApplicationAccessPolicyPropositionInput!]
   upperAccessLimitPerTimeDuration: UpperLimitPerDurationPropositionInput
 }
@@ -3015,6 +3078,8 @@ input ResetDataAccessPoliciesPropositionInput {
   geometricData: GeometricDataPropositionInput
   hygrothermalData: HygrothermalDataPropositionInput
   institutionAccessPolicies: FilterInputTypeOfInstitutionAccessPolicysPropositionInput
+  isAnyoneAllowed: BooleanPropositionInput
+  isGlobal: BooleanPropositionInput
   lifeCycleData: LifeCycleDataPropositionInput
   openIdConnectApplicationAccessPolicies: FilterInputTypeOfOpenIdConnectApplicationAccessPolicysPropositionInput
   opticalData: OpticalDataPropositionInput
@@ -3288,6 +3353,9 @@ input UserAccessPolicyPropositionInput {
   accessCountSinceStartTime: CountSinceTimePropositionInput
   and: [UserAccessPolicyPropositionInput!]
   dataAccessPolicy: DataAccessPolicyPropositionInput
+  isAlwaysAllowed: BooleanPropositionInput
+  isWithinAccessLimitInTimeSpan: BooleanPropositionInput
+  isWithinTimeSpan: BooleanPropositionInput
   or: [UserAccessPolicyPropositionInput!]
   upperAccessLimitPerTimeDuration: UpperLimitPerDurationPropositionInput
   userId: UuidPropositionInput
@@ -3295,22 +3363,6 @@ input UserAccessPolicyPropositionInput {
 
 input UserAccessPolicySortInput {
   userId: SortEnumType @cost(weight: "10")
-}
-
-input UserRepresentedInstitutionConnectionInput {
-  edges: [UserRepresentedInstitutionEdgeInput!]!
-  totalCount: NonNegativeInt!
-}
-
-input UserRepresentedInstitutionEdgeInput {
-  node: UserRepresentedInstitutionNodeInput!
-  role: InstitutionRepresentativeRole!
-}
-
-input UserRepresentedInstitutionNodeInput {
-  managedInstitutions: InstitutionManagedInstitutionConnectionInput!
-  name: String!
-  uuid: Uuid!
 }
 
 input UuidPropositionInput {

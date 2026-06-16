@@ -13,6 +13,8 @@ public class DataAccessPolicyFilterType
     {
         descriptor.BindFieldsExplicitly();
         descriptor.Name(nameof(DataAccessPolicyFilterType)[..^"FilterType".Length] + GraphQlConstants.FilterInputSuffix);
+        descriptor.Field(_ => _.IsGlobal);
+        descriptor.Field(_ => _.IsAnyoneAllowed);
         descriptor.Field(_ => _.Combinator);
         descriptor.Field(_ => _.UserAccessPolicies);
         descriptor.Field(_ => _.InstitutionAccessPolicies);

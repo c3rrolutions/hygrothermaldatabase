@@ -1,6 +1,5 @@
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
-using Database.ApiRequests;
 using EntityFrameworkCore.Projectables;
 
 namespace Database.Data.AccessPolicies;
@@ -19,8 +18,8 @@ public sealed class UserAccessPolicy(
     public Guid UserId { get; private set; } = userId;
 
     [Projectable]
-    public bool IsAccessAllowed(QueryCurrentUserOrInstitution.CurrentUser? currentUser) =>
-        currentUser != null
-        && UserId == currentUser.Uuid
+    public bool IsAccessAllowed(Guid? userId) =>
+        userId != null
+        && UserId == userId
         && IsWithinAccessLimitInTimeSpan;
 }

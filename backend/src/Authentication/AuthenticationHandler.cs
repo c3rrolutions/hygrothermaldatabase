@@ -182,6 +182,7 @@ public sealed class AuthenticationHandler(
                 new ClaimsPrincipal(
                     new ClaimsIdentity(
                         claims: [new Claim(ClaimTypes.NameIdentifier, nameIdentifier)],
+                        authenticationType: "Metabase",
                         nameType: ClaimTypes.Name,
                         roleType: ClaimTypes.Role
                     )

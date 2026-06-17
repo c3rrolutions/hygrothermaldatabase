@@ -92,6 +92,11 @@ public sealed class DataAccessPolicyType
             .Cost(1)
             .ResolveWith<Resolvers>(_ => Resolvers.GetOpenIdConnectApplicationAccessPoliciesAsync(default!, default!, default!, default!, default!));
         descriptor
+            .Field(_ => _.IsNobodyAllowed)
+            .Cost(0)
+            .ResolveWith<Resolvers>(t =>
+                Resolvers.IsNobodyAllowedAsync(default!, default!, default!, default!));
+        descriptor
             .Field(_ => _.IsAnyoneAllowed)
             .Cost(0)
             .ResolveWith<Resolvers>(t =>
@@ -119,6 +124,32 @@ public sealed class DataAccessPolicyType
                 (dataAccessPolicy.DataId ?? Guid.Empty, dataAccessPolicy.DataKind ?? default),
                 cancellationToken
             );
+        }
+
+        public static async Task<bool> IsNobodyAllowedAsync(
+            [Parent] DataAccessPolicy dataAccessPolicy,
+            IDataAccessPolicyByDataIdDataLoader policyByDataIdDataLoader,
+            ApplicationDbContext databaseContext,
+            CancellationToken cancellationToken
+        )
+        {
+            if (dataAccessPolicy.DataId is null)
+            {
+                return await databaseContext.DataAccessPolicies.AsQueryable()
+                    .Where(_ => _.IsNobodyAllowed)
+                    .SingleOrDefaultAsync(
+                        _ => _.DataId == null,
+                        cancellationToken
+                    )
+                    is not null;
+            }
+            return await policyByDataIdDataLoader
+                .Where(_ => _.IsNobodyAllowed)
+                .LoadAsync(
+                    dataAccessPolicy.DataId ?? Guid.Empty,
+                    cancellationToken
+                )
+                is not null;
         }
 
         public static Task<bool> IsAnyoneAllowedAsync(

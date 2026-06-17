@@ -55,7 +55,7 @@ access policies.
 In particular, a data access policy with the combinator 'all' and empty user,
 institution, and application policies allows access to anyone, also anonymous
 access. And one with the combinator 'or' and empty policies allows access to
-noone, no matter if authenticated or not.
+nobody, no matter if authenticated or not.
 
 A data access policy is either the one-and-only global one or associated with a
 specific data entry, see the field `{nameof(DataAccessPolicy.Data)}`. It is
@@ -231,6 +231,13 @@ public sealed class DataAccessPolicy()
 
     [Projectable]
     public bool IsGlobal => DataId is null;
+
+    [Projectable]
+    public bool IsNobodyAllowed =>
+        Combinator == LogicalCombinator.SOME
+        && UserAccessPolicies.Count == 0
+        && InstitutionAccessPolicies.Count == 0
+        && OpenIdConnectApplicationAccessPolicies.Count == 0;
 
     [Projectable]
     public bool IsAnyoneAllowed => IsAccessAllowed(null, null, null);

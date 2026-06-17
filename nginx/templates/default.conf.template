@@ -9,8 +9,8 @@ resolver 127.0.0.11 valid=5s ipv6=off;
 resolver_timeout 5s;
 
 map $http_upgrade $connection_upgrade {
-  default upgrade;
-  ''      keep-alive;
+    default upgrade;
+    ''      keep-alive;
 }
 
 proxy_redirect          off;
@@ -58,7 +58,7 @@ send_timeout          10s;
 add_header X-Proxy-Layer "inner" always;
 
 types {
-  application/javascript js mjs;
+    application/javascript js mjs;
 }
 
 map $http_accept $error_type {
@@ -67,191 +67,167 @@ map $http_accept $error_type {
 }
 
 upstream backend {
-  zone upstream_dynamic 64k;
-  server backend:8080 max_fails=0 resolve;
+    zone upstream_dynamic 64k;
+    server backend:8080 max_fails=0 resolve;
 }
 
 upstream frontend {
-  zone upstream_dynamic 64k;
-  server frontend:8080 max_fails=0 resolve;
+    zone upstream_dynamic 64k;
+    server frontend:8080 max_fails=0 resolve;
 }
 
 server {
-  listen                    *:80;
+    listen *:80;
 
-  set $maintenance 0;
-  if (-f $document_root/maintenance.html) {
-    set $maintenance 1;
-  }
-  if ($internal != 1) {
-    set $maintenance "${maintenance}1";
-  }
-  if ($maintenance = 11) {
-    return 503;
-  }
-
-  limit_req zone=general burst=10 nodelay;
-
-  location / {
-    proxy_pass http://frontend;
-    limit_req zone=general burst=100 nodelay;
-  }
-
-  location /_next/static {
-    proxy_pass http://frontend;
-    expires 365d;
-    access_log off;
-    limit_req zone=general burst=100 nodelay;
-  }
-
-  location /_next/webpack-hmr {
-    proxy_pass http://frontend;
-    proxy_read_timeout 86400s;
-    proxy_send_timeout 86400s;
-    limit_req zone=general burst=100 nodelay;
-  }
-
-  location ~ /_next/static/.*/_clientMiddlewareManifest\.js$ {
-    proxy_pass http://frontend;
-    proxy_hide_header Content-Type;
-    add_header Content-Type application/javascript;
-    limit_req zone=general burst=100 nodelay;
-  }
-
-  location /graphql {
-    proxy_pass http://backend;
-    limit_req  zone=sensitive burst=12 delay=6;
-  }
-
-  location /connect {
-    proxy_pass http://backend;
-    limit_req  zone=sensitive burst=6 nodelay;
-  }
-
-  location /antiforgery {
-    proxy_pass http://backend;
-    limit_req  zone=sensitive burst=2 nodelay;
-  }
-
-  location /api {
-    proxy_pass http://backend;
-    limit_req  zone=sensitive burst=6 nodelay;
-  }
-
-  location /api/resources/ {
-    # Accept up to 10 gigabyte and 12 minute requests (needed for uploads via
-    # `POST`). Keep it here instead of within `@resource_post` because the
-    # branching happens after the body size is checked.
-    client_max_body_size 10G;
-    client_body_timeout 1200s;
-
-    # Route POST requests to the dedicated upload location
-    if ($request_method = POST) {
-      error_page 418 = @resource_post;
-      return 418;
+    set $maintenance 0;
+    if (-f $document_root/maintenance.html) {
+        set $maintenance 1;
     }
-    # Route GET requests to the dedicated download location
-    if ($request_method = GET) {
-      error_page 418 = @resource_get;
-      return 418;
+    if ($internal != 1) {
+        set $maintenance "${maintenance}1";
     }
-    # Fallback for other HTTP methods (PUT, DELETE, etc.)
-    proxy_pass http://backend;
-  }
-
-  location @resource_post {
-    # Optimize for multi-gigabyte POST uploads
-    proxy_pass http://backend;
-    proxy_read_timeout 300s;
-    proxy_send_timeout 300s;
-    proxy_request_buffering off; 
-  }
-
-  location @resource_get {
-    # Optimize for multi-gigabyte GET streaming downloads
-    proxy_pass http://backend;
-    proxy_buffering off;
-    proxy_read_timeout 300s;
-  }
-
-  location /openapi {
-    proxy_pass http://backend;
-    limit_req  zone=general burst=10 nodelay;
-  }
-
-  location /health {
-    proxy_pass http://backend;
-    limit_req  zone=general burst=2 nodelay;
-  }
-
-  error_page 404 @not_found;
-  location @not_found {
-    internal;
-    add_header Content-Type application/json always;
-    return 404 '{"errors": [{"code": "NOT_FOUND", "message": "The requested resource could not be found.", "path": []}]}';
-  }
-
-  error_page 408 @request_timeout;
-  location @request_timeout {
-    internal;
-    add_header Content-Type application/json always;
-    return 408 '{"errors": [{"code": "REQUEST_TIMEOUT", "message": "The server timed out waiting for the request. Please check your network connection and try again.", "path": []}]}';
-  }
-
-  error_page 413 @content_too_large;
-  location @content_too_large {
-    internal;
-    add_header Content-Type application/json always;
-    return 413 '{"errors": [{"code": "CONTENT_TOO_LARGE", "message": "The uploaded file is too large. Please reduce the size and try again.", "path": []}]}';
-  }
-
-  error_page 429 @too_many_requests;
-  location @too_many_requests {
-    internal;
-    add_header Retry-After 60 always;
-    add_header Content-Type application/json always;
-    return 429 '{"errors": [{"code": "TOO_MANY_REQUESTS", "message": "Rate limit exceeded. Please slow down and try again later.", "path": []}]}';
-  }
-
-  error_page 501 @not_implemented;
-  location @not_implemented {
-    internal;
-    add_header Content-Type application/json always;
-    return 501 '{"errors": [{"code": "NOT_IMPLEMENTED", "message": "The HTTP method used is not supported.", "path": []}]}';
-  }
-
-  error_page 502 @bad_gateway;
-  location @bad_gateway {
-    internal;
-    add_header Retry-After 120 always;
-    add_header Content-Type application/json always;
-    return 502 '{"errors": [{"code": "BAD_GATEWAY", "message": "The upstream server is temporarily unable to handle the request. Please try again in 2 minutes.", "path": []}]}';
-  }
-
-  error_page 504 @gateway_timeout;
-  location @gateway_timeout {
-    internal;
-    add_header Retry-After 120 always;
-    add_header Content-Type application/json always;
-    return 504 '{"errors": [{"code": "GATEWAY_TIMEOUT", "message": "The upstream server took too long to respond. This may be due to high load. Please try again in 2 minutes.", "path": []}]}';
-  }
-
-  error_page 503 @maintenance;
-  location @maintenance {
-    internal;
-    if ($error_type = "application/json") {
-      error_page 503 @service_unavailable;
-      return 503;
+    if ($maintenance = 11) {
+        return 503;
     }
-    add_header Retry-After 120 always;
-    root /etc/nginx/html;
-    try_files /maintenance.html @service_unavailable;
-  }
 
-  location @service_unavailable {
-    internal;
-    add_header Retry-After 120 always;
-    add_header Content-Type application/json always;
-    return 503 '{"errors": [{"code": "SERVICE_UNAVAILABLE", "message": "The system is under maintenance. Please try again in 2 minutes.", "path": []}]}';
-  }
+    limit_req zone=general burst=10 nodelay;
+
+    location / {
+        proxy_pass http://frontend;
+        limit_req zone=general burst=100 nodelay;
+    }
+
+    location /_next/static {
+        proxy_pass http://frontend;
+        expires 365d;
+        access_log off;
+        limit_req zone=general burst=100 nodelay;
+    }
+
+    location /_next/webpack-hmr {
+        proxy_pass http://frontend;
+        proxy_read_timeout 86400s;
+        proxy_send_timeout 86400s;
+        limit_req zone=general burst=100 nodelay;
+    }
+
+    location ~ /_next/static/.*/_clientMiddlewareManifest\.js$ {
+        proxy_pass http://frontend;
+        proxy_hide_header Content-Type;
+        add_header Content-Type application/javascript;
+        limit_req zone=general burst=100 nodelay;
+    }
+
+    location /graphql {
+        proxy_pass http://backend;
+        limit_req  zone=sensitive burst=12 delay=6;
+    }
+
+    location /connect {
+        proxy_pass http://backend;
+        limit_req  zone=sensitive burst=6 nodelay;
+    }
+
+    location /antiforgery {
+        proxy_pass http://backend;
+        limit_req  zone=sensitive burst=2 nodelay;
+    }
+
+    location /api {
+        proxy_pass http://backend;
+        limit_req  zone=sensitive burst=6 nodelay;
+    }
+
+    location /api/resources/ {
+        # Accept up to 10 gigabyte and 12 minute requests (for uploads via `POST`)
+        client_max_body_size 10G;
+        client_body_timeout 1200s;
+        proxy_read_timeout 1200s;
+        proxy_send_timeout 1200s;
+        proxy_request_buffering off;
+        proxy_buffering off;
+        proxy_cache off;
+        proxy_pass http://backend;
+    }
+
+    location /openapi {
+        proxy_pass http://backend;
+        limit_req  zone=general burst=10 nodelay;
+    }
+
+    location /health {
+        proxy_pass http://backend;
+        limit_req  zone=general burst=2 nodelay;
+    }
+
+    error_page 404 @not_found;
+    location @not_found {
+        internal;
+        add_header Content-Type application/json always;
+        return 404 '{"errors": [{"code": "NOT_FOUND", "message": "The requested resource could not be found.", "path": []}]}';
+    }
+
+    error_page 408 @request_timeout;
+    location @request_timeout {
+        internal;
+        add_header Content-Type application/json always;
+        return 408 '{"errors": [{"code": "REQUEST_TIMEOUT", "message": "The server timed out waiting for the request. Please check your network connection and try again.", "path": []}]}';
+    }
+
+    error_page 413 @content_too_large;
+    location @content_too_large {
+        internal;
+        add_header Content-Type application/json always;
+        return 413 '{"errors": [{"code": "CONTENT_TOO_LARGE", "message": "The uploaded file is too large. Please reduce the size and try again.", "path": []}]}';
+    }
+
+    error_page 429 @too_many_requests;
+    location @too_many_requests {
+        internal;
+        add_header Retry-After 60 always;
+        add_header Content-Type application/json always;
+        return 429 '{"errors": [{"code": "TOO_MANY_REQUESTS", "message": "Rate limit exceeded. Please slow down and try again later.", "path": []}]}';
+    }
+
+    error_page 501 @not_implemented;
+    location @not_implemented {
+        internal;
+        add_header Content-Type application/json always;
+        return 501 '{"errors": [{"code": "NOT_IMPLEMENTED", "message": "The HTTP method used is not supported.", "path": []}]}';
+    }
+
+    error_page 502 @bad_gateway;
+    location @bad_gateway {
+        internal;
+        add_header Retry-After 120 always;
+        add_header Content-Type application/json always;
+        return 502 '{"errors": [{"code": "BAD_GATEWAY", "message": "The upstream server is temporarily unable to handle the request. Please try again in 2 minutes.", "path": []}]}';
+    }
+
+    error_page 504 @gateway_timeout;
+    location @gateway_timeout {
+        internal;
+        add_header Retry-After 120 always;
+        add_header Content-Type application/json always;
+        return 504 '{"errors": [{"code": "GATEWAY_TIMEOUT", "message": "The upstream server took too long to respond. This may be due to high load. Please try again in 2 minutes.", "path": []}]}';
+    }
+
+    error_page 503 @maintenance;
+    location @maintenance {
+        internal;
+        if ($error_type = "application/json") {
+            error_page 503 @service_unavailable;
+            return 503;
+        }
+        add_header Retry-After 120 always;
+        root /etc/nginx/html;
+        try_files /maintenance.html @service_unavailable;
+    }
+
+    location @service_unavailable {
+        internal;
+        add_header Retry-After 120 always;
+        add_header Content-Type application/json always;
+        return 503 '{"errors": [{"code": "SERVICE_UNAVAILABLE", "message": "The system is under maintenance. Please try again in 2 minutes.", "path": []}]}';
+    }
 }

@@ -251,8 +251,8 @@ public sealed class Program
         });
         builder.WebHost.ConfigureKestrel(_ =>
         {
-            // matches the keep-alive timeout configured for `/api/resources/` in NGINX
-            _.Limits.KeepAliveTimeout = TimeSpan.FromSeconds(300);
+            // Keep in sync with the `*_timeout`s  for post requests to /api/resources/* configured in ./nginx/templates/default.conf.template
+            _.Limits.KeepAliveTimeout = TimeSpan.FromSeconds(1200);
             _.Limits.RequestHeadersTimeout = TimeSpan.FromSeconds(30);
         });
         return builder;

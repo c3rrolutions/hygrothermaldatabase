@@ -31,7 +31,9 @@ import QueryToolbar from "../QueryToolbar";
 import SlideDown from "../SlideDown";
 import { notEmpty } from "../../lib/array";
 
-const reduceWhere = <TPropositionInput,>(where: { and: TPropositionInput[] }) =>
+const reduceWhere = <TPropositionInput,>(where: {
+  and: TPropositionInput[];
+}) =>
   where.and.length == 0 ? null : where.and.length == 1 ? where.and[0] : where;
 
 const reduceOrder = <TSortInput,>(
@@ -65,7 +67,11 @@ type BaseProps<
 > = {
   entitiesQuery: QueryDocument<TNode, TPropositionInput, TSortInput>;
   extra?: React.ReactNode;
-  list: (props: { loading: boolean; nodes: TNode[] | null }) => React.ReactNode;
+  list: (props: {
+    loading: boolean;
+    nodes: TNode[] | null;
+    onReload: () => void;
+  }) => React.ReactNode;
   filterDefinitions: readonly FilterDefinition<TPropositionInput>[];
   sortDefinitions: readonly SortDefinition<TSortInput>[];
   baseWhere?: TPropositionInput | null;
@@ -365,7 +371,11 @@ export default function PaginatedEntities<
             onRemoveAll={removeAllFiltersAndSorts}
           />
         )}
-        {props.list({ loading: props.loading || loading, nodes })}
+        {props.list({
+          loading: props.loading || loading,
+          nodes,
+          onReload: paginationProps.onReload,
+        })}
         <Flex justify="space-between" align="baseline">
           <QueryToolbar
             query={props.entitiesQuery}

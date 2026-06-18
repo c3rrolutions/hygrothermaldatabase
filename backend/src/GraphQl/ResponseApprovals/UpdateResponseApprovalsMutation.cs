@@ -11,6 +11,7 @@ using Database.GraphQl.Extensions;
 using Database.Services;
 using GreenDonut.Data;
 using HotChocolate.Data;
+using HotChocolate.Authorization;
 using HotChocolate.Data.Filters;
 using HotChocolate.Resolvers;
 using HotChocolate.Types;
@@ -77,6 +78,7 @@ public sealed class UpdateResponseApprovalsMutation
     ) => new(code, message, path);
 
     [UseFiltering<UpdateResponseApprovalsFilterType>]
+    [Authorize(Policy = AuthorizationPolicies.WriteScopePolicy)]
     public async Task<UpdateResponseApprovalsPayload> UpdateResponseApprovalsAsync(
         IResolverContext resolverContext,
         ApplicationDbContext context,

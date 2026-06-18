@@ -10,6 +10,7 @@ using Database.Extensions;
 using Database.GraphQl.AccessPolicies;
 using Database.GraphQl.Extensions;
 using HotChocolate.Data;
+using HotChocolate.Authorization;
 using HotChocolate.Data.Filters;
 using HotChocolate.Resolvers;
 using HotChocolate.Types;
@@ -65,6 +66,7 @@ public sealed class ResetDataAccessPoliciesMutation
     ) => new(code, message, path);
 
     [UseFiltering<ResetDataAccessPoliciesFilterType>]
+    [Authorize(Policy = AuthorizationPolicies.WriteScopePolicy)]
     public async Task<ResetDataAccessPoliciesPayload> ResetDataAccessPoliciesAsync(
         ApplicationDbContext context,
         CommonAuthorization authorization,

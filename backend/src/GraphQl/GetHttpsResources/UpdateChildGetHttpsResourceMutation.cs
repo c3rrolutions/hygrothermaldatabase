@@ -12,6 +12,7 @@ using Database.Services;
 using GraphQL.Client.Abstractions.Utilities;
 using GreenDonut.Data;
 using HotChocolate.Types;
+using HotChocolate.Authorization;
 using Microsoft.EntityFrameworkCore;
 
 namespace Database.GraphQl.GetHttpsResources;
@@ -64,6 +65,7 @@ public sealed class UpdateChildGetHttpsResourceMutation
         IReadOnlyList<string> path
     ) => new(code, message, path);
 
+    [Authorize(Policy = AuthorizationPolicies.WriteScopePolicy)]
     public async Task<UpdateChildGetHttpsResourcePayload> UpdateChildGetHttpsResourceAsync(
         UpdateChildGetHttpsResourceInput input,
         ApplicationDbContext context,

@@ -14,6 +14,7 @@ using Database.GraphQl.DataX;
 using Database.GraphQl.Scalars;
 using Database.Services;
 using HotChocolate;
+using HotChocolate.Authorization;
 using HotChocolate.Types;
 using NodaTime;
 
@@ -117,7 +118,7 @@ public sealed class CreateOpticalDataMutation
         IReadOnlyList<string> path
     ) => new(code, message, path);
 
-    // [UseUserManager] [Authorize(Policy = Configuration.AuthConfiguration.WritePolicy)]
+    [Authorize(Policy = AuthorizationPolicies.WriteScopePolicy)]
     public async Task<CreateOpticalDataPayload> CreateOpticalDataAsync(
         CreateOpticalDataInput input,
         ApplicationDbContext context,

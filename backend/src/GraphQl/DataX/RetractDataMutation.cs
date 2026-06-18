@@ -9,6 +9,7 @@ using Database.Enumerations;
 using Database.Extensions;
 using Database.Services;
 using HotChocolate.Types;
+using HotChocolate.Authorization;
 
 namespace Database.GraphQl.DataX;
 
@@ -53,6 +54,7 @@ public sealed class RetractDataMutation
         IReadOnlyList<string> path
     ) => new(code, message, path);
 
+    [Authorize(Policy = AuthorizationPolicies.WriteScopePolicy)]
     public async Task<RetractDataPayload> RetractDataAsync(
         RetractDataInput input,
         CommonAuthorization authorization,

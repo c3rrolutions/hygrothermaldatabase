@@ -18,6 +18,7 @@ using Database.Services;
 using GraphQL;
 using GraphQL.Client.Abstractions.Utilities;
 using HotChocolate.Types;
+using HotChocolate.Authorization;
 using Microsoft.Extensions.Logging;
 using NodaTime;
 
@@ -98,6 +99,7 @@ public sealed class AddDataApprovalMutation
         IReadOnlyList<string> path
     ) => new(code, message, path);
 
+    [Authorize(Policy = AuthorizationPolicies.WriteScopePolicy)]
     public async Task<AddDataApprovalPayload> AddDataApprovalAsync(
         AddDataApprovalInput input,
         ApplicationDbContext context,

@@ -7,6 +7,7 @@ using Database.Data;
 using Database.Data.AccessPolicies;
 using Database.Extensions;
 using HotChocolate.Types;
+using HotChocolate.Authorization;
 using Microsoft.EntityFrameworkCore;
 
 namespace Database.GraphQl.AccessPolicies;
@@ -52,6 +53,7 @@ public sealed class ClearInstitutionAccessPoliciesMutation
         IReadOnlyList<string> path
     ) => new(code, message, path);
 
+    [Authorize(Policy = AuthorizationPolicies.WriteScopePolicy)]
     public async Task<ClearInstitutionAccessPoliciesPayload> ClearInstitutionAccessPoliciesAsync(
         ClearInstitutionAccessPoliciesInput input,
         ApplicationDbContext context,

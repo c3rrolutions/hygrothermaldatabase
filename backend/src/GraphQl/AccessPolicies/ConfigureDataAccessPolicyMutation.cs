@@ -9,6 +9,7 @@ using Database.Data.AccessPolicies;
 using Database.Enumerations;
 using Database.Extensions;
 using HotChocolate.Types;
+using HotChocolate.Authorization;
 using Microsoft.EntityFrameworkCore;
 
 namespace Database.GraphQl.AccessPolicy;
@@ -55,6 +56,7 @@ public sealed class ConfigureDataAccessPolicyMutation
         IReadOnlyList<string> path
     ) => new(code, message, path);
 
+    [Authorize(Policy = AuthorizationPolicies.WriteScopePolicy)]
     public async Task<ConfigureDataAccessPolicyPayload> ConfigureDataAccessPolicyAsync(
         ConfigureDataAccessPolicyInput input,
         ApplicationDbContext context,

@@ -12,6 +12,7 @@ using Database.GraphQl.DataX;
 using Database.GraphQl.Scalars;
 using Database.Services;
 using HotChocolate;
+using HotChocolate.Authorization;
 using HotChocolate.Types;
 using NodaTime;
 
@@ -99,6 +100,7 @@ public sealed class CreateCalorimetricDataMutation
         IReadOnlyList<string> path
     ) => new(code, message, path);
 
+    [Authorize(Policy = AuthorizationPolicies.WriteScopePolicy)]
     public async Task<CreateCalorimetricDataPayload> CreateCalorimetricDataAsync(
         CreateCalorimetricDataInput input,
         ApplicationDbContext context,

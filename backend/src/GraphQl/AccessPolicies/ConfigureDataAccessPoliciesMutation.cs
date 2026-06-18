@@ -11,6 +11,7 @@ using Database.Extensions;
 using Database.GraphQl.AccessPolicies;
 using Database.GraphQl.Extensions;
 using HotChocolate.Data;
+using HotChocolate.Authorization;
 using HotChocolate.Data.Filters;
 using HotChocolate.Resolvers;
 using HotChocolate.Types;
@@ -71,6 +72,7 @@ public sealed class ConfigureDataAccessPoliciesMutation
     ) => new(code, message, path);
 
     [UseFiltering<ConfigureDataAccessPoliciesFilterType>]
+    [Authorize(Policy = AuthorizationPolicies.WriteScopePolicy)]
     public async Task<ConfigureDataAccessPoliciesPayload> ConfigureDataAccessPoliciesAsync(
         ConfigureDataAccessPoliciesInput input,
         ApplicationDbContext context,

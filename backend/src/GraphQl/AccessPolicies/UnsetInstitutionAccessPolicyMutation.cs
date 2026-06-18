@@ -9,6 +9,7 @@ using Database.Data.AccessPolicies;
 using Database.Extensions;
 using GraphQL.Client.Abstractions.Utilities;
 using HotChocolate.Types;
+using HotChocolate.Authorization;
 using Microsoft.EntityFrameworkCore;
 
 namespace Database.GraphQl.AccessPolicies;
@@ -56,6 +57,7 @@ public sealed class UnsetInstitutionAccessPolicyMutation
         IReadOnlyList<string> path
     ) => new(code, message, path);
 
+    [Authorize(Policy = AuthorizationPolicies.WriteScopePolicy)]
     public async Task<UnsetInstitutionAccessPolicyPayload> UnsetInstitutionAccessPolicyAsync(
         UnsetInstitutionAccessPolicyInput input,
         ApplicationDbContext context,

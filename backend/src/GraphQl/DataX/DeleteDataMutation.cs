@@ -8,6 +8,7 @@ using Database.Data;
 using Database.Enumerations;
 using Database.Extensions;
 using HotChocolate.Types;
+using HotChocolate.Authorization;
 
 namespace Database.GraphQl.DataX;
 
@@ -52,6 +53,7 @@ public sealed class DeleteDataMutation
     ) => new(code, message, path);
 
     // [GraphQLType<PayloadType<DeleteDataErrorCode>>]
+    [Authorize(Policy = AuthorizationPolicies.WriteScopePolicy)]
     public async Task<DeleteDataPayload> DeleteDataAsync(
         DeleteDataInput input,
         CommonAuthorization authorization,

@@ -10,6 +10,7 @@ using Database.Data.AccessPolicies;
 using Database.Extensions;
 using Database.ApiRequests;
 using HotChocolate.Types;
+using HotChocolate.Authorization;
 using Microsoft.EntityFrameworkCore;
 using GraphQL.Client.Abstractions.Utilities;
 
@@ -59,6 +60,7 @@ public sealed class SetUserAccessPolicyMutation
         IReadOnlyList<string> path
     ) => new(code, message, path);
 
+    [Authorize(Policy = AuthorizationPolicies.WriteScopePolicy)]
     public async Task<SetUserAccessPolicyPayload> SetUserAccessPolicyAsync(
         SetUserAccessPolicyInput input,
         ApplicationDbContext context,

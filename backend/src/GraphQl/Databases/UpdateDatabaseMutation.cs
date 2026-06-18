@@ -2,14 +2,17 @@ using System.Threading;
 using System.Threading.Tasks;
 using Database.ApiRequests;
 using HotChocolate.Resolvers;
+using HotChocolate.Authorization;
 using HotChocolate.Types;
 using static Database.ApiRequests.UpdateDatabase;
+using Database.Authorization;
 
 namespace Database.GraphQl.Databases;
 
 [ExtendObjectType(nameof(Mutation))]
 public sealed class UpdateDatabaseMutation
 {
+    [Authorize(Policy = AuthorizationPolicies.WriteScopePolicy)]
     public async Task<UpdateDatabasePayload> UpdateDatabaseAsync(
         UpdateDatabaseInput input,
         UpdateDatabase updateDatabase,

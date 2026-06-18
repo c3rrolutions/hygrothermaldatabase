@@ -12,6 +12,7 @@ using Database.GraphQl.Extensions;
 using Database.Services;
 using GreenDonut.Data;
 using HotChocolate.Data;
+using HotChocolate.Authorization;
 using HotChocolate.Data.Filters;
 using HotChocolate.Resolvers;
 using HotChocolate.Types;
@@ -79,6 +80,7 @@ public sealed class RecomputeGetHttpsResourceHashValuesMutation
     ) => new(code, message, path);
 
     [UseFiltering<RecomputeGetHttpsResourceHashValuesFilterType>]
+    [Authorize(Policy = AuthorizationPolicies.WriteScopePolicy)]
     public async Task<RecomputeGetHttpsResourceHashValuesPayload> RecomputeGetHttpsResourceHashValuesAsync(
         ApplicationDbContext context,
         IResolverContext resolverContext,

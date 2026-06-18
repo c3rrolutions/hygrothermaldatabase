@@ -17,6 +17,7 @@ using HotChocolate;
 using HotChocolate.Data;
 using HotChocolate.Resolvers;
 using System.Linq;
+using HotChocolate.Authorization;
 
 namespace Database.GraphQl.DataX;
 
@@ -43,6 +44,7 @@ public sealed class DataResolvers
         return new GetHttpsResourceTree(data);
     }
 
+    [Authorize(Policy = AuthorizationPolicies.AuthenticatedPolicy)]
     public async Task<DataAccessPolicy?> GetDataAccessPolicyAsync(
         [Parent] IData data,
         IResolverContext resolverContext,
@@ -86,24 +88,65 @@ public sealed class DataResolvers
         return byId.LoadAsync(data.CreatorId);
     }
 
-    public static Task<bool> IsAnyoneAllowedAsync(
+    [Authorize(Policy = AuthorizationPolicies.AuthenticatedPolicy)]
+    public static Task<bool> IsNobodyAllowedAsync(
         [Parent] IData data,
         ApplicationDbContext databaseContext,
+        CommonAuthorization authorization,
         CancellationToken cancellationToken
     )
     {
-        return IsAccessAllowedAsync(data, null, null, null, databaseContext, cancellationToken);
+        if (!await authorization.IsDatabaseOperator(cancellationToken))
+        {
+            authorization.ReportUnauthorizedError(resolverContext);
+            return false;
+        }
+        return await databaseContext.Data(data.Kind)
+            .Where(_ => _.Id == data.Id)
+            .Where(_ =>
+                (
+                    _.AccessPolicy != null
+                    && _.AccessPolicy.IsNobodyAllowed
+                )
+                ||
+                (
+                    !databaseContext.DataAccessPolicies.Any(_ =>
+                        _.DataId == null
+                        && !_.IsNobodyAllowed
+                    )
+                )
+            )
+            .SingleOrDefaultAsync(cancellationToken)
+            is not null;
     }
 
+    [Authorize(Policy = AuthorizationPolicies.AuthenticatedPolicy)]
+    public static Task<bool> IsAnyoneAllowedAsync(
+        [Parent] IData data,
+        ApplicationDbContext databaseContext,
+        CommonAuthorization authorization,
+        CancellationToken cancellationToken
+    )
+    {
+        return IsAccessAllowedAsync(data, null, null, null, databaseContext, authorization, cancellationToken);
+    }
+
+    [Authorize(Policy = AuthorizationPolicies.AuthenticatedPolicy)]
     public static async Task<bool> IsAccessAllowedAsync(
         [Parent] IData data,
         Guid? userId,
         Guid[]? institutionIds,
         string? openIdConnectClientId,
         ApplicationDbContext databaseContext,
+        CommonAuthorization authorization,
         CancellationToken cancellationToken
     )
     {
+        if (!await authorization.IsDatabaseOperator(cancellationToken))
+        {
+            authorization.ReportUnauthorizedError(resolverContext);
+            return false;
+        }
         IQueryable<IData> policedQuery = data.Kind switch
         {
             DataKind.CALORIMETRIC_DATA => AccessPolicyService.PoliceData<CalorimetricData>(databaseContext.CalorimetricData, userId, institutionIds, openIdConnectClientId, databaseContext),

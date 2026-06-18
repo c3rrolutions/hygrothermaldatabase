@@ -6,6 +6,7 @@ using Database.Authorization;
 using Database.Data;
 using Database.Data.AccessPolicies;
 using Database.Extensions;
+using HotChocolate.Authorization;
 using HotChocolate.Types;
 using Microsoft.EntityFrameworkCore;
 
@@ -52,6 +53,7 @@ public sealed class ResetDataAccessPolicyMutation
         IReadOnlyList<string> path
     ) => new(code, message, path);
 
+    [Authorize(Policy = AuthorizationPolicies.WriteScopePolicy)]
     public async Task<ResetDataAccessPolicyPayload> ResetDataAccessPolicyAsync(
         ResetDataAccessPolicyInput input,
         ApplicationDbContext context,

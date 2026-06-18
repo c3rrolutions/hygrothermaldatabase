@@ -2,13 +2,16 @@ using System.Threading;
 using System.Threading.Tasks;
 using Database.ApiRequests;
 using HotChocolate.Resolvers;
+using HotChocolate.Authorization;
 using static Database.ApiRequests.VerifyDatabase;
+using Database.Authorization;
 
 namespace Database.GraphQl.Databases;
 
 // TODO [ExtendObjectType(nameof(Mutation))]
 public sealed class VerifyDatabaseMutation
 {
+    [Authorize(Policy = AuthorizationPolicies.WriteScopePolicy)]
     public async Task<VerifyDatabasePayload> VerifyDatabaseAsync(
         VerifyDatabaseInput input,
         VerifyDatabase verifyDatabase,

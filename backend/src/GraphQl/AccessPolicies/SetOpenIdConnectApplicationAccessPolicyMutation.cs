@@ -8,6 +8,7 @@ using Database.Data;
 using Database.Data.AccessPolicies;
 using Database.Extensions;
 using HotChocolate.Types;
+using HotChocolate.Authorization;
 using Microsoft.EntityFrameworkCore;
 using GraphQL.Client.Abstractions.Utilities;
 using Database.ApiRequests;
@@ -58,6 +59,7 @@ public sealed class SetOpenIdConnectApplicationAccessPolicyMutation
         IReadOnlyList<string> path
     ) => new(code, message, path);
 
+    [Authorize(Policy = AuthorizationPolicies.WriteScopePolicy)]
     public async Task<SetOpenIdConnectApplicationAccessPolicyPayload> SetOpenIdConnectApplicationAccessPolicyAsync(
         SetOpenIdConnectApplicationAccessPolicyInput input,
         ApplicationDbContext context,

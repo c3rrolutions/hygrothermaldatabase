@@ -10,6 +10,7 @@ using Database.Enumerations;
 using Database.Extensions;
 using Database.Services;
 using HotChocolate.Types;
+using HotChocolate.Authorization;
 using Microsoft.EntityFrameworkCore;
 
 namespace Database.GraphQl.DataX;
@@ -57,6 +58,7 @@ public sealed class PublishDataMutation
         IReadOnlyList<string> path
     ) => new(code, message, path);
 
+    [Authorize(Policy = AuthorizationPolicies.WriteScopePolicy)]
     public async Task<PublishDataPayload> PublishDataAsync(
         PublishDataInput input,
         CommonAuthorization authorization,

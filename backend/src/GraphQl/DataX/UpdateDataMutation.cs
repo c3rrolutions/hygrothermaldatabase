@@ -10,6 +10,7 @@ using Database.Enumerations;
 using Database.Extensions;
 using Database.Services;
 using HotChocolate;
+using HotChocolate.Authorization;
 using HotChocolate.Types;
 
 namespace Database.GraphQl.DataX;
@@ -61,6 +62,7 @@ public sealed class UpdateDataMutation
         IReadOnlyList<string> path
     ) => new(code, message, path);
 
+    [Authorize(Policy = AuthorizationPolicies.WriteScopePolicy)]
     public async Task<UpdateDataPayload> UpdateDataAsync(
         UpdateDataInput input,
         CommonAuthorization authorization,

@@ -8,6 +8,7 @@ using Database.ApiRequests;
 using Database.Authentication;
 using Database.Authorization;
 using Database.Data;
+using Database.Enumerations;
 using Database.Filters;
 using Database.Services;
 using Database.Utilities;
@@ -23,10 +24,25 @@ public static partial class Log
 {
     [LoggerMessage(
         Level = LogLevel.Error,
-        Message = "Failed to create response approval for data with ID {DataId}.")]
+        Message = "Failed to extract and set values from file '{FilaPath}' of GET HTTPS resource {GetHttpsResourceId} of data {DataId} of kind {DataKind}."
+    )]
+    public static partial void FailedToExtractAndSetValuesFromFile(
+        this ILogger<GetHttpsResourcesController> logger,
+        string filePath,
+        Guid getHttpsResourceId,
+        Guid dataId,
+        DataKind dataKind,
+        Exception exception
+    );
+
+    [LoggerMessage(
+        Level = LogLevel.Error,
+        Message = "Failed to create response approval for data with ID {DataId} of kind {DataKind}."
+    )]
     public static partial void FailedToCreateResponseApproval(
         this ILogger<GetHttpsResourcesController> logger,
         Guid dataId,
+        DataKind dataKind,
         Exception exception
     );
 }
@@ -261,10 +277,21 @@ public sealed class GetHttpsResourcesController(
         }
         if (getHttpsResource.IsRoot())
         {
-            await getHttpsResource.Data.ExtractAndSetValuesFromFile(
-                getHttpsResource.FilePath,
-                getHttpsResource.DataFormatId
-            );
+            try
+            {
+                await getHttpsResource.Data.ExtractAndSetValuesFromFile(
+                    getHttpsResource.FilePath,
+                    getHttpsResource.DataFormatId
+                );
+            }
+            catch (Exception exception)
+            {
+                logger.FailedToExtractAndSetValuesFromFile(getHttpsResource.FilePath, getHttpsResource.Id, getHttpsResource.Data.Id, getHttpsResource.Data.Kind, exception);
+                ModelState.AddModelError(
+                    "file",
+                    $"Failed to extract values for data {getHttpsResource.Data.Id:D} of kind {getHttpsResource.Data.Kind} from file: {exception.Message}"
+                );
+            }
         }
         await getHttpsResource.RecomputeHashValue(cancellationToken);
         await context.SaveChangesAsync(cancellationToken);
@@ -275,8 +302,19 @@ public sealed class GetHttpsResourcesController(
         }
         catch (Exception exception)
         {
-            // TODO How can this be reported to the user?
-            logger.FailedToCreateResponseApproval(getHttpsResource.Data.Id, exception);
+            logger.FailedToCreateResponseApproval(getHttpsResource.Data.Id, getHttpsResource.Data.Kind, exception);
+            ModelState.AddModelError(
+                "data",
+                $"Failed to create response approval for data {getHttpsResource.Data.Id:D} of kind {getHttpsResource.Data.Kind}."
+            );
+        }
+        if (ModelState.ErrorCount > 0)
+        {
+            ModelState.AddModelError(
+                nameof(id),
+                "The file was uploaded and if a previous file existed it was replaced. However, some post-processing step failed. See the other error(s) for details."
+            );
+            return BadRequest(ModelState);
         }
         return CreatedAtRoute(
             ConstructGetActionRouteName(getHttpsResource),

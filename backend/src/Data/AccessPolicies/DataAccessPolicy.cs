@@ -58,7 +58,7 @@ access. And one with the combinator 'or' and empty policies allows access to
 nobody, no matter if authenticated or not.
 
 A data access policy is either the one-and-only global one or associated with a
-specific data entry, see the field `{nameof(DataAccessPolicy.Data)}`. It is
+specific data set, see the field `{nameof(DataAccessPolicy.Data)}`. It is
 global if this field is `null`. The global and individual policies are combined
 conjunctively, meaning that for access both need to allow access.
 
@@ -69,7 +69,7 @@ There are mutations to
 * clear user, institution, and applicatoin policies of a data access policy;
 * set and unset a user, institution, or applicatoin policy for a specific user,
   institution, or application, and a specific data access policy (global or
-  associated with a specific data entry).
+  associated with a specific data set).
 
 To determine whether access policies allow/restrict access in the way you
 expected, use their `is*Allowed` fields, passing the applicable user ID,

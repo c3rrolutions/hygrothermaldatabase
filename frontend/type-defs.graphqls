@@ -560,6 +560,7 @@ type CalorimetricData implements Node & Data {
     userId: Uuid
   ): Boolean!
   IsAnyoneAllowed: Boolean!
+  IsNobodyAllowed: Boolean!
   kind: DataKind!
   locale: Locale!
   name: String
@@ -817,15 +818,16 @@ than exactly that number of GraphQL or REST API accesses are allowed. And if an
 additional duration is given, from the time of the first access until the
 duration passed, the given number of accesses are allowed; the start time and
 the access count are reset on the first access after the duration passed (a
-sliding window of time).
+sliding window of time). Note that if the limit is 0, access is explicitly
+denied for the respective user, institution, or application.
 
 The individual decisions based on user, institution, and OpenID Connect
 application, can be combined conjuctively ('and' or 'all' need to be positive)
-or disjunctively ('or' or 'any one'/'at least one' needs to be positive). This
+or disjunctively ('or' or 'someone'/'at least one' needs to be positive). This
 is configured through the combinator and the mutation
 `ConfigureDataAccessPolicyMutation`. If there are no user access
 policies at all, then, in the 'all' case, no restrictions based on the user
-itself are imposed, and in the 'any' case, no allowances based on the user
+itself are imposed, and in the 'some' case, no allowances based on the user
 itself are given; and analogously for institution and application policies. Put
 another way, an empty list of user access policies is `true` in the 'and' case
 and `false` in the 'or' case, and analogously for institution and application
@@ -834,12 +836,32 @@ access policies.
 In particular, a data access policy with the combinator 'all' and empty user,
 institution, and application policies allows access to anyone, also anonymous
 access. And one with the combinator 'or' and empty policies allows access to
-noone, no matter if authenticated or not.
+nobody, no matter if authenticated or not.
 
 A data access policy is either the one-and-only global one or associated with a
 specific data entry, see the field `Data`. It is
 global if this field is `null`. The global and individual policies are combined
 conjunctively, meaning that for access both need to allow access.
+
+There are mutations to
+* reset a data access policy to its original state, in which anyone is allowed
+  access;
+* configure the logical combinator of a data access policy (as explained above);
+* clear user, institution, and applicatoin policies of a data access policy;
+* set and unset a user, institution, or applicatoin policy for a specific user,
+  institution, or application, and a specific data access policy (global or
+  associated with a specific data entry).
+
+To determine whether access policies allow/restrict access in the way you
+expected, use their `is*Allowed` fields, passing the applicable user ID,
+institution IDs, and/or client ID as argument(s). The field
+`AccessCountSinceStartTime` informs you about the
+number of accesses that were counted for the user, institution, or application
+policy since the start time. Both are reset on the first access after the end
+of the time span or when a policy is updated via the respective 'set' mutation.
+
+Note that durations are represented in the
+[ISO 8601 duration format](https://scalars.graphql.org/chillicream/duration.html#sec-Result-spec)
 """
 type DataAccessPolicy {
   combinator: LogicalCombinator!
@@ -857,6 +879,7 @@ type DataAccessPolicy {
   ): Boolean!
   isAnyoneAllowed: Boolean!
   isGlobal: Boolean!
+  isNobodyAllowed: Boolean!
   openIdConnectApplicationAccessPolicies(
     order: [OpenIdConnectApplicationAccessPolicySortInput!]
     where: OpenIdConnectApplicationAccessPolicyPropositionInput
@@ -992,6 +1015,7 @@ type GeometricData implements Node & Data {
     userId: Uuid
   ): Boolean!
   IsAnyoneAllowed: Boolean!
+  IsNobodyAllowed: Boolean!
   kind: DataKind!
   locale: Locale!
   name: String
@@ -1105,6 +1129,7 @@ type HygrothermalData implements Node & Data {
     userId: Uuid
   ): Boolean!
   IsAnyoneAllowed: Boolean!
+  IsNobodyAllowed: Boolean!
   kind: DataKind!
   locale: Locale!
   name: String
@@ -1210,6 +1235,7 @@ type LifeCycleData implements Node & Data {
     userId: Uuid
   ): Boolean!
   IsAnyoneAllowed: Boolean!
+  IsNobodyAllowed: Boolean!
   kind: DataKind!
   locale: Locale!
   name: String
@@ -1326,6 +1352,7 @@ type OpticalData implements Node & Data {
     userId: Uuid
   ): Boolean!
   IsAnyoneAllowed: Boolean!
+  IsNobodyAllowed: Boolean!
   kind: DataKind!
   locale: Locale!
   name: String
@@ -1396,6 +1423,7 @@ type PhotovoltaicData implements Node & Data {
     userId: Uuid
   ): Boolean!
   IsAnyoneAllowed: Boolean!
+  IsNobodyAllowed: Boolean!
   kind: DataKind!
   locale: Locale!
   name: String
@@ -1966,15 +1994,16 @@ than exactly that number of GraphQL or REST API accesses are allowed. And if an
 additional duration is given, from the time of the first access until the
 duration passed, the given number of accesses are allowed; the start time and
 the access count are reset on the first access after the duration passed (a
-sliding window of time).
+sliding window of time). Note that if the limit is 0, access is explicitly
+denied for the respective user, institution, or application.
 
 The individual decisions based on user, institution, and OpenID Connect
 application, can be combined conjuctively ('and' or 'all' need to be positive)
-or disjunctively ('or' or 'any one'/'at least one' needs to be positive). This
+or disjunctively ('or' or 'someone'/'at least one' needs to be positive). This
 is configured through the combinator and the mutation
 `ConfigureDataAccessPolicyMutation`. If there are no user access
 policies at all, then, in the 'all' case, no restrictions based on the user
-itself are imposed, and in the 'any' case, no allowances based on the user
+itself are imposed, and in the 'some' case, no allowances based on the user
 itself are given; and analogously for institution and application policies. Put
 another way, an empty list of user access policies is `true` in the 'and' case
 and `false` in the 'or' case, and analogously for institution and application
@@ -1983,12 +2012,32 @@ access policies.
 In particular, a data access policy with the combinator 'all' and empty user,
 institution, and application policies allows access to anyone, also anonymous
 access. And one with the combinator 'or' and empty policies allows access to
-noone, no matter if authenticated or not.
+nobody, no matter if authenticated or not.
 
 A data access policy is either the one-and-only global one or associated with a
 specific data entry, see the field `Data`. It is
 global if this field is `null`. The global and individual policies are combined
 conjunctively, meaning that for access both need to allow access.
+
+There are mutations to
+* reset a data access policy to its original state, in which anyone is allowed
+  access;
+* configure the logical combinator of a data access policy (as explained above);
+* clear user, institution, and applicatoin policies of a data access policy;
+* set and unset a user, institution, or applicatoin policy for a specific user,
+  institution, or application, and a specific data access policy (global or
+  associated with a specific data entry).
+
+To determine whether access policies allow/restrict access in the way you
+expected, use their `is*Allowed` fields, passing the applicable user ID,
+institution IDs, and/or client ID as argument(s). The field
+`AccessCountSinceStartTime` informs you about the
+number of accesses that were counted for the user, institution, or application
+policy since the start time. Both are reset on the first access after the end
+of the time span or when a policy is updated via the respective 'set' mutation.
+
+Note that durations are represented in the
+[ISO 8601 duration format](https://scalars.graphql.org/chillicream/duration.html#sec-Result-spec)
 """
 input ConfigureDataAccessPoliciesPropositionInput {
   and: [ConfigureDataAccessPoliciesPropositionInput!]
@@ -2001,6 +2050,7 @@ input ConfigureDataAccessPoliciesPropositionInput {
   institutionAccessPolicies: FilterInputTypeOfInstitutionAccessPolicysPropositionInput
   isAnyoneAllowed: BooleanPropositionInput
   isGlobal: BooleanPropositionInput
+  isNobodyAllowed: BooleanPropositionInput
   lifeCycleData: LifeCycleDataPropositionInput
   openIdConnectApplicationAccessPolicies: FilterInputTypeOfOpenIdConnectApplicationAccessPolicysPropositionInput
   opticalData: OpticalDataPropositionInput
@@ -2175,15 +2225,16 @@ than exactly that number of GraphQL or REST API accesses are allowed. And if an
 additional duration is given, from the time of the first access until the
 duration passed, the given number of accesses are allowed; the start time and
 the access count are reset on the first access after the duration passed (a
-sliding window of time).
+sliding window of time). Note that if the limit is 0, access is explicitly
+denied for the respective user, institution, or application.
 
 The individual decisions based on user, institution, and OpenID Connect
 application, can be combined conjuctively ('and' or 'all' need to be positive)
-or disjunctively ('or' or 'any one'/'at least one' needs to be positive). This
+or disjunctively ('or' or 'someone'/'at least one' needs to be positive). This
 is configured through the combinator and the mutation
 `ConfigureDataAccessPolicyMutation`. If there are no user access
 policies at all, then, in the 'all' case, no restrictions based on the user
-itself are imposed, and in the 'any' case, no allowances based on the user
+itself are imposed, and in the 'some' case, no allowances based on the user
 itself are given; and analogously for institution and application policies. Put
 another way, an empty list of user access policies is `true` in the 'and' case
 and `false` in the 'or' case, and analogously for institution and application
@@ -2192,12 +2243,32 @@ access policies.
 In particular, a data access policy with the combinator 'all' and empty user,
 institution, and application policies allows access to anyone, also anonymous
 access. And one with the combinator 'or' and empty policies allows access to
-noone, no matter if authenticated or not.
+nobody, no matter if authenticated or not.
 
 A data access policy is either the one-and-only global one or associated with a
 specific data entry, see the field `Data`. It is
 global if this field is `null`. The global and individual policies are combined
 conjunctively, meaning that for access both need to allow access.
+
+There are mutations to
+* reset a data access policy to its original state, in which anyone is allowed
+  access;
+* configure the logical combinator of a data access policy (as explained above);
+* clear user, institution, and applicatoin policies of a data access policy;
+* set and unset a user, institution, or applicatoin policy for a specific user,
+  institution, or application, and a specific data access policy (global or
+  associated with a specific data entry).
+
+To determine whether access policies allow/restrict access in the way you
+expected, use their `is*Allowed` fields, passing the applicable user ID,
+institution IDs, and/or client ID as argument(s). The field
+`AccessCountSinceStartTime` informs you about the
+number of accesses that were counted for the user, institution, or application
+policy since the start time. Both are reset on the first access after the end
+of the time span or when a policy is updated via the respective 'set' mutation.
+
+Note that durations are represented in the
+[ISO 8601 duration format](https://scalars.graphql.org/chillicream/duration.html#sec-Result-spec)
 """
 input DataAccessPolicyPropositionInput {
   and: [DataAccessPolicyPropositionInput!]
@@ -2210,6 +2281,7 @@ input DataAccessPolicyPropositionInput {
   institutionAccessPolicies: FilterInputTypeOfInstitutionAccessPolicysPropositionInput
   isAnyoneAllowed: BooleanPropositionInput
   isGlobal: BooleanPropositionInput
+  isNobodyAllowed: BooleanPropositionInput
   lifeCycleData: LifeCycleDataPropositionInput
   openIdConnectApplicationAccessPolicies: FilterInputTypeOfOpenIdConnectApplicationAccessPolicysPropositionInput
   opticalData: OpticalDataPropositionInput
@@ -2244,15 +2316,16 @@ than exactly that number of GraphQL or REST API accesses are allowed. And if an
 additional duration is given, from the time of the first access until the
 duration passed, the given number of accesses are allowed; the start time and
 the access count are reset on the first access after the duration passed (a
-sliding window of time).
+sliding window of time). Note that if the limit is 0, access is explicitly
+denied for the respective user, institution, or application.
 
 The individual decisions based on user, institution, and OpenID Connect
 application, can be combined conjuctively ('and' or 'all' need to be positive)
-or disjunctively ('or' or 'any one'/'at least one' needs to be positive). This
+or disjunctively ('or' or 'someone'/'at least one' needs to be positive). This
 is configured through the combinator and the mutation
 `ConfigureDataAccessPolicyMutation`. If there are no user access
 policies at all, then, in the 'all' case, no restrictions based on the user
-itself are imposed, and in the 'any' case, no allowances based on the user
+itself are imposed, and in the 'some' case, no allowances based on the user
 itself are given; and analogously for institution and application policies. Put
 another way, an empty list of user access policies is `true` in the 'and' case
 and `false` in the 'or' case, and analogously for institution and application
@@ -2261,12 +2334,32 @@ access policies.
 In particular, a data access policy with the combinator 'all' and empty user,
 institution, and application policies allows access to anyone, also anonymous
 access. And one with the combinator 'or' and empty policies allows access to
-noone, no matter if authenticated or not.
+nobody, no matter if authenticated or not.
 
 A data access policy is either the one-and-only global one or associated with a
 specific data entry, see the field `Data`. It is
 global if this field is `null`. The global and individual policies are combined
 conjunctively, meaning that for access both need to allow access.
+
+There are mutations to
+* reset a data access policy to its original state, in which anyone is allowed
+  access;
+* configure the logical combinator of a data access policy (as explained above);
+* clear user, institution, and applicatoin policies of a data access policy;
+* set and unset a user, institution, or applicatoin policy for a specific user,
+  institution, or application, and a specific data access policy (global or
+  associated with a specific data entry).
+
+To determine whether access policies allow/restrict access in the way you
+expected, use their `is*Allowed` fields, passing the applicable user ID,
+institution IDs, and/or client ID as argument(s). The field
+`AccessCountSinceStartTime` informs you about the
+number of accesses that were counted for the user, institution, or application
+policy since the start time. Both are reset on the first access after the end
+of the time span or when a policy is updated via the respective 'set' mutation.
+
+Note that durations are represented in the
+[ISO 8601 duration format](https://scalars.graphql.org/chillicream/duration.html#sec-Result-spec)
 """
 input DataAccessPolicySortInput {
   dataId: SortEnumType @cost(weight: "10")
@@ -3045,15 +3138,16 @@ than exactly that number of GraphQL or REST API accesses are allowed. And if an
 additional duration is given, from the time of the first access until the
 duration passed, the given number of accesses are allowed; the start time and
 the access count are reset on the first access after the duration passed (a
-sliding window of time).
+sliding window of time). Note that if the limit is 0, access is explicitly
+denied for the respective user, institution, or application.
 
 The individual decisions based on user, institution, and OpenID Connect
 application, can be combined conjuctively ('and' or 'all' need to be positive)
-or disjunctively ('or' or 'any one'/'at least one' needs to be positive). This
+or disjunctively ('or' or 'someone'/'at least one' needs to be positive). This
 is configured through the combinator and the mutation
 `ConfigureDataAccessPolicyMutation`. If there are no user access
 policies at all, then, in the 'all' case, no restrictions based on the user
-itself are imposed, and in the 'any' case, no allowances based on the user
+itself are imposed, and in the 'some' case, no allowances based on the user
 itself are given; and analogously for institution and application policies. Put
 another way, an empty list of user access policies is `true` in the 'and' case
 and `false` in the 'or' case, and analogously for institution and application
@@ -3062,12 +3156,32 @@ access policies.
 In particular, a data access policy with the combinator 'all' and empty user,
 institution, and application policies allows access to anyone, also anonymous
 access. And one with the combinator 'or' and empty policies allows access to
-noone, no matter if authenticated or not.
+nobody, no matter if authenticated or not.
 
 A data access policy is either the one-and-only global one or associated with a
 specific data entry, see the field `Data`. It is
 global if this field is `null`. The global and individual policies are combined
 conjunctively, meaning that for access both need to allow access.
+
+There are mutations to
+* reset a data access policy to its original state, in which anyone is allowed
+  access;
+* configure the logical combinator of a data access policy (as explained above);
+* clear user, institution, and applicatoin policies of a data access policy;
+* set and unset a user, institution, or applicatoin policy for a specific user,
+  institution, or application, and a specific data access policy (global or
+  associated with a specific data entry).
+
+To determine whether access policies allow/restrict access in the way you
+expected, use their `is*Allowed` fields, passing the applicable user ID,
+institution IDs, and/or client ID as argument(s). The field
+`AccessCountSinceStartTime` informs you about the
+number of accesses that were counted for the user, institution, or application
+policy since the start time. Both are reset on the first access after the end
+of the time span or when a policy is updated via the respective 'set' mutation.
+
+Note that durations are represented in the
+[ISO 8601 duration format](https://scalars.graphql.org/chillicream/duration.html#sec-Result-spec)
 """
 input ResetDataAccessPoliciesPropositionInput {
   and: [ResetDataAccessPoliciesPropositionInput!]
@@ -3080,6 +3194,7 @@ input ResetDataAccessPoliciesPropositionInput {
   institutionAccessPolicies: FilterInputTypeOfInstitutionAccessPolicysPropositionInput
   isAnyoneAllowed: BooleanPropositionInput
   isGlobal: BooleanPropositionInput
+  isNobodyAllowed: BooleanPropositionInput
   lifeCycleData: LifeCycleDataPropositionInput
   openIdConnectApplicationAccessPolicies: FilterInputTypeOfOpenIdConnectApplicationAccessPolicysPropositionInput
   opticalData: OpticalDataPropositionInput

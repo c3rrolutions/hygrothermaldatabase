@@ -294,6 +294,7 @@ public sealed class Startup(
         services.AddSingleton<CacheService>();
         services.AddSingleton<MethodFactory>();
         services.AddSingleton<SigningService>();
+        services.AddSingleton<FileManager>();
     }
 
     public static void ConfigureApiRequests(IServiceCollection services)

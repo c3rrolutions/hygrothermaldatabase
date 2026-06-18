@@ -4,7 +4,7 @@ using HotChocolate.Data.Filters;
 
 namespace Database.GraphQl.AccessPolicies;
 
-public class OpenIdConnectApplicationAccessPolicyFilterType
+public sealed class OpenIdConnectApplicationAccessPolicyFilterType
     : AuditableEntityFilterType<OpenIdConnectApplicationAccessPolicy>
 {
     protected override void Configure(

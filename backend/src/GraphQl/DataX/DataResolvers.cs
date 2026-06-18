@@ -89,10 +89,11 @@ public sealed class DataResolvers
     }
 
     [Authorize(Policy = AuthorizationPolicies.AuthenticatedPolicy)]
-    public static Task<bool> IsNobodyAllowedAsync(
+    public static async Task<bool> IsNobodyAllowedAsync(
         [Parent] IData data,
         ApplicationDbContext databaseContext,
         CommonAuthorization authorization,
+        IResolverContext resolverContext,
         CancellationToken cancellationToken
     )
     {
@@ -125,10 +126,11 @@ public sealed class DataResolvers
         [Parent] IData data,
         ApplicationDbContext databaseContext,
         CommonAuthorization authorization,
+        IResolverContext resolverContext,
         CancellationToken cancellationToken
     )
     {
-        return IsAccessAllowedAsync(data, null, null, null, databaseContext, authorization, cancellationToken);
+        return IsAccessAllowedAsync(data, null, null, null, databaseContext, authorization, resolverContext, cancellationToken);
     }
 
     [Authorize(Policy = AuthorizationPolicies.AuthenticatedPolicy)]
@@ -139,6 +141,7 @@ public sealed class DataResolvers
         string? openIdConnectClientId,
         ApplicationDbContext databaseContext,
         CommonAuthorization authorization,
+        IResolverContext resolverContext,
         CancellationToken cancellationToken
     )
     {

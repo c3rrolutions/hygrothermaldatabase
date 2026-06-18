@@ -103,7 +103,7 @@ public sealed class CreateGeometricDataMutation
         IReadOnlyList<string> path
     ) => new(code, message, path);
 
-    [Authorize(Policy = AuthorizationPolicies.WriteScopePolicy)]
+    [Authorize(Policy = AuthorizationPolicies.AuthenticatedPolicy)]
     public async Task<CreateGeometricDataPayload> CreateGeometricDataAsync(
         CreateGeometricDataInput input,
         ApplicationDbContext context,

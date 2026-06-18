@@ -72,7 +72,7 @@ public sealed class ConfigureDataAccessPoliciesMutation
     ) => new(code, message, path);
 
     [UseFiltering<ConfigureDataAccessPoliciesFilterType>]
-    [Authorize(Policy = AuthorizationPolicies.WriteScopePolicy)]
+    [Authorize(Policy = AuthorizationPolicies.AuthenticatedPolicy)]
     public async Task<ConfigureDataAccessPoliciesPayload> ConfigureDataAccessPoliciesAsync(
         ConfigureDataAccessPoliciesInput input,
         ApplicationDbContext context,

@@ -58,7 +58,7 @@ public sealed class UnsetUserAccessPolicyMutation
         IReadOnlyList<string> path
     ) => new(code, message, path);
 
-    [Authorize(Policy = AuthorizationPolicies.WriteScopePolicy)]
+    [Authorize(Policy = AuthorizationPolicies.AuthenticatedPolicy)]
     public async Task<UnsetUserAccessPolicyPayload> UnsetUserAccessPolicyAsync(
         UnsetUserAccessPolicyInput input,
         ApplicationDbContext context,

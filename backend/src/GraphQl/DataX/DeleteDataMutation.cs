@@ -53,7 +53,7 @@ public sealed class DeleteDataMutation
     ) => new(code, message, path);
 
     // [GraphQLType<PayloadType<DeleteDataErrorCode>>]
-    [Authorize(Policy = AuthorizationPolicies.WriteScopePolicy)]
+    [Authorize(Policy = AuthorizationPolicies.AuthenticatedPolicy)]
     public async Task<DeleteDataPayload> DeleteDataAsync(
         DeleteDataInput input,
         CommonAuthorization authorization,

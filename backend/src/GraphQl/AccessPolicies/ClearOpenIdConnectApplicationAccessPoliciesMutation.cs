@@ -53,7 +53,7 @@ public sealed class ClearOpenIdConnectApplicationAccessPoliciesMutation
         IReadOnlyList<string> path
     ) => new(code, message, path);
 
-    [Authorize(Policy = AuthorizationPolicies.WriteScopePolicy)]
+    [Authorize(Policy = AuthorizationPolicies.AuthenticatedPolicy)]
     public async Task<ClearOpenIdConnectApplicationAccessPoliciesPayload> ClearOpenIdConnectApplicationAccessPoliciesAsync(
         ClearOpenIdConnectApplicationAccessPoliciesInput input,
         ApplicationDbContext context,

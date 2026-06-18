@@ -42,7 +42,7 @@ public sealed class GetHttpsResourceQueries
     [UsePaging]
     [UseFiltering<GetHttpsResourceFilterType>]
     [UseSorting<GetHttpsResourceSortType>]
-    [Authorize(Policy = AuthorizationPolicies.WriteScopePolicy)]
+    [Authorize(Policy = AuthorizationPolicies.AuthenticatedPolicy)]
     public async ValueTask<HotChocolate.Types.Pagination.Connection<GetHttpsResource>> GetPendingGetHttpsResources(
         ApplicationDbContext context,
         CommonAuthorization authorization,

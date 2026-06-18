@@ -78,7 +78,7 @@ public sealed class UpdateResponseApprovalsMutation
     ) => new(code, message, path);
 
     [UseFiltering<UpdateResponseApprovalsFilterType>]
-    [Authorize(Policy = AuthorizationPolicies.WriteScopePolicy)]
+    [Authorize(Policy = AuthorizationPolicies.AuthenticatedPolicy)]
     public async Task<UpdateResponseApprovalsPayload> UpdateResponseApprovalsAsync(
         IResolverContext resolverContext,
         ApplicationDbContext context,

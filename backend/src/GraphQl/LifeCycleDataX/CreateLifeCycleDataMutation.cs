@@ -96,7 +96,7 @@ public sealed class CreateLifeCycleDataMutation
         IReadOnlyList<string> path
     ) => new(code, message, path);
 
-    [Authorize(Policy = AuthorizationPolicies.WriteScopePolicy)]
+    [Authorize(Policy = AuthorizationPolicies.AuthenticatedPolicy)]
     public async Task<CreateLifeCycleDataPayload> CreateLifeCycleDataAsync(
         CreateLifeCycleDataInput input,
         ApplicationDbContext context,

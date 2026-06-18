@@ -66,7 +66,7 @@ public sealed class ResetDataAccessPoliciesMutation
     ) => new(code, message, path);
 
     [UseFiltering<ResetDataAccessPoliciesFilterType>]
-    [Authorize(Policy = AuthorizationPolicies.WriteScopePolicy)]
+    [Authorize(Policy = AuthorizationPolicies.AuthenticatedPolicy)]
     public async Task<ResetDataAccessPoliciesPayload> ResetDataAccessPoliciesAsync(
         ApplicationDbContext context,
         CommonAuthorization authorization,

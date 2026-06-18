@@ -64,7 +64,7 @@ public sealed class SetGetHttpsResourceParentMutation
         IReadOnlyList<string> path
     ) => new(code, message, path);
 
-    [Authorize(Policy = AuthorizationPolicies.WriteScopePolicy)]
+    [Authorize(Policy = AuthorizationPolicies.AuthenticatedPolicy)]
     public async Task<SetGetHttpsResourceParentPayload> SetGetHttpsResourceParentAsync(
         SetGetHttpsResourceParentInput input,
         ApplicationDbContext context,

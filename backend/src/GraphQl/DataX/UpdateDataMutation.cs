@@ -62,7 +62,7 @@ public sealed class UpdateDataMutation
         IReadOnlyList<string> path
     ) => new(code, message, path);
 
-    [Authorize(Policy = AuthorizationPolicies.WriteScopePolicy)]
+    [Authorize(Policy = AuthorizationPolicies.AuthenticatedPolicy)]
     public async Task<UpdateDataPayload> UpdateDataAsync(
         UpdateDataInput input,
         CommonAuthorization authorization,

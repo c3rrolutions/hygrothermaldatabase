@@ -61,7 +61,7 @@ public sealed class RemoveDataApprovalMutation
         IReadOnlyList<string> path
     ) => new(code, message, path);
 
-    [Authorize(Policy = AuthorizationPolicies.WriteScopePolicy)]
+    [Authorize(Policy = AuthorizationPolicies.AuthenticatedPolicy)]
     public async Task<RemoveDataApprovalPayload> RemoveDataApprovalAsync(
         RemoveDataApprovalInput input,
         ApplicationDbContext context,

@@ -80,7 +80,7 @@ public sealed class RecomputeGetHttpsResourceHashValuesMutation
     ) => new(code, message, path);
 
     [UseFiltering<RecomputeGetHttpsResourceHashValuesFilterType>]
-    [Authorize(Policy = AuthorizationPolicies.WriteScopePolicy)]
+    [Authorize(Policy = AuthorizationPolicies.AuthenticatedPolicy)]
     public async Task<RecomputeGetHttpsResourceHashValuesPayload> RecomputeGetHttpsResourceHashValuesAsync(
         ApplicationDbContext context,
         IResolverContext resolverContext,

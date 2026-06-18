@@ -96,7 +96,7 @@ public sealed class CreateHygrothermalDataMutation
         IReadOnlyList<string> path
     ) => new(code, message, path);
 
-    [Authorize(Policy = AuthorizationPolicies.WriteScopePolicy)]
+    [Authorize(Policy = AuthorizationPolicies.AuthenticatedPolicy)]
     public async Task<CreateHygrothermalDataPayload> CreateHygrothermalDataAsync(
         CreateHygrothermalDataInput input,
         ApplicationDbContext context,

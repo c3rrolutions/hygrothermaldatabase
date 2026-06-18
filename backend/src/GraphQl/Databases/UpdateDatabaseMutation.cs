@@ -12,7 +12,7 @@ namespace Database.GraphQl.Databases;
 [ExtendObjectType(nameof(Mutation))]
 public sealed class UpdateDatabaseMutation
 {
-    [Authorize(Policy = AuthorizationPolicies.WriteScopePolicy)]
+    [Authorize(Policy = AuthorizationPolicies.AuthenticatedPolicy)]
     public async Task<UpdateDatabasePayload> UpdateDatabaseAsync(
         UpdateDatabaseInput input,
         UpdateDatabase updateDatabase,

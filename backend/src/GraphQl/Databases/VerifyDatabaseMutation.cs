@@ -11,7 +11,7 @@ namespace Database.GraphQl.Databases;
 // TODO [ExtendObjectType(nameof(Mutation))]
 public sealed class VerifyDatabaseMutation
 {
-    [Authorize(Policy = AuthorizationPolicies.WriteScopePolicy)]
+    [Authorize(Policy = AuthorizationPolicies.AuthenticatedPolicy)]
     public async Task<VerifyDatabasePayload> VerifyDatabaseAsync(
         VerifyDatabaseInput input,
         VerifyDatabase verifyDatabase,

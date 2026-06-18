@@ -99,7 +99,7 @@ public sealed class AddDataApprovalMutation
         IReadOnlyList<string> path
     ) => new(code, message, path);
 
-    [Authorize(Policy = AuthorizationPolicies.WriteScopePolicy)]
+    [Authorize(Policy = AuthorizationPolicies.AuthenticatedPolicy)]
     public async Task<AddDataApprovalPayload> AddDataApprovalAsync(
         AddDataApprovalInput input,
         ApplicationDbContext context,

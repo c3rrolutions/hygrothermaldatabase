@@ -54,7 +54,7 @@ public sealed class RetractDataMutation
         IReadOnlyList<string> path
     ) => new(code, message, path);
 
-    [Authorize(Policy = AuthorizationPolicies.WriteScopePolicy)]
+    [Authorize(Policy = AuthorizationPolicies.AuthenticatedPolicy)]
     public async Task<RetractDataPayload> RetractDataAsync(
         RetractDataInput input,
         CommonAuthorization authorization,

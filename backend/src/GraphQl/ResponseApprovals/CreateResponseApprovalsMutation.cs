@@ -80,7 +80,7 @@ public sealed class CreateResponseApprovalsMutation
     ) => new(code, message, path);
 
     [UseFiltering<CreateResponseApprovalsFilterType>]
-    [Authorize(Policy = AuthorizationPolicies.WriteScopePolicy)]
+    [Authorize(Policy = AuthorizationPolicies.AuthenticatedPolicy)]
     public async Task<CreateResponseApprovalsPayload> CreateResponseApprovalsAsync(
         IResolverContext resolverContext,
         ApplicationDbContext context,

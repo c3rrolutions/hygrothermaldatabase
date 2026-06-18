@@ -24,7 +24,7 @@ public static partial class Log
 {
     [LoggerMessage(
         Level = LogLevel.Error,
-        Message = "Failed to extract and set values from file '{FilaPath}' of GET HTTPS resource {GetHttpsResourceId} of data {DataId} of kind {DataKind}."
+        Message = "Failed to extract and set values from file '{FilePath}' of GET HTTPS resource {GetHttpsResourceId} of data {DataId} of kind {DataKind}."
     )]
     public static partial void FailedToExtractAndSetValuesFromFile(
         this ILogger<GetHttpsResourcesController> logger,

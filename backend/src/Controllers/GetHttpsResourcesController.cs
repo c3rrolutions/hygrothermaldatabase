@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Mime;
@@ -22,6 +23,37 @@ namespace Database.Controllers;
 
 public static partial class Log
 {
+    [LoggerMessage(
+        Level = LogLevel.Error,
+        Message = "There is not file at the file path {FilePath} of the GET HTTPS resource {GetHttpsResourceId}."
+    )]
+    public static partial void MissingFile(
+        this ILogger<GetHttpsResourcesController> logger,
+        Guid getHttpsResourceId,
+        string filePath
+    );
+
+    [LoggerMessage(
+        Level = LogLevel.Error,
+        Message = "The GET HTTPS resource {GetHttpsResourceId} seems not to have a data set, it says to belong to data {DataId} of kind {DataKind}."
+    )]
+    public static partial void MissingDataSet(
+        this ILogger<GetHttpsResourcesController> logger,
+        Guid getHttpsResourceId,
+        Guid dataId,
+        DataKind dataKind
+    );
+
+    [LoggerMessage(
+        Level = LogLevel.Error,
+        Message = "Failed to load the data format {DataFormatId} of the GET HTTPS resource {GetHttpsResourceId}."
+    )]
+    public static partial void FailedToLoadDataFormat(
+        this ILogger<GetHttpsResourcesController> logger,
+        Guid getHttpsResourceId,
+        Guid dataFormatId
+    );
+
     [LoggerMessage(
         Level = LogLevel.Error,
         Message = "Failed to extract and set values from file '{FilePath}' of GET HTTPS resource {GetHttpsResourceId} of data {DataId} of kind {DataKind}."
@@ -97,7 +129,7 @@ public sealed class GetHttpsResourcesController(
     [HttpGet("~/api/resources/{id:guid}.{extension}", Name = GetByIdAndExtensionRouteName)]
     [Authorize(AuthenticationSchemes = AuthenticationConstants.CookieAndBearerTokenAuthenticationScheme)]
     [AllowAnonymous]
-    [EndpointDescription("Get an HTTP resource")]
+    [EndpointDescription("Get an HTTP resource in the media type of its data format.")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -134,6 +166,7 @@ public sealed class GetHttpsResourcesController(
         }
         if (!getHttpsResource.DoesFileExist())
         {
+            logger.MissingFile(getHttpsResource.Id, getHttpsResource.FilePath);
             return Problem(
                 title: "Content Not Found",
                 detail: $"The GET HTTPS resource with ID '{id:D}' and the extension '{getHttpsResource.FileExtension}' does not have content.",
@@ -143,11 +176,13 @@ public sealed class GetHttpsResourcesController(
         }
         if (getHttpsResource.Data is null)
         {
-            ModelState.AddModelError(
-                nameof(id),
-                $"There is no data set associated with the GET HTTPS resource with ID '{id:D}'."
+            logger.MissingDataSet(getHttpsResource.Id, getHttpsResource.DataId, getHttpsResource.DataKind);
+            return Problem(
+                title: "Data Set Not Found",
+                detail: $"There is no data set associated with the GET HTTPS resource with ID '{id:D}'.",
+                statusCode: StatusCodes.Status404NotFound,
+                instance: HttpContext.Request.Path
             );
-            return BadRequest(ModelState);
         }
         if (!await accessPolicyService.Apply<IData, bool>(
             context.Data(getHttpsResource.Data.Kind).AsNoTracking()
@@ -168,11 +203,13 @@ public sealed class GetHttpsResourcesController(
         var dataFormat = await dataFormatByIdDataLoader.LoadAsync(getHttpsResource.DataFormatId);
         if (dataFormat is null)
         {
-            ModelState.AddModelError(
-                nameof(id),
-                $"Failed to fetch the content type of the GET HTTPS resource with ID '{id:D}'. Please try again in a few minutes."
+            logger.FailedToLoadDataFormat(getHttpsResource.Id, getHttpsResource.DataFormatId);
+            return Problem(
+                title: "Failed To Load Data Format",
+                detail: $"Failed to fetch the content type of the GET HTTPS resource with ID '{id:D}'. Please try again in a few minutes.",
+                statusCode: StatusCodes.Status400BadRequest,
+                instance: HttpContext.Request.Path
             );
-            return BadRequest(ModelState);
         }
         return PhysicalFile(
             physicalPath: getHttpsResource.AbsoluteFilePath,
@@ -198,12 +235,11 @@ public sealed class GetHttpsResourcesController(
         };
 
     [HttpPost("~/api/resources/{id:guid}", Name = UploadRouteName)]
-    [EndpointDescription("Upload file for a GET HTTP resource")]
+    [EndpointDescription("Upload file for a GET HTTP resource as 'multipart/form-data' or 'text/plain'. The file must conform to the resource's data format.")]
     [DisableFormValueModelBinding]
     [DisableRequestSizeLimit]
     [Authorize(AuthenticationSchemes = AuthenticationConstants.CookieAndBearerTokenAuthenticationScheme)]
     [Consumes(MediaTypeNames.Multipart.FormData, MediaTypeNames.Text.Plain)]
-    // [AcceptsMultipartFormFile]
     [Produces(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -227,7 +263,7 @@ public sealed class GetHttpsResourcesController(
         if (getHttpsResource is null)
         {
             return Problem(
-                title: "Not Found",
+                title: "Resource Not Found",
                 detail: $"There is no GET HTTPS resource with ID '{id:D}'.",
                 statusCode: StatusCodes.Status404NotFound,
                 instance: HttpContext.Request.Path
@@ -235,28 +271,31 @@ public sealed class GetHttpsResourcesController(
         }
         if (getHttpsResource.Data is null)
         {
-            ModelState.AddModelError(
-                nameof(id),
-                $"There is no data set associated with the GET HTTPS resource with ID '{id:D}'."
+            logger.MissingDataSet(getHttpsResource.Id, getHttpsResource.DataId, getHttpsResource.DataKind);
+            return Problem(
+                title: "Data Set Not Found",
+                detail: $"There is no data set associated with the GET HTTPS resource with ID '{id:D}'.",
+                statusCode: StatusCodes.Status404NotFound,
+                instance: HttpContext.Request.Path
             );
-            return BadRequest(ModelState);
         }
         Directory.CreateDirectory(GetHttpsResource.FilesDirectoryPath);
         var contentType =
             MultipartRequestHelper.IsMultipartContentType(Request.ContentType) ? MyContentType.MULTIPART
             : Request.HasFormContentType ? MyContentType.PIPE
             : MyContentType.OTHER;
-        if (contentType is MyContentType.OTHER)
-        {
-            return BadRequest("The request does neither contain valid multipart form data nor a valid form.");
-        }
         switch (contentType)
         {
             case MyContentType.MULTIPART:
                 var boundary = MultipartRequestHelper.GetBoundary(Request.ContentType);
                 if (string.IsNullOrWhiteSpace(boundary))
                 {
-                    return BadRequest("Missing boundary in multipart form data.");
+                    return Problem(
+                        title: "Missing Boundary",
+                        detail: "Missing boundary in multipart form data.",
+                        statusCode: StatusCodes.Status400BadRequest,
+                        instance: HttpContext.Request.Path
+                    );
                 }
                 await fileManager.SaveViaMultipartReaderAsync(
                     getHttpsResource.FilePath,
@@ -273,8 +312,14 @@ public sealed class GetHttpsResourcesController(
                 );
                 break;
             default:
-                return BadRequest($"Unsupported content type '{contentType}'");
+                return Problem(
+                    title: "Unsupported Content Type",
+                    detail: "The request does neither contain valid multipart form data nor a valid form.",
+                    statusCode: StatusCodes.Status400BadRequest,
+                    instance: HttpContext.Request.Path
+                );
         }
+        List<string> errors = [];
         if (getHttpsResource.IsRoot())
         {
             try
@@ -287,10 +332,7 @@ public sealed class GetHttpsResourcesController(
             catch (Exception exception)
             {
                 logger.FailedToExtractAndSetValuesFromFile(getHttpsResource.FilePath, getHttpsResource.Id, getHttpsResource.Data.Id, getHttpsResource.Data.Kind, exception);
-                ModelState.AddModelError(
-                    "file",
-                    $"Failed to extract values for data {getHttpsResource.Data.Id:D} of kind {getHttpsResource.Data.Kind} from file: {exception.Message}"
-                );
+                errors.Append($"Failed to extract values for data {getHttpsResource.Data.Id:D} of kind {getHttpsResource.Data.Kind} from file: '{exception.Message}'");
             }
         }
         await getHttpsResource.RecomputeHashValue(cancellationToken);
@@ -303,18 +345,16 @@ public sealed class GetHttpsResourcesController(
         catch (Exception exception)
         {
             logger.FailedToCreateResponseApproval(getHttpsResource.Data.Id, getHttpsResource.Data.Kind, exception);
-            ModelState.AddModelError(
-                "data",
-                $"Failed to create response approval for data {getHttpsResource.Data.Id:D} of kind {getHttpsResource.Data.Kind}."
-            );
+            errors.Append($"Failed to create response approval for data {getHttpsResource.Data.Id:D} of kind {getHttpsResource.Data.Kind}: '{exception.Message}'");
         }
-        if (ModelState.ErrorCount > 0)
+        if (errors.Count > 0)
         {
-            ModelState.AddModelError(
-                nameof(id),
-                "The file was uploaded and if a previous file existed it was replaced. However, some post-processing step failed. See the other error(s) for details."
+            return Problem(
+                title: "Post-Processing Failed",
+                detail: $"The file was uploaded and if a previous file existed it was replaced. However, the following post-processing step(s) failed: {string.Join("; ", errors)}",
+                statusCode: StatusCodes.Status400BadRequest,
+                instance: HttpContext.Request.Path
             );
-            return BadRequest(ModelState);
         }
         return CreatedAtRoute(
             ConstructGetActionRouteName(getHttpsResource),
@@ -322,26 +362,4 @@ public sealed class GetHttpsResourcesController(
             null
         );
     }
-
-    // solely for the OpenAPI documentation
-    // private sealed record FormFile(IFormFile File);
-
-    // solely for the OpenAPI documentation
-    // [AttributeUsage(AttributeTargets.Method)]
-    // internal sealed class AcceptsMultipartFormFileAttribute : Attribute, IEndpointParameterMetadataProvider
-    // {
-    //     public static void PopulateMetadata(ParameterInfo parameter, EndpointBuilder builder)
-    //     {
-    //     }
-
-    //     public static void PopulateMetadata(MethodInfo method, EndpointBuilder builder)
-    //     {
-    //         builder.Metadata.Add(
-    //             new AcceptsMetadata(
-    //                 [MediaTypeNames.Multipart.FormData],
-    //                 typeof(FormFile)
-    //             )
-    //         );
-    //     }
-    // }
 }

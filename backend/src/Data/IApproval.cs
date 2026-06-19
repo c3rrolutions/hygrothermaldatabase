@@ -2,6 +2,8 @@ using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Database.GraphQl;
+using Database.GraphQl.Scalars;
+using HotChocolate;
 using HotChocolate.Types;
 using NodaTime;
 
@@ -16,7 +18,9 @@ public interface IApproval
     OffsetDateTime Timestamp { get; }
     string Signature { get; }
     string KeyFingerprint { get; }
-    string Query { get; }
+
+    [GraphQLType<NonNullType<GraphQlQueryType>>] string Query { get; }
+
     JsonElement Variables { get; }
     string Message { get; }
     public Guid ApproverId { get; }

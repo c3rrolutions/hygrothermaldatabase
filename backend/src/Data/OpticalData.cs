@@ -38,7 +38,7 @@ public sealed class OpticalData
         DateTimeOffset createdAt,
         OpticalComponentType? type,
         OpticalComponentSubtype? subtype,
-        CoatedSide? coatedSide,
+        CoatedSide coatedSide,
         AppliedMethod appliedMethod,
         double[] nearnormalHemisphericalVisibleTransmittances,
         double[] nearnormalHemisphericalVisibleReflectances,
@@ -83,7 +83,7 @@ public sealed class OpticalData
         DateTimeOffset createdAt,
         OpticalComponentType? type,
         OpticalComponentSubtype? subtype,
-        CoatedSide? coatedSide,
+        CoatedSide coatedSide,
         double[] nearnormalHemisphericalVisibleTransmittances,
         double[] nearnormalHemisphericalVisibleReflectances,
         double[] nearnormalHemisphericalSolarTransmittances,
@@ -123,7 +123,7 @@ public sealed class OpticalData
 
     public OpticalComponentType? Type { get; private set; }
     public OpticalComponentSubtype? Subtype { get; private set; }
-    public CoatedSide? CoatedSide { get; private set; }
+    public CoatedSide CoatedSide { get; private set; }
     public double[] NearnormalHemisphericalVisibleTransmittances { get; private set; }
     public double[] NearnormalHemisphericalVisibleReflectances { get; private set; }
     public double[] NearnormalHemisphericalSolarTransmittances { get; private set; }

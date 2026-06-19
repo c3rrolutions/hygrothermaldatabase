@@ -1,5 +1,6 @@
 using Database.Data;
 using Database.GraphQl.Entities;
+using Database.GraphQl.GetHttpsResources;
 using HotChocolate.Data.Filters;
 
 namespace Database.GraphQl.DataX;
@@ -21,7 +22,9 @@ public abstract class DataFilterTypeBase<TData>
         descriptor.Field(_ => _.CreatorId);
         descriptor.Field(_ => _.AppliedMethod);
         descriptor.Field(_ => _.Approvals);
-        descriptor.Field(_ => _.Resources);
+        descriptor
+            .Field(_ => _.Resources)
+            .Type<ListFilterInputType<GetHttpsResourceFilterType>>();
         descriptor.Field(_ => _.Warnings);
     }
 

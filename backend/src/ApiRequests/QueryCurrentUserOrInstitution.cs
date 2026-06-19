@@ -52,7 +52,7 @@ public sealed class QueryCurrentUserOrInstitution(
 
     public sealed record UserRepresentedInstitutionConnection(
         IReadOnlyList<UserRepresentedInstitutionEdge> Edges,
-        uint TotalCount
+        int TotalCount
     );
 
     public enum InstitutionRepresentativeRole
@@ -74,7 +74,7 @@ public sealed class QueryCurrentUserOrInstitution(
 
     public sealed record InstitutionManagedInstitutionConnection(
         IReadOnlyList<InstitutionManagedInstitutionEdge> Edges,
-        uint TotalCount
+        int TotalCount
     );
 
     public sealed record InstitutionManagedInstitutionEdge(
@@ -101,11 +101,11 @@ public sealed class QueryCurrentUserOrInstitution(
     };
 
     public sealed record DatabaseOperatingDatabaseConnection(
-        uint TotalCount
+        int TotalCount
     );
 
     public sealed record DatabaseOperatingManagedInstitutionConnection(
-        uint TotalCount
+        int TotalCount
     );
 
     public sealed record CurrentUserOrInstitution(

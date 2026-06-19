@@ -185,6 +185,7 @@ list-services : ## List all services specified in the docker-compose file (used 
 # file system under /app/data), it is not available within the management
 # container. So, we pass the required variables explicitly.
 manage : COMMAND = bash
+manage : TARGET ?=
 manage : TARGET := $(or ${TARGET},$(shell git symbolic-ref --quiet --short HEAD || git rev-parse --verify HEAD))
 manage : GNUPG_SECRET_SIGNING_KEY_FINGERPRINT := $(or ${GNUPG_SECRET_SIGNING_KEY_FINGERPRINT},unknown)
 manage : ## Run a one-time command in a fresh management service or enter a shell within, for example, `make manage COMMAND='./gpg.mk key NAME="Anna Smith" COMMENT=first EMAIL=anna.smith@fraunhofer.de'` to create a GnuPG key or simply `make manage` to enter bash inside the container

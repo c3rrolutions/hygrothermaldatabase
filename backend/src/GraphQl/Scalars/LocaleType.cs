@@ -20,9 +20,6 @@ public sealed class LocaleType(
     private const string ValidationPattern =
         "^[a-zA-Z0-9]+(-[a-zA-Z0-9]+)?(-[a-zA-Z0-9]+)?$";
 
-    /// <summary>
-    ///     Initializes a new instance of the <see cref="LocaleType" /> class.
-    /// </summary>
     public LocaleType()
         : this(
             nameof(LocaleType)[..^"Type".Length],

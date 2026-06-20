@@ -400,7 +400,7 @@ public sealed class ApplicationDbContext
     {
         // In the generated migration turn `CREATE TRIGGER` into `CREATE
         // CONSTRAINT TRIGGER` and add `DEFERRABLE INITIALLY DEFERRED` before
-        // `FOR EACH ...` .
+        // `FOR EACH ...`.
         builder
             .AfterInsert(trigger => trigger
                 .SetTriggerName(triggerName)
@@ -419,8 +419,29 @@ public sealed class ApplicationDbContext
                     )
                 )
             );
+        // The migration generated for calorimetric data creates the following function and trigger:
+        //
+        // CREATE FUNCTION "database"."LC_TRIGGER_calorimetric_data_assert_existence_of_root_resource"() RETURNS trigger as $LC_TRIGGER_calorimetric_data_assert_existence_of_root_resource$
+        // BEGIN
+        //   IF NOT EXISTS (
+        //     SELECT 1 FROM database."get_https_resource"
+        //     WHERE "ParentId" IS NULL
+        //     AND "CalorimetricDataId" = NEW."Id"
+        // )
+        // THEN
+        //     RAISE EXCEPTION 'You cannot insert data without also inserting the corresponding root resource in the same transaction.';
+        // END IF;
+        // RETURN NEW;
+        // END;
+        // $LC_TRIGGER_calorimetric_data_assert_existence_of_root_resource$ LANGUAGE plpgsql;
+        // CREATE TRIGGER LC_TRIGGER_calorimetric_data_assert_existence_of_root_resource AFTER INSERT
+        // ON "database"."calorimetric_data"
+        // FOR EACH ROW EXECUTE PROCEDURE "database"."LC_TRIGGER_calorimetric_data_assert_existence_of_root_resource"();
         return builder;
     }
+
+    public bool AssertExistenceOfRootResource() =>
+        throw new NotSupportedException("This method can only be called within a database query.");
 
     private
         EntityTypeBuilder<TData>
@@ -457,6 +478,20 @@ public sealed class ApplicationDbContext
                 // )
                 )
             );
+        // The migration generated for calorimetric data creates the following function and trigger:
+        //
+        // CREATE FUNCTION "database"."LC_TRIGGER_create_calorimetric_data_access_policy_if_necessary"() RETURNS trigger as $LC_TRIGGER_create_calorimetric_data_access_policy_if_necessary$
+        // BEGIN
+        //   INSERT INTO database."data_access_policy"
+        // ("CalorimetricDataId", "Combinator")
+        // VALUES (NEW."Id", 'all')
+        // ON CONFLICT ("CalorimetricDataId") WHERE "CalorimetricDataId" IS NOT NULL DO NOTHING;
+        // RETURN NEW;
+        // END;
+        // $LC_TRIGGER_create_calorimetric_data_access_policy_if_necessary$ LANGUAGE plpgsql;
+        // CREATE TRIGGER LC_TRIGGER_create_calorimetric_data_access_policy_if_necessary AFTER INSERT
+        // ON "database"."calorimetric_data"
+        // FOR EACH ROW EXECUTE PROCEDURE "database"."LC_TRIGGER_create_calorimetric_data_access_policy_if_necessary"();
         return builder;
     }
 

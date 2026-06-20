@@ -1345,7 +1345,7 @@ BEGIN
     IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20251010164110_UpdateCoatedSideEnumeration') THEN
 
         ALTER TYPE database.coated_side RENAME TO coated_side_old;
-        CREATE TYPE database.coated_side AS ENUM ('back', 'both', 'front', 'neither');
+        CREATE TYPE database.coated_side AS ENUM ('both', 'neither', 'non_prime', 'not_applicable', 'prime', 'unknown');
         ALTER TABLE database.optical_data ALTER COLUMN "CoatedSide" TYPE database.coated_side USING "CoatedSide"::text::database.coated_side;
         DROP TYPE database.coated_side_old;
 
@@ -3469,6 +3469,31 @@ BEGIN
     IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20260611161712_AssertExistenceOfAccessPolicyAndRootResourceInPostgreSql') THEN
     INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
     VALUES ('20260611161712_AssertExistenceOfAccessPolicyAndRootResourceInPostgreSql', '10.0.8');
+    END IF;
+END $EF$;
+COMMIT;
+
+START TRANSACTION;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20260620114038_MakeCoatedSideOfOpticalDataNonNullable') THEN
+    ALTER TYPE database.coated_side RENAME TO coated_side_old;
+    CREATE TYPE database.coated_side AS ENUM ('both', 'neither', 'non_prime', 'not_applicable', 'prime', 'unknown');
+    ALTER TABLE database.optical_data ALTER COLUMN "CoatedSide" TYPE database.coated_side USING "CoatedSide"::text::database.coated_side;
+    DROP TYPE database.coated_side_old;
+
+    UPDATE database.optical_data SET "CoatedSide" = 'unknown'::database.coated_side WHERE "CoatedSide" IS NULL;
+    ALTER TABLE database.optical_data ALTER COLUMN "CoatedSide" SET NOT NULL;
+    ALTER TABLE database.optical_data ALTER COLUMN "CoatedSide" SET DEFAULT 'unknown'::database.coated_side;
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20260620114038_MakeCoatedSideOfOpticalDataNonNullable') THEN
+    INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+    VALUES ('20260620114038_MakeCoatedSideOfOpticalDataNonNullable', '10.0.9');
     END IF;
 END $EF$;
 COMMIT;

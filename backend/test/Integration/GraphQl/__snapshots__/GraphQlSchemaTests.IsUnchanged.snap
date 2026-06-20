@@ -839,7 +839,7 @@ access. And one with the combinator 'or' and empty policies allows access to
 nobody, no matter if authenticated or not.
 
 A data access policy is either the one-and-only global one or associated with a
-specific data entry, see the field `Data`. It is
+specific data set, see the field `Data`. It is
 global if this field is `null`. The global and individual policies are combined
 conjunctively, meaning that for access both need to allow access.
 
@@ -850,7 +850,7 @@ There are mutations to
 * clear user, institution, and applicatoin policies of a data access policy;
 * set and unset a user, institution, or applicatoin policy for a specific user,
   institution, or application, and a specific data access policy (global or
-  associated with a specific data entry).
+  associated with a specific data set).
 
 To determine whether access policies allow/restrict access in the way you
 expected, use their `is*Allowed` fields, passing the applicable user ID,
@@ -915,7 +915,7 @@ type DataApproval implements Approval {
   approverId: Uuid!
   keyFingerprint: String!
   message: String!
-  query: String!
+  query: GraphQlQuery!
   signature: String!
   statement: Reference! @cost(weight: "10")
   timestamp: DateTime!
@@ -935,26 +935,15 @@ type Database {
 }
 
 type DatabaseOperatingDatabaseConnection {
-  totalCount: NonNegativeInt!
+  totalCount: Int!
 }
 
 type DatabaseOperatingManagedInstitutionConnection {
-  totalCount: NonNegativeInt!
+  totalCount: Int!
 }
 
 type DatabaseOperatorEdge {
   node: Institution!
-}
-
-type DataConnection {
-  edges: [DataEdge!]!
-  pageInfo: PageInfo!
-  totalCount: NonNegativeInt
-}
-
-type DataEdge {
-  cursor: String!
-  node: Data!
 }
 
 type DataFormat {
@@ -1203,7 +1192,7 @@ type InstitutionAccessPolicyEdge {
 
 type InstitutionManagedInstitutionConnection {
   edges: [InstitutionManagedInstitutionEdge!]!
-  totalCount: NonNegativeInt!
+  totalCount: Int!
 }
 
 type InstitutionManagedInstitutionEdge {
@@ -1334,7 +1323,7 @@ type OpticalData implements Node & Data {
   approval: ResponseApproval! @cost(weight: "3")
   approvals: [DataApproval!]!
   cielabColors: [CielabColor!]!
-  coatedSide: CoatedSide
+  coatedSide: CoatedSide!
   colorRenderingIndices: [Float!]!
   component: Component @cost(weight: "3")
   componentId: Uuid!
@@ -1459,16 +1448,16 @@ type PhotovoltaicDataEdge {
 type Publication {
   abstract: String
   "The website arXiv.org is a free and open-access archive for publications. The arXiv identifier can be used to define a publication."
-  arXiv: String
+  arXiv: ArXiv
   authors: [String!]
   "The Digital Object Identifier (DOI) is a very important persistent identifier for publications. It MUST be defined here if it is available for a publication."
-  doi: String
+  doi: Doi
   "Referenced section"
   section: String
   title: String
-  "A Uniform Resource Name (URN) can be used to define a publication. TODO: Improve the regex pattern to further restrict the string."
-  urn: String
-  "If a persistent identifiert like DOI is defined above, this webAdress can define a convenient web address to access the publication. However, if no persistent identifier exist, this web address is the only identifier of this publication. In this case, it is important to choose a web address with a high probability to persist long."
+  "A Uniform Resource Name (URN) can be used to define a publication."
+  urn: Url
+  "If a persistent identifier like DOI is defined above, this web address can define a convenient web address to access the publication. However, if no persistent identifier exist, this web address is the only identifier of this publication. In this case, it is important to choose a web address with a high probability to persist long."
   webAddress: Url
 }
 
@@ -1536,7 +1525,7 @@ type ResponseApproval implements Approval {
   approverId: Uuid!
   keyFingerprint: String!
   message: String!
-  query: String!
+  query: GraphQlQuery!
   signature: String!
   timestamp: DateTime!
   variables: Any!
@@ -1780,7 +1769,7 @@ type UserInfo {
 
 type UserRepresentedInstitutionConnection {
   edges: [UserRepresentedInstitutionEdge!]!
-  totalCount: NonNegativeInt!
+  totalCount: Int!
 }
 
 type UserRepresentedInstitutionEdge {
@@ -1798,7 +1787,7 @@ interface Approval {
   approverId: Uuid!
   keyFingerprint: String!
   message: String!
-  query: String!
+  query: GraphQlQuery!
   signature: String!
   timestamp: DateTime!
   variables: Any!
@@ -1831,7 +1820,7 @@ interface Data {
 
 interface GetHttpsResourceTreeVertex {
   value: GetHttpsResource!
-  vertexId: ID
+  vertexId: ID!
 }
 
 "The node interface is implemented by entities that have a global unique identifier."
@@ -1867,10 +1856,10 @@ input AppliedMethodInput {
 
 input AppliedMethodPropositionInput {
   and: [AppliedMethodPropositionInput!]
-  arguments: FilterInputTypeOfNamedMethodArgumentsPropositionInput
+  arguments: NamedMethodArgumentsPropositionInput
   methodId: UuidPropositionInput
   or: [AppliedMethodPropositionInput!]
-  sources: FilterInputTypeOfNamedMethodSourcesPropositionInput
+  sources: NamedMethodSourcesPropositionInput
 }
 
 input AppliedMethodSortInput {
@@ -1900,7 +1889,7 @@ input BytePropositionInput {
 input CalorimetricDataPropositionInput {
   and: [CalorimetricDataPropositionInput!]
   appliedMethod: AppliedMethodPropositionInput
-  approvals: FilterInputTypeOfDataApprovalsPropositionInput
+  approvals: DataApprovalsPropositionInput
   componentId: UuidPropositionInput
   createdAt: DateTimePropositionInput
   creatorId: UuidPropositionInput
@@ -1910,7 +1899,7 @@ input CalorimetricDataPropositionInput {
   locale: StringPropositionInput
   name: StringPropositionInput
   or: [CalorimetricDataPropositionInput!]
-  resources: FilterInputTypeOfGetHttpsResourcesPropositionInput
+  resources: GetHttpsResourcesPropositionInput
   updatedAt: DateTimePropositionInput
   userId: UuidPropositionInput
   uValues: FloatsPropositionInput
@@ -1929,6 +1918,13 @@ input CalorimetricDataSortInput {
   updatedAt: SortEnumType @cost(weight: "10")
 }
 
+input CalorimetricObserverPropositionInput {
+  equalTo: CalorimetricObserver @cost(weight: "10")
+  in: [CalorimetricObserver] @cost(weight: "10")
+  notEqualTo: CalorimetricObserver @cost(weight: "10")
+  notIn: [CalorimetricObserver] @cost(weight: "10")
+}
+
 input CielabColorInput {
   aStar: Float!
   bStar: Float!
@@ -1941,10 +1937,17 @@ input CielabColorPropositionInput {
   and: [CielabColorPropositionInput!]
   aStar: FloatPropositionInput
   bStar: FloatPropositionInput
-  illuminant: NullableOfIlluminantPropositionInput
+  illuminant: IlluminantPropositionInput
   lStar: FloatPropositionInput
-  observer: NullableOfCalorimetricObserverPropositionInput
+  observer: CalorimetricObserverPropositionInput
   or: [CielabColorPropositionInput!]
+}
+
+input CielabColorsPropositionInput {
+  all: CielabColorPropositionInput @cost(weight: "10")
+  any: Boolean @cost(weight: "10")
+  none: CielabColorPropositionInput @cost(weight: "10")
+  some: CielabColorPropositionInput @cost(weight: "10")
 }
 
 input ClearInstitutionAccessPoliciesInput {
@@ -1962,6 +1965,13 @@ input ClearUserAccessPoliciesInput {
 input ClosedIntervalInput {
   lowerBound: Float!
   upperBound: Float!
+}
+
+input CoatedSidePropositionInput {
+  equalTo: CoatedSide @cost(weight: "10")
+  in: [CoatedSide!] @cost(weight: "10")
+  notEqualTo: CoatedSide @cost(weight: "10")
+  notIn: [CoatedSide!] @cost(weight: "10")
 }
 
 input ConfigureDataAccessPoliciesInput {
@@ -2015,7 +2025,7 @@ access. And one with the combinator 'or' and empty policies allows access to
 nobody, no matter if authenticated or not.
 
 A data access policy is either the one-and-only global one or associated with a
-specific data entry, see the field `Data`. It is
+specific data set, see the field `Data`. It is
 global if this field is `null`. The global and individual policies are combined
 conjunctively, meaning that for access both need to allow access.
 
@@ -2026,7 +2036,7 @@ There are mutations to
 * clear user, institution, and applicatoin policies of a data access policy;
 * set and unset a user, institution, or applicatoin policy for a specific user,
   institution, or application, and a specific data access policy (global or
-  associated with a specific data entry).
+  associated with a specific data set).
 
 To determine whether access policies allow/restrict access in the way you
 expected, use their `is*Allowed` fields, passing the applicable user ID,
@@ -2047,16 +2057,16 @@ input ConfigureDataAccessPoliciesPropositionInput {
   dataKind: NullableOfDataKindPropositionInput
   geometricData: GeometricDataPropositionInput
   hygrothermalData: HygrothermalDataPropositionInput
-  institutionAccessPolicies: FilterInputTypeOfInstitutionAccessPolicysPropositionInput
+  institutionAccessPolicies: InstitutionAccessPoliciesPropositionInput
   isAnyoneAllowed: BooleanPropositionInput
   isGlobal: BooleanPropositionInput
   isNobodyAllowed: BooleanPropositionInput
   lifeCycleData: LifeCycleDataPropositionInput
-  openIdConnectApplicationAccessPolicies: FilterInputTypeOfOpenIdConnectApplicationAccessPolicysPropositionInput
+  openIdConnectApplicationAccessPolicies: OpenIdConnectApplicationAccessPoliciesPropositionInput
   opticalData: OpticalDataPropositionInput
   or: [ConfigureDataAccessPoliciesPropositionInput!]
   photovoltaicData: PhotovoltaicDataPropositionInput
-  userAccessPolicies: FilterInputTypeOfUserAccessPolicysPropositionInput
+  userAccessPolicies: UserAccessPoliciesPropositionInput
 }
 
 input ConfigureDataAccessPolicyInput {
@@ -2171,14 +2181,14 @@ input CreatePhotovoltaicDataInput {
 input CreateResponseApprovalsPropositionInput {
   and: [CreateResponseApprovalsPropositionInput!]
   appliedMethod: AppliedMethodPropositionInput
-  approvals: FilterInputTypeOfDataApprovalsPropositionInput
+  approvals: DataApprovalsPropositionInput
   componentId: UuidPropositionInput
   creatorId: UuidPropositionInput
   description: StringPropositionInput
   locale: StringPropositionInput
   name: StringPropositionInput
   or: [CreateResponseApprovalsPropositionInput!]
-  resources: FilterInputTypeOfGetHttpsResourcesPropositionInput
+  resources: GetHttpsResourcesPropositionInput
   userId: UuidPropositionInput
   warnings: StringsPropositionInput
 }
@@ -2246,7 +2256,7 @@ access. And one with the combinator 'or' and empty policies allows access to
 nobody, no matter if authenticated or not.
 
 A data access policy is either the one-and-only global one or associated with a
-specific data entry, see the field `Data`. It is
+specific data set, see the field `Data`. It is
 global if this field is `null`. The global and individual policies are combined
 conjunctively, meaning that for access both need to allow access.
 
@@ -2257,7 +2267,7 @@ There are mutations to
 * clear user, institution, and applicatoin policies of a data access policy;
 * set and unset a user, institution, or applicatoin policy for a specific user,
   institution, or application, and a specific data access policy (global or
-  associated with a specific data entry).
+  associated with a specific data set).
 
 To determine whether access policies allow/restrict access in the way you
 expected, use their `is*Allowed` fields, passing the applicable user ID,
@@ -2278,16 +2288,16 @@ input DataAccessPolicyPropositionInput {
   dataKind: NullableOfDataKindPropositionInput
   geometricData: GeometricDataPropositionInput
   hygrothermalData: HygrothermalDataPropositionInput
-  institutionAccessPolicies: FilterInputTypeOfInstitutionAccessPolicysPropositionInput
+  institutionAccessPolicies: InstitutionAccessPoliciesPropositionInput
   isAnyoneAllowed: BooleanPropositionInput
   isGlobal: BooleanPropositionInput
   isNobodyAllowed: BooleanPropositionInput
   lifeCycleData: LifeCycleDataPropositionInput
-  openIdConnectApplicationAccessPolicies: FilterInputTypeOfOpenIdConnectApplicationAccessPolicysPropositionInput
+  openIdConnectApplicationAccessPolicies: OpenIdConnectApplicationAccessPoliciesPropositionInput
   opticalData: OpticalDataPropositionInput
   or: [DataAccessPolicyPropositionInput!]
   photovoltaicData: PhotovoltaicDataPropositionInput
-  userAccessPolicies: FilterInputTypeOfUserAccessPolicysPropositionInput
+  userAccessPolicies: UserAccessPoliciesPropositionInput
 }
 
 """
@@ -2337,7 +2347,7 @@ access. And one with the combinator 'or' and empty policies allows access to
 nobody, no matter if authenticated or not.
 
 A data access policy is either the one-and-only global one or associated with a
-specific data entry, see the field `Data`. It is
+specific data set, see the field `Data`. It is
 global if this field is `null`. The global and individual policies are combined
 conjunctively, meaning that for access both need to allow access.
 
@@ -2348,7 +2358,7 @@ There are mutations to
 * clear user, institution, and applicatoin policies of a data access policy;
 * set and unset a user, institution, or applicatoin policy for a specific user,
   institution, or application, and a specific data access policy (global or
-  associated with a specific data entry).
+  associated with a specific data set).
 
 To determine whether access policies allow/restrict access in the way you
 expected, use their `is*Allowed` fields, passing the applicable user ID,
@@ -2379,6 +2389,13 @@ input DataApprovalPropositionInput {
   variables: JsonElementPropositionInput
 }
 
+input DataApprovalsPropositionInput {
+  all: DataApprovalPropositionInput @cost(weight: "10")
+  any: Boolean @cost(weight: "10")
+  none: DataApprovalPropositionInput @cost(weight: "10")
+  some: DataApprovalPropositionInput @cost(weight: "10")
+}
+
 input DataKindPropositionInput {
   equalTo: DataKind @cost(weight: "10")
   in: [DataKind!] @cost(weight: "10")
@@ -2389,7 +2406,7 @@ input DataKindPropositionInput {
 input DataPropositionInput {
   and: [DataPropositionInput!]
   appliedMethod: AppliedMethodPropositionInput
-  approvals: FilterInputTypeOfDataApprovalsPropositionInput
+  approvals: DataApprovalsPropositionInput
   componentId: UuidPropositionInput
   createdAt: DateTimePropositionInput
   creatorId: UuidPropositionInput
@@ -2398,7 +2415,7 @@ input DataPropositionInput {
   locale: StringPropositionInput
   name: StringPropositionInput
   or: [DataPropositionInput!]
-  resources: FilterInputTypeOfGetHttpsResourcesPropositionInput
+  resources: GetHttpsResourcesPropositionInput
   updatedAt: DateTimePropositionInput
   userId: UuidPropositionInput
   warnings: StringsPropositionInput
@@ -2487,67 +2504,11 @@ input FileMetaInformationPropositionInput {
   path: StringsPropositionInput
 }
 
-input FilterInputTypeOfCielabColorsPropositionInput {
-  all: CielabColorPropositionInput @cost(weight: "10")
-  any: Boolean @cost(weight: "10")
-  none: CielabColorPropositionInput @cost(weight: "10")
-  some: CielabColorPropositionInput @cost(weight: "10")
-}
-
-input FilterInputTypeOfDataApprovalsPropositionInput {
-  all: DataApprovalPropositionInput @cost(weight: "10")
-  any: Boolean @cost(weight: "10")
-  none: DataApprovalPropositionInput @cost(weight: "10")
-  some: DataApprovalPropositionInput @cost(weight: "10")
-}
-
-input FilterInputTypeOfFileMetaInformationsPropositionInput {
+input FilesMetaInformationPropositionInput {
   all: FileMetaInformationPropositionInput @cost(weight: "10")
   any: Boolean @cost(weight: "10")
   none: FileMetaInformationPropositionInput @cost(weight: "10")
   some: FileMetaInformationPropositionInput @cost(weight: "10")
-}
-
-input FilterInputTypeOfGetHttpsResourcesPropositionInput {
-  all: GetHttpsResourceTreeNonRootVertexPropositionInput @cost(weight: "10")
-  any: Boolean @cost(weight: "10")
-  none: GetHttpsResourceTreeNonRootVertexPropositionInput @cost(weight: "10")
-  some: GetHttpsResourceTreeNonRootVertexPropositionInput @cost(weight: "10")
-}
-
-input FilterInputTypeOfInstitutionAccessPolicysPropositionInput {
-  all: InstitutionAccessPolicyPropositionInput @cost(weight: "10")
-  any: Boolean @cost(weight: "10")
-  none: InstitutionAccessPolicyPropositionInput @cost(weight: "10")
-  some: InstitutionAccessPolicyPropositionInput @cost(weight: "10")
-}
-
-input FilterInputTypeOfNamedMethodArgumentsPropositionInput {
-  all: NamedMethodArgumentPropositionInput @cost(weight: "10")
-  any: Boolean @cost(weight: "10")
-  none: NamedMethodArgumentPropositionInput @cost(weight: "10")
-  some: NamedMethodArgumentPropositionInput @cost(weight: "10")
-}
-
-input FilterInputTypeOfNamedMethodSourcesPropositionInput {
-  all: NamedMethodSourcePropositionInput @cost(weight: "10")
-  any: Boolean @cost(weight: "10")
-  none: NamedMethodSourcePropositionInput @cost(weight: "10")
-  some: NamedMethodSourcePropositionInput @cost(weight: "10")
-}
-
-input FilterInputTypeOfOpenIdConnectApplicationAccessPolicysPropositionInput {
-  all: OpenIdConnectApplicationAccessPolicyPropositionInput @cost(weight: "10")
-  any: Boolean @cost(weight: "10")
-  none: OpenIdConnectApplicationAccessPolicyPropositionInput @cost(weight: "10")
-  some: OpenIdConnectApplicationAccessPolicyPropositionInput @cost(weight: "10")
-}
-
-input FilterInputTypeOfUserAccessPolicysPropositionInput {
-  all: UserAccessPolicyPropositionInput @cost(weight: "10")
-  any: Boolean @cost(weight: "10")
-  none: UserAccessPolicyPropositionInput @cost(weight: "10")
-  some: UserAccessPolicyPropositionInput @cost(weight: "10")
 }
 
 input FloatPropositionInput {
@@ -2576,7 +2537,7 @@ input FloatsPropositionInput {
 input GeometricDataPropositionInput {
   and: [GeometricDataPropositionInput!]
   appliedMethod: AppliedMethodPropositionInput
-  approvals: FilterInputTypeOfDataApprovalsPropositionInput
+  approvals: DataApprovalsPropositionInput
   componentId: UuidPropositionInput
   createdAt: DateTimePropositionInput
   creatorId: UuidPropositionInput
@@ -2585,7 +2546,7 @@ input GeometricDataPropositionInput {
   locale: StringPropositionInput
   name: StringPropositionInput
   or: [GeometricDataPropositionInput!]
-  resources: FilterInputTypeOfGetHttpsResourcesPropositionInput
+  resources: GetHttpsResourcesPropositionInput
   thicknesses: FloatsPropositionInput
   updatedAt: DateTimePropositionInput
   userId: UuidPropositionInput
@@ -2607,7 +2568,7 @@ input GeometricDataSortInput {
 input GetHttpsResourcePropositionInput {
   and: [GetHttpsResourcePropositionInput!]
   appliedConversionMethod: ToTreeVertexAppliedConversionMethodPropositionInput
-  archivedFilesMetaInformation: FilterInputTypeOfFileMetaInformationsPropositionInput
+  archivedFilesMetaInformation: FilesMetaInformationPropositionInput
   calorimetricData: CalorimetricDataPropositionInput
   dataFormatId: UuidPropositionInput
   dataId: UuidPropositionInput
@@ -2635,10 +2596,17 @@ input GetHttpsResourceSortInput {
   updatedAt: SortEnumType @cost(weight: "10")
 }
 
+input GetHttpsResourcesPropositionInput {
+  all: GetHttpsResourcePropositionInput @cost(weight: "10")
+  any: Boolean @cost(weight: "10")
+  none: GetHttpsResourcePropositionInput @cost(weight: "10")
+  some: GetHttpsResourcePropositionInput @cost(weight: "10")
+}
+
 input GetHttpsResourceTreeNonRootVertexPropositionInput {
   and: [GetHttpsResourceTreeNonRootVertexPropositionInput!]
   appliedConversionMethod: ToTreeVertexAppliedConversionMethodPropositionInput
-  archivedFilesMetaInformation: FilterInputTypeOfFileMetaInformationsPropositionInput
+  archivedFilesMetaInformation: FilesMetaInformationPropositionInput
   dataFormatId: UuidPropositionInput
   dataId: UuidPropositionInput
   dataKind: DataKindPropositionInput
@@ -2663,7 +2631,7 @@ input GetHttpsResourceTreeNonRootVertSortInput {
 input HygrothermalDataPropositionInput {
   and: [HygrothermalDataPropositionInput!]
   appliedMethod: AppliedMethodPropositionInput
-  approvals: FilterInputTypeOfDataApprovalsPropositionInput
+  approvals: DataApprovalsPropositionInput
   componentId: UuidPropositionInput
   createdAt: DateTimePropositionInput
   creatorId: UuidPropositionInput
@@ -2672,7 +2640,7 @@ input HygrothermalDataPropositionInput {
   locale: StringPropositionInput
   name: StringPropositionInput
   or: [HygrothermalDataPropositionInput!]
-  resources: FilterInputTypeOfGetHttpsResourcesPropositionInput
+  resources: GetHttpsResourcesPropositionInput
   updatedAt: DateTimePropositionInput
   userId: UuidPropositionInput
   warnings: StringsPropositionInput
@@ -2688,6 +2656,20 @@ input HygrothermalDataSortInput {
   locale: SortEnumType @cost(weight: "10")
   name: SortEnumType @cost(weight: "10")
   updatedAt: SortEnumType @cost(weight: "10")
+}
+
+input IlluminantPropositionInput {
+  equalTo: Illuminant @cost(weight: "10")
+  in: [Illuminant] @cost(weight: "10")
+  notEqualTo: Illuminant @cost(weight: "10")
+  notIn: [Illuminant] @cost(weight: "10")
+}
+
+input InstitutionAccessPoliciesPropositionInput {
+  all: InstitutionAccessPolicyPropositionInput @cost(weight: "10")
+  any: Boolean @cost(weight: "10")
+  none: InstitutionAccessPolicyPropositionInput @cost(weight: "10")
+  some: InstitutionAccessPolicyPropositionInput @cost(weight: "10")
 }
 
 input InstitutionAccessPolicyPropositionInput {
@@ -2737,7 +2719,7 @@ input JsonValueKindPropositionInput {
 input LifeCycleDataPropositionInput {
   and: [LifeCycleDataPropositionInput!]
   appliedMethod: AppliedMethodPropositionInput
-  approvals: FilterInputTypeOfDataApprovalsPropositionInput
+  approvals: DataApprovalsPropositionInput
   componentId: UuidPropositionInput
   createdAt: DateTimePropositionInput
   creatorId: UuidPropositionInput
@@ -2746,7 +2728,7 @@ input LifeCycleDataPropositionInput {
   locale: StringPropositionInput
   name: StringPropositionInput
   or: [LifeCycleDataPropositionInput!]
-  resources: FilterInputTypeOfGetHttpsResourcesPropositionInput
+  resources: GetHttpsResourcesPropositionInput
   updatedAt: DateTimePropositionInput
   userId: UuidPropositionInput
   warnings: StringsPropositionInput
@@ -2846,6 +2828,13 @@ input NamedMethodArgumentSortInput {
   name: SortEnumType @cost(weight: "10")
 }
 
+input NamedMethodArgumentsPropositionInput {
+  all: NamedMethodArgumentPropositionInput @cost(weight: "10")
+  any: Boolean @cost(weight: "10")
+  none: NamedMethodArgumentPropositionInput @cost(weight: "10")
+  some: NamedMethodArgumentPropositionInput @cost(weight: "10")
+}
+
 input NamedMethodSourceInput {
   name: String!
   value: CrossDatabaseDataReferenceInput!
@@ -2856,6 +2845,13 @@ input NamedMethodSourcePropositionInput {
   name: StringPropositionInput
   or: [NamedMethodSourcePropositionInput!]
   value: CrossDatabaseDataReferencePropositionInput
+}
+
+input NamedMethodSourcesPropositionInput {
+  all: NamedMethodSourcePropositionInput @cost(weight: "10")
+  any: Boolean @cost(weight: "10")
+  none: NamedMethodSourcePropositionInput @cost(weight: "10")
+  some: NamedMethodSourcePropositionInput @cost(weight: "10")
 }
 
 input NonNegativeIntPropositionInput {
@@ -2873,46 +2869,11 @@ input NonNegativeIntPropositionInput {
   notLessThanOrEqualTo: NonNegativeInt @cost(weight: "10")
 }
 
-input NullableOfCalorimetricObserverPropositionInput {
-  equalTo: CalorimetricObserver @cost(weight: "10")
-  in: [CalorimetricObserver] @cost(weight: "10")
-  notEqualTo: CalorimetricObserver @cost(weight: "10")
-  notIn: [CalorimetricObserver] @cost(weight: "10")
-}
-
-input NullableOfCoatedSidePropositionInput {
-  equalTo: CoatedSide @cost(weight: "10")
-  in: [CoatedSide] @cost(weight: "10")
-  notEqualTo: CoatedSide @cost(weight: "10")
-  notIn: [CoatedSide] @cost(weight: "10")
-}
-
 input NullableOfDataKindPropositionInput {
   equalTo: DataKind @cost(weight: "10")
   in: [DataKind] @cost(weight: "10")
   notEqualTo: DataKind @cost(weight: "10")
   notIn: [DataKind] @cost(weight: "10")
-}
-
-input NullableOfIlluminantPropositionInput {
-  equalTo: Illuminant @cost(weight: "10")
-  in: [Illuminant] @cost(weight: "10")
-  notEqualTo: Illuminant @cost(weight: "10")
-  notIn: [Illuminant] @cost(weight: "10")
-}
-
-input NullableOfOpticalComponentSubtypePropositionInput {
-  equalTo: OpticalComponentSubtype @cost(weight: "10")
-  in: [OpticalComponentSubtype] @cost(weight: "10")
-  notEqualTo: OpticalComponentSubtype @cost(weight: "10")
-  notIn: [OpticalComponentSubtype] @cost(weight: "10")
-}
-
-input NullableOfOpticalComponentTypePropositionInput {
-  equalTo: OpticalComponentType @cost(weight: "10")
-  in: [OpticalComponentType] @cost(weight: "10")
-  notEqualTo: OpticalComponentType @cost(weight: "10")
-  notIn: [OpticalComponentType] @cost(weight: "10")
 }
 
 input NumerationInput {
@@ -2935,6 +2896,13 @@ input NumerationSortInput {
   suffix: SortEnumType @cost(weight: "10")
 }
 
+input OpenIdConnectApplicationAccessPoliciesPropositionInput {
+  all: OpenIdConnectApplicationAccessPolicyPropositionInput @cost(weight: "10")
+  any: Boolean @cost(weight: "10")
+  none: OpenIdConnectApplicationAccessPolicyPropositionInput @cost(weight: "10")
+  some: OpenIdConnectApplicationAccessPolicyPropositionInput @cost(weight: "10")
+}
+
 input OpenIdConnectApplicationAccessPolicyPropositionInput {
   accessCountSinceStartTime: CountSinceTimePropositionInput
   and: [OpenIdConnectApplicationAccessPolicyPropositionInput!]
@@ -2951,12 +2919,26 @@ input OpenIdConnectApplicationAccessPolicySortInput {
   clientId: SortEnumType @cost(weight: "10")
 }
 
+input OpticalComponentSubtypePropositionInput {
+  equalTo: OpticalComponentSubtype @cost(weight: "10")
+  in: [OpticalComponentSubtype] @cost(weight: "10")
+  notEqualTo: OpticalComponentSubtype @cost(weight: "10")
+  notIn: [OpticalComponentSubtype] @cost(weight: "10")
+}
+
+input OpticalComponentTypePropositionInput {
+  equalTo: OpticalComponentType @cost(weight: "10")
+  in: [OpticalComponentType] @cost(weight: "10")
+  notEqualTo: OpticalComponentType @cost(weight: "10")
+  notIn: [OpticalComponentType] @cost(weight: "10")
+}
+
 input OpticalDataPropositionInput {
   and: [OpticalDataPropositionInput!]
   appliedMethod: AppliedMethodPropositionInput
-  approvals: FilterInputTypeOfDataApprovalsPropositionInput
-  cielabColors: FilterInputTypeOfCielabColorsPropositionInput
-  coatedSide: NullableOfCoatedSidePropositionInput
+  approvals: DataApprovalsPropositionInput
+  cielabColors: CielabColorsPropositionInput
+  coatedSide: CoatedSidePropositionInput
   colorRenderingIndices: FloatsPropositionInput
   componentId: UuidPropositionInput
   createdAt: DateTimePropositionInput
@@ -2971,9 +2953,9 @@ input OpticalDataPropositionInput {
   nearnormalHemisphericalVisibleReflectances: FloatsPropositionInput
   nearnormalHemisphericalVisibleTransmittances: FloatsPropositionInput
   or: [OpticalDataPropositionInput!]
-  resources: FilterInputTypeOfGetHttpsResourcesPropositionInput
-  subtype: NullableOfOpticalComponentSubtypePropositionInput
-  type: NullableOfOpticalComponentTypePropositionInput
+  resources: GetHttpsResourcesPropositionInput
+  subtype: OpticalComponentSubtypePropositionInput
+  type: OpticalComponentTypePropositionInput
   updatedAt: DateTimePropositionInput
   userId: UuidPropositionInput
   warnings: StringsPropositionInput
@@ -2994,7 +2976,7 @@ input OpticalDataSortInput {
 input PhotovoltaicDataPropositionInput {
   and: [PhotovoltaicDataPropositionInput!]
   appliedMethod: AppliedMethodPropositionInput
-  approvals: FilterInputTypeOfDataApprovalsPropositionInput
+  approvals: DataApprovalsPropositionInput
   componentId: UuidPropositionInput
   createdAt: DateTimePropositionInput
   creatorId: UuidPropositionInput
@@ -3003,7 +2985,7 @@ input PhotovoltaicDataPropositionInput {
   locale: StringPropositionInput
   name: StringPropositionInput
   or: [PhotovoltaicDataPropositionInput!]
-  resources: FilterInputTypeOfGetHttpsResourcesPropositionInput
+  resources: GetHttpsResourcesPropositionInput
   updatedAt: DateTimePropositionInput
   userId: UuidPropositionInput
   warnings: StringsPropositionInput
@@ -3023,12 +3005,12 @@ input PhotovoltaicDataSortInput {
 
 input PublicationInput {
   abstract: String
-  arXiv: String
+  arXiv: ArXiv
   authors: [String!]
-  doi: String
+  doi: Doi
   section: String
   title: String
-  urn: String
+  urn: Url
   webAddress: Url
 }
 
@@ -3044,9 +3026,9 @@ input PublicationPropositionInput {
   "Referenced section"
   section: StringPropositionInput
   title: StringPropositionInput
-  "A Uniform Resource Name (URN) can be used to define a publication. TODO: Improve the regex pattern to further restrict the string."
+  "A Uniform Resource Name (URN) can be used to define a publication."
   urn: StringPropositionInput
-  "If a persistent identifiert like DOI is defined above, this webAdress can define a convenient web address to access the publication. However, if no persistent identifier exist, this web address is the only identifier of this publication. In this case, it is important to choose a web address with a high probability to persist long."
+  "If a persistent identifier like DOI is defined above, this web address can define a convenient web address to access the publication. However, if no persistent identifier exist, this web address is the only identifier of this publication. In this case, it is important to choose a web address with a high probability to persist long."
   webAddress: UrlPropositionInput
 }
 
@@ -3059,9 +3041,9 @@ input PublicationSortInput {
   "Referenced section"
   section: SortEnumType @cost(weight: "10")
   title: SortEnumType @cost(weight: "10")
-  "A Uniform Resource Name (URN) can be used to define a publication. TODO: Improve the regex pattern to further restrict the string."
+  "A Uniform Resource Name (URN) can be used to define a publication."
   urn: SortEnumType @cost(weight: "10")
-  "If a persistent identifiert like DOI is defined above, this webAdress can define a convenient web address to access the publication. However, if no persistent identifier exist, this web address is the only identifier of this publication. In this case, it is important to choose a web address with a high probability to persist long."
+  "If a persistent identifier like DOI is defined above, this web address can define a convenient web address to access the publication. However, if no persistent identifier exist, this web address is the only identifier of this publication. In this case, it is important to choose a web address with a high probability to persist long."
   webAddress: UriSortInput @cost(weight: "10")
 }
 
@@ -3073,7 +3055,7 @@ input PublishDataInput {
 input RecomputeGetHttpsResourceHashValuesPropositionInput {
   and: [RecomputeGetHttpsResourceHashValuesPropositionInput!]
   appliedConversionMethod: ToTreeVertexAppliedConversionMethodPropositionInput
-  archivedFilesMetaInformation: FilterInputTypeOfFileMetaInformationsPropositionInput
+  archivedFilesMetaInformation: FilesMetaInformationPropositionInput
   calorimetricData: CalorimetricDataPropositionInput
   dataFormatId: UuidPropositionInput
   dataId: UuidPropositionInput
@@ -3089,7 +3071,7 @@ input RecomputeGetHttpsResourceHashValuesPropositionInput {
   photovoltaicData: PhotovoltaicDataPropositionInput
 }
 
-input ReferenceInput {
+input ReferenceInput @oneOf {
   publication: PublicationInput
   standard: StandardInput
 }
@@ -3159,7 +3141,7 @@ access. And one with the combinator 'or' and empty policies allows access to
 nobody, no matter if authenticated or not.
 
 A data access policy is either the one-and-only global one or associated with a
-specific data entry, see the field `Data`. It is
+specific data set, see the field `Data`. It is
 global if this field is `null`. The global and individual policies are combined
 conjunctively, meaning that for access both need to allow access.
 
@@ -3170,7 +3152,7 @@ There are mutations to
 * clear user, institution, and applicatoin policies of a data access policy;
 * set and unset a user, institution, or applicatoin policy for a specific user,
   institution, or application, and a specific data access policy (global or
-  associated with a specific data entry).
+  associated with a specific data set).
 
 To determine whether access policies allow/restrict access in the way you
 expected, use their `is*Allowed` fields, passing the applicable user ID,
@@ -3191,16 +3173,16 @@ input ResetDataAccessPoliciesPropositionInput {
   dataKind: NullableOfDataKindPropositionInput
   geometricData: GeometricDataPropositionInput
   hygrothermalData: HygrothermalDataPropositionInput
-  institutionAccessPolicies: FilterInputTypeOfInstitutionAccessPolicysPropositionInput
+  institutionAccessPolicies: InstitutionAccessPoliciesPropositionInput
   isAnyoneAllowed: BooleanPropositionInput
   isGlobal: BooleanPropositionInput
   isNobodyAllowed: BooleanPropositionInput
   lifeCycleData: LifeCycleDataPropositionInput
-  openIdConnectApplicationAccessPolicies: FilterInputTypeOfOpenIdConnectApplicationAccessPolicysPropositionInput
+  openIdConnectApplicationAccessPolicies: OpenIdConnectApplicationAccessPoliciesPropositionInput
   opticalData: OpticalDataPropositionInput
   or: [ResetDataAccessPoliciesPropositionInput!]
   photovoltaicData: PhotovoltaicDataPropositionInput
-  userAccessPolicies: FilterInputTypeOfUserAccessPolicysPropositionInput
+  userAccessPolicies: UserAccessPoliciesPropositionInput
 }
 
 input ResetDataAccessPolicyInput {
@@ -3338,7 +3320,7 @@ input ToTreeVertexAppliedConversionMethodInput {
 
 input ToTreeVertexAppliedConversionMethodPropositionInput {
   and: [ToTreeVertexAppliedConversionMethodPropositionInput!]
-  arguments: FilterInputTypeOfNamedMethodArgumentsPropositionInput
+  arguments: NamedMethodArgumentsPropositionInput
   methodId: UuidPropositionInput
   or: [ToTreeVertexAppliedConversionMethodPropositionInput!]
   sourceName: StringPropositionInput
@@ -3394,14 +3376,14 @@ input UpdateDataInput {
 input UpdateResponseApprovalsPropositionInput {
   and: [UpdateResponseApprovalsPropositionInput!]
   appliedMethod: AppliedMethodPropositionInput
-  approvals: FilterInputTypeOfDataApprovalsPropositionInput
+  approvals: DataApprovalsPropositionInput
   componentId: UuidPropositionInput
   creatorId: UuidPropositionInput
   description: StringPropositionInput
   locale: StringPropositionInput
   name: StringPropositionInput
   or: [UpdateResponseApprovalsPropositionInput!]
-  resources: FilterInputTypeOfGetHttpsResourcesPropositionInput
+  resources: GetHttpsResourcesPropositionInput
   userId: UuidPropositionInput
   warnings: StringsPropositionInput
 }
@@ -3462,6 +3444,13 @@ input UrlPropositionInput {
   notIn: [Url] @cost(weight: "10")
   notLessThan: Url @cost(weight: "10")
   notLessThanOrEqualTo: Url @cost(weight: "10")
+}
+
+input UserAccessPoliciesPropositionInput {
+  all: UserAccessPolicyPropositionInput @cost(weight: "10")
+  any: Boolean @cost(weight: "10")
+  none: UserAccessPolicyPropositionInput @cost(weight: "10")
+  some: UserAccessPolicyPropositionInput @cost(weight: "10")
 }
 
 input UserAccessPolicyPropositionInput {
@@ -3950,6 +3939,12 @@ enum UpdateRootGetHttpsResourceErrorCode {
 
 scalar Any @specifiedBy(url: "https://scalars.graphql.org/chillicream/any.html")
 
+"""
+arXiv identifier, that is, a string of the format
+[Understanding the arXiv identifier](https://info.arxiv.org/help/arxiv_identifier.html).
+"""
+scalar ArXiv
+
 "The `Byte` scalar type represents a signed 8-bit integer."
 scalar Byte
   @specifiedBy(url: "https://scalars.graphql.org/chillicream/byte.html")
@@ -3962,9 +3957,34 @@ scalar DateTime
 scalar Decimal
   @specifiedBy(url: "https://scalars.graphql.org/chillicream/decimal.html")
 
+"""
+Digital Object Identifier (DOI) name, that is, a string compliant with [ISO
+26324:2025](https://www.iso.org/standard/88862.html).
+
+See also
+[What is a DOI?](https://www.doi.org/the-identifier/what-is-a-doi/). In short,
+a DOI name is a digital identifier of an object, any object — physical,
+digital, or abstract. DOIs solve a common problem: keeping track of things.
+Things can be matter, material, content, or activities. Designed to be used by
+humans as well as machines, DOIs identify objects persistently. They allow
+things to be uniquely identified and accessed reliably. You know what you have,
+where it is, and others can track it too.
+"""
+scalar Doi
+
 "The `Duration` scalar type represents a duration of time."
 scalar Duration
   @specifiedBy(url: "https://scalars.graphql.org/chillicream/duration.html")
+
+"""
+[September 2025 GraphQL](https://spec.graphql.org/September2025/)
+compliant
+[query](https://spec.graphql.org/September2025/#sec-Language.Operations)
+string without
+[variables](http://spec.graphql.org/September2025/#sec-Language.Variables)
+and without unnecessary white-space for the present schema.
+"""
+scalar GraphQlQuery
 
 "The `LocalDate` scalar type represents a date without time or time zone information."
 scalar LocalDate
@@ -3976,7 +3996,22 @@ scalar LocalDateTime
     url: "https://scalars.graphql.org/chillicream/local-date-time.html"
   )
 
-"BCP 47 compliant Language Tag string"
+"""
+[BCP 47](https://tools.ietf.org/html/bcp47)
+compliant
+[Language Tag](https://tools.ietf.org/html/bcp47#section-2)
+string like `"de-AT"`, `"sr-Latn-RS"`, `"en-US"`, or `"en-GB"`, where the language
+part is essentially an
+[ISO 639 Language Code](https://www.iso.org/iso-639-language-codes.html),
+the script an
+[ISO 15924:2004 Script Code](https://www.iso.org/standard/29546.html),
+and the region an
+[ISO 3166-1 Country Code](https://www.iso.org/iso-3166-country-codes.html).
+Note that the
+[Internet Assigned Numbers Authority (IANA)](https://www.iana.org)
+maintains the
+[Language Subtag Registry](https://www.iana.org/assignments/lang-subtags-templates/lang-subtags-templates.xhtml).
+"""
 scalar Locale
 
 "The `LocalTime` scalar type represents a time of day without date or time zone information."

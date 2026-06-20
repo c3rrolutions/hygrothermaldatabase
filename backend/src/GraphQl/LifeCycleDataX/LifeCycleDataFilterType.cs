@@ -1,5 +1,6 @@
 using Database.Data;
 using Database.GraphQl.DataX;
+using Database.GraphQl.GetHttpsResources;
 using HotChocolate.Data.Filters;
 
 namespace Database.GraphQl.LifeCycleDataX;
@@ -28,7 +29,9 @@ public sealed class LifeCycleDataFilterType
         descriptor.Field(_ => _.CreatorId);
         descriptor.Field(_ => _.AppliedMethod);
         descriptor.Field(_ => _.Approvals);
-        descriptor.Field(_ => _.Resources);
+        descriptor
+            .Field(_ => _.Resources)
+            .Type<ListFilterInputType<GetHttpsResourceFilterType>>();
         descriptor.Field(_ => _.Warnings);
     }
 }

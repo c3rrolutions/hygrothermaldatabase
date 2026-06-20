@@ -332,7 +332,7 @@ public sealed class GetHttpsResourcesController(
             catch (Exception exception)
             {
                 logger.FailedToExtractAndSetValuesFromFile(getHttpsResource.FilePath, getHttpsResource.Id, getHttpsResource.Data.Id, getHttpsResource.Data.Kind, exception);
-                errors.Append($"Failed to extract values for data {getHttpsResource.Data.Id:D} of kind {getHttpsResource.Data.Kind} from file: '{exception.Message}'");
+                errors.Add($"Failed to extract values for data {getHttpsResource.Data.Id:D} of kind {getHttpsResource.Data.Kind} from file: '{exception.Message}'");
             }
         }
         await getHttpsResource.RecomputeHashValue(cancellationToken);
@@ -345,7 +345,7 @@ public sealed class GetHttpsResourcesController(
         catch (Exception exception)
         {
             logger.FailedToCreateResponseApproval(getHttpsResource.Data.Id, getHttpsResource.Data.Kind, exception);
-            errors.Append($"Failed to create response approval for data {getHttpsResource.Data.Id:D} of kind {getHttpsResource.Data.Kind}: '{exception.Message}'");
+            errors.Add($"Failed to create response approval for data {getHttpsResource.Data.Id:D} of kind {getHttpsResource.Data.Kind}: '{exception.Message}'");
         }
         if (errors.Count > 0)
         {

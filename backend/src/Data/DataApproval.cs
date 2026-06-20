@@ -1,5 +1,8 @@
 using System;
 using System.Text.Json;
+using Database.GraphQl.Scalars;
+using HotChocolate;
+using HotChocolate.Types;
 using Microsoft.EntityFrameworkCore;
 using NodaTime;
 
@@ -15,8 +18,8 @@ public sealed class DataApproval(
     string message,
     Guid approverId,
     Reference statement
-    )
-        : IApproval
+)
+    : IApproval
 {
     // Constructor for EF Core because navigation properties cannot be set using a constructor: https://learn.microsoft.com/en-us/ef/core/modeling/constructors#binding-to-mapped-properties
     private DataApproval(
@@ -45,7 +48,10 @@ public sealed class DataApproval(
     public OffsetDateTime Timestamp { get; private set; } = timestamp;
     public string Signature { get; private set; } = signature;
     public string KeyFingerprint { get; private set; } = keyFingerprint;
+
+    [GraphQLType<NonNullType<GraphQlQueryType>>]
     public string Query { get; private set; } = query;
+
     public JsonElement Variables { get; private set; } = variables;
     public string Message { get; private set; } = message;
     public Reference Statement { get; private set; } = statement;

@@ -58,7 +58,7 @@ public sealed record CreateOpticalDataInput(
             CreatedAt,
             Type,
             Subtype,
-            CoatedSide,
+            CoatedSide ?? Enumerations.CoatedSide.UNKNOWN,
             AppliedMethod.ToDomainModel(),
             NearnormalHemisphericalVisibleTransmittances,
             NearnormalHemisphericalVisibleReflectances,

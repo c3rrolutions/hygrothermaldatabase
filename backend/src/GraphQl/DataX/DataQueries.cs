@@ -19,20 +19,20 @@ public sealed class DataQueries
         Guid id,
         DataKind dataKind,
         [GraphQLType<LocaleType>] string? locale,
-        ApplicationDbContext databaseContext,
+        IDbContextFactory<ApplicationDbContext> databaseContextFactory,
         AccessPolicyService accessPolicyService,
         CancellationToken cancellationToken
     )
     {
         return accessPolicyService.Apply<IData, IData?>(
-            databaseContext.Data(dataKind).AsNoTracking()
+            databaseContext => databaseContext.Data(dataKind).AsNoTracking()
                 .Where(_ => _.Id == id),
             async policedData =>
             {
                 var node = await policedData.SingleOrDefaultAsync(cancellationToken);
                 return (node is null ? [] : [node], node);
             },
-            databaseContext,
+            databaseContextFactory,
             cancellationToken
         );
     }

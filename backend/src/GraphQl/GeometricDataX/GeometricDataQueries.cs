@@ -10,6 +10,7 @@ using HotChocolate;
 using HotChocolate.Data;
 using HotChocolate.Resolvers;
 using HotChocolate.Types;
+using Microsoft.EntityFrameworkCore;
 
 namespace Database.GraphQl.GeometricDataX;
 
@@ -22,16 +23,16 @@ public sealed class GeometricDataQueries
     [UseSorting<GeometricDataSortType>]
     public Task<HotChocolate.Types.Pagination.Connection<GeometricData>> GetAllGeometricDataAsync(
         [GraphQLType<LocaleType>] string? locale,
-        ApplicationDbContext context,
+        IDbContextFactory<ApplicationDbContext> databaseContextFactory,
         AccessPolicyService accessPolicyService,
         IResolverContext resolverContext,
         CancellationToken cancellationToken
     )
     {
         return GetAllDataAsync(
-            context.GeometricData,
+            databaseContext => databaseContext.GeometricData,
             locale,
-            context,
+            databaseContextFactory,
             accessPolicyService,
             resolverContext,
             cancellationToken
@@ -43,7 +44,7 @@ public sealed class GeometricDataQueries
     [UseSorting<GeometricDataSortType>]
     public Task<HotChocolate.Types.Pagination.Connection<GeometricData>> GetAllPendingGeometricDataAsync(
         [GraphQLType<LocaleType>] string? locale,
-        ApplicationDbContext context,
+        IDbContextFactory<ApplicationDbContext> databaseContextFactory,
         AccessPolicyService accessPolicyService,
         IResolverContext resolverContext,
         CommonAuthorization authorization,
@@ -51,9 +52,9 @@ public sealed class GeometricDataQueries
     )
     {
         return GetAllPendingDataAsync(
-            context.GeometricData,
+            databaseContext => databaseContext.GeometricData,
             locale,
-            context,
+            databaseContextFactory,
             accessPolicyService,
             resolverContext,
             authorization,
@@ -64,16 +65,16 @@ public sealed class GeometricDataQueries
     [UseFiltering<GeometricDataFilterType>]
     public Task<bool> HasGeometricDataAsync(
         [GraphQLType<LocaleType>] string? locale,
-        ApplicationDbContext context,
+        IDbContextFactory<ApplicationDbContext> databaseContextFactory,
         AccessPolicyService accessPolicyService,
         IResolverContext resolverContext,
         CancellationToken cancellationToken
     )
     {
         return HasDataAsync(
-            context.GeometricData,
+            databaseContext => databaseContext.GeometricData,
             locale,
-            context,
+            databaseContextFactory,
             accessPolicyService,
             resolverContext,
             cancellationToken
@@ -83,7 +84,7 @@ public sealed class GeometricDataQueries
     public Task<GeometricData?> GetGeometricDataAsync(
         Guid id,
         [GraphQLType<LocaleType>] string? locale,
-        ApplicationDbContext context,
+        IDbContextFactory<ApplicationDbContext> databaseContextFactory,
         AccessPolicyService accessPolicyService,
         CancellationToken cancellationToken
     )
@@ -91,8 +92,8 @@ public sealed class GeometricDataQueries
         return GetDataAsync(
             id,
             locale,
-            context.GeometricData,
-            context,
+            databaseContext => databaseContext.GeometricData,
+            databaseContextFactory,
             accessPolicyService,
             cancellationToken
         );

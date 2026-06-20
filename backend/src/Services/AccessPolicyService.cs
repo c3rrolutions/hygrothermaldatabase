@@ -30,13 +30,14 @@ public sealed class AccessPolicyService(
 )
 {
     public async Task<TResult> Apply<TData, TResult>(
-        IQueryable<TData> data,
+        Func<ApplicationDbContext, IQueryable<TData>> getData,
         Func<IQueryable<TData>, Task<(IReadOnlyList<TData> Data, TResult Result)>> then,
-        ApplicationDbContext databaseContext,
+        IDbContextFactory<ApplicationDbContext> databaseContextFactory,
         CancellationToken cancellationToken
     )
         where TData : class, IData
     {
+        using var databaseContext = await databaseContextFactory.CreateDbContextAsync(cancellationToken);
         var openIdConnectClientId = userService.GetOpenIdConnectApplicationClientId();
         var (currentUser, currentInstitution) = await userService.FetchCurrentUserOrInstitutionAsync(cancellationToken);
         Guid[]? institutionIds = null;
@@ -49,7 +50,7 @@ public sealed class AccessPolicyService(
             institutionIds = [currentInstitution.Uuid];
         }
         logger.ApplyingAccessPolicy(currentUser?.Uuid, institutionIds, openIdConnectClientId);
-        var policedData = PoliceData(data, currentUser?.Uuid, institutionIds, openIdConnectClientId, databaseContext);
+        var policedData = PoliceData(getData(databaseContext), currentUser?.Uuid, institutionIds, openIdConnectClientId, databaseContext);
         var (postProcessedData, result) = await then(policedData);
         await IncrementAccessCounts(
             postProcessedData,

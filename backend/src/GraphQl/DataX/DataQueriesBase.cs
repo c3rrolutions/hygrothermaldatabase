@@ -19,16 +19,16 @@ public abstract class DataQueriesBase<TData>
 where TData : class, IData
 {
     protected Task<HotChocolate.Types.Pagination.Connection<TData>> GetAllDataAsync(
-        DbSet<TData> data,
+        Func<ApplicationDbContext, DbSet<TData>> getData,
         [GraphQLType<LocaleType>] string? locale,
-        ApplicationDbContext databaseContext,
+        IDbContextFactory<ApplicationDbContext> databaseContextFactory,
         AccessPolicyService accessPolicyService,
         IResolverContext resolverContext,
         CancellationToken cancellationToken
     )
     {
         return accessPolicyService.Apply(
-            data.AsNoTracking()
+            databaseContext => getData(databaseContext).AsNoTracking()
                 .Where(_ => _.PublishingState != Enumerations.PublishingState.PENDING)
                 .With(resolverContext.GetQueryContext<TData>(), Sorting.DefaultEntityOrder),
             async policedData =>
@@ -39,15 +39,15 @@ where TData : class, IData
                 var nodes = connection.Edges.Select(_ => _.Node).ToList().AsReadOnly();
                 return (nodes, connection);
             },
-            databaseContext,
+            databaseContextFactory,
             cancellationToken
         );
     }
 
     protected async Task<HotChocolate.Types.Pagination.Connection<TData>> GetAllPendingDataAsync(
-        DbSet<TData> data,
+        Func<ApplicationDbContext, DbSet<TData>> getData,
         [GraphQLType<LocaleType>] string? locale,
-        ApplicationDbContext databaseContext,
+        IDbContextFactory<ApplicationDbContext> databaseContextFactory,
         AccessPolicyService accessPolicyService,
         IResolverContext resolverContext,
         CommonAuthorization authorization,
@@ -63,7 +63,7 @@ where TData : class, IData
                 .ToConnectionAsync();
         }
         return await accessPolicyService.Apply(
-            data.AsNoTracking()
+            databaseContext => getData(databaseContext).AsNoTracking()
                 .Where(_ => _.PublishingState == Enumerations.PublishingState.PENDING)
                 .With(resolverContext.GetQueryContext<TData>(), Sorting.DefaultEntityOrder),
             async policedData =>
@@ -74,22 +74,22 @@ where TData : class, IData
                 var nodes = connection.Edges.Select(_ => _.Node).ToList().AsReadOnly();
                 return (nodes, connection);
             },
-            databaseContext,
+            databaseContextFactory,
             cancellationToken
         );
     }
 
     protected Task<bool> HasDataAsync(
-        DbSet<TData> data,
+        Func<ApplicationDbContext, DbSet<TData>> getData,
         [GraphQLType<LocaleType>] string? locale,
-        ApplicationDbContext databaseContext,
+        IDbContextFactory<ApplicationDbContext> databaseContextFactory,
         AccessPolicyService accessPolicyService,
         IResolverContext resolverContext,
         CancellationToken cancellationToken
     )
     {
         return accessPolicyService.Apply(
-            data.AsNoTracking()
+            databaseContext => getData(databaseContext).AsNoTracking()
                 .Where(_ => _.PublishingState != Enumerations.PublishingState.PENDING)
                 .With(resolverContext.GetQueryContext<TData>(), Sorting.DefaultEntityOrder),
             async policedData =>
@@ -97,7 +97,7 @@ where TData : class, IData
                 var nodes = (await policedData.ToListAsync(cancellationToken)).AsReadOnly();
                 return (nodes, nodes.Count > 0);
             },
-            databaseContext,
+            databaseContextFactory,
             cancellationToken
         );
     }
@@ -105,21 +105,21 @@ where TData : class, IData
     protected Task<TData?> GetDataAsync(
         Guid id,
         [GraphQLType<LocaleType>] string? locale,
-        DbSet<TData> data,
-        ApplicationDbContext databaseContext,
+        Func<ApplicationDbContext, DbSet<TData>> getData,
+        IDbContextFactory<ApplicationDbContext> databaseContextFactory,
         AccessPolicyService accessPolicyService,
         CancellationToken cancellationToken
     )
     {
         return accessPolicyService.Apply<TData, TData?>(
-            data.AsNoTracking()
+            databaseContext => getData(databaseContext).AsNoTracking()
                 .Where(_ => _.Id == id),
             async policedData =>
             {
                 var node = await policedData.SingleOrDefaultAsync(cancellationToken);
                 return (node is null ? [] : [node], node);
             },
-            databaseContext,
+            databaseContextFactory,
             cancellationToken
         );
     }

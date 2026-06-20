@@ -10,6 +10,7 @@ using HotChocolate;
 using HotChocolate.Data;
 using HotChocolate.Resolvers;
 using HotChocolate.Types;
+using Microsoft.EntityFrameworkCore;
 
 namespace Database.GraphQl.HygrothermalDataX;
 
@@ -22,16 +23,16 @@ public sealed class HygrothermalDataQueries
     [UseSorting<HygrothermalDataSortType>]
     public Task<HotChocolate.Types.Pagination.Connection<HygrothermalData>> GetAllHygrothermalDataAsync(
         [GraphQLType<LocaleType>] string? locale,
-        ApplicationDbContext context,
+        IDbContextFactory<ApplicationDbContext> databaseContextFactory,
         AccessPolicyService accessPolicyService,
         IResolverContext resolverContext,
         CancellationToken cancellationToken
     )
     {
         return GetAllDataAsync(
-            context.HygrothermalData,
+            databaseContext => databaseContext.HygrothermalData,
             locale,
-            context,
+            databaseContextFactory,
             accessPolicyService,
             resolverContext,
             cancellationToken
@@ -43,7 +44,7 @@ public sealed class HygrothermalDataQueries
     [UseSorting<HygrothermalDataSortType>]
     public Task<HotChocolate.Types.Pagination.Connection<HygrothermalData>> GetAllPendingHygrothermalDataAsync(
         [GraphQLType<LocaleType>] string? locale,
-        ApplicationDbContext context,
+        IDbContextFactory<ApplicationDbContext> databaseContextFactory,
         AccessPolicyService accessPolicyService,
         IResolverContext resolverContext,
         CommonAuthorization authorization,
@@ -51,9 +52,9 @@ public sealed class HygrothermalDataQueries
     )
     {
         return GetAllPendingDataAsync(
-            context.HygrothermalData,
+            databaseContext => databaseContext.HygrothermalData,
             locale,
-            context,
+            databaseContextFactory,
             accessPolicyService,
             resolverContext,
             authorization,
@@ -64,16 +65,16 @@ public sealed class HygrothermalDataQueries
     [UseFiltering<HygrothermalDataFilterType>]
     public Task<bool> HasHygrothermalDataAsync(
         [GraphQLType<LocaleType>] string? locale,
-        ApplicationDbContext context,
+        IDbContextFactory<ApplicationDbContext> databaseContextFactory,
         AccessPolicyService accessPolicyService,
         IResolverContext resolverContext,
         CancellationToken cancellationToken
     )
     {
         return HasDataAsync(
-            context.HygrothermalData,
+            databaseContext => databaseContext.HygrothermalData,
             locale,
-            context,
+            databaseContextFactory,
             accessPolicyService,
             resolverContext,
             cancellationToken
@@ -83,7 +84,7 @@ public sealed class HygrothermalDataQueries
     public Task<HygrothermalData?> GetHygrothermalDataAsync(
         Guid id,
         [GraphQLType<LocaleType>] string? locale,
-        ApplicationDbContext context,
+        IDbContextFactory<ApplicationDbContext> databaseContextFactory,
         AccessPolicyService accessPolicyService,
         CancellationToken cancellationToken
     )
@@ -91,8 +92,8 @@ public sealed class HygrothermalDataQueries
         return GetDataAsync(
             id,
             locale,
-            context.HygrothermalData,
-            context,
+            databaseContext => databaseContext.HygrothermalData,
+            databaseContextFactory,
             accessPolicyService,
             cancellationToken
         );

@@ -10,6 +10,7 @@ using HotChocolate;
 using HotChocolate.Data;
 using HotChocolate.Resolvers;
 using HotChocolate.Types;
+using Microsoft.EntityFrameworkCore;
 
 namespace Database.GraphQl.CalorimetricDataX;
 
@@ -22,16 +23,16 @@ public sealed class CalorimetricDataQueries
     [UseSorting<CalorimetricDataSortType>]
     public Task<HotChocolate.Types.Pagination.Connection<CalorimetricData>> GetAllCalorimetricDataAsync(
         [GraphQLType<LocaleType>] string? locale,
-        ApplicationDbContext context,
+        IDbContextFactory<ApplicationDbContext> databaseContextFactory,
         AccessPolicyService accessPolicyService,
         IResolverContext resolverContext,
         CancellationToken cancellationToken
     )
     {
         return GetAllDataAsync(
-            context.CalorimetricData,
+            databaseContext => databaseContext.CalorimetricData,
             locale,
-            context,
+            databaseContextFactory,
             accessPolicyService,
             resolverContext,
             cancellationToken
@@ -43,7 +44,7 @@ public sealed class CalorimetricDataQueries
     [UseSorting<CalorimetricDataSortType>]
     public Task<HotChocolate.Types.Pagination.Connection<CalorimetricData>> GetAllPendingCalorimetricDataAsync(
         [GraphQLType<LocaleType>] string? locale,
-        ApplicationDbContext context,
+        IDbContextFactory<ApplicationDbContext> databaseContextFactory,
         AccessPolicyService accessPolicyService,
         IResolverContext resolverContext,
         CommonAuthorization authorization,
@@ -51,9 +52,9 @@ public sealed class CalorimetricDataQueries
     )
     {
         return GetAllPendingDataAsync(
-            context.CalorimetricData,
+            databaseContext => databaseContext.CalorimetricData,
             locale,
-            context,
+            databaseContextFactory,
             accessPolicyService,
             resolverContext,
             authorization,
@@ -64,16 +65,16 @@ public sealed class CalorimetricDataQueries
     [UseFiltering<CalorimetricDataFilterType>]
     public Task<bool> HasCalorimetricDataAsync(
         [GraphQLType<LocaleType>] string? locale,
-        ApplicationDbContext context,
+        IDbContextFactory<ApplicationDbContext> databaseContextFactory,
         AccessPolicyService accessPolicyService,
         IResolverContext resolverContext,
         CancellationToken cancellationToken
     )
     {
         return HasDataAsync(
-            context.CalorimetricData,
+            databaseContext => databaseContext.CalorimetricData,
             locale,
-            context,
+            databaseContextFactory,
             accessPolicyService,
             resolverContext,
             cancellationToken
@@ -83,7 +84,7 @@ public sealed class CalorimetricDataQueries
     public Task<CalorimetricData?> GetCalorimetricDataAsync(
         Guid id,
         [GraphQLType<LocaleType>] string? locale,
-        ApplicationDbContext context,
+        IDbContextFactory<ApplicationDbContext> databaseContextFactory,
         AccessPolicyService accessPolicyService,
         CancellationToken cancellationToken
     )
@@ -91,8 +92,8 @@ public sealed class CalorimetricDataQueries
         return GetDataAsync(
             id,
             locale,
-            context.CalorimetricData,
-            context,
+            databaseContext => databaseContext.CalorimetricData,
+            databaseContextFactory,
             accessPolicyService,
             cancellationToken
         );

@@ -136,14 +136,15 @@ public sealed class GetHttpsResourcesController(
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Get(
         [FromRoute] Guid id,
-        [FromServices] ApplicationDbContext context,
+        [FromServices] IDbContextFactory<ApplicationDbContext> databaseContextFactory,
         [FromServices] AccessPolicyService accessPolicyService,
         [FromServices] IDataFormatByIdDataLoader dataFormatByIdDataLoader,
         CancellationToken cancellationToken,
         [FromRoute] string? extension = null
     )
     {
-        var getHttpsResource = await context.GetHttpsResourcesWithData.AsQueryable()
+        using var databaseContext = await databaseContextFactory.CreateDbContextAsync(cancellationToken);
+        var getHttpsResource = await databaseContext.GetHttpsResourcesWithData.AsQueryable()
             .Where(_ => _.Id == id)
             .SingleOrDefaultAsync(cancellationToken);
         if (getHttpsResource is null)
@@ -185,7 +186,7 @@ public sealed class GetHttpsResourcesController(
             );
         }
         if (!await accessPolicyService.Apply<IData, bool>(
-            context.Data(getHttpsResource.Data.Kind).AsNoTracking()
+            databaseContext => databaseContext.Data(getHttpsResource.Data.Kind).AsNoTracking()
                 .Where(_ => _.Id == getHttpsResource.DataId),
             async policedData =>
             {
@@ -194,7 +195,7 @@ public sealed class GetHttpsResourcesController(
                     ? ([], false)
                     : ([node], true);
             },
-            context,
+            databaseContextFactory,
             cancellationToken
         ))
         {

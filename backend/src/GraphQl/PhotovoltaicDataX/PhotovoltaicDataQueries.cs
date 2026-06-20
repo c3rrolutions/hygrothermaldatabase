@@ -11,6 +11,7 @@ using HotChocolate.Data;
 using HotChocolate.Resolvers;
 using HotChocolate.Types;
 using NodaTime;
+using Microsoft.EntityFrameworkCore;
 
 namespace Database.GraphQl.PhotovoltaicDataX;
 
@@ -23,16 +24,16 @@ public sealed class PhotovoltaicDataQueries
     [UseSorting<PhotovoltaicDataSortType>]
     public Task<HotChocolate.Types.Pagination.Connection<PhotovoltaicData>> GetAllPhotovoltaicDataAsync(
         [GraphQLType<LocaleType>] string? locale,
-        ApplicationDbContext context,
+        IDbContextFactory<ApplicationDbContext> databaseContextFactory,
         AccessPolicyService accessPolicyService,
         IResolverContext resolverContext,
         CancellationToken cancellationToken
     )
     {
         return GetAllDataAsync(
-            context.PhotovoltaicData,
+            databaseContext => databaseContext.PhotovoltaicData,
             locale,
-            context,
+            databaseContextFactory,
             accessPolicyService,
             resolverContext,
             cancellationToken
@@ -44,7 +45,7 @@ public sealed class PhotovoltaicDataQueries
     [UseSorting<PhotovoltaicDataSortType>]
     public Task<HotChocolate.Types.Pagination.Connection<PhotovoltaicData>> GetAllPendingPhotovoltaicDataAsync(
         [GraphQLType<LocaleType>] string? locale,
-        ApplicationDbContext context,
+        IDbContextFactory<ApplicationDbContext> databaseContextFactory,
         AccessPolicyService accessPolicyService,
         IResolverContext resolverContext,
         CommonAuthorization authorization,
@@ -52,9 +53,9 @@ public sealed class PhotovoltaicDataQueries
     )
     {
         return GetAllPendingDataAsync(
-            context.PhotovoltaicData,
+            databaseContext => databaseContext.PhotovoltaicData,
             locale,
-            context,
+            databaseContextFactory,
             accessPolicyService,
             resolverContext,
             authorization,
@@ -65,16 +66,16 @@ public sealed class PhotovoltaicDataQueries
     [UseFiltering<PhotovoltaicDataFilterType>]
     public Task<bool> HasPhotovoltaicDataAsync(
         [GraphQLType<LocaleType>] string? locale,
-        ApplicationDbContext context,
+        IDbContextFactory<ApplicationDbContext> databaseContextFactory,
         AccessPolicyService accessPolicyService,
         IResolverContext resolverContext,
         CancellationToken cancellationToken
     )
     {
         return HasDataAsync(
-            context.PhotovoltaicData,
+            databaseContext => databaseContext.PhotovoltaicData,
             locale,
-            context,
+            databaseContextFactory,
             accessPolicyService,
             resolverContext,
             cancellationToken
@@ -84,7 +85,7 @@ public sealed class PhotovoltaicDataQueries
     public Task<PhotovoltaicData?> GetPhotovoltaicDataAsync(
         Guid id,
         [GraphQLType<LocaleType>] string? locale,
-        ApplicationDbContext context,
+        IDbContextFactory<ApplicationDbContext> databaseContextFactory,
         AccessPolicyService accessPolicyService,
         IClock clock,
         CancellationToken cancellationToken
@@ -93,8 +94,8 @@ public sealed class PhotovoltaicDataQueries
         return GetDataAsync(
             id,
             locale,
-            context.PhotovoltaicData,
-            context,
+            databaseContext => databaseContext.PhotovoltaicData,
+            databaseContextFactory,
             accessPolicyService,
             cancellationToken
         );

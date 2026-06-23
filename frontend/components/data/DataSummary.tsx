@@ -132,12 +132,10 @@ export default function DataSummary({
       <div>
         <div>
           Data for component{" "}
-          {entity.component && (
-            <EntityLink
-              entity={entity.component ?? nameFallback(entity.componentId)}
-              route={paths.metabase.component}
-            />
-          )}{" "}
+          <EntityLink
+            entity={entity.component ?? nameFallback(entity.componentId)}
+            route={paths.metabase.component}
+          />{" "}
           created by{" "}
           <EntityLink
             entity={entity.creator ?? nameFallback(entity.creatorId)}

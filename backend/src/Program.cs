@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Database.Data;
 using Database.Services;
@@ -49,6 +50,7 @@ public sealed class Program
     public const string TestEnvironment = "test";
     public const string DevelopmentEnvironment = "development";
     private const string ProductionEnvironment = "production";
+
     private const string LogsPath = "./logs/serilog.json";
 
     public static async Task<int> Main(
@@ -82,20 +84,26 @@ public sealed class Program
             startup.Configure(application);
             using (var scope = application.Services.CreateScope())
             {
+                var lifetime = scope.ServiceProvider.GetRequiredService<IHostApplicationLifetime>();
                 if (!builder.Environment.IsEnvironment(TestEnvironment))
                 {
-                    EnsureDatabaseIsUpToDate(scope.ServiceProvider);
+                    await EnsureDatabaseIsUpToDateAsync(scope.ServiceProvider, lifetime.ApplicationStopping);
                     // Inspired by https://docs.microsoft.com/en-us/aspnet/core/data/ef-mvc/intro#initialize-db-with-test-data
                 }
                 if (builder.Environment.IsEnvironment(TestEnvironment))
                 {
-                    await CreateDatabase(scope.ServiceProvider);
+                    await CreateDatabaseAsync(scope.ServiceProvider, lifetime.ApplicationStopping);
                 }
-                await SeedDatabase(scope.ServiceProvider);
-                await AssertGnuPgKeyExistence(scope.ServiceProvider);
+                await SeedDatabaseAsync(scope.ServiceProvider, lifetime.ApplicationStopping);
+                await AssertGnuPgKeyExistence(scope.ServiceProvider, lifetime.ApplicationStopping);
             }
             // dotnet run -- schema export --output ./schema.graphql
             return await application.RunWithGraphQLCommandsAsync(commandLineArguments);
+        }
+        catch (OperationCanceledException exception)
+        {
+            Serilog.Log.Information(exception, "[System] App execution cancelled cleanly.");
+            return 1;
         }
         catch (Exception exception) when (exception is not HostAbortedException && exception.Source != "Microsoft.EntityFrameworkCore.Design") // see https://github.com/dotnet/efcore/issues/29923
         {
@@ -157,30 +165,32 @@ public sealed class Program
         }
     }
 
-    private static void EnsureDatabaseIsUpToDate(
-        IServiceProvider services
+    private static async Task EnsureDatabaseIsUpToDateAsync(
+        IServiceProvider services,
+        CancellationToken cancellationToken
     )
     {
-        using var databaseContext =
-            services.GetRequiredService<IDbContextFactory<ApplicationDbContext>>()
-                .CreateDbContext();
-        var pendingMigrations = databaseContext.Database.GetPendingMigrations();
+        await using var databaseContext =
+            await services.GetRequiredService<IDbContextFactory<ApplicationDbContext>>()
+                .CreateDbContextAsync(cancellationToken);
+        var pendingMigrations = await databaseContext.Database.GetPendingMigrationsAsync(cancellationToken);
         if (pendingMigrations.Any())
         {
             throw new InvalidOperationException($"The database is not up to date. The pending migrations are: {string.Join(", ", pendingMigrations)}. Apply them by running `./database.mk migrate`.");
         }
     }
 
-    private static async Task CreateDatabase(
-        IServiceProvider services
+    private static async Task CreateDatabaseAsync(
+        IServiceProvider services,
+        CancellationToken cancellationToken
     )
     {
         try
         {
-            using var databaseContext =
-                services.GetRequiredService<IDbContextFactory<ApplicationDbContext>>()
-                    .CreateDbContext();
-            await databaseContext.Database.EnsureCreatedAsync();
+            await using var databaseContext =
+                await services.GetRequiredService<IDbContextFactory<ApplicationDbContext>>()
+                    .CreateDbContextAsync(cancellationToken);
+            await databaseContext.Database.EnsureCreatedAsync(cancellationToken);
         }
         catch (Exception exception)
         {
@@ -189,13 +199,14 @@ public sealed class Program
         }
     }
 
-    private static async Task SeedDatabase(
-        IServiceProvider services
+    private static async Task SeedDatabaseAsync(
+        IServiceProvider services,
+        CancellationToken cancellationToken
     )
     {
         try
         {
-            await DbSeeder.DoAsync(services);
+            await DbSeeder.DoAsync(services, cancellationToken);
         }
         catch (Exception exception)
         {
@@ -204,13 +215,14 @@ public sealed class Program
         }
     }
 
-    private static async Task AssertGnuPgKeyExistence(
-        IServiceProvider services
+    private static Task AssertGnuPgKeyExistence(
+        IServiceProvider services,
+        CancellationToken cancellationToken
     )
     {
-        await services
+        return services
             .GetRequiredService<SigningService>()
-            .AssertGnuPgKeyExistence();
+            .AssertGnuPgKeyExistenceAsync(cancellationToken);
     }
 
     // https://docs.microsoft.com/en-us/aspnet/core/fundamentals/host/generic-host
@@ -260,7 +272,7 @@ public sealed class Program
     }
 
     private static void ConfigureAppConfiguration(
-        IConfigurationBuilder configuration,
+        ConfigurationManager configuration,
         IHostEnvironment environment,
         string[] commandLineArguments
     )

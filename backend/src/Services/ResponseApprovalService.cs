@@ -96,7 +96,7 @@ public sealed class ResponseApprovalService(
         {
             throw new GraphQLException($"The GraphQL response contains the following errors: {string.Join(", ", typedResponse.Errors.Select(_ => $"'{_.Message}' [{string.Join(", ", _.Extensions?.Select(e => $"{e.Key}: '{e.Value}'") ?? [])}] ({string.Join(".", _.Path?.Select(p => p.ToString()) ?? [])})"))}");
         }
-        var (signature, fingerprint) = await signingService.SignData(response);
+        var (signature, fingerprint) = await signingService.SignDataAsync(response, cancellationToken);
         return new ResponseApproval(
             clock.GetUtcNow(),
             signature,

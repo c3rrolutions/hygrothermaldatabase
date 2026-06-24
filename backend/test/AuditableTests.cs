@@ -29,7 +29,7 @@ public sealed class AuditableTests
         // Arrange
         var startInstant = Instant.FromUtc(2024, 1, 1, 10, 0);
         var fakeClock = new FakeClock(startInstant);
-        using var context = new ApplicationDbContext(_options, fakeClock);
+        await using var context = new ApplicationDbContext(_options, fakeClock);
         var entity = new User("Subject", "Name");
         // Act
         context.Add(entity);
@@ -59,7 +59,7 @@ public sealed class AuditableTests
     // {
     //     var deleteTime = Instant.FromUtc(2024, 1, 1, 15, 0);
     //     var fakeClock = new FakeClock(deleteTime);
-    //     using var context = new ApplicationDbContext(_options, fakeClock);
+    //     await using var context = new ApplicationDbContext(_options, fakeClock);
     //     var entity = new YourModel { Name = "To Be Deleted" };
     //     context.Add(entity);
     //     await context.SaveChangesAsync();

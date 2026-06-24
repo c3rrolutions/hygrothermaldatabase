@@ -140,7 +140,7 @@ public sealed class AddDataApprovalMutation
                 )
             );
         }
-        var sigantureVerificationResult = await signingService.VerifySignature(input.Message, input.Signature, input.KeyFingerprint);
+        var sigantureVerificationResult = await signingService.VerifySignatureAsync(input.Message, input.Signature, input.KeyFingerprint, cancellationToken);
         switch (sigantureVerificationResult)
         {
             case SigantureVerificationResult.FAILED_RECEIVING_KEY:

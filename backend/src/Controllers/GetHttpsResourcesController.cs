@@ -143,7 +143,7 @@ public sealed class GetHttpsResourcesController(
         [FromRoute] string? extension = null
     )
     {
-        using var databaseContext = await databaseContextFactory.CreateDbContextAsync(cancellationToken);
+        await using var databaseContext = await databaseContextFactory.CreateDbContextAsync(cancellationToken);
         var getHttpsResource = await databaseContext.GetHttpsResourcesWithData.AsQueryable()
             .Where(_ => _.Id == id)
             .SingleOrDefaultAsync(cancellationToken);

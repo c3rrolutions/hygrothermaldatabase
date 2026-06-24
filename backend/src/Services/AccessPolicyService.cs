@@ -37,7 +37,7 @@ public sealed class AccessPolicyService(
     )
         where TData : class, IData
     {
-        using var databaseContext = await databaseContextFactory.CreateDbContextAsync(cancellationToken);
+        await using var databaseContext = await databaseContextFactory.CreateDbContextAsync(cancellationToken);
         var openIdConnectClientId = userService.GetOpenIdConnectApplicationClientId();
         var (currentUser, currentInstitution) = await userService.FetchCurrentUserOrInstitutionAsync(cancellationToken);
         Guid[]? institutionIds = null;

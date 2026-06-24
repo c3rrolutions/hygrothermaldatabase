@@ -5,20 +5,20 @@ using Database.Authorization;
 using Database.ApiRequests;
 using HotChocolate.Authorization;
 
-namespace Database.GraphQl.Institutions;
+namespace Database.GraphQl.Applications;
 
 [ExtendObjectType(nameof(Query))]
-public sealed class InstitutionQueries
+public sealed class ApplicationQueries
 {
     [Authorize(Policy = AuthorizationPolicies.AuthenticatedPolicy)]
-    public Task<QueryCurrentUserOrApplication.CurrentInstitution?> GetCurrentInstitutionAsync(
+    public Task<QueryCurrentUserOrApplication.CurrentOpenIdConnectApplication?> GetCurrentOpenIdConnectApplicationAsync(
         CommonAuthorization authorization,
         CancellationToken cancellationToken
     )
     {
         return authorization.SwitchUserOrApplicationAsync(
-            user => Task.FromResult<QueryCurrentUserOrApplication.CurrentInstitution?>(null),
-            application => Task.FromResult<QueryCurrentUserOrApplication.CurrentInstitution?>(application.Owner),
+            user => Task.FromResult<QueryCurrentUserOrApplication.CurrentOpenIdConnectApplication?>(null),
+            application => Task.FromResult<QueryCurrentUserOrApplication.CurrentOpenIdConnectApplication?>(application),
             cancellationToken
         );
     }

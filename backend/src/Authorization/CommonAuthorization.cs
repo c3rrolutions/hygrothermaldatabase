@@ -16,53 +16,52 @@ public sealed class CommonAuthorization(
     // This is the same code that HotChocolate returns when autheorization via the attribute `[Authorize(Policy = ...)]` fails.
     private const string UNAUTHORIZED_CODE = "AUTH_NOT_AUTHENTICATED";
 
-    public Task<T> SwitchUserOrInstitutionAsync<T>(
-        Func<QueryCurrentUserOrInstitution.CurrentUser?, Task<T>> handleUser,
-        Func<QueryCurrentUserOrInstitution.CurrentInstitution, Task<T>> handleInstitution,
+    public Task<T> SwitchUserOrApplicationAsync<T>(
+        Func<QueryCurrentUserOrApplication.CurrentUser?, Task<T>> handleUser,
+        Func<QueryCurrentUserOrApplication.CurrentOpenIdConnectApplication, Task<T>> handleApplication,
         CancellationToken cancellationToken
     )
     {
-        return userService.SwitchUserOrInstitutionAsync(handleUser, handleInstitution, cancellationToken);
+        return userService.SwitchUserOrApplicationAsync(handleUser, handleApplication, cancellationToken);
     }
 
-    public Task<QueryCurrentUserOrInstitution.CurrentUserOrInstitution> FetchCurrentUserOrInstitutionAsync(CancellationToken cancellationToken)
+    public Task<QueryCurrentUserOrApplication.CurrentUserOrApplication> FetchCurrentUserOrApplicationAsync(CancellationToken cancellationToken)
     {
-        return userService.FetchCurrentUserOrInstitutionAsync(cancellationToken);
+        return userService.FetchCurrentUserOrApplicationAsync(cancellationToken);
     }
 
     public Task<bool> IsAuthenticated(CancellationToken cancellationToken)
     {
-        return userService.SwitchUserOrInstitutionAsync(
+        return userService.SwitchUserOrApplicationAsync(
             user => Task.FromResult(user is not null),
-            institution => Task.FromResult(institution is not null),
+            application => Task.FromResult(application is not null),
             cancellationToken
         );
     }
 
     public Task<bool> IsDatabaseOperator(CancellationToken cancellationToken)
     {
-        return userService.SwitchUserOrInstitutionAsync(
+        return userService.SwitchUserOrApplicationAsync(
             user => Task.FromResult(
                 user is not null
                 && user.IsAtLeastAssistantManagerOfDatabaseOperator()
             ),
-            institution => Task.FromResult(
-                institution is not null
-                && institution.IsDatabaseOperator()
+            application => Task.FromResult(
+                application.Owner.IsDatabaseOperator()
             ),
             cancellationToken
         );
     }
 
     public bool IsCurrentUserAtLeastAssistantManagerOfVerifiedInstitution(
-        QueryCurrentUserOrInstitution.CurrentUser currentUser,
+        QueryCurrentUserOrApplication.CurrentUser currentUser,
         Guid institutionId
     )
     {
         return currentUser.RepresentedInstitutions.Edges.Any(t =>
             (
-                t.Role is QueryCurrentUserOrInstitution.InstitutionRepresentativeRole.ASSISTANT
-                || t.Role is QueryCurrentUserOrInstitution.InstitutionRepresentativeRole.OWNER
+                t.Role is QueryCurrentUserOrApplication.InstitutionRepresentativeRole.ASSISTANT
+                || t.Role is QueryCurrentUserOrApplication.InstitutionRepresentativeRole.OWNER
             )
             &&
             (

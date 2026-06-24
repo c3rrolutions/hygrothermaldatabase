@@ -301,7 +301,7 @@ public sealed class Startup(
     {
         services.AddScoped<GetUserInfo>();
         services.AddScoped<IsGnuPgFingerprintValid>();
-        services.AddScoped<QueryCurrentUserOrInstitution>();
+        services.AddScoped<QueryCurrentUserOrApplication>();
         services.AddScoped<QueryData>();
         services.AddScoped<UpdateDatabase>();
     }

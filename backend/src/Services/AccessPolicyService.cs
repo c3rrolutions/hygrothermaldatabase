@@ -39,15 +39,15 @@ public sealed class AccessPolicyService(
     {
         await using var databaseContext = await databaseContextFactory.CreateDbContextAsync(cancellationToken);
         var openIdConnectClientId = userService.GetOpenIdConnectApplicationClientId();
-        var (currentUser, currentInstitution) = await userService.FetchCurrentUserOrInstitutionAsync(cancellationToken);
+        var (currentUser, currentApplication) = await userService.FetchCurrentUserOrApplicationAsync(cancellationToken);
         Guid[]? institutionIds = null;
         if (currentUser is not null)
         {
             institutionIds = currentUser.RepresentedInstitutions.Edges.Select(e => e.Node.Uuid).ToArray();
         }
-        else if (currentInstitution is not null)
+        else if (currentApplication is not null)
         {
-            institutionIds = [currentInstitution.Uuid];
+            institutionIds = [currentApplication.Owner.Uuid];
         }
         logger.ApplyingAccessPolicy(currentUser?.Uuid, institutionIds, openIdConnectClientId);
         var policedData = PoliceData(getData(databaseContext), currentUser?.Uuid, institutionIds, openIdConnectClientId, databaseContext);

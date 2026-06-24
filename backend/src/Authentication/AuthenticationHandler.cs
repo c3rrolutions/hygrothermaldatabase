@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
@@ -7,6 +8,7 @@ using Database.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http;
+using OpenIddict.Abstractions;
 using OpenIddict.Client;
 using OpenIddict.Validation.AspNetCore;
 
@@ -163,9 +165,9 @@ public sealed class AuthenticationHandler(
         // bearer token from the metabase for its own OpenID Connect Client
         // (another one than `appSettings.OpenIdConnectClient.Id`) and uses
         // this token to authenticate (and authorize) access to this database.
-        var metabaseAuthenticateResult = await userService.SwitchUserOrInstitutionAsync(
-            user => Task.FromResult(user is null ? null : CreateSuccessfulAuthenticateResult($"user:{user.Uuid.ToString("D")}")),
-            institution => Task.FromResult<AuthenticateResult?>(CreateSuccessfulAuthenticateResult($"institution:{institution.Uuid.ToString("D")}")),
+        var metabaseAuthenticateResult = await userService.SwitchUserOrApplicationAsync(
+            user => Task.FromResult(user is null ? null : CreateSuccessfulAuthenticateResult($"user:{user.Uuid.ToString("D")}", null)),
+            application => Task.FromResult<AuthenticateResult?>(CreateSuccessfulAuthenticateResult($"client:{application.ClientId}", application.ClientId)),
             cancellationToken
         );
         if (metabaseAuthenticateResult is { Succeeded: true, Principal.Identity.IsAuthenticated: true })
@@ -175,13 +177,21 @@ public sealed class AuthenticationHandler(
         return AuthenticateResult.Fail("Neither authenticated through cookie nor bearer token.");
     }
 
-    private static AuthenticateResult CreateSuccessfulAuthenticateResult(string nameIdentifier)
+    private static AuthenticateResult CreateSuccessfulAuthenticateResult(
+        string nameIdentifier,
+        string? clientId
+    )
     {
+        var claims = new[] { new Claim(ClaimTypes.NameIdentifier, nameIdentifier) }
+            .If(
+                clientId is not null,
+                _ => _.Append(new Claim(OpenIddictConstants.Claims.ClientId, clientId!))
+            );
         return AuthenticateResult.Success(
             new AuthenticationTicket(
                 new ClaimsPrincipal(
                     new ClaimsIdentity(
-                        claims: [new Claim(ClaimTypes.NameIdentifier, nameIdentifier)],
+                        claims: claims,
                         authenticationType: "Metabase",
                         nameType: ClaimTypes.Name,
                         roleType: ClaimTypes.Role

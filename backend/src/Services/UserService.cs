@@ -12,7 +12,7 @@ namespace Database.Services;
 /// Service to fetch current user or institution from the metabase or the local cache
 /// </summary>
 public sealed class UserService(
-    QueryCurrentUserOrInstitution queryCurrentUserOrInstitution,
+    QueryCurrentUserOrApplication queryCurrentUserOrApplication,
     IHttpContextAccessor httpContextAccessor,
     CacheService cacheService
 )
@@ -30,56 +30,56 @@ public sealed class UserService(
         // ?? httpContextAccessor.HttpContext?.User.GetClaim(OpenIddictConstants.Claims.Private.Presenter);
     }
 
-    public async Task<T> SwitchUserOrInstitutionAsync<T>(
-        Func<QueryCurrentUserOrInstitution.CurrentUser?, Task<T>> handleUser,
-        Func<QueryCurrentUserOrInstitution.CurrentInstitution, Task<T>> handleInstitution,
+    public async Task<T> SwitchUserOrApplicationAsync<T>(
+        Func<QueryCurrentUserOrApplication.CurrentUser?, Task<T>> handleUser,
+        Func<QueryCurrentUserOrApplication.CurrentOpenIdConnectApplication, Task<T>> handleApplication,
         CancellationToken cancellationToken
     )
     {
-        var userOrInstitution = await FetchCurrentUserOrInstitutionAsync(cancellationToken);
-        if (userOrInstitution.CurrentInstitution is not null)
+        var userOrApplication = await FetchCurrentUserOrApplicationAsync(cancellationToken);
+        if (userOrApplication.CurrentApplication is not null)
         {
-            return await handleInstitution(userOrInstitution.CurrentInstitution);
+            return await handleApplication(userOrApplication.CurrentApplication);
         }
         else
         {
-            return await handleUser(userOrInstitution.CurrentUser);
+            return await handleUser(userOrApplication.CurrentUser);
         }
     }
 
-    public async Task<QueryCurrentUserOrInstitution.CurrentUserOrInstitution> FetchCurrentUserOrInstitutionAsync(
+    public async Task<QueryCurrentUserOrApplication.CurrentUserOrApplication> FetchCurrentUserOrApplicationAsync(
         CancellationToken cancellationToken
     )
     {
         var httpContext = httpContextAccessor.HttpContext;
         if (httpContext is null)
         {
-            return QueryCurrentUserOrInstitution.Empty;
+            return QueryCurrentUserOrApplication.Empty;
         }
         var token = httpContext.ExtractBearerToken();
         if (token is null)
         {
-            return QueryCurrentUserOrInstitution.Empty;
+            return QueryCurrentUserOrApplication.Empty;
         }
         // If there is no authenticated user, then the bearer token may be
         // invalid or expired, so we cannot trust a possibly-cached result.
         if (httpContext.User is null)
         {
-            return await queryCurrentUserOrInstitution.Do(
+            return await queryCurrentUserOrApplication.Do(
                 cancellationToken
             );
         }
         // If there is an authenticated user, then the bearer token is valid and
         // we try to get the cached user or application.
-        if (!cacheService.TryGetCurrentUserOrInstitution(token, out var cachedUserOrInstitution))
+        if (!cacheService.TryGetCurrentUserOrApplication(token, out var cachedUserOrApplication))
         {
             // If it is not cached, fetch it ...
-            cachedUserOrInstitution = await queryCurrentUserOrInstitution.Do(
+            cachedUserOrApplication = await queryCurrentUserOrApplication.Do(
                 cancellationToken
             );
             // ... and store it in the cache.
-            cacheService.SetCurrentUserOrInstitution(token, cachedUserOrInstitution);
+            cacheService.SetCurrentUserOrApplication(token, cachedUserOrApplication);
         }
-        return cachedUserOrInstitution;
+        return cachedUserOrApplication;
     }
 }

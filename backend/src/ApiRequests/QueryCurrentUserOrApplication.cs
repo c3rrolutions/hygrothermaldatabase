@@ -16,7 +16,7 @@ public static partial class Log
         Message = "Response contains errors.")
     ]
     internal static partial void ResponseErrors(
-        this ILogger<QueryCurrentUserOrInstitution> logger,
+        this ILogger<QueryCurrentUserOrApplication> logger,
         [TagProvider(typeof(GraphQlErrorsTagProvider), nameof(GraphQlErrorsTagProvider.RecordTags))] GraphQLError[] errors
     );
 }
@@ -24,15 +24,15 @@ public static partial class Log
 /// <summary>
 /// Request current user or institution from metabase.
 /// </summary>
-public sealed class QueryCurrentUserOrInstitution(
+public sealed class QueryCurrentUserOrApplication(
     AppSettings appSettings,
     ApiRequestService apiRequestService,
-    ILogger<QueryCurrentUserOrInstitution> logger
+    ILogger<QueryCurrentUserOrApplication> logger
 )
 {
-    private const string QueryFileName = "CurrentUserOrInstitution.graphql";
+    private const string QueryFileName = "CurrentUserOrApplication.graphql";
 
-    public static readonly CurrentUserOrInstitution Empty = new(null, null);
+    public static readonly CurrentUserOrApplication Empty = new(null, null);
 
     public Uri GetGraphQlEndpoint =>
         appSettings.MetabaseGraphQlEndpoint;
@@ -108,26 +108,32 @@ public sealed class QueryCurrentUserOrInstitution(
         int TotalCount
     );
 
-    public sealed record CurrentUserOrInstitution(
+    public sealed record CurrentOpenIdConnectApplication(
+        string ClientId,
+        string? DisplayName,
+        CurrentInstitution Owner
+    );
+
+    public sealed record CurrentUserOrApplication(
         CurrentUser? CurrentUser,
-        CurrentInstitution? CurrentInstitution
+        CurrentOpenIdConnectApplication? CurrentApplication
     )
     {
         public void Deconstruct(
             out CurrentUser? currentUser,
-            out CurrentInstitution? currentInstitution
+            out CurrentOpenIdConnectApplication? currentApplication
         )
         {
             currentUser = CurrentUser;
-            currentInstitution = CurrentInstitution;
+            currentApplication = CurrentApplication;
         }
     };
 
-    public async Task<CurrentUserOrInstitution> Do(
+    public async Task<CurrentUserOrApplication> Do(
         CancellationToken cancellationToken
     )
     {
-        var response = (await apiRequestService.QueryGraphQl<CurrentUserOrInstitution>(
+        var response = (await apiRequestService.QueryGraphQl<CurrentUserOrApplication>(
             GetGraphQlEndpoint,
             new GraphQLRequest(
                 await GraphQlQueryHelpers.Construct(QueryFileName),
@@ -135,7 +141,7 @@ public sealed class QueryCurrentUserOrInstitution(
                 {
                     databaseId = appSettings.DatabaseId
                 },
-                "CurrentUserOrInstitution"
+                "CurrentUserOrApplication"
             ),
             cancellationToken
         ));

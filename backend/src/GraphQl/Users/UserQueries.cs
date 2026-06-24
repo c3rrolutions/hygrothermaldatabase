@@ -13,14 +13,14 @@ namespace Database.GraphQl.Users;
 public sealed class UserQueries
 {
     [Authorize(Policy = AuthorizationPolicies.AuthenticatedPolicy)]
-    public Task<QueryCurrentUserOrInstitution.CurrentUser?> GetCurrentUserAsync(
+    public Task<QueryCurrentUserOrApplication.CurrentUser?> GetCurrentUserAsync(
         CommonAuthorization authorization,
         CancellationToken cancellationToken
     )
     {
-        return authorization.SwitchUserOrInstitutionAsync(
+        return authorization.SwitchUserOrApplicationAsync(
             user => Task.FromResult(user),
-            institution => Task.FromResult<QueryCurrentUserOrInstitution.CurrentUser?>(null),
+            application => Task.FromResult<QueryCurrentUserOrApplication.CurrentUser?>(null),
             cancellationToken
         );
     }

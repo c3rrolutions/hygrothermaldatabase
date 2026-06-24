@@ -1,24 +1,24 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Caching.Memory;
-using static Database.ApiRequests.QueryCurrentUserOrInstitution;
+using static Database.ApiRequests.QueryCurrentUserOrApplication;
 
 namespace Database.Services;
 
 public sealed class CacheService(
-    IMemoryCache currentUserOrInstitutionCache
+    IMemoryCache currentUserOrApplicationCache
 )
 {
-    public CurrentUserOrInstitution? SetCurrentUserOrInstitution(string token, CurrentUserOrInstitution userOrInstitution)
+    public CurrentUserOrApplication? SetCurrentUserOrApplication(string token, CurrentUserOrApplication userOrApplication)
     {
         var cacheEntryOptions =
             new MemoryCacheEntryOptions()
             .SetSlidingExpiration(TimeSpan.FromHours(1));
-        return currentUserOrInstitutionCache.Set(token, userOrInstitution, cacheEntryOptions);
+        return currentUserOrApplicationCache.Set(token, userOrApplication, cacheEntryOptions);
     }
 
-    public bool TryGetCurrentUserOrInstitution(string token, [NotNullWhen(true)] out CurrentUserOrInstitution? cachedUserOrInstitution)
+    public bool TryGetCurrentUserOrApplication(string token, [NotNullWhen(true)] out CurrentUserOrApplication? cachedUserOrApplication)
     {
-        return currentUserOrInstitutionCache.TryGetValue(token, out cachedUserOrInstitution);
+        return currentUserOrApplicationCache.TryGetValue(token, out cachedUserOrApplication);
     }
 }

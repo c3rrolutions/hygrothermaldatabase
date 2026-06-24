@@ -18,7 +18,7 @@ public static class OpenIdConnectApplicationDataLoader
 
     public sealed record OpenIdConnectApplication(
         [property: GraphQLIgnore] string Id,
-        string Name
+        string? Name
     ) : IIdNode<string>
     {
         string ClientId => Id;

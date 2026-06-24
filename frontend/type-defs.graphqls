@@ -265,6 +265,8 @@ type Query {
   calorimetricData(id: Uuid!, locale: Locale): CalorimetricData
     @cost(weight: "10")
   currentInstitution: CurrentInstitution @cost(weight: "10")
+  currentOpenIdConnectApplication: CurrentOpenIdConnectApplication
+    @cost(weight: "10")
   currentUser: CurrentUser @cost(weight: "10")
   currentUserInfo: UserInfo! @cost(weight: "10")
   data(dataKind: DataKind!, id: Uuid!, locale: Locale): Data @cost(weight: "10")
@@ -784,6 +786,12 @@ type CurrentInstitution {
   uuid: Uuid!
 }
 
+type CurrentOpenIdConnectApplication {
+  clientId: String!
+  displayName: String
+  owner: CurrentInstitution!
+}
+
 type CurrentUser {
   databaseOperatingRepresentedInstitutions: UserRepresentedInstitutionConnection!
   isAtLeastAssistantManagerOfDatabaseOperator: Boolean!
@@ -1162,6 +1170,7 @@ type InstitutionAccessPolicy implements Node {
   dataAccessPolicy: DataAccessPolicy
   dataAccessPolicyId: Uuid!
   id: ID!
+  institution: Institution @cost(weight: "3")
   institutionId: Uuid!
   isAccessAllowed(institutionIds: [Uuid!]): Boolean!
   isAlwaysAllowed: Boolean!
@@ -1283,8 +1292,13 @@ type OpenEndedDateTimeRange {
   until: DateTime @cost(weight: "10")
 }
 
+type OpenIdConnectApplication {
+  name: String
+}
+
 type OpenIdConnectApplicationAccessPolicy implements Node {
   accessCountSinceStartTime: CountSinceTime
+  client: OpenIdConnectApplication @cost(weight: "3")
   clientId: String!
   createdAt: DateTime!
   dataAccessPolicy: DataAccessPolicy
@@ -1712,12 +1726,8 @@ type UpperLimitPerDuration {
   upperLimit: NonNegativeInt!
 }
 
-type User implements Node {
-  createdAt: DateTime!
-  id: ID!
+type User {
   name: String!
-  subject: String!
-  updatedAt: DateTime!
   uuid: Uuid!
 }
 
@@ -1733,6 +1743,7 @@ type UserAccessPolicy implements Node {
   isWithinTimeSpan: Boolean!
   updatedAt: DateTime!
   upperAccessLimitPerTimeDuration: UpperLimitPerDuration
+  user: User @cost(weight: "3")
   userId: Uuid!
   uuid: Uuid!
 }

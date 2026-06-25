@@ -10,32 +10,24 @@ function Page() {
     <Layout>
       <Card>
         <Typography.Paragraph style={{ maxWidth: "75ch" }}>
-          <Link href={paths.home}>www.buildingenvelopedata-dev.c3rro.com/</Link> is the
-          website of the product data server from{" "}
-          <Typography.Link href="https://www.c3rro.com">{" "}
+          <Link href={paths.home}>www.buildingenvelopedata-dev.c3rro.com</Link> is the
+          website of the product data server of{" "}
+          <Typography.Link href="https://www.c3rro.com">
             C3rrolutions GmbH
           </Typography.Link>{" "}
           . The product data server is part of the Product Data Network{" "}
           <Typography.Link href={paths.metabase.home}>
             buildingenvelopedata.org
           </Typography.Link>
-          . It is a fork{" "}
+          . The product data server is an instance of the{" "}
           <Typography.Link href="https://github.com/c3rrolutions/hygrothermaldatabase">
-            c3rro implementation 
-          </Typography.Link>{" "}
-          of the{" "}
-          <Typography.Link href="https://github.com/building-envelope-data/database">
-            reference implementation of a database
-          </Typography.Link>{" "}
-          from {" "}
-          <Typography.Link href="https://www.ise.fraunhofer.de/en/rd-infrastructure/accredited-labs/testlab-solar-facades.html">
-            TestLab Solar Facades, Fraunhofer ISE
+            c3rro implementation
           </Typography.Link>
-          . The{" "}
+          . A fork of the{" "}
           <Typography.Link href="https://github.com/building-envelope-data/database">
             reference implementation of a database
           </Typography.Link>{" "}
-          is open-source with a permissive license, so that everyone can easily
+          which is open-source with a permissive license, so that everyone can easily
           create their own product data server as part of the Product Data
           Network{" "}
           <Typography.Link href={paths.metabase.home}>
@@ -49,15 +41,14 @@ function Page() {
             C3rrolutions GmbH
           </Typography.Link>
           . You can use this website to search this product data server for{" "}
-          <Link href={paths.hygrothermalData}>hygrothermal data</Link>
-          . If you
-          would like to search the entire Product Data Network{" "}
+          <Link href={paths.allHygrothermalData}>hygrothermal data</Link>{" "}
+          . If you would like to search the entire Product Data Network{" "}
           <Typography.Link href={paths.metabase.home}>
             buildingenvelopedata.org
           </Typography.Link>
           , you can search there for example for{" "}
           <Typography.Link href={paths.metabase.allOpticalData}>
-            optical data
+            optical data{" "}
           </Typography.Link>
           . You will find there also an overview about all building envelope{" "}
           <Typography.Link href={paths.metabase.components}>
@@ -139,9 +130,9 @@ function Page() {
             height: "auto",
           }}
         />
-        <Typography.Paragraph>
+		<Typography.Paragraph>
           V.0.1.3
-        </Typography.Paragraph>
+        </Typography.Paragraph>				  					   
       </Card>
     </Layout>
   );

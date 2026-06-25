@@ -10,15 +10,11 @@ function Page() {
     <Layout>
       <Card>
         <Typography.Paragraph style={{ maxWidth: "75ch" }}>
-          <Link href={paths.home}>solarbuildingenvelopes.com</Link> is the
-          website of the product data server of{" "}
-          <Typography.Link href="https://www.ise.fraunhofer.de/en/rd-infrastructure/accredited-labs/testlab-solar-facades.html">
-            TestLab Solar Facades
+          <Link href={paths.home}>www.buildingenvelopedata-dev.c3rro.com/</Link> is the
+          website of the product data server from{" "}
+          <Typography.Link href="https://www.c3rro.com">{" "}
+            C3rrolutions GmbH
           </Typography.Link>{" "}
-          at{" "}
-          <Typography.Link href="https://www.ise.fraunhofer.de">
-            Fraunhofer Institute for Solar Energy Systems ISE
-          </Typography.Link>
           . The product data server is part of the Product Data Network{" "}
           <Typography.Link href={paths.metabase.home}>
             buildingenvelopedata.org
@@ -143,6 +139,9 @@ function Page() {
             height: "auto",
           }}
         />
+        <Typography.Paragraph>
+          V.0.1.3
+        </Typography.Paragraph>
       </Card>
     </Layout>
   );

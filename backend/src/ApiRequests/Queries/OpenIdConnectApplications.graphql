@@ -3,6 +3,7 @@ query OpenIdConnectApplications($ids: [String!]!) {
     edges {
       node {
         id: clientId
+        name: displayName
       }
     }
   }

@@ -7,10 +7,8 @@ using System.Threading.Tasks;
 using Database.ApiRequests;
 using Database.Data;
 using Database.Enumerations;
-using Database.Extensions;
 using Database.Services;
 using GraphQL.Client.Abstractions.Utilities;
-using HotChocolate;
 using static Database.ApiRequests.DataFormatDataLoader;
 
 namespace Database.GraphQl;
@@ -123,7 +121,7 @@ where TError : class
                 );
             }
         }
-        if (errors.Count >= 1)
+        if (errors.Count > 0)
         {
             return new Result<DataFormat, IReadOnlyList<TError>>.Error(errors);
         }

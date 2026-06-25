@@ -8,6 +8,7 @@ using Database.Data;
 using Database.Enumerations;
 using Database.Extensions;
 using HotChocolate.Types;
+using HotChocolate.Authorization;
 
 namespace Database.GraphQl.DataX;
 
@@ -52,6 +53,7 @@ public sealed class DeleteDataMutation
     ) => new(code, message, path);
 
     // [GraphQLType<PayloadType<DeleteDataErrorCode>>]
+    [Authorize(Policy = AuthorizationPolicies.AuthenticatedPolicy)]
     public async Task<DeleteDataPayload> DeleteDataAsync(
         DeleteDataInput input,
         CommonAuthorization authorization,
@@ -105,30 +107,7 @@ public sealed class DeleteDataMutation
             resource.DeleteFile();
         }
 
-        // TODO Would a simple `context.Remove(data);` also work?
-        switch (data)
-        {
-            case CalorimetricData calorimetricData:
-                context.CalorimetricData.Remove(calorimetricData);
-                break;
-            case GeometricData geometricData:
-                context.GeometricData.Remove(geometricData);
-                break;
-            case HygrothermalData hygrothermalData:
-                context.HygrothermalData.Remove(hygrothermalData);
-                break;
-            case LifeCycleData lifeCycleData:
-                context.LifeCycleData.Remove(lifeCycleData);
-                break;
-            case PhotovoltaicData photovoltaicData:
-                context.PhotovoltaicData.Remove(photovoltaicData);
-                break;
-            case OpticalData opticalData:
-                context.OpticalData.Remove(opticalData);
-                break;
-            default:
-                throw new NotSupportedException($"The data kind '{input.DataKind}' is not supported for deletion.");
-        }
+        context.Remove(data);
         await context.SaveChangesAsync(cancellationToken);
         return NewPayload(data, null);
     }

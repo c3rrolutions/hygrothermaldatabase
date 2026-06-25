@@ -5,7 +5,7 @@ using HotChocolate.Types;
 namespace Database.GraphQl.GeometricDataX;
 
 public sealed class GeometricDataType
-    : DataTypeBase<GeometricData, GeometricDataByIdDataLoader>
+    : DataTypeBase<GeometricData, IGeometricDataByIdDataLoader>
 {
     protected override void Configure(
         IObjectTypeDescriptor<GeometricData> descriptor

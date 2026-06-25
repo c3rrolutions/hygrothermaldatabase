@@ -1,17 +1,18 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Database.ApiRequests;
 using Database.Authorization;
 using Database.Data;
+using Database.Data.AccessPolicies;
 using Database.Extensions;
 using Database.GraphQl.DataX;
+using Database.GraphQl.Scalars;
 using Database.Services;
-using Database.Utilities;
 using HotChocolate;
+using HotChocolate.Authorization;
 using HotChocolate.Types;
 using NodaTime;
 
@@ -23,7 +24,7 @@ public sealed record CreateGeometricDataInput(
     string? Name,
     string? Description,
     string[] Warnings,
-    OffsetDateTime CreatedAt,
+    DateTimeOffset CreatedAt,
     Guid CreatorId,
     AppliedMethodInput AppliedMethod,
     RootGetHttpsResourceInput RootResource,
@@ -52,6 +53,7 @@ public sealed record CreateGeometricDataInput(
             Thicknesses
         );
         data.Resources.Add(RootResource.ToDomainModel(fileExtension));
+        data.AccessPolicy = new DataAccessPolicy();
         return data;
     }
 };
@@ -101,6 +103,7 @@ public sealed class CreateGeometricDataMutation
         IReadOnlyList<string> path
     ) => new(code, message, path);
 
+    [Authorize(Policy = AuthorizationPolicies.AuthenticatedPolicy)]
     public async Task<CreateGeometricDataPayload> CreateGeometricDataAsync(
         CreateGeometricDataInput input,
         ApplicationDbContext context,
@@ -111,6 +114,7 @@ public sealed class CreateGeometricDataMutation
         IDataByDatabaseAndIdAndKindDataLoader dataByDatabaseAndIdAndKindDataLoader,
         IDataFormatByIdDataLoader dataFormatByIdDataLoader,
         ResponseApprovalService responseApprovalService,
+        IClock clock,
         CancellationToken cancellationToken
     )
     {
@@ -140,6 +144,7 @@ public sealed class CreateGeometricDataMutation
                 CreateGeometricDataErrorCode.UNKNOWN_DATA,
                 dataFormatByIdDataLoader,
                 CreateGeometricDataErrorCode.UNKNOWN_DATA_FORMAT,
+                clock,
                 cancellationToken
             )
             ).Failed(out var dataFormat, out var validateErrorPayload)

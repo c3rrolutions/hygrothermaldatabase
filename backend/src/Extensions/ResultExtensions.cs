@@ -1,10 +1,12 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.Contracts;
 
 namespace Database.Extensions;
 
 public static class ResultExtensions
 {
+    [Pure]
     public static bool Failed<TData, TError>(
         this Result<TData, TError> result,
         [NotNullWhen(false)] out TData? data,
@@ -28,6 +30,7 @@ public static class ResultExtensions
         }
     }
 
+    [Pure]
     public static bool Failed<TData, TError>(
         this Result<TData, TError> result,
         [NotNullWhen(true)] out TError? error
@@ -47,6 +50,7 @@ public static class ResultExtensions
         }
     }
 
+    [Pure]
     public static bool Succeeded<TData, TError>(
         this Result<TData, TError> result,
         [NotNullWhen(true)] out TData? data,
@@ -70,6 +74,7 @@ public static class ResultExtensions
         }
     }
 
+    [Pure]
     public static bool Succeeded<TData, TError>(
         this Result<TData, TError> result,
         [NotNullWhen(true)] out TData? data

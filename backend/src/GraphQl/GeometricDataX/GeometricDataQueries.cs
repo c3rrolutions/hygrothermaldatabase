@@ -1,16 +1,16 @@
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Database.Authorization;
 using Database.Data;
 using Database.GraphQl.DataX;
+using Database.GraphQl.Scalars;
 using Database.Services;
 using HotChocolate;
 using HotChocolate.Data;
-using HotChocolate.Data.Sorting;
 using HotChocolate.Resolvers;
 using HotChocolate.Types;
+using Microsoft.EntityFrameworkCore;
 
 namespace Database.GraphQl.GeometricDataX;
 
@@ -21,20 +21,19 @@ public sealed class GeometricDataQueries
     [UsePaging]
     [UseFiltering<GeometricDataFilterType>]
     [UseSorting<GeometricDataSortType>]
-    public Task<IEnumerable<GeometricData>> GetAllGeometricDataAsync(
+    public Task<HotChocolate.Types.Pagination.Connection<GeometricData>> GetAllGeometricDataAsync(
         [GraphQLType<LocaleType>] string? locale,
-        ApplicationDbContext context,
-        AccessRightsService accessRightsService,
-        ISortingContext sorting,
+        IDbContextFactory<ApplicationDbContext> databaseContextFactory,
+        AccessPolicyService accessPolicyService,
         IResolverContext resolverContext,
         CancellationToken cancellationToken
     )
     {
         return GetAllDataAsync(
-            context.GeometricData,
+            databaseContext => databaseContext.GeometricData,
             locale,
-            accessRightsService,
-            sorting,
+            databaseContextFactory,
+            accessPolicyService,
             resolverContext,
             cancellationToken
         );
@@ -43,21 +42,20 @@ public sealed class GeometricDataQueries
     [UsePaging]
     [UseFiltering<GeometricDataFilterType>]
     [UseSorting<GeometricDataSortType>]
-    public Task<IEnumerable<GeometricData>> GetAllPendingGeometricDataAsync(
+    public Task<HotChocolate.Types.Pagination.Connection<GeometricData>> GetAllPendingGeometricDataAsync(
         [GraphQLType<LocaleType>] string? locale,
-        ApplicationDbContext context,
-        AccessRightsService accessRightsService,
-        ISortingContext sorting,
+        IDbContextFactory<ApplicationDbContext> databaseContextFactory,
+        AccessPolicyService accessPolicyService,
         IResolverContext resolverContext,
         CommonAuthorization authorization,
         CancellationToken cancellationToken
     )
     {
         return GetAllPendingDataAsync(
-            context.GeometricData,
+            databaseContext => databaseContext.GeometricData,
             locale,
-            accessRightsService,
-            sorting,
+            databaseContextFactory,
+            accessPolicyService,
             resolverContext,
             authorization,
             cancellationToken
@@ -67,14 +65,17 @@ public sealed class GeometricDataQueries
     [UseFiltering<GeometricDataFilterType>]
     public Task<bool> HasGeometricDataAsync(
         [GraphQLType<LocaleType>] string? locale,
-        ApplicationDbContext context,
+        IDbContextFactory<ApplicationDbContext> databaseContextFactory,
+        AccessPolicyService accessPolicyService,
         IResolverContext resolverContext,
         CancellationToken cancellationToken
     )
     {
         return HasDataAsync(
-            context.GeometricData,
+            databaseContext => databaseContext.GeometricData,
             locale,
+            databaseContextFactory,
+            accessPolicyService,
             resolverContext,
             cancellationToken
         );
@@ -83,16 +84,17 @@ public sealed class GeometricDataQueries
     public Task<GeometricData?> GetGeometricDataAsync(
         Guid id,
         [GraphQLType<LocaleType>] string? locale,
-        GeometricDataByIdDataLoader byId,
-        AccessRightsService accessRightsService,
+        IDbContextFactory<ApplicationDbContext> databaseContextFactory,
+        AccessPolicyService accessPolicyService,
         CancellationToken cancellationToken
     )
     {
         return GetDataAsync(
             id,
             locale,
-            byId,
-            accessRightsService,
+            databaseContext => databaseContext.GeometricData,
+            databaseContextFactory,
+            accessPolicyService,
             cancellationToken
         );
     }

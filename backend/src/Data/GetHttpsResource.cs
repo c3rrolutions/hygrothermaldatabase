@@ -6,7 +6,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Database.Enumerations;
 using Database.Extensions;
 using Database.Utilities;
 using EntityFrameworkCore.Projectables;
@@ -14,25 +13,27 @@ using EntityFrameworkCore.Projectables;
 namespace Database.Data;
 
 public sealed class GetHttpsResource
-: Entity
+: AuditableEntity
 {
     public const string FilesDirectoryPath = "./files/";
     public const string TableName = "get_https_resource";
 
-    public const string DataIdsMustMatchTriggerName = "data_ids_must_match";
-    public const string DataIdCannotChangeTriggerName = "data_id_cannot_change";
+    public const string DataIdsMustMatchTriggerName = $"{TableName}_data_ids_must_match";
+    public const string DataIdCannotChangeTriggerName = $"{TableName}_data_id_cannot_change";
+    public const string RootCanOnlyBeDeletedAlongsideItsDataTriggerName = $"{TableName}_root_can_only_be_deleted_alongside_its_data";
     public static readonly ImmutableArray<string> TriggerNames = [
         DataIdsMustMatchTriggerName,
-        DataIdCannotChangeTriggerName
+        DataIdCannotChangeTriggerName,
+        RootCanOnlyBeDeletedAlongsideItsDataTriggerName
     ];
 
-    public static readonly ImmutableArray<string> DataIdFieldNames = [
-        nameof(CalorimetricDataId),
-        nameof(GeometricDataId),
-        nameof(HygrothermalDataId),
-        nameof(LifeCycleDataId),
-        nameof(OpticalDataId),
-        nameof(PhotovoltaicDataId)
+    public static readonly ImmutableArray<(string Field, string Table)> DataIdFieldAndDataTableNames = [
+        (nameof(CalorimetricDataId), CalorimetricData.TableName),
+        (nameof(GeometricDataId), GeometricData.TableName),
+        (nameof(HygrothermalDataId), HygrothermalData.TableName),
+        (nameof(LifeCycleDataId), LifeCycleData.TableName),
+        (nameof(OpticalDataId), OpticalData.TableName),
+        (nameof(PhotovoltaicDataId), PhotovoltaicData.TableName)
     ];
 
     // Constructor for EF Core because navigation properties cannot be set using a constructor: https://learn.microsoft.com/en-us/ef/core/modeling/constructors#binding-to-mapped-properties
@@ -143,38 +144,50 @@ public sealed class GetHttpsResource
     public string FilePath =>
         Path.Combine(FilesDirectoryPath, FileName);
 
+    public string AbsoluteFilePath =>
+        Path.GetFullPath(FilePath);
+
     public ICollection<FileMetaInformation> ArchivedFilesMetaInformation { get; private set; } = [];
 
     // Note that at least one data ID is always present. So `Guid.Empty` will never be used.
-    [NotMapped]
+    [Projectable]
     public Guid DataId => CalorimetricDataId ?? GeometricDataId ?? HygrothermalDataId ?? LifeCycleDataId ?? OpticalDataId ?? PhotovoltaicDataId ?? Guid.Empty;
 
-    [NotMapped]
     public IData? Data => CalorimetricData ?? GeometricData ?? HygrothermalData ?? LifeCycleData ?? OpticalData ?? PhotovoltaicData as IData;
 
     [Projectable]
-    public Guid? GetDataId(DataKind dataKind) =>
+    public Database.Enumerations.DataKind DataKind =>
+        CalorimetricDataId != null ? Database.Enumerations.DataKind.CALORIMETRIC_DATA
+        : GeometricDataId != null ? Database.Enumerations.DataKind.GEOMETRIC_DATA
+        : HygrothermalDataId != null ? Database.Enumerations.DataKind.HYGROTHERMAL_DATA
+        : LifeCycleDataId != null ? Database.Enumerations.DataKind.LIFE_CYCLE_DATA
+        : OpticalDataId != null ? Database.Enumerations.DataKind.OPTICAL_DATA
+        : PhotovoltaicDataId != null ? Database.Enumerations.DataKind.PHOTOVOLTAIC_DATA
+        : default; // the default case does not happen if the above cases are exhaustive
+
+    [Projectable]
+    public Guid? GetDataId(Database.Enumerations.DataKind dataKind) =>
         dataKind switch
         {
-            DataKind.CALORIMETRIC_DATA => CalorimetricDataId,
-            DataKind.GEOMETRIC_DATA => GeometricDataId,
-            DataKind.HYGROTHERMAL_DATA => HygrothermalDataId,
-            DataKind.LIFE_CYCLE_DATA => LifeCycleDataId,
-            DataKind.OPTICAL_DATA => OpticalDataId,
-            DataKind.PHOTOVOLTAIC_DATA => PhotovoltaicDataId,
+            Database.Enumerations.DataKind.CALORIMETRIC_DATA => CalorimetricDataId,
+            Database.Enumerations.DataKind.GEOMETRIC_DATA => GeometricDataId,
+            Database.Enumerations.DataKind.HYGROTHERMAL_DATA => HygrothermalDataId,
+            Database.Enumerations.DataKind.LIFE_CYCLE_DATA => LifeCycleDataId,
+            Database.Enumerations.DataKind.OPTICAL_DATA => OpticalDataId,
+            Database.Enumerations.DataKind.PHOTOVOLTAIC_DATA => PhotovoltaicDataId,
             _ => null, // throw new ArgumentOutOfRangeException(nameof(dataKind), $"Unsupported data kind {dataKind}"),
         };
 
     [Projectable]
-    public IData? GetData(DataKind dataKind) =>
+    public IData? GetData(Database.Enumerations.DataKind dataKind) =>
         dataKind switch
         {
-            DataKind.CALORIMETRIC_DATA => CalorimetricData,
-            DataKind.GEOMETRIC_DATA => GeometricData,
-            DataKind.HYGROTHERMAL_DATA => HygrothermalData,
-            DataKind.LIFE_CYCLE_DATA => LifeCycleData,
-            DataKind.OPTICAL_DATA => OpticalData,
-            DataKind.PHOTOVOLTAIC_DATA => PhotovoltaicData,
+            Database.Enumerations.DataKind.CALORIMETRIC_DATA => CalorimetricData,
+            Database.Enumerations.DataKind.GEOMETRIC_DATA => GeometricData,
+            Database.Enumerations.DataKind.HYGROTHERMAL_DATA => HygrothermalData,
+            Database.Enumerations.DataKind.LIFE_CYCLE_DATA => LifeCycleData,
+            Database.Enumerations.DataKind.OPTICAL_DATA => OpticalData,
+            Database.Enumerations.DataKind.PHOTOVOLTAIC_DATA => PhotovoltaicData,
             _ => null, //throw new ArgumentOutOfRangeException(nameof(dataKind), $"Unsupported data kind {dataKind}"),
         };
 

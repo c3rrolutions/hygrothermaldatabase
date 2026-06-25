@@ -1,24 +1,17 @@
-import { useQuery } from "@apollo/client/react";
 import { DatabaseDocument } from "../../queries/databases.generated";
-import { Skeleton, Result, Descriptions, Typography, Tag, App } from "antd";
-import { PageHeader } from "@ant-design/pro-layout";
-import { ReactNode, useEffect } from "react";
-import { stringifyApolloError } from "../../lib/apollo";
-import UpdateDatabase from "./UpdateDatabase";
-import { DatabaseVerificationState } from "../../__generated__/graphql";
+import { Skeleton, Result, Card } from "antd";
+import { useQuery } from "@apollo/client/react";
+import { useQueryHandler } from "../../lib/hooks/useQueryHandler";
+import DatabaseSummary from "./DatabaseSummary";
+import QueryToolbar from "../QueryToolbar";
 
-export type DatabaseProps = {};
-
-export default function Database({}: DatabaseProps) {
-  const { loading, error, data } = useQuery(DatabaseDocument);
+export default function Database() {
+  const queryVariables = {};
+  const { loading, error, data } = useQuery(DatabaseDocument, {
+    variables: queryVariables,
+  });
+  useQueryHandler({ error });
   const database = data?.database;
-  const { message } = App.useApp();
-
-  useEffect(() => {
-    if (error) {
-      message.error(stringifyApolloError(error));
-    }
-  }, [error]);
 
   if (loading) {
     return <Skeleton active avatar title />;
@@ -35,52 +28,11 @@ export default function Database({}: DatabaseProps) {
   }
 
   return (
-    <>
-      <PageHeader
-        title={database.name}
-        subTitle={database.description}
-        extra={([] as ReactNode[]).concat(
-          database.isAuthorizedToUpdateNode
-            ? [
-                <UpdateDatabase
-                  key="updateDatabase"
-                  databaseId={database.uuid}
-                  name={database.name}
-                  description={database.description}
-                  locator={database.locator}
-                />,
-              ]
-            : [],
-        )}
-        tags={[
-          <Tag key="verificationState" color="magenta">
-            {database.verificationState}
-          </Tag>,
-        ]}
-        backIcon={false}
-      >
-        <Descriptions size="small" column={1}>
-          <Descriptions.Item label="UUID">{database.uuid}</Descriptions.Item>
-          <Descriptions.Item label="Located at">
-            <Typography.Link href={database.locator}>
-              {database.locator}
-            </Typography.Link>
-          </Descriptions.Item>
-        </Descriptions>
-      </PageHeader>
-      {database.isAuthorizedToVerifyNode &&
-        database.verificationState == DatabaseVerificationState.Pending && (
-          <Typography.Paragraph>
-            Have your database&apos;s GraphQL endpoint return the verification
-            code &ldquo;
-            {database.verificationCode}&rdquo; (without the quotation marks),
-            when queried for the GraphQL query &ldquo;verificationCode&rdquo;.
-            Then, press the &ldquo;Verify&rdquo; button above to make the
-            metabase assert that the verification codes match which proves that
-            you control the GraphQL endpoint {database.locator}. Verified
-            databases are publicly listed and included in data searches.
-          </Typography.Paragraph>
-        )}
-    </>
+    <div>
+      <Card style={{ marginBottom: "1em" }}>
+        <DatabaseSummary entity={database} />
+      </Card>
+      <QueryToolbar query={DatabaseDocument} variables={queryVariables} />
+    </div>
   );
 }

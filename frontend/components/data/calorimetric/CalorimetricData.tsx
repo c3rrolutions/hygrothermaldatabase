@@ -1,37 +1,30 @@
 import { Scalars } from "../../../__generated__/graphql";
 import { CalorimetricDataDocument } from "../../../queries/data.generated";
-import { Skeleton, Result, Descriptions, App } from "antd";
-import { useEffect } from "react";
-import { stringifyApolloError } from "../../../lib/apollo";
-import DataPageHeader from "../DataPageHeader";
+import { Skeleton, Result, Card } from "antd";
 import { useQuery } from "@apollo/client/react";
+import { useQueryHandler } from "../../../lib/hooks/useQueryHandler";
+import CalorimetricDataSummary from "./CalorimetricDataSummary";
+import QueryToolbar from "../../QueryToolbar";
 
-export type CalorimetricDataProps = {
-  calorimetricDataId: Scalars["Uuid"]["input"];
-};
+interface CalorimetricDataProps {
+  id: Scalars["Uuid"]["input"];
+}
 
-export default function CalorimetricData({
-  calorimetricDataId,
-}: CalorimetricDataProps) {
+export default function CalorimetricData({ id }: CalorimetricDataProps) {
+  const queryVariables = {
+    id,
+  };
   const { loading, error, data } = useQuery(CalorimetricDataDocument, {
-    variables: {
-      uuid: calorimetricDataId,
-    },
+    variables: queryVariables,
   });
-  const calorimetricData = data?.calorimetricData;
-  const { message } = App.useApp();
-
-  useEffect(() => {
-    if (error) {
-      message.error(stringifyApolloError(error));
-    }
-  }, [error]);
+  useQueryHandler({ error });
+  const theData = data?.data;
 
   if (loading) {
     return <Skeleton active avatar title />;
   }
 
-  if (!calorimetricData) {
+  if (!theData) {
     return (
       <Result
         status="500"
@@ -42,27 +35,14 @@ export default function CalorimetricData({
   }
 
   return (
-    <>
-      <DataPageHeader
-        data={calorimetricData}
-        // extra={[
-        //   <UpdateCalorimetricData
-        //     key="updateCalorimetricData"
-        //     calorimetricDataId={calorimetricData.uuid}
-        //   />,
-        // ]}
-      >
-        <Descriptions.Item key="gValues" label="g Values">
-          {calorimetricData.gValues
-            .map((x) => x.toLocaleString("en"))
-            .join(", ")}
-        </Descriptions.Item>
-        <Descriptions.Item key="uValues" label="u Values">
-          {calorimetricData.uValues
-            .map((x) => x.toLocaleString("en"))
-            .join(", ")}
-        </Descriptions.Item>
-      </DataPageHeader>
-    </>
+    <div>
+      <Card style={{ marginBottom: "1em" }}>
+        <CalorimetricDataSummary entity={theData} />
+      </Card>
+      <QueryToolbar
+        query={CalorimetricDataDocument}
+        variables={queryVariables}
+      />
+    </div>
   );
 }

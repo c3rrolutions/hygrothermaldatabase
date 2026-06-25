@@ -12,6 +12,7 @@ using Database.Services;
 using GraphQL.Client.Abstractions.Utilities;
 using GreenDonut.Data;
 using HotChocolate.Types;
+using HotChocolate.Authorization;
 
 namespace Database.GraphQl.DataApprovals;
 
@@ -60,6 +61,7 @@ public sealed class RemoveDataApprovalMutation
         IReadOnlyList<string> path
     ) => new(code, message, path);
 
+    [Authorize(Policy = AuthorizationPolicies.AuthenticatedPolicy)]
     public async Task<RemoveDataApprovalPayload> RemoveDataApprovalAsync(
         RemoveDataApprovalInput input,
         ApplicationDbContext context,

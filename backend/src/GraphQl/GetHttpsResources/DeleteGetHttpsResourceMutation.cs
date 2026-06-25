@@ -11,6 +11,7 @@ using Database.Extensions;
 using Database.Services;
 using GraphQL.Client.Abstractions.Utilities;
 using HotChocolate.Types;
+using HotChocolate.Authorization;
 using Microsoft.EntityFrameworkCore;
 
 namespace Database.GraphQl.GetHttpsResources;
@@ -60,6 +61,7 @@ public sealed class DeleteGetHttpsResourceMutation
         IReadOnlyList<string> path
     ) => new(code, message, path);
 
+    [Authorize(Policy = AuthorizationPolicies.AuthenticatedPolicy)]
     public async Task<DeleteGetHttpsResourcePayload> DeleteGetHttpsResourceAsync(
         DeleteGetHttpsResourceInput input,
         ApplicationDbContext context,
@@ -130,7 +132,7 @@ public sealed class DeleteGetHttpsResourceMutation
                 )
             );
         }
-        if (errors.Count >= 1)
+        if (errors.Count > 0)
         {
             return NewPayload(null, errors);
         }

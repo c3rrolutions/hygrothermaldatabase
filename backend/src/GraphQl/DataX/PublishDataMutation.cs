@@ -10,6 +10,7 @@ using Database.Enumerations;
 using Database.Extensions;
 using Database.Services;
 using HotChocolate.Types;
+using HotChocolate.Authorization;
 using Microsoft.EntityFrameworkCore;
 
 namespace Database.GraphQl.DataX;
@@ -57,6 +58,7 @@ public sealed class PublishDataMutation
         IReadOnlyList<string> path
     ) => new(code, message, path);
 
+    [Authorize(Policy = AuthorizationPolicies.AuthenticatedPolicy)]
     public async Task<PublishDataPayload> PublishDataAsync(
         PublishDataInput input,
         CommonAuthorization authorization,
@@ -120,7 +122,7 @@ public sealed class PublishDataMutation
             .Where(_ => _.GetDataId(input.DataKind) == input.DataId)
             .ToListAsync(cancellationToken);
         var resourcesWithoutFile = resources.Where(_ => !_.DoesFileExist()).ToList();
-        if (resourcesWithoutFile.Count >= 1)
+        if (resourcesWithoutFile.Count > 0)
         {
             errors.Add(
                 NewError(
@@ -130,7 +132,7 @@ public sealed class PublishDataMutation
                 )
             );
         }
-        if (errors.Count >= 1)
+        if (errors.Count > 0)
         {
             return NewPayload(null, errors);
         }

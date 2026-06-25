@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
@@ -64,10 +65,12 @@ public sealed class SigningService(
 {
     public static readonly Uri KeyServerUrl = new("hkps://keys.openpgp.org/", UriKind.Absolute);
 
-    public async Task AssertGnuPgKeyExistence()
+    public async Task AssertGnuPgKeyExistenceAsync(CancellationToken cancellationToken)
     {
-        var (success, output, diagnostics) = await ExecuteCommand(
-            $"gpg --batch --with-colons --list-keys | grep '{appSettings.GnupgSecretSigningKey.Fingerprint}'"
+        var (success, output, diagnostics) = await ExecuteCommandAsync(
+            $"gpg --batch --with-colons --list-keys | grep '{appSettings.GnupgSecretSigningKey.Fingerprint}'",
+            null,
+            cancellationToken
         );
         if (!success)
         {
@@ -75,11 +78,15 @@ public sealed class SigningService(
         }
     }
 
-    public async Task<(string Signature, string Fingerprint)> SignData(string data)
+    public async Task<(string Signature, string Fingerprint)> SignDataAsync(
+        string data,
+        CancellationToken cancellationToken
+    )
     {
-        var (success, signature, diagnostics) = await ExecuteCommand(
+        var (success, signature, diagnostics) = await ExecuteCommandAsync(
             $"gpg --pinentry-mode loopback --batch --passphrase '{appSettings.GnupgSecretSigningKey.Passphrase}' --detach-sig --armor --local-user '{appSettings.GnupgSecretSigningKey.Fingerprint}'",
-            data
+            data,
+            cancellationToken
         );
         if (!success)
         {
@@ -89,11 +96,14 @@ public sealed class SigningService(
         return (signature, appSettings.GnupgSecretSigningKey.Fingerprint);
     }
 
-    public async Task<SigantureVerificationResult> VerifySignature(
-        string message, string signature, string fingerprint
+    public async Task<SigantureVerificationResult> VerifySignatureAsync(
+        string message,
+        string signature,
+        string fingerprint,
+        CancellationToken cancellationToken
     )
     {
-        if (!await ReceiveKey(fingerprint))
+        if (!await ReceiveKeyAsync(fingerprint, cancellationToken))
         {
             return SigantureVerificationResult.FAILED_RECEIVING_KEY;
         }
@@ -101,9 +111,10 @@ public sealed class SigningService(
         try
         {
             File.WriteAllText(temporaryMessageFilePath, message);
-            var (success, output, diagnostics) = await ExecuteCommand(
+            var (success, output, diagnostics) = await ExecuteCommandAsync(
                 $"gpg --pinentry-mode loopback --batch --always-trust --assert-signer '{fingerprint}' --verify - '{temporaryMessageFilePath}'",
-                signature
+                signature,
+                cancellationToken
             );
             if (!success)
             {
@@ -122,10 +133,15 @@ public sealed class SigningService(
         }
     }
 
-    private async Task<bool> ReceiveKey(string fingerprint)
+    private async Task<bool> ReceiveKeyAsync(
+        string fingerprint,
+        CancellationToken cancellationToken
+    )
     {
-        var (success, output, diagnostics) = await ExecuteCommand(
-            $"gpg --pinentry-mode loopback --batch --keyserver {KeyServerUrl.AbsoluteUri} --receive-keys {fingerprint}"
+        var (success, output, diagnostics) = await ExecuteCommandAsync(
+            $"gpg --pinentry-mode loopback --batch --keyserver {KeyServerUrl.AbsoluteUri} --receive-keys {fingerprint}",
+            null,
+            cancellationToken
         );
         if (!success)
         {
@@ -134,9 +150,10 @@ public sealed class SigningService(
         return success;
     }
 
-    private async Task<(bool Success, string Output, string Diagnostics)> ExecuteCommand(
+    private async Task<(bool Success, string Output, string Diagnostics)> ExecuteCommandAsync(
         string command,
-        string? input = null
+        string? input,
+        CancellationToken cancellationToken
     )
     {
         logger.ExecuteCommand(command);
@@ -161,16 +178,16 @@ public sealed class SigningService(
         ) ?? throw new InvalidOperationException($"The process for command '{command}' with the input '{input}' failed to start.");
         if (input is not null)
         {
-            await process.StandardInput.WriteLineAsync(input);
-            await process.StandardInput.FlushAsync();
+            await process.StandardInput.WriteLineAsync(input.AsMemory(), cancellationToken);
+            await process.StandardInput.FlushAsync(cancellationToken);
         }
         process.StandardInput.Close();
-        var output = process.StandardOutput.ReadToEnd();
-        var diagnostics = process.StandardError.ReadToEnd();
-        await process.WaitForExitAsync();
+        var output = await process.StandardOutput.ReadToEndAsync(cancellationToken);
+        var diagnostics = await process.StandardError.ReadToEndAsync(cancellationToken);
+        await process.WaitForExitAsync(cancellationToken);
         logger.ExecuteCommandOutput(output);
         logger.ExecuteCommandDiagnostics(diagnostics);
         logger.ExecuteCommandExitCode(process.ExitCode);
-        return (process.ExitCode == 0, output, diagnostics);
+        return (process.ExitCode is 0, output, diagnostics);
     }
 }

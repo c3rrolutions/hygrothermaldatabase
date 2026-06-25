@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  output: "standalone", // https://nextjs.org/docs/app/api-reference/config/next-config-js/output#automatically-copying-traced-files
+  output: "standalone",
   reactStrictMode: true,
   typedRoutes: true,
   allowedDevOrigins: process.env.HOST == null ? [] : [`*.${process.env.HOST}`],

@@ -2,93 +2,64 @@ import { useMutation } from "@apollo/client/react";
 import { Form, Input, Button, Modal } from "antd";
 import {
   UpdateDatabaseDocument,
-  DatabaseDocument,
+  UpdateDatabaseMutation,
+  DatabasePartialFragment,
 } from "../../queries/databases.generated";
 import { Scalars } from "../../__generated__/graphql";
 import { useState } from "react";
-import { handleFormErrors } from "../../lib/form";
+import { layout, tailLayout } from "../../lib/form";
+import { useMutationHandler } from "../../lib/hooks/useMutationHandler";
 import ErrorAlert from "../ErrorAlert";
-
-const layout = {
-  labelCol: { span: 8 },
-  wrapperCol: { span: 16 },
-};
-const tailLayout = {
-  wrapperCol: { offset: 8, span: 16 },
-};
+import EditButton from "../EditButton";
 
 type FormValues = {
-  newName: string;
-  newDescription: string;
-  newLocator: Scalars["Url"]["input"];
-};
-
-export type UpdateDatabaseProps = {
-  databaseId: Scalars["Uuid"]["input"];
   name: string;
   description: string;
   locator: Scalars["Url"]["input"];
 };
 
-export default function UpdateDatabase({
-  databaseId,
-  name,
-  description,
-  locator,
-}: UpdateDatabaseProps) {
+interface UpdateDatabaseProps {
+  database: DatabasePartialFragment;
+}
+
+export default function UpdateDatabase({ database }: UpdateDatabaseProps) {
   const [open, setOpen] = useState(false);
-  const [updateDatabaseMutation] = useMutation(UpdateDatabaseDocument, {
-    // TODO Update the cache more efficiently as explained on https://www.apollographql.com/docs/react/caching/cache-interaction/ and https://www.apollographql.com/docs/react/data/mutations/#making-all-other-cache-updates
-    // See https://www.apollographql.com/docs/react/data/mutations/#options
-    refetchQueries: [
-      {
-        query: DatabaseDocument,
-        variables: {
-          uuid: databaseId,
-        },
-      },
-    ],
-  });
   const [globalErrorMessages, setGlobalErrorMessages] = useState(
     new Array<string>(),
   );
   const [form] = Form.useForm<FormValues>();
-  const [updating, setUpdating] = useState(false);
 
-  const onFinish = ({ newName, newDescription, newLocator }: FormValues) => {
-    const update = async () => {
-      try {
-        setUpdating(true);
-        // https://www.apollographql.com/docs/react/networking/authentication/#reset-store-on-logout
-        const { error, data } = await updateDatabaseMutation({
+  const [updateDatabaseMutation] = useMutation(UpdateDatabaseDocument);
+
+  const { mutating, withMutationHandler, augmentFormWithErrors } =
+    useMutationHandler<UpdateDatabaseMutation>({
+      getErrors: (data) => data.updateDatabase.errors,
+    });
+
+  const onFinish = (values: FormValues) => {
+    withMutationHandler(
+      () =>
+        updateDatabaseMutation({
           variables: {
-            databaseId: databaseId,
-            name: newName,
-            description: newDescription,
-            locator: newLocator,
+            input: {
+              databaseId: database.uuid,
+              name: values.name,
+              description: values.description,
+              locator: values.locator,
+            },
           },
-        });
-        handleFormErrors(
-          error,
-          data?.updateDatabase?.errors?.map((x) => {
-            return { code: x.code, message: x.message, path: x.path };
-          }),
-          setGlobalErrorMessages,
-          form,
-        );
-        if (!error && !data?.updateDatabase?.errors)
-          data?.updateDatabase?.database;
-        {
+        }),
+      {
+        onSuccess: () => {
+          setGlobalErrorMessages([]);
           setOpen(false);
-        }
-      } catch (error) {
-        // TODO Handle properly.
-        console.log("Failed:", error);
-      } finally {
-        setUpdating(false);
-      }
-    };
-    update();
+        },
+        onError: (graphQlErrors, userErrors) =>
+          setGlobalErrorMessages(
+            augmentFormWithErrors(graphQlErrors, userErrors, form),
+          ),
+      },
+    );
   };
 
   const onFinishFailed = () => {
@@ -97,12 +68,16 @@ export default function UpdateDatabase({
 
   return (
     <>
-      <Button onClick={() => setOpen(true)}>Edit</Button>
+      <EditButton onClick={() => setOpen(true)} />
       <Modal
         open={open}
         title="Edit Database"
         // onOk={handleOk}
-        onCancel={() => setOpen(false)}
+        onCancel={() => {
+          setGlobalErrorMessages([]);
+          form.resetFields();
+          setOpen(false);
+        }}
         footer={false}
       >
         <ErrorAlert messages={globalErrorMessages} />
@@ -115,31 +90,31 @@ export default function UpdateDatabase({
         >
           <Form.Item
             label="Name"
-            name="newName"
+            name="name"
             rules={[
               {
                 required: true,
               },
             ]}
-            initialValue={name}
+            initialValue={database.name}
           >
             <Input />
           </Form.Item>
           <Form.Item
             label="Description"
-            name="newDescription"
+            name="description"
             rules={[
               {
                 required: true,
               },
             ]}
-            initialValue={description}
+            initialValue={database.description}
           >
             <Input />
           </Form.Item>
           <Form.Item
             label="Locator"
-            name="newLocator"
+            name="locator"
             rules={[
               {
                 required: true,
@@ -148,12 +123,12 @@ export default function UpdateDatabase({
                 type: "url",
               },
             ]}
-            initialValue={locator}
+            initialValue={database.locator}
           >
             <Input />
           </Form.Item>
           <Form.Item {...tailLayout}>
-            <Button type="primary" htmlType="submit" loading={updating}>
+            <Button type="primary" htmlType="submit" loading={mutating}>
               Update
             </Button>
           </Form.Item>

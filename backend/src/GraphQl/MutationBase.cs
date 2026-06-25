@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Database.Authorization;
-using static Database.ApiRequests.QueryCurrentUserOrInstitution;
+using static Database.ApiRequests.QueryCurrentUserOrApplication;
 
 namespace Database.GraphQl;
 
@@ -13,7 +13,7 @@ where TPayload : class
     protected abstract TPayload NewPayload(TData? data, IReadOnlyCollection<TError>? errors);
     protected abstract TError NewError(TErrorCode errorCode, string message, IReadOnlyList<string> path);
 
-    protected async Task<Result<CurrentUserOrInstitution, TPayload>> AuthorizeAsync(
+    protected async Task<Result<CurrentUserOrApplication, TPayload>> AuthorizeAsync(
         TErrorCode unauthenticatedErrorCode,
         TErrorCode unauthorizedErrorCode,
         CommonAuthorization authorization,
@@ -22,7 +22,7 @@ where TPayload : class
     {
         if (!await authorization.IsAuthenticated(cancellationToken))
         {
-            return new Result<CurrentUserOrInstitution, TPayload>.Error(
+            return new Result<CurrentUserOrApplication, TPayload>.Error(
                 NewPayload(null, [
                     NewError(
                         unauthenticatedErrorCode,
@@ -34,7 +34,7 @@ where TPayload : class
         }
         if (!await authorization.IsDatabaseOperator(cancellationToken))
         {
-            return new Result<CurrentUserOrInstitution, TPayload>.Error(
+            return new Result<CurrentUserOrApplication, TPayload>.Error(
                 NewPayload(null, [
                     NewError(
                         unauthorizedErrorCode,
@@ -44,8 +44,8 @@ where TPayload : class
                 ])
             );
         }
-        return new Result<CurrentUserOrInstitution, TPayload>.Data(
-            await authorization.FetchCurrentUserOrInstitutionAsync(cancellationToken)
+        return new Result<CurrentUserOrApplication, TPayload>.Data(
+            await authorization.FetchCurrentUserOrApplicationAsync(cancellationToken)
         );
     }
 }

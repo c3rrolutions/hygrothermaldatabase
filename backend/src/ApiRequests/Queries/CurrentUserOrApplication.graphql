@@ -1,0 +1,86 @@
+query CurrentUserOrApplication($databaseId: Uuid!) {
+  currentUser {
+    uuid
+    name
+    representedInstitutions {
+      edges {
+        node {
+          uuid
+          name
+          managedInstitutions {
+            edges {
+              node {
+                uuid
+                name
+              }
+            }
+            totalCount
+          }
+        }
+        role
+      }
+      totalCount
+    }
+    databaseOperatingRepresentedInstitutions: representedInstitutions(
+      where: {
+        or: [
+          {
+            and: [
+              { role: { in: [ASSISTANT, OWNER] } }
+              {
+                institution: {
+                  operatedDatabases: { some: { id: { equalTo: $databaseId } } }
+                }
+              }
+            ]
+          }
+          {
+            and: [
+              { role: { in: [ASSISTANT, OWNER] } }
+              {
+                institution: {
+                  managedInstitutions: {
+                    some: {
+                      operatedDatabases: {
+                        some: { id: { equalTo: $databaseId } }
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ) {
+      edges {
+        node {
+          uuid
+          name
+        }
+        role
+      }
+      totalCount
+    }
+  }
+  currentApplication: currentOpenIdConnectApplication {
+    clientId
+    displayName
+    owner {
+      node {
+        databaseOperatingDatabases: operatedDatabases(
+          where: { id: { equalTo: $databaseId } }
+        ) {
+          totalCount
+        }
+        databaseOperatingManagedInstitutions: managedInstitutions(
+          where: {
+            operatedDatabases: { some: { id: { equalTo: $databaseId } } }
+          }
+        ) {
+          totalCount
+        }
+      }
+    }
+  }
+}

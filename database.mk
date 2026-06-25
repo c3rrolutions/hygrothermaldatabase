@@ -23,7 +23,6 @@ help : ## Print this help
 psql : ## Enter PostgreSQL interactive terminal in the `database` container
 	docker compose up \
 		--no-build \
-		--no-deps \
 		--no-recreate \
 		--wait \
 		database
@@ -44,7 +43,6 @@ remove-volume : ## Remove data and files volumes
 create : ## Create database with name `${POSTGRES_DATABASE_NAME}`
 	docker compose up \
 		--no-build \
-		--no-deps \
 		--no-recreate \
 		--wait \
 		database
@@ -59,7 +57,6 @@ create : ## Create database with name `${POSTGRES_DATABASE_NAME}`
 drop : ## Drop database with name `${POSTGRES_DATABASE_NAME}`
 	docker compose up \
 		--no-build \
-		--no-deps \
 		--no-recreate \
 		--wait \
 		database
@@ -74,7 +71,6 @@ drop : ## Drop database with name `${POSTGRES_DATABASE_NAME}`
 sql : ## Run the SQL script in the file `${SCRIPT}` in the database service, for example, `make sql SCRIPT=./my.sql ` (note that after database schema changes it is necessary to restart the backend service for the object-relational mapper Npgsql to work seamlessly, for example, by restarting the backend service with `./docker.mk restart SERVICE=backend`)
 	docker compose up \
 		--no-build \
-		--no-deps \
 		--no-recreate \
 		--wait \
 		database
@@ -108,7 +104,6 @@ backup : ## Backup database and related data to directory with absolute path `${
 	mkdir --parents "${DIR}"
 	docker compose up \
 		--no-build \
-		--no-deps \
 		--no-recreate \
 		--wait \
 		database
@@ -143,7 +138,6 @@ restore : ## Restore database and related data from directory with absolute path
 		backend
 	docker compose up \
 		--no-build \
-		--no-deps \
 		--no-recreate \
 		--wait \
 		database

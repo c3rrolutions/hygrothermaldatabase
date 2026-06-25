@@ -1,37 +1,30 @@
 import { Scalars } from "../../../__generated__/graphql";
 import { HygrothermalDataDocument } from "../../../queries/data.generated";
-import { Skeleton, Result, App } from "antd";
-import { useEffect } from "react";
-import { stringifyApolloError } from "../../../lib/apollo";
-import DataPageHeader from "../DataPageHeader";
+import { Skeleton, Result, Card } from "antd";
 import { useQuery } from "@apollo/client/react";
+import { useQueryHandler } from "../../../lib/hooks/useQueryHandler";
+import HygrothermalDataSummary from "./HygrothermalDataSummary";
+import QueryToolbar from "../../QueryToolbar";
 
-export type HygrothermalDataProps = {
-  hygrothermalDataId: Scalars["Uuid"]["input"];
-};
+interface HygrothermalDataProps {
+  id: Scalars["Uuid"]["input"];
+}
 
-export default function HygrothermalData({
-  hygrothermalDataId,
-}: HygrothermalDataProps) {
+export default function HygrothermalData({ id }: HygrothermalDataProps) {
+  const queryVariables = {
+    id,
+  };
   const { loading, error, data } = useQuery(HygrothermalDataDocument, {
-    variables: {
-      uuid: hygrothermalDataId,
-    },
+    variables: queryVariables,
   });
-  const hygrothermalData = data?.hygrothermalData;
-  const { message } = App.useApp();
-
-  useEffect(() => {
-    if (error) {
-      message.error(stringifyApolloError(error));
-    }
-  }, [error]);
+  useQueryHandler({ error });
+  const theData = data?.data;
 
   if (loading) {
     return <Skeleton active avatar title />;
   }
 
-  if (!hygrothermalData) {
+  if (!theData) {
     return (
       <Result
         status="500"
@@ -42,16 +35,14 @@ export default function HygrothermalData({
   }
 
   return (
-    <>
-      <DataPageHeader
-        data={hygrothermalData}
-        // extra={[
-        //   <UpdateHygrothermalData
-        //     key="updateHygrothermalData"
-        //     hygrothermalDataId={hygrothermalData.uuid}
-        //   />,
-        // ]}
-      ></DataPageHeader>
-    </>
+    <div>
+      <Card style={{ marginBottom: "1em" }}>
+        <HygrothermalDataSummary entity={theData} />
+      </Card>
+      <QueryToolbar
+        query={HygrothermalDataDocument}
+        variables={queryVariables}
+      />
+    </div>
   );
 }

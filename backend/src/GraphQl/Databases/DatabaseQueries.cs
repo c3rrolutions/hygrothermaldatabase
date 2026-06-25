@@ -10,20 +10,20 @@ namespace Database.GraphQl.Databases;
 [ExtendObjectType(nameof(Query))]
 public sealed class DatabaseQueries
 {
-    public async Task<QueryDatabase.Database> GetDatabaseAsync(
+    public async Task<DatabaseDataLoader.Database> GetDatabaseAsync(
         AppSettings appSettings,
-        QueryDatabase queryDatabase,
+        IDatabaseByIdDataLoader byId,
         IResolverContext resolverContext,
         CancellationToken cancellationToken
     )
     {
         var database = await GraphQlRequestHelper.TransformExceptionsAsync(
-            () => queryDatabase.Do(
+            () => byId.LoadAsync(
                 appSettings.DatabaseId,
                 cancellationToken
             ),
             resolverContext,
-            queryDatabase.GetGraphQlEndpoint
+            DatabaseDataLoader.GetGraphQlEndpoint(appSettings)
         );
         if (database is null)
         {

@@ -8,7 +8,7 @@ function Page() {
       <Row justify="center">
         <Col>
           <Card title="Create Data">
-            <Typography.Paragraph style={{ maxWidth: 768 }}>
+            <Typography.Paragraph style={{ maxWidth: "75ch" }}>
               Create data by sending GraphQL mutations to the{" "}
               <Typography.Link href={paths.graphQl}>
                 GraphQL endpoint

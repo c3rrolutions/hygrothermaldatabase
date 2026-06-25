@@ -11,7 +11,7 @@ public sealed class ReferenceSortType
     )
     {
         descriptor.BindFieldsExplicitly();
-        descriptor.Field(x => x.Standard);
-        descriptor.Field(x => x.Publication);
+        descriptor.Field(_ => _.Standard);
+        descriptor.Field(_ => _.Publication);
     }
 }

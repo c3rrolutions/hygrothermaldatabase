@@ -1,37 +1,30 @@
 import { Scalars } from "../../../__generated__/graphql";
 import { GeometricDataDocument } from "../../../queries/data.generated";
-import { Skeleton, Result, Descriptions, App } from "antd";
-import { useEffect } from "react";
-import { stringifyApolloError } from "../../../lib/apollo";
-import DataPageHeader from "../DataPageHeader";
+import { Skeleton, Result, Card } from "antd";
 import { useQuery } from "@apollo/client/react";
+import { useQueryHandler } from "../../../lib/hooks/useQueryHandler";
+import GeometricDataSummary from "./GeometricDataSummary";
+import QueryToolbar from "../../QueryToolbar";
 
-export type GeometricDataProps = {
-  geometricDataId: Scalars["Uuid"]["input"];
-};
+interface GeometricDataProps {
+  id: Scalars["Uuid"]["input"];
+}
 
-export default function GeometricData({ geometricDataId }: GeometricDataProps) {
+export default function GeometricData({ id }: GeometricDataProps) {
+  const queryVariables = {
+    id,
+  };
   const { loading, error, data } = useQuery(GeometricDataDocument, {
-    variables: {
-      uuid: geometricDataId,
-    },
+    variables: queryVariables,
   });
-
-  const geometricData = data?.geometricData;
-
-  const { message } = App.useApp();
-
-  useEffect(() => {
-    if (error) {
-      message.error(stringifyApolloError(error));
-    }
-  }, [error]);
+  useQueryHandler({ error });
+  const theData = data?.data;
 
   if (loading) {
     return <Skeleton active avatar title />;
   }
 
-  if (!geometricData) {
+  if (!theData) {
     return (
       <Result
         status="500"
@@ -42,22 +35,11 @@ export default function GeometricData({ geometricDataId }: GeometricDataProps) {
   }
 
   return (
-    <>
-      <DataPageHeader
-        data={geometricData}
-        // extra={[
-        //   <UpdateGeometricData
-        //     key="updateGeometricData"
-        //     geometricDataId={geometricData.uuid}
-        //   />,
-        // ]}
-      >
-        <Descriptions.Item key="thicknesses" label="Thicknesses">
-          {geometricData.thicknesses
-            .map((x) => x.toLocaleString("en"))
-            .join(", ")}
-        </Descriptions.Item>
-      </DataPageHeader>
-    </>
+    <div>
+      <Card style={{ marginBottom: "1em" }}>
+        <GeometricDataSummary entity={theData} />
+      </Card>
+      <QueryToolbar query={GeometricDataDocument} variables={queryVariables} />
+    </div>
   );
 }

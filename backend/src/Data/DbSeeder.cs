@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -18,7 +19,8 @@ public static partial class Log
 public sealed class DbSeeder
 {
     public static async Task DoAsync(
-        IServiceProvider services
+        IServiceProvider services,
+        CancellationToken cancellationToken
     )
     {
         var logger = services.GetRequiredService<ILogger<DbSeeder>>();

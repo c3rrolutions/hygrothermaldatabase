@@ -1,16 +1,17 @@
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Database.Authorization;
 using Database.Data;
 using Database.GraphQl.DataX;
+using Database.GraphQl.Scalars;
 using Database.Services;
 using HotChocolate;
 using HotChocolate.Data;
-using HotChocolate.Data.Sorting;
 using HotChocolate.Resolvers;
 using HotChocolate.Types;
+using NodaTime;
+using Microsoft.EntityFrameworkCore;
 
 namespace Database.GraphQl.PhotovoltaicDataX;
 
@@ -19,49 +20,43 @@ public sealed class PhotovoltaicDataQueries
 : DataQueriesBase<PhotovoltaicData>
 {
     [UsePaging]
-    // [UseProjection] // We disabled projections because when requesting `id` all results had the
-    // same `id` and when also requesting `uuid`, the latter was always the empty UUID `000...`.
     [UseFiltering<PhotovoltaicDataFilterType>]
     [UseSorting<PhotovoltaicDataSortType>]
-    public Task<IEnumerable<PhotovoltaicData>> GetAllPhotovoltaicDataAsync(
+    public Task<HotChocolate.Types.Pagination.Connection<PhotovoltaicData>> GetAllPhotovoltaicDataAsync(
         [GraphQLType<LocaleType>] string? locale,
-        ApplicationDbContext context,
-        AccessRightsService accessRightsService,
-        ISortingContext sorting,
+        IDbContextFactory<ApplicationDbContext> databaseContextFactory,
+        AccessPolicyService accessPolicyService,
         IResolverContext resolverContext,
         CancellationToken cancellationToken
     )
     {
         return GetAllDataAsync(
-            context.PhotovoltaicData,
+            databaseContext => databaseContext.PhotovoltaicData,
             locale,
-            accessRightsService,
-            sorting,
+            databaseContextFactory,
+            accessPolicyService,
             resolverContext,
             cancellationToken
         );
     }
 
     [UsePaging]
-    // [UseProjection] // We disabled projections because when requesting `id` all results had the
-    // same `id` and when also requesting `uuid`, the latter was always the empty UUID `000...`.
     [UseFiltering<PhotovoltaicDataFilterType>]
     [UseSorting<PhotovoltaicDataSortType>]
-    public Task<IEnumerable<PhotovoltaicData>> GetAllPendingPhotovoltaicDataAsync(
+    public Task<HotChocolate.Types.Pagination.Connection<PhotovoltaicData>> GetAllPendingPhotovoltaicDataAsync(
         [GraphQLType<LocaleType>] string? locale,
-        ApplicationDbContext context,
-        AccessRightsService accessRightsService,
-        ISortingContext sorting,
+        IDbContextFactory<ApplicationDbContext> databaseContextFactory,
+        AccessPolicyService accessPolicyService,
         IResolverContext resolverContext,
         CommonAuthorization authorization,
         CancellationToken cancellationToken
     )
     {
         return GetAllPendingDataAsync(
-            context.PhotovoltaicData,
+            databaseContext => databaseContext.PhotovoltaicData,
             locale,
-            accessRightsService,
-            sorting,
+            databaseContextFactory,
+            accessPolicyService,
             resolverContext,
             authorization,
             cancellationToken
@@ -71,14 +66,17 @@ public sealed class PhotovoltaicDataQueries
     [UseFiltering<PhotovoltaicDataFilterType>]
     public Task<bool> HasPhotovoltaicDataAsync(
         [GraphQLType<LocaleType>] string? locale,
-        ApplicationDbContext context,
+        IDbContextFactory<ApplicationDbContext> databaseContextFactory,
+        AccessPolicyService accessPolicyService,
         IResolverContext resolverContext,
         CancellationToken cancellationToken
     )
     {
         return HasDataAsync(
-            context.PhotovoltaicData,
+            databaseContext => databaseContext.PhotovoltaicData,
             locale,
+            databaseContextFactory,
+            accessPolicyService,
             resolverContext,
             cancellationToken
         );
@@ -87,16 +85,18 @@ public sealed class PhotovoltaicDataQueries
     public Task<PhotovoltaicData?> GetPhotovoltaicDataAsync(
         Guid id,
         [GraphQLType<LocaleType>] string? locale,
-        PhotovoltaicDataByIdDataLoader byId,
-        AccessRightsService accessRightsService,
+        IDbContextFactory<ApplicationDbContext> databaseContextFactory,
+        AccessPolicyService accessPolicyService,
+        IClock clock,
         CancellationToken cancellationToken
     )
     {
         return GetDataAsync(
             id,
             locale,
-            byId,
-            accessRightsService,
+            databaseContext => databaseContext.PhotovoltaicData,
+            databaseContextFactory,
+            accessPolicyService,
             cancellationToken
         );
     }

@@ -1,19 +1,21 @@
 using System;
-using Database.Data;
 using GreenDonut;
 using HotChocolate.Types;
+using Database.Data;
+using Database.GraphQl.Scalars;
 
-namespace Database.GraphQl;
+namespace Database.GraphQl.Entities;
 
 public abstract class EntityType<TEntity, TEntityByIdDataLoader>
     : ObjectType<TEntity>
     where TEntity : IEntity
-    where TEntityByIdDataLoader : IDataLoader<Guid, TEntity?>
+    where TEntityByIdDataLoader : IDataLoader<Guid, TEntity>
 {
     protected override void Configure(
         IObjectTypeDescriptor<TEntity> descriptor
     )
     {
+        base.Configure(descriptor);
         descriptor
             .ImplementsNode()
             .IdField(t => t.Id)
@@ -21,11 +23,11 @@ public abstract class EntityType<TEntity, TEntityByIdDataLoader>
                     context
                         .DataLoader<TEntityByIdDataLoader>()
                         .LoadAsync(id, context.RequestAborted)
-                    ! // Notice the null-forgiving operator `!`. It's bad that we need to use it here.
             );
         descriptor
             .Field(GraphQlConstants.UuidFieldName)
             .Type<NonNullType<UuidType>>()
+            .Cost(0)
             .Resolve(context =>
                 context.Parent<TEntity>().Id
             );

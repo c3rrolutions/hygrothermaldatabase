@@ -12,6 +12,7 @@ using Database.Services;
 using GraphQL.Client.Abstractions.Utilities;
 using GreenDonut.Data;
 using HotChocolate.Types;
+using HotChocolate.Authorization;
 using Microsoft.EntityFrameworkCore;
 
 namespace Database.GraphQl.GetHttpsResources;
@@ -62,6 +63,7 @@ public sealed class UpdateRootGetHttpsResourceMutation
         IReadOnlyList<string> path
     ) => new(code, message, path);
 
+    [Authorize(Policy = AuthorizationPolicies.AuthenticatedPolicy)]
     public async Task<UpdateRootGetHttpsResourcePayload> UpdateRootGetHttpsResourceAsync(
         UpdateRootGetHttpsResourceInput input,
         ApplicationDbContext context,
@@ -112,7 +114,7 @@ public sealed class UpdateRootGetHttpsResourceMutation
             errors.AddRange(validateResourceErrors);
         }
         // Note that `dataFormat` is only `null`, when `validateResourceResult` failed.
-        if (errors.Count >= 1 || dataFormat is null)
+        if (errors.Count > 0 || dataFormat is null)
         {
             return NewPayload(null, errors);
         }

@@ -1,14 +1,29 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Threading.Tasks;
-using NodaTime;
+using Database.Data.AccessPolicies;
+using Database.Enumerations;
 
 namespace Database.Data;
 
 public sealed class HygrothermalData
     : DataX
 {
+    public const string TableName = "hygrothermal_data";
+
+    public static readonly DataKind TheKind = DataKind.HYGROTHERMAL_DATA;
+
+    public new static readonly string AssertExistenceOfRootResourceTriggerName =
+        DataX.AssertExistenceOfRootResourceTriggerName(TheKind);
+    public new static readonly string CreateDataAccessPolicyIfNecessaryTriggerName =
+        DataX.CreateDataAccessPolicyIfNecessaryTriggerName(TheKind);
+    public static readonly ImmutableArray<string> TriggerNames = [
+        AssertExistenceOfRootResourceTriggerName,
+        CreateDataAccessPolicyIfNecessaryTriggerName
+    ];
+
     public HygrothermalData(
         Guid? userId,
         string locale,
@@ -17,7 +32,7 @@ public sealed class HygrothermalData
         string? description,
         string[] warnings,
         Guid creatorId,
-        OffsetDateTime createdAt,
+        DateTimeOffset createdAt,
         AppliedMethod appliedMethod
     ) : base(
         userId,
@@ -42,7 +57,7 @@ public sealed class HygrothermalData
         string? description,
         string[] warnings,
         Guid creatorId,
-        OffsetDateTime createdAt
+        DateTimeOffset createdAt
     ) : base(
         userId,
         locale,
@@ -56,8 +71,14 @@ public sealed class HygrothermalData
     {
     }
 
+    [NotMapped]
+    public override DataKind Kind => TheKind;
+
     [InverseProperty(nameof(GetHttpsResource.HygrothermalData))]
     public override ICollection<GetHttpsResource> Resources { get; } = [];
+
+    [InverseProperty(nameof(DataAccessPolicy.HygrothermalData))]
+    public override DataAccessPolicy? AccessPolicy { get; set; }
 
     public override Task ExtractAndSetValuesFromFile(
         string filePath,

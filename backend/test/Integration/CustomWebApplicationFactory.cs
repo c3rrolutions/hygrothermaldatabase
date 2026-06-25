@@ -65,34 +65,12 @@ public sealed class CustomWebApplicationFactory
         }
     }
 
-    protected override IHost CreateHost(IHostBuilder builder)
-    {
-        builder.UseEnvironment(Database.Program.TestEnvironment);
-        builder.UseSerilog((context, services, configuration) =>
-        {
-            configuration
-                .ReadFrom.Configuration(context.Configuration) // appsettings.test.json
-                .WriteTo.NUnitOutput(formatProvider: CultureInfo.InvariantCulture);
-        });
-        return base.CreateHost(builder);
-    }
-
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         var databaseName = Guid.NewGuid().ToString().Replace("-", "");
         // var schemaName = $"database_{Guid.NewGuid().ToString().Replace("-", "")}";
         // builder.ConfigureAppConfiguration(_ => _.AddInMemoryCollection([new KeyValuePair<string, string?>("Database__Name", databaseName)])); // "Database__SchemaName"
         builder.UseEnvironment(Database.Program.TestEnvironment);
-        builder.ConfigureAppConfiguration((webHostBuilderContext, configurationBuilder) =>
-            {
-                configurationBuilder.Sources.Clear();
-                Database.Program.ConfigureAppConfiguration(
-                    configurationBuilder,
-                    webHostBuilderContext.HostingEnvironment,
-                    []
-                );
-            }
-        );
         builder.ConfigureServices(serviceCollection =>
             {
                 using var scope = serviceCollection.BuildServiceProvider().CreateScope();
@@ -126,6 +104,17 @@ public sealed class CustomWebApplicationFactory
                 // serviceCollection.AddSingleton(newAppSettings);
             }
         );
+    }
+
+    protected override IHost CreateHost(IHostBuilder builder)
+    {
+        builder.UseSerilog((context, services, configuration) =>
+        {
+            configuration
+                .ReadFrom.Configuration(context.Configuration) // appsettings.test.json
+                .WriteTo.NUnitOutput(formatProvider: CultureInfo.InvariantCulture);
+        });
+        return base.CreateHost(builder);
     }
 
     // https://docs.microsoft.com/en-us/dotnet/standard/managed-code

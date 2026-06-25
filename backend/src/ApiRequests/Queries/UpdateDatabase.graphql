@@ -1,26 +1,27 @@
-mutation UpdateDatabase(
-    $input: UpdateDatabaseInput!
-) {
-    updateDatabase(input: $input) {
-        database {
-            uuid
-            name
-            description
-            locator
-            verificationState
-            verificationCode
-            operator {
-                node {
-                    uuid
-                }
-            }
-            isAuthorizedToUpdateNode
-            isAuthorizedToVerifyNode
+mutation UpdateDatabase($input: UpdateDatabaseInput!) {
+  updateDatabase(input: $input) {
+    database {
+      id
+      uuid
+      name
+      description
+      locator
+      verificationState
+      verificationCode
+      operator {
+        node {
+          id
+          uuid
+          name
         }
-        errors {
-            code
-            message
-            path
-        }
+      }
+      isAuthorizedToUpdateNode
+      isAuthorizedToVerifyNode
     }
+    errors {
+      code
+      message
+      path
+    }
+  }
 }

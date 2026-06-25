@@ -6,16 +6,17 @@ using System.Threading;
 using System.Threading.Tasks;
 using Database.Enumerations;
 using Database.Extensions;
-using Database.GraphQl.Extensions;
 using GreenDonut.Data;
 using Laraue.EfCoreTriggers.Common.Extensions;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using SchemaNameOptionsExtension = Database.Data.Extensions.SchemaNameOptionsExtension;
 using NodaTime;
-using System.Text.Json;
+using Database.GraphQl;
+using Database.Data.Extensions;
+using Database.Data.AccessPolicies;
+using Npgsql.EntityFrameworkCore.PostgreSQL.ValueGeneration;
 
 namespace Database.Data;
 
@@ -27,32 +28,39 @@ public sealed class ApplicationDbContext
 {
     private const string DefaultSchemaName = "database";
     private readonly string _schemaName;
+    private readonly IClock _clock;
 
     internal const string CalorimetricObserverTypeName = "calorimetric_observer";
     internal const string CoatedSideTypeName = "coated_side";
     internal const string DataKindTypeName = "data_kind";
     internal const string IlluminantTypeName = "illuminant";
+    internal const string LogicalCombinatorTypeName = "logical_combinator";
     internal const string OpticalComponentSubtypeTypeName = "optical_component_subtype";
     internal const string OpticalComponentTypeTypeName = "optical_component_type";
     internal const string PublishingStateTypeName = "publishing_state";
     internal const string StandardizerTypeName = "standardizer";
 
     public ApplicationDbContext(
-        DbContextOptions<ApplicationDbContext> options
+        DbContextOptions<ApplicationDbContext> options,
+        IClock clock
     )
         : base(options)
     {
-        // The schema-name option is set in `Metabase.Startup` by an invocation of
-        // `UseSchemaName` on a `DbContextOptionsBuilder` instance.
+        // The schema-name option is set in `Metabase.Startup` by an invocation
+        // of `UseSchemaName` on a `DbContextOptionsBuilder` instance.
         var schemaNameOptions = options.FindExtension<SchemaNameOptionsExtension>();
         _schemaName = schemaNameOptions is null ? DefaultSchemaName : schemaNameOptions.SchemaName;
+        _clock = clock;
     }
 
     // https://docs.microsoft.com/en-us/ef/core/miscellaneous/nullable-reference-types#dbcontext-and-dbset
     public DbSet<GetHttpsResource> GetHttpsResources { get; private set; } = default!;
     public DbSet<User> Users { get; private set; } = default!;
     public DbSet<DataProtectionKey> DataProtectionKeys { get; private set; } = default!;
-    public DbSet<InstitutionAccessRights> InstitutionAccessRights { get; private set; } = default!;
+    public DbSet<DataAccessPolicy> DataAccessPolicies { get; private set; } = default!;
+    public DbSet<UserAccessPolicy> UserAccessPolicies { get; private set; } = default!;
+    public DbSet<InstitutionAccessPolicy> InstitutionAccessPolicies { get; private set; } = default!;
+    public DbSet<OpenIdConnectApplicationAccessPolicy> OpenIdConnectApplicationAccessPolicies { get; private set; } = default!;
 
     public IQueryable<GetHttpsResource> GetHttpsResourcesWithData =>
         GetHttpsResources.AsQueryable()
@@ -118,6 +126,53 @@ public sealed class ApplicationDbContext
         }
     }
 
+    public override int SaveChanges()
+    {
+        UpdateTimestamps();
+        return base.SaveChanges();
+    }
+
+    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        UpdateTimestamps();
+        return base.SaveChangesAsync(cancellationToken);
+    }
+
+    private void UpdateTimestamps()
+    {
+        var entries = ChangeTracker
+            .Entries<IAuditable>()
+            .Where(_ =>
+                _.State == EntityState.Added
+                || _.State == EntityState.Modified
+            // || _.State == EntityState.Deleted
+            );
+        var now = _clock.GetUtcNow().ToDateTimeOffset();
+        foreach (var entry in entries)
+        {
+            switch (entry.State)
+            {
+                case EntityState.Added:
+                    if (entry.Entity.CreatedAt == default)
+                    {
+                        entry.Entity.CreatedAt = now;
+                    }
+                    entry.Entity.UpdatedAt = now;
+                    break;
+                case EntityState.Modified:
+                    entry.Entity.UpdatedAt = now;
+                    break;
+                    // NOTE that soft deletes do not cascade
+                    // case EntityState.Deleted:
+                    //     // soft delete
+                    //     entry.State = EntityState.Modified;
+                    //     entry.Entity.DeletedAt = now;
+                    //     entry.Entity.UpdatedAt = now;
+                    //     break;
+            }
+        }
+    }
+
     public IQueryable<IData> Data(DataKind dataKind)
     {
         return dataKind switch
@@ -134,70 +189,51 @@ public sealed class ApplicationDbContext
 
     public Task<IData?> GetDataAsync(Guid id, DataKind dataKind, CancellationToken cancellationToken)
     {
-        return Data(dataKind).SingleOrDefaultAsync(x => x.Id == id, cancellationToken);
+        return Data(dataKind).SingleOrDefaultAsync(_ => _.Id == id, cancellationToken);
     }
 
     public IAsyncEnumerable<IData> GetAllDataAsync(
-        Expression<Func<IData, bool>> where,
-        QueryContext<IData> queryContext
+        Expression<Func<IData, bool>>? where = null,
+        QueryContext<IData>? queryContext = null
     )
     {
+        where ??= _ => true;
         return (
             CalorimetricData.AsQueryable<IData>()
-            .With(queryContext, sort => sort.StabilizeOrder())
             .Where(where)
+            .With(queryContext, Sorting.DefaultEntityOrder)
             .ToAsyncEnumerable()
         )
         .Union(
             GeometricData.AsQueryable<IData>()
-            .With(queryContext, sort => sort.StabilizeOrder())
             .Where(where)
+            .With(queryContext, Sorting.DefaultEntityOrder)
             .ToAsyncEnumerable()
         )
         .Union(
             HygrothermalData.AsQueryable<IData>()
-            .With(queryContext, sort => sort.StabilizeOrder())
             .Where(where)
+            .With(queryContext, Sorting.DefaultEntityOrder)
             .ToAsyncEnumerable()
         )
         .Union(
             LifeCycleData.AsQueryable<IData>()
-            .With(queryContext, sort => sort.StabilizeOrder())
             .Where(where)
+            .With(queryContext, Sorting.DefaultEntityOrder)
             .ToAsyncEnumerable()
         )
         .Union(
             OpticalData.AsQueryable<IData>()
-            .With(queryContext, sort => sort.StabilizeOrder())
             .Where(where)
+            .With(queryContext, Sorting.DefaultEntityOrder)
             .ToAsyncEnumerable()
         )
         .Union(
             PhotovoltaicData.AsQueryable<IData>()
-            .With(queryContext, sort => sort.StabilizeOrder())
             .Where(where)
+            .With(queryContext, Sorting.DefaultEntityOrder)
             .ToAsyncEnumerable()
         );
-    }
-
-    private static
-        EntityTypeBuilder<TEntity>
-        ConfigureEntity<TEntity>(
-            EntityTypeBuilder<TEntity> builder
-        )
-        where TEntity : Entity
-    {
-        // https://www.npgsql.org/efcore/modeling/generated-properties.html#guiduuid-generation
-        builder
-            .HasKey(e => e.Id);
-        builder
-            .Property(e => e.Id)
-            .HasDefaultValueSql("gen_random_uuid()");
-        // https://www.npgsql.org/efcore/modeling/concurrency.html#the-postgresql-xmin-system-column
-        builder
-            .Property(e => e.Version)
-            .IsRowVersion();
-        return builder;
     }
 
     private static
@@ -209,19 +245,6 @@ public sealed class ApplicationDbContext
     {
         builder
             .OwnsOne(
-                data => data.DataAccessRights,
-                dataAccessRights =>
-                {
-                    dataAccessRights
-                        .Property(_ => _.AllowedUserAndQuantity)
-                        .HasConversion(
-                            dictionary => JsonSerializer.Serialize(dictionary),
-                            stringValue => JsonSerializer.Deserialize<Dictionary<Guid, uint?>>(stringValue) ?? new()
-                        );
-                }
-            );
-        builder
-            .OwnsOne(
                 data => data.AppliedMethod,
                 method =>
                 {
@@ -231,7 +254,7 @@ public sealed class ApplicationDbContext
             );
         builder
             .OwnsOne(
-                x => x.Approval,
+                _ => _.Approval,
                 approval =>
                 {
                     approval
@@ -241,7 +264,7 @@ public sealed class ApplicationDbContext
             );
         builder
             .OwnsMany(
-                x => x.Approvals,
+                _ => _.Approvals,
                 approvals =>
                 {
                     approvals
@@ -318,7 +341,7 @@ public sealed class ApplicationDbContext
                            AND (
                                SELECT COUNT({nameof(GetHttpsResource.Id).Enquote()})
                                FROM {_schemaName}.{GetHttpsResource.TableName.Enquote()}
-                               WHERE {nameof(GetHttpsResource.Id).Enquote()} = NEW.{nameof(GetHttpsResource.ParentId).Enquote()} AND COALESCE({string.Join(", ", GetHttpsResource.DataIdFieldNames.Select(_ => _.Enquote()))}) = COALESCE({string.Join(", ", GetHttpsResource.DataIdFieldNames.Select(_ => $"NEW.{_.Enquote()}"))})
+                               WHERE {nameof(GetHttpsResource.Id).Enquote()} = NEW.{nameof(GetHttpsResource.ParentId).Enquote()} AND COALESCE({string.Join(", ", GetHttpsResource.DataIdFieldAndDataTableNames.Select(_ => _.Field.Enquote()))}) = COALESCE({string.Join(", ", GetHttpsResource.DataIdFieldAndDataTableNames.Select(_ => $"NEW.{_.Field.Enquote()}"))})
                            )
                            <> 1
                         THEN
@@ -334,9 +357,30 @@ public sealed class ApplicationDbContext
                 .Action(action => action
                     .ExecuteRawSql(
                         $"""
-                        IF COALESCE({string.Join(", ", GetHttpsResource.DataIdFieldNames.Select(_ => $"OLD.{_.Enquote()}"))}) <> COALESCE({string.Join(", ", GetHttpsResource.DataIdFieldNames.Select(_ => $"NEW.{_.Enquote()}"))})
+                        IF COALESCE({string.Join(", ", GetHttpsResource.DataIdFieldAndDataTableNames.Select(_ => $"OLD.{_.Field.Enquote()}"))}) <> COALESCE({string.Join(", ", GetHttpsResource.DataIdFieldAndDataTableNames.Select(_ => $"NEW.{_.Field.Enquote()}"))})
                         THEN
                             RAISE EXCEPTION 'You cannot change the data ID of a resource.';
+                        END IF;
+                        """
+                    )
+                )
+            );
+        builder
+            .BeforeDelete(trigger => trigger
+                .SetTriggerName(GetHttpsResource.RootCanOnlyBeDeletedAlongsideItsDataTriggerName)
+                .Action(action => action
+                    .ExecuteRawSql(
+                        $"""
+                        IF OLD.{nameof(GetHttpsResource.ParentId).Enquote()} IS NULL AND (
+                            {string.Join(" OR ", GetHttpsResource.DataIdFieldAndDataTableNames.Select(_ => $"""
+                            (OLD.{_.Field.Enquote()} IS NOT NULL AND EXISTS (
+                                SELECT 1 FROM {_schemaName}.{_.Table.Enquote()} 
+                                WHERE {nameof(IData.Id).Enquote()} = OLD.{_.Field.Enquote()}
+                            ))
+                            """
+                            ))}
+                        ) THEN
+                            RAISE EXCEPTION 'You cannot delete a root resource without also deleting the corresponding data in the same transaction.';
                         END IF;
                         """
                     )
@@ -345,7 +389,113 @@ public sealed class ApplicationDbContext
         return builder;
     }
 
-    private static
+    private
+        EntityTypeBuilder<TData>
+        AddTriggerThatAssertsExistenceOfRootResource<TData>(
+            EntityTypeBuilder<TData> builder,
+            string triggerName,
+            string dataIdColumn
+        )
+        where TData : class, IData
+    {
+        // In the generated migration turn `CREATE TRIGGER` into `CREATE
+        // CONSTRAINT TRIGGER` and add `DEFERRABLE INITIALLY DEFERRED` before
+        // `FOR EACH ...`.
+        builder
+            .AfterInsert(trigger => trigger
+                .SetTriggerName(triggerName)
+                .Action(action => action
+                    .ExecuteRawSql(
+                        $"""
+                        IF NOT EXISTS (
+                            SELECT 1 FROM {_schemaName}.{GetHttpsResource.TableName.Enquote()}
+                            WHERE {nameof(GetHttpsResource.ParentId).Enquote()} IS NULL
+                            AND {dataIdColumn.Enquote()} = NEW.{nameof(IData.Id).Enquote()}
+                        )
+                        THEN
+                            RAISE EXCEPTION 'You cannot insert data without also inserting the corresponding root resource in the same transaction.';
+                        END IF;
+                        """
+                    )
+                )
+            );
+        // The migration generated for calorimetric data creates the following function and trigger:
+        //
+        // CREATE FUNCTION "database"."LC_TRIGGER_calorimetric_data_assert_existence_of_root_resource"() RETURNS trigger as $LC_TRIGGER_calorimetric_data_assert_existence_of_root_resource$
+        // BEGIN
+        //   IF NOT EXISTS (
+        //     SELECT 1 FROM database."get_https_resource"
+        //     WHERE "ParentId" IS NULL
+        //     AND "CalorimetricDataId" = NEW."Id"
+        // )
+        // THEN
+        //     RAISE EXCEPTION 'You cannot insert data without also inserting the corresponding root resource in the same transaction.';
+        // END IF;
+        // RETURN NEW;
+        // END;
+        // $LC_TRIGGER_calorimetric_data_assert_existence_of_root_resource$ LANGUAGE plpgsql;
+        // CREATE TRIGGER LC_TRIGGER_calorimetric_data_assert_existence_of_root_resource AFTER INSERT
+        // ON "database"."calorimetric_data"
+        // FOR EACH ROW EXECUTE PROCEDURE "database"."LC_TRIGGER_calorimetric_data_assert_existence_of_root_resource"();
+        return builder;
+    }
+
+    public bool AssertExistenceOfRootResource() =>
+        throw new NotSupportedException("This method can only be called within a database query.");
+
+    private
+        EntityTypeBuilder<TData>
+        AddTriggerThatCreatesDataAccessPolicyIfNecessary<TData>(
+            EntityTypeBuilder<TData> builder,
+            string triggerName,
+            string dataIdColumn
+        )
+        where TData : class, IData
+    {
+        // In the generated migration turn `CREATE TRIGGER` into `CREATE
+        // CONSTRAINT TRIGGER` and add `DEFERRABLE INITIALLY DEFERRED` before
+        // `FOR EACH ...` .
+        builder
+            .AfterInsert(trigger => trigger
+                .SetTriggerName(triggerName)
+                .Action(action => action
+                    .ExecuteRawSql(
+                        $"""
+                        INSERT INTO {_schemaName}.{DataAccessPolicy.TableName.Enquote()}
+                        ({dataIdColumn.Enquote()}, {nameof(DataAccessPolicy.Combinator).Enquote()})
+                        VALUES (NEW.{nameof(IEntity.Id).Enquote()}, '{LogicalCombinator.ALL.ToString().ToLowerInvariant()}')
+                        ON CONFLICT ({dataIdColumn.Enquote()}) WHERE {dataIdColumn.Enquote()} IS NOT NULL DO NOTHING;
+                        """
+                    )
+                // an alternative is
+                // .InsertIfNotExists(
+                //     insertedData => new DataAccessPolicy
+                //     {
+                //         CalorimetricDataId = insertedData.Id,
+                //         Combinator = LogicalCombinator.ALL
+                //     },
+                //     data => new { data.CalorimetricDataId }
+                // )
+                )
+            );
+        // The migration generated for calorimetric data creates the following function and trigger:
+        //
+        // CREATE FUNCTION "database"."LC_TRIGGER_create_calorimetric_data_access_policy_if_necessary"() RETURNS trigger as $LC_TRIGGER_create_calorimetric_data_access_policy_if_necessary$
+        // BEGIN
+        //   INSERT INTO database."data_access_policy"
+        // ("CalorimetricDataId", "Combinator")
+        // VALUES (NEW."Id", 'all')
+        // ON CONFLICT ("CalorimetricDataId") WHERE "CalorimetricDataId" IS NOT NULL DO NOTHING;
+        // RETURN NEW;
+        // END;
+        // $LC_TRIGGER_create_calorimetric_data_access_policy_if_necessary$ LANGUAGE plpgsql;
+        // CREATE TRIGGER LC_TRIGGER_create_calorimetric_data_access_policy_if_necessary AFTER INSERT
+        // ON "database"."calorimetric_data"
+        // FOR EACH ROW EXECUTE PROCEDURE "database"."LC_TRIGGER_create_calorimetric_data_access_policy_if_necessary"();
+        return builder;
+    }
+
+    private
         EntityTypeBuilder<CalorimetricData>
         ConfigureCalorimetricData(
             EntityTypeBuilder<CalorimetricData> builder
@@ -356,10 +506,25 @@ public sealed class ApplicationDbContext
             .WithOne(_ => _.CalorimetricData)
             .HasForeignKey(_ => _.CalorimetricDataId)
             .OnDelete(DeleteBehavior.Cascade);
+        builder
+            .HasOne(_ => _.AccessPolicy)
+            .WithOne(_ => _.CalorimetricData)
+            .HasForeignKey<DataAccessPolicy>(_ => _.CalorimetricDataId)
+            .OnDelete(DeleteBehavior.Cascade);
+        AddTriggerThatAssertsExistenceOfRootResource(
+            builder,
+            global::Database.Data.CalorimetricData.AssertExistenceOfRootResourceTriggerName,
+            nameof(GetHttpsResource.CalorimetricDataId)
+        );
+        AddTriggerThatCreatesDataAccessPolicyIfNecessary(
+            builder,
+            global::Database.Data.CalorimetricData.CreateDataAccessPolicyIfNecessaryTriggerName,
+            nameof(DataAccessPolicy.CalorimetricDataId)
+        );
         return builder;
     }
 
-    private static
+    private
         EntityTypeBuilder<GeometricData>
         ConfigureGeometricData(
             EntityTypeBuilder<GeometricData> builder
@@ -370,10 +535,25 @@ public sealed class ApplicationDbContext
             .WithOne(_ => _.GeometricData)
             .HasForeignKey(_ => _.GeometricDataId)
             .OnDelete(DeleteBehavior.Cascade);
+        builder
+            .HasOne(_ => _.AccessPolicy)
+            .WithOne(_ => _.GeometricData)
+            .HasForeignKey<DataAccessPolicy>(_ => _.GeometricDataId)
+            .OnDelete(DeleteBehavior.Cascade);
+        AddTriggerThatAssertsExistenceOfRootResource(
+            builder,
+            global::Database.Data.GeometricData.AssertExistenceOfRootResourceTriggerName,
+            nameof(GetHttpsResource.GeometricDataId)
+        );
+        AddTriggerThatCreatesDataAccessPolicyIfNecessary(
+            builder,
+            global::Database.Data.GeometricData.CreateDataAccessPolicyIfNecessaryTriggerName,
+            nameof(DataAccessPolicy.GeometricDataId)
+        );
         return builder;
     }
 
-    private static
+    private
         EntityTypeBuilder<HygrothermalData>
         ConfigureHygrothermalData(
             EntityTypeBuilder<HygrothermalData> builder
@@ -384,10 +564,25 @@ public sealed class ApplicationDbContext
             .WithOne(_ => _.HygrothermalData)
             .HasForeignKey(_ => _.HygrothermalDataId)
             .OnDelete(DeleteBehavior.Cascade);
+        builder
+            .HasOne(_ => _.AccessPolicy)
+            .WithOne(_ => _.HygrothermalData)
+            .HasForeignKey<DataAccessPolicy>(_ => _.HygrothermalDataId)
+            .OnDelete(DeleteBehavior.Cascade);
+        AddTriggerThatAssertsExistenceOfRootResource(
+            builder,
+            global::Database.Data.HygrothermalData.AssertExistenceOfRootResourceTriggerName,
+            nameof(GetHttpsResource.HygrothermalDataId)
+        );
+        AddTriggerThatCreatesDataAccessPolicyIfNecessary(
+            builder,
+            global::Database.Data.HygrothermalData.CreateDataAccessPolicyIfNecessaryTriggerName,
+            nameof(DataAccessPolicy.HygrothermalDataId)
+        );
         return builder;
     }
 
-    private static
+    private
         EntityTypeBuilder<LifeCycleData>
         ConfigureLifeCycleData(
             EntityTypeBuilder<LifeCycleData> builder
@@ -398,10 +593,25 @@ public sealed class ApplicationDbContext
             .WithOne(_ => _.LifeCycleData)
             .HasForeignKey(_ => _.LifeCycleDataId)
             .OnDelete(DeleteBehavior.Cascade);
+        builder
+            .HasOne(_ => _.AccessPolicy)
+            .WithOne(_ => _.LifeCycleData)
+            .HasForeignKey<DataAccessPolicy>(_ => _.LifeCycleDataId)
+            .OnDelete(DeleteBehavior.Cascade);
+        AddTriggerThatAssertsExistenceOfRootResource(
+            builder,
+            global::Database.Data.LifeCycleData.AssertExistenceOfRootResourceTriggerName,
+            nameof(GetHttpsResource.LifeCycleDataId)
+        );
+        AddTriggerThatCreatesDataAccessPolicyIfNecessary(
+            builder,
+            global::Database.Data.LifeCycleData.CreateDataAccessPolicyIfNecessaryTriggerName,
+            nameof(DataAccessPolicy.LifeCycleDataId)
+        );
         return builder;
     }
 
-    private static
+    private
         EntityTypeBuilder<OpticalData>
         ConfigureOpticalData(
             EntityTypeBuilder<OpticalData> builder
@@ -411,6 +621,11 @@ public sealed class ApplicationDbContext
             .HasMany(_ => _.Resources)
             .WithOne(_ => _.OpticalData)
             .HasForeignKey(_ => _.OpticalDataId)
+            .OnDelete(DeleteBehavior.Cascade);
+        builder
+            .HasOne(_ => _.AccessPolicy)
+            .WithOne(_ => _.OpticalData)
+            .HasForeignKey<DataAccessPolicy>(_ => _.OpticalDataId)
             .OnDelete(DeleteBehavior.Cascade);
         builder.OwnsMany(
             data => data.CielabColors
@@ -423,10 +638,20 @@ public sealed class ApplicationDbContext
                 );
             }
         );
+        AddTriggerThatAssertsExistenceOfRootResource(
+            builder,
+            global::Database.Data.OpticalData.AssertExistenceOfRootResourceTriggerName,
+            nameof(GetHttpsResource.OpticalDataId)
+        );
+        AddTriggerThatCreatesDataAccessPolicyIfNecessary(
+            builder,
+            global::Database.Data.OpticalData.CreateDataAccessPolicyIfNecessaryTriggerName,
+            nameof(DataAccessPolicy.OpticalDataId)
+        );
         return builder;
     }
 
-    private static
+    private
         EntityTypeBuilder<PhotovoltaicData>
         ConfigurePhotovoltaicData(
             EntityTypeBuilder<PhotovoltaicData> builder
@@ -437,14 +662,194 @@ public sealed class ApplicationDbContext
             .WithOne(_ => _.PhotovoltaicData)
             .HasForeignKey(_ => _.PhotovoltaicDataId)
             .OnDelete(DeleteBehavior.Cascade);
+        builder
+            .HasOne(_ => _.AccessPolicy)
+            .WithOne(_ => _.PhotovoltaicData)
+            .HasForeignKey<DataAccessPolicy>(_ => _.PhotovoltaicDataId)
+            .OnDelete(DeleteBehavior.Cascade);
+        AddTriggerThatAssertsExistenceOfRootResource(
+            builder,
+            global::Database.Data.PhotovoltaicData.AssertExistenceOfRootResourceTriggerName,
+            nameof(GetHttpsResource.PhotovoltaicDataId)
+        );
+        AddTriggerThatCreatesDataAccessPolicyIfNecessary(
+            builder,
+            global::Database.Data.PhotovoltaicData.CreateDataAccessPolicyIfNecessaryTriggerName,
+            nameof(DataAccessPolicy.PhotovoltaicDataId)
+        );
         return builder;
     }
 
-    private static void ConfigureIdentityEntities(
-        ModelBuilder builder
-    )
+    private
+        EntityTypeBuilder<DataAccessPolicy>
+        ConfigureDataAccessPolicy(
+            EntityTypeBuilder<DataAccessPolicy> builder
+        )
     {
-        // https://stackoverflow.com/questions/19902756/asp-net-identity-dbcontext-confusion/35722688#35722688
+        // each data entity has at most one access policy and there is at most one global access policy (no data ID)
+        builder
+            .HasIndex(_ => new
+            {
+                _.CalorimetricDataId,
+                _.GeometricDataId,
+                _.HygrothermalDataId,
+                _.LifeCycleDataId,
+                _.OpticalDataId,
+                _.PhotovoltaicDataId
+            })
+            .IsUnique(true)
+            .AreNullsDistinct(false);
+        // configure one-to-many associations
+        builder
+            .HasMany(_ => _.UserAccessPolicies)
+            .WithOne(_ => _.DataAccessPolicy)
+            .HasForeignKey(_ => _.DataAccessPolicyId)
+            .OnDelete(DeleteBehavior.Cascade);
+        builder
+            .HasMany(_ => _.InstitutionAccessPolicies)
+            .WithOne(_ => _.DataAccessPolicy)
+            .HasForeignKey(_ => _.DataAccessPolicyId)
+            .OnDelete(DeleteBehavior.Cascade);
+        builder
+            .HasMany(_ => _.OpenIdConnectApplicationAccessPolicies)
+            .WithOne(_ => _.DataAccessPolicy)
+            .HasForeignKey(_ => _.DataAccessPolicyId)
+            .OnDelete(DeleteBehavior.Cascade);
+        // add partial indexes, see https://www.postgresql.org/docs/18/indexes-partial.html
+        builder
+            .HasIndex(_ => new { _.CalorimetricDataId })
+            .HasFilter(
+                $"""
+                {nameof(DataAccessPolicy.CalorimetricDataId).Enquote()} IS NOT NULL
+                """
+            )
+            .IsUnique(true);
+        builder
+            .HasIndex(_ => new { _.GeometricDataId })
+            .HasFilter(
+                $"""
+                {nameof(DataAccessPolicy.GeometricDataId).Enquote()} IS NOT NULL
+                """
+            )
+            .IsUnique(true);
+        builder
+            .HasIndex(_ => new { _.HygrothermalDataId })
+            .HasFilter(
+                $"""
+                {nameof(DataAccessPolicy.HygrothermalDataId).Enquote()} IS NOT NULL
+                """
+            )
+            .IsUnique(true);
+        builder
+            .HasIndex(_ => new { _.LifeCycleDataId })
+            .HasFilter(
+                $"""
+                {nameof(DataAccessPolicy.LifeCycleDataId).Enquote()} IS NOT NULL
+                """
+            )
+            .IsUnique(true);
+        builder
+            .HasIndex(_ => new { _.OpticalDataId })
+            .HasFilter(
+                $"""
+                {nameof(DataAccessPolicy.OpticalDataId).Enquote()} IS NOT NULL
+                """
+            )
+            .IsUnique(true);
+        builder
+            .HasIndex(_ => new { _.PhotovoltaicDataId })
+            .HasFilter(
+                $"""
+                {nameof(DataAccessPolicy.PhotovoltaicDataId).Enquote()} IS NOT NULL
+                """
+            )
+            .IsUnique(true);
+        builder
+            .BeforeUpdate(trigger => trigger
+                .SetTriggerName(DataAccessPolicy.DataIdCannotChangeTriggerName)
+                .Action(action => action
+                    .ExecuteRawSql(
+                        $"""
+                        IF COALESCE({string.Join(", ", DataAccessPolicy.DataIdFieldAndDataTableNames.Select(_ => $"OLD.{_.Field.Enquote()}"))}) <> COALESCE({string.Join(", ", DataAccessPolicy.DataIdFieldAndDataTableNames.Select(_ => $"NEW.{_.Field.Enquote()}"))})
+                        THEN
+                            RAISE EXCEPTION 'You cannot change the data ID of a data access policy.';
+                        END IF;
+                        """
+                    )
+                )
+            );
+        builder
+            .BeforeDelete(trigger => trigger
+                .SetTriggerName(DataAccessPolicy.GlobalPolicyCannotBeDeletedTriggerName)
+                .Action(action => action
+                    .ExecuteRawSql(
+                        $"""
+                        IF {string.Join(" AND ", DataAccessPolicy.DataIdFieldAndDataTableNames.Select(_ => $"OLD.{_.Field.Enquote()} IS NULL"))}
+                        THEN
+                            RAISE EXCEPTION 'You cannot delete the global data access policy.';
+                        END IF;
+                        """
+                    )
+                )
+            );
+        builder
+            .BeforeDelete(trigger => trigger
+                .SetTriggerName(DataAccessPolicy.CanOnlyBeDeletedAlongsideCorrespondingDataTriggerName)
+                .Action(action => action
+                    .ExecuteRawSql(
+                        $"""
+                        IF (
+                            {string.Join(" OR ", DataAccessPolicy.DataIdFieldAndDataTableNames.Select(_ => $"""
+                            (OLD.{_.Field.Enquote()} IS NOT NULL AND EXISTS (
+                                SELECT 1 FROM {_schemaName}.{_.Table.Enquote()}
+                                WHERE {nameof(IData.Id).Enquote()} = OLD.{_.Field.Enquote()}
+                            ))
+                            """
+                            ))}
+                        ) THEN
+                            RAISE EXCEPTION 'You cannot delete a data access policy without also deleting the corresponding data in the same transaction.';
+                        END IF;
+                        """
+                    )
+                )
+            );
+        return builder;
+    }
+
+    private static
+        EntityTypeBuilder<UserAccessPolicy>
+        ConfigureUserAccessPolicy(
+            EntityTypeBuilder<UserAccessPolicy> builder
+        )
+    {
+        builder
+            .HasIndex(_ => new { _.DataAccessPolicyId, _.UserId })
+            .IsUnique(true);
+        return builder;
+    }
+
+    private static
+        EntityTypeBuilder<InstitutionAccessPolicy>
+        ConfigureInstitutionAccessPolicy(
+            EntityTypeBuilder<InstitutionAccessPolicy> builder
+        )
+    {
+        builder
+            .HasIndex(_ => new { _.DataAccessPolicyId, _.InstitutionId })
+            .IsUnique(true);
+        return builder;
+    }
+
+    private static
+        EntityTypeBuilder<OpenIdConnectApplicationAccessPolicy>
+        ConfigureOpenIdConnectApplicationAccessPolicy(
+            EntityTypeBuilder<OpenIdConnectApplicationAccessPolicy> builder
+        )
+    {
+        builder
+            .HasIndex(_ => new { _.DataAccessPolicyId, _.ClientId })
+            .IsUnique(true);
+        return builder;
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -452,11 +857,9 @@ public sealed class ApplicationDbContext
         base.OnModelCreating(modelBuilder);
         modelBuilder.HasDefaultSchema(_schemaName);
         modelBuilder.HasPostgresExtension("pgcrypto"); // https://www.npgsql.org/efcore/modeling/generated-properties.html#guiduuid-generation
-        ConfigureIdentityEntities(modelBuilder);
-        ConfigureEntity(
-            ConfigureGetHttpsResource(modelBuilder.Entity<GetHttpsResource>())
-        )
-        .ToTable(
+        ConfigureGetHttpsResource(
+            modelBuilder.Entity<GetHttpsResource>()
+        ).ToTable(
             GetHttpsResource.TableName,
             _ =>
             {
@@ -469,7 +872,7 @@ public sealed class ApplicationDbContext
                 );
                 _.HasCheckConstraint(
                     $"CK_{nameof(GetHttpsResource)}_Exactly_One_Data_Set",
-                    $"NUM_NONNULLS({string.Join(", ", GetHttpsResource.DataIdFieldNames.Select(_ => _.Enquote()))}) = 1"
+                    $"NUM_NONNULLS({string.Join(", ", GetHttpsResource.DataIdFieldAndDataTableNames.Select(_ => _.Field.Enquote()))}) = 1"
                 );
                 foreach (var triggerName in GetHttpsResource.TriggerNames)
                 {
@@ -479,41 +882,174 @@ public sealed class ApplicationDbContext
         );
         ConfigureCalorimetricData(
             ConfigureData(
-                ConfigureEntity(modelBuilder.Entity<CalorimetricData>())
-            ).ToTable("calorimetric_data")
+                modelBuilder.Entity<CalorimetricData>()
+            )
+        ).ToTable(
+            global::Database.Data.CalorimetricData.TableName,
+            _ =>
+            {
+                foreach (var triggerName in global::Database.Data.CalorimetricData.TriggerNames)
+                {
+                    _.HasTrigger(triggerName);
+                }
+            }
         );
         ConfigureGeometricData(
             ConfigureData(
-                ConfigureEntity(modelBuilder.Entity<GeometricData>())
-            ).ToTable("geometric_data")
+                modelBuilder.Entity<GeometricData>()
+            )
+        ).ToTable(
+            global::Database.Data.GeometricData.TableName,
+            _ =>
+            {
+                foreach (var triggerName in global::Database.Data.GeometricData.TriggerNames)
+                {
+                    _.HasTrigger(triggerName);
+                }
+            }
         );
         ConfigureHygrothermalData(
             ConfigureData(
-                ConfigureEntity(modelBuilder.Entity<HygrothermalData>())
-            ).ToTable("hygrothermal_data")
+                modelBuilder.Entity<HygrothermalData>()
+            )
+        ).ToTable(
+            global::Database.Data.HygrothermalData.TableName,
+            _ =>
+            {
+                foreach (var triggerName in global::Database.Data.HygrothermalData.TriggerNames)
+                {
+                    _.HasTrigger(triggerName);
+                }
+            }
         );
         ConfigureLifeCycleData(
             ConfigureData(
-                ConfigureEntity(modelBuilder.Entity<LifeCycleData>())
-            ).ToTable("lifeCycle_data")
+                modelBuilder.Entity<LifeCycleData>()
+            )
+        ).ToTable(
+            global::Database.Data.LifeCycleData.TableName,
+            _ =>
+            {
+                foreach (var triggerName in global::Database.Data.LifeCycleData.TriggerNames)
+                {
+                    _.HasTrigger(triggerName);
+                }
+            }
         );
         ConfigureOpticalData(
             ConfigureData(
-                ConfigureEntity(modelBuilder.Entity<OpticalData>())
+                modelBuilder.Entity<OpticalData>()
             )
-        ).ToTable("optical_data");
+        ).ToTable(
+            global::Database.Data.OpticalData.TableName,
+            _ =>
+            {
+                foreach (var triggerName in global::Database.Data.OpticalData.TriggerNames)
+                {
+                    _.HasTrigger(triggerName);
+                }
+            }
+        );
         ConfigurePhotovoltaicData(
             ConfigureData(
-                ConfigureEntity(modelBuilder.Entity<PhotovoltaicData>())
-            ).ToTable("photovoltaic_data")
+                modelBuilder.Entity<PhotovoltaicData>()
+            )
+        ).ToTable(
+            global::Database.Data.PhotovoltaicData.TableName,
+            _ =>
+            {
+                foreach (var triggerName in global::Database.Data.PhotovoltaicData.TriggerNames)
+                {
+                    _.HasTrigger(triggerName);
+                }
+            }
         );
-        ConfigureEntity(
-                modelBuilder.Entity<User>()
-            )
+        ConfigureDataAccessPolicy(
+            modelBuilder.Entity<DataAccessPolicy>()
+        ).ToTable(
+            DataAccessPolicy.TableName,
+            _ =>
+            {
+                _.HasCheckConstraint(
+                    $"CK_{nameof(DataAccessPolicy)}_At_Most_One_Data_Set",
+                    $"NUM_NONNULLS({string.Join(", ", DataAccessPolicy.DataIdFieldAndDataTableNames.Select(_ => _.Field.Enquote()))}) <= 1"
+                );
+                foreach (var triggerName in DataAccessPolicy.TriggerNames)
+                {
+                    _.HasTrigger(triggerName);
+                }
+            }
+        );
+        ConfigureUserAccessPolicy(
+            modelBuilder.Entity<UserAccessPolicy>()
+        ).ToTable("user_access_policy");
+        ConfigureInstitutionAccessPolicy(
+            modelBuilder.Entity<InstitutionAccessPolicy>()
+        ).ToTable("institution_access_policy");
+        ConfigureOpenIdConnectApplicationAccessPolicy(
+            modelBuilder.Entity<OpenIdConnectApplicationAccessPolicy>()
+        ).ToTable("open_id_connect_application_access_policy");
+        modelBuilder.Entity<User>()
             .ToTable("user");
-        ConfigureEntity(
-                modelBuilder.Entity<InstitutionAccessRights>()
-            )
-            .ToTable("institution_access_rights");
+        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+        {
+            if (typeof(IEntity).IsAssignableFrom(entityType.ClrType))
+            {
+                var entity = modelBuilder.Entity(entityType.ClrType);
+                entity.HasKey(nameof(IEntity.Id));
+                // https://www.npgsql.org/efcore/modeling/generated-properties.html#guiduuid-generation
+                entity
+                    .Property(nameof(IEntity.Id))
+                    .HasDefaultValueSql("uuidv7()")
+                    .HasValueGenerator<NpgsqlSequentialGuidValueGenerator>();
+                // https://www.npgsql.org/efcore/modeling/concurrency.html#the-postgresql-xmin-system-column
+                entity
+                    .Property(nameof(IEntity.Version))
+                    .IsRowVersion();
+            }
+            if (typeof(IAssociation).IsAssignableFrom(entityType.ClrType))
+            {
+                var association = modelBuilder.Entity(entityType.ClrType);
+                // https://www.npgsql.org/efcore/modeling/concurrency.html#the-postgresql-xmin-system-column
+                association
+                    .Property(nameof(IAssociation.Version))
+                    .IsRowVersion();
+            }
+            if (typeof(IAuditable).IsAssignableFrom(entityType.ClrType))
+            {
+                var auditable = modelBuilder.Entity(entityType.ClrType);
+                auditable
+                    .Property(nameof(IAuditable.CreatedAt))
+                    .HasDefaultValueSql("now()");
+                auditable
+                    .Property(nameof(IAuditable.UpdatedAt))
+                    .HasDefaultValueSql("now()");
+                // exclude soft-deleted entities with the effect that
+                // `context.<Auditables>.ToList()` only returns rows where
+                // `DeletedAt` is null and
+                // `context.<Auditables>.IgnoreQueryFilters().ToList()` returns
+                // all rows
+                // entity
+                //     .HasQueryFilter((IAuditable _) => _.DeletedAt == null);
+            }
+            if (typeof(IEntity).IsAssignableFrom(entityType.ClrType)
+                && typeof(INamed).IsAssignableFrom(entityType.ClrType))
+            {
+                var entity = modelBuilder.Entity(entityType.ClrType);
+                // https://www.npgsql.org/efcore/modeling/generated-properties.html#guiduuid-generation
+                entity
+                    .HasIndex(nameof(INamed.Name), nameof(IEntity.Id))
+                    .IsUnique();
+            }
+            if (typeof(IEntity).IsAssignableFrom(entityType.ClrType)
+                && typeof(IAuditable).IsAssignableFrom(entityType.ClrType))
+            {
+                var entity = modelBuilder.Entity(entityType.ClrType);
+                // https://www.npgsql.org/efcore/modeling/generated-properties.html#guiduuid-generation
+                entity
+                    .HasIndex(nameof(IAuditable.CreatedAt), nameof(IEntity.Id))
+                    .IsUnique();
+            }
+        }
     }
 }

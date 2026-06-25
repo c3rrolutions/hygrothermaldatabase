@@ -12,6 +12,7 @@ using Database.GraphQl.Extensions;
 using Database.Services;
 using GreenDonut.Data;
 using HotChocolate.Data;
+using HotChocolate.Authorization;
 using HotChocolate.Data.Filters;
 using HotChocolate.Resolvers;
 using HotChocolate.Types;
@@ -79,6 +80,7 @@ public sealed class RecomputeGetHttpsResourceHashValuesMutation
     ) => new(code, message, path);
 
     [UseFiltering<RecomputeGetHttpsResourceHashValuesFilterType>]
+    [Authorize(Policy = AuthorizationPolicies.AuthenticatedPolicy)]
     public async Task<RecomputeGetHttpsResourceHashValuesPayload> RecomputeGetHttpsResourceHashValuesAsync(
         ApplicationDbContext context,
         IResolverContext resolverContext,
@@ -88,8 +90,6 @@ public sealed class RecomputeGetHttpsResourceHashValuesMutation
         CancellationToken cancellationToken
     )
     {
-        var queryContext = resolverContext.GetQueryContext<GetHttpsResource>();
-
         if ((await AuthorizeAsync(
                 RecomputeGetHttpsResourceHashValuesErrorCode.UNAUTHENTICATED,
                 RecomputeGetHttpsResourceHashValuesErrorCode.UNAUTHORIZED,
@@ -101,10 +101,9 @@ public sealed class RecomputeGetHttpsResourceHashValuesMutation
         {
             return authorizeErrorPayload;
         }
-
         var resources =
             await context.GetHttpsResourcesWithData
-            .With(queryContext, sort => sort.StabilizeOrder())
+            .With(resolverContext.GetQueryContext<GetHttpsResource>(), Sorting.DefaultEntityOrder)
             .ToListAsync(cancellationToken);
         var errors = new ConcurrentBag<RecomputeGetHttpsResourceHashValuesError>();
         await Parallel.ForEachAsync(

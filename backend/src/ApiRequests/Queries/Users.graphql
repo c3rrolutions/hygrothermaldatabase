@@ -3,6 +3,7 @@ query Users($ids: [Uuid!]!) {
     edges {
       node {
         id: uuid
+        name
       }
     }
   }

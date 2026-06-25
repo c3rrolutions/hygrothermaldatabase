@@ -5,7 +5,7 @@ using HotChocolate.Types;
 namespace Database.GraphQl.PhotovoltaicDataX;
 
 public sealed class PhotovoltaicDataType
-    : DataTypeBase<PhotovoltaicData, PhotovoltaicDataByIdDataLoader>
+    : DataTypeBase<PhotovoltaicData, IPhotovoltaicDataByIdDataLoader>
 {
     protected override void Configure(
         IObjectTypeDescriptor<PhotovoltaicData> descriptor

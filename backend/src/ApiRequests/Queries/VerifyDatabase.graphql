@@ -1,0 +1,27 @@
+mutation VerifyDatabase($input: VerifyDatabaseInput!) {
+  verifyDatabase(input: $input) {
+    database {
+      id
+      uuid
+      name
+      description
+      locator
+      verificationState
+      verificationCode
+      operator {
+        node {
+          id
+          uuid
+          name
+        }
+      }
+      isAuthorizedToUpdateNode
+      isAuthorizedToVerifyNode
+    }
+    errors {
+      code
+      message
+      path
+    }
+  }
+}

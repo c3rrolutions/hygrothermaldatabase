@@ -11,6 +11,7 @@ using Database.GraphQl.Extensions;
 using Database.Services;
 using GreenDonut.Data;
 using HotChocolate.Data;
+using HotChocolate.Authorization;
 using HotChocolate.Data.Filters;
 using HotChocolate.Resolvers;
 using HotChocolate.Types;
@@ -77,6 +78,7 @@ public sealed class UpdateResponseApprovalsMutation
     ) => new(code, message, path);
 
     [UseFiltering<UpdateResponseApprovalsFilterType>]
+    [Authorize(Policy = AuthorizationPolicies.AuthenticatedPolicy)]
     public async Task<UpdateResponseApprovalsPayload> UpdateResponseApprovalsAsync(
         IResolverContext resolverContext,
         ApplicationDbContext context,
@@ -86,7 +88,6 @@ public sealed class UpdateResponseApprovalsMutation
         CancellationToken cancellationToken
     )
     {
-        var queryContext = resolverContext.GetQueryContext<IData>();
         if ((await AuthorizeAsync(
                 UpdateResponseApprovalsErrorCode.UNAUTHENTICATED,
                 UpdateResponseApprovalsErrorCode.UNAUTHORIZED,
@@ -102,7 +103,7 @@ public sealed class UpdateResponseApprovalsMutation
         var dataSets = new ConcurrentBag<IData>();
         var errors = new ConcurrentBag<UpdateResponseApprovalsError>();
         await Parallel.ForEachAsync(
-            context.GetAllDataAsync(_ => _.Approval != null, queryContext),
+            context.GetAllDataAsync(_ => _.Approval != null, resolverContext.GetQueryContext<IData>()),
             cancellationToken,
             async (data, cancellationToken) =>
             {

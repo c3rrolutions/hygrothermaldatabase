@@ -18,6 +18,7 @@ using Database.Services;
 using GraphQL;
 using GraphQL.Client.Abstractions.Utilities;
 using HotChocolate.Types;
+using HotChocolate.Authorization;
 using Microsoft.Extensions.Logging;
 using NodaTime;
 
@@ -98,6 +99,7 @@ public sealed class AddDataApprovalMutation
         IReadOnlyList<string> path
     ) => new(code, message, path);
 
+    [Authorize(Policy = AuthorizationPolicies.AuthenticatedPolicy)]
     public async Task<AddDataApprovalPayload> AddDataApprovalAsync(
         AddDataApprovalInput input,
         ApplicationDbContext context,
@@ -138,7 +140,7 @@ public sealed class AddDataApprovalMutation
                 )
             );
         }
-        var sigantureVerificationResult = await signingService.VerifySignature(input.Message, input.Signature, input.KeyFingerprint);
+        var sigantureVerificationResult = await signingService.VerifySignatureAsync(input.Message, input.Signature, input.KeyFingerprint, cancellationToken);
         switch (sigantureVerificationResult)
         {
             case SigantureVerificationResult.FAILED_RECEIVING_KEY:
@@ -291,7 +293,7 @@ public sealed class AddDataApprovalMutation
                 )
             );
         }
-        if (errors.Count >= 1)
+        if (errors.Count > 0)
         {
             return NewPayload(null, errors);
         }

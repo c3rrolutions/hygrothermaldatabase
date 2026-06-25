@@ -1,35 +1,30 @@
 import { Scalars } from "../../../__generated__/graphql";
 import { LifeCycleDataDocument } from "../../../queries/data.generated";
-import { Skeleton, Result, App } from "antd";
-import { useEffect } from "react";
-import { stringifyApolloError } from "../../../lib/apollo";
-import DataPageHeader from "../DataPageHeader";
+import { Skeleton, Result, Card } from "antd";
 import { useQuery } from "@apollo/client/react";
+import { useQueryHandler } from "../../../lib/hooks/useQueryHandler";
+import LifeCycleDataSummary from "./LifeCycleDataSummary";
+import QueryToolbar from "../../QueryToolbar";
 
-export type LifeCycleDataProps = {
-  lifeCycleDataId: Scalars["Uuid"]["input"];
-};
+interface LifeCycleDataProps {
+  id: Scalars["Uuid"]["input"];
+}
 
-export default function LifeCycleData({ lifeCycleDataId }: LifeCycleDataProps) {
+export default function LifeCycleData({ id }: LifeCycleDataProps) {
+  const queryVariables = {
+    id,
+  };
   const { loading, error, data } = useQuery(LifeCycleDataDocument, {
-    variables: {
-      uuid: lifeCycleDataId,
-    },
+    variables: queryVariables,
   });
-  const lifeCycleData = data?.lifeCycleData;
-  const { message } = App.useApp();
-
-  useEffect(() => {
-    if (error) {
-      message.error(stringifyApolloError(error));
-    }
-  }, [error]);
+  useQueryHandler({ error });
+  const theData = data?.data;
 
   if (loading) {
     return <Skeleton active avatar title />;
   }
 
-  if (!lifeCycleData) {
+  if (!theData) {
     return (
       <Result
         status="500"
@@ -40,16 +35,11 @@ export default function LifeCycleData({ lifeCycleDataId }: LifeCycleDataProps) {
   }
 
   return (
-    <>
-      <DataPageHeader
-        data={lifeCycleData}
-        // extra={[
-        //   <UpdateLifeCycleData
-        //     key="updateLifeCycleData"
-        //     lifeCycleDataId={lifeCycleData.uuid}
-        //   />,
-        // ]}
-      ></DataPageHeader>
-    </>
+    <div>
+      <Card style={{ marginBottom: "1em" }}>
+        <LifeCycleDataSummary entity={theData} />
+      </Card>
+      <QueryToolbar query={LifeCycleDataDocument} variables={queryVariables} />
+    </div>
   );
 }

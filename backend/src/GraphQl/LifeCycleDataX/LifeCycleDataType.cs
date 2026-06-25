@@ -5,7 +5,7 @@ using HotChocolate.Types;
 namespace Database.GraphQl.LifeCycleDataX;
 
 public sealed class LifeCycleDataType
-    : DataTypeBase<LifeCycleData, LifeCycleDataByIdDataLoader>
+    : DataTypeBase<LifeCycleData, ILifeCycleDataByIdDataLoader>
 {
     protected override void Configure(
         IObjectTypeDescriptor<LifeCycleData> descriptor

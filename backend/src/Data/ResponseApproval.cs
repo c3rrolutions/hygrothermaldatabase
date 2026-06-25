@@ -1,5 +1,8 @@
 using System;
 using System.Text.Json;
+using Database.GraphQl.Scalars;
+using HotChocolate;
+using HotChocolate.Types;
 using Microsoft.EntityFrameworkCore;
 using NodaTime;
 
@@ -14,13 +17,16 @@ public sealed class ResponseApproval(
     JsonElement variables,
     string message,
     Guid approverId
-    )
+)
     : IApproval
 {
     public OffsetDateTime Timestamp { get; private set; } = timestamp;
     public string Signature { get; private set; } = signature;
     public string KeyFingerprint { get; private set; } = keyFingerprint;
+
+    [GraphQLType<NonNullType<GraphQlQueryType>>]
     public string Query { get; private set; } = query;
+
     public JsonElement Variables { get; private set; } = variables;
     public string Message { get; private set; } = message;
     public Guid ApproverId { get; private set; } = approverId;

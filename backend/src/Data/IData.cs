@@ -1,10 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using Database.Data.AccessPolicies;
 using Database.Enumerations;
 using Database.GraphQl;
-using NodaTime;
 
 namespace Database.Data;
 
@@ -15,7 +16,7 @@ namespace Database.Data;
 [JsonDerivedType(typeof(LifeCycleData), typeDiscriminator: nameof(LifeCycleData))]
 [JsonDerivedType(typeof(OpticalData), typeDiscriminator: nameof(OpticalData))]
 [JsonDerivedType(typeof(PhotovoltaicData), typeDiscriminator: nameof(PhotovoltaicData))]
-public interface IData : IEntity
+public interface IData : IEntity, IAuditable
 {
     public static readonly Guid BedJsonDataFormatId = new("9ca9e8f5-94bf-4fdd-81e3-31a58d7ca708");
 
@@ -25,36 +26,16 @@ public interface IData : IEntity
     string? Description { get; }
     string[] Warnings { get; }
     Guid CreatorId { get; }
-    OffsetDateTime CreatedAt { get; }
     AppliedMethod AppliedMethod { get; }
     ICollection<DataApproval> Approvals { get; }
     ICollection<GetHttpsResource> Resources { get; }
     ResponseApproval? Approval { get; set; }
     string Locale { get; }
-    DataAccessRights DataAccessRights { get; }
+    DataAccessPolicy? AccessPolicy { get; set; }
     PublishingState PublishingState { get; }
 
-    /// <summary>
-    /// Check if dataset is restricted for passed application id.
-    /// </summary>
-    /// <param name="applicationId"> Id of application. </param>
-    /// <returns> True, if dataset is rescricted. Otherwise false. </returns>
-    bool IsRestrictedByApplication(string applicationId);
-
-    /// <summary>
-    /// Check if dataset is restricted for at least one of the passed institutions.
-    /// </summary>
-    /// <param name="institutions"> List of institution ids. </param>
-    /// <returns> True, if dataset is rescricted. Otherwise false. </returns>
-    bool IsRestrictedByInstitutions(IEnumerable<Guid> institutions);
-
-    /// <summary>
-    /// Check if dataset is restricted for passed user.
-    /// </summary>
-    /// <param name="uuid">                Id of user. </param>
-    /// <param name="alreadyAccesedCount"> Count of already accessed datasets by user. </param>
-    /// <returns> True, if dataset is rescricted. Otherwise false. </returns>
-    bool IsRestrictedByUser(Guid uuid, uint alreadyAccesedCount);
+    [NotMapped]
+    DataKind Kind { get; }
 
     void Update(
         string locale,
@@ -62,7 +43,7 @@ public interface IData : IEntity
         string? name,
         string? description,
         string[] warnings,
-        OffsetDateTime createdAt,
+        DateTimeOffset createdAt,
         Guid creatorId
     );
 

@@ -41,7 +41,7 @@ public sealed class UpdateDatabase(
     );
 
     public sealed record UpdateDatabasePayload(
-        QueryDatabase.Database? Database,
+        DatabaseDataLoader.Database? Database,
         IReadOnlyList<UpdateDatabaseError>? Errors
     );
 

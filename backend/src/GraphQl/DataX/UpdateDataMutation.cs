@@ -5,12 +5,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using Database.Authorization;
 using Database.Data;
+using Database.GraphQl.Scalars;
 using Database.Enumerations;
 using Database.Extensions;
 using Database.Services;
 using HotChocolate;
+using HotChocolate.Authorization;
 using HotChocolate.Types;
-using NodaTime;
 
 namespace Database.GraphQl.DataX;
 
@@ -22,7 +23,7 @@ public sealed record UpdateDataInput(
     string? Name,
     string? Description,
     string[] Warnings,
-    OffsetDateTime CreatedAt,
+    DateTimeOffset CreatedAt,
     Guid CreatorId
 ) : IIdentifyDataInput;
 
@@ -61,6 +62,7 @@ public sealed class UpdateDataMutation
         IReadOnlyList<string> path
     ) => new(code, message, path);
 
+    [Authorize(Policy = AuthorizationPolicies.AuthenticatedPolicy)]
     public async Task<UpdateDataPayload> UpdateDataAsync(
         UpdateDataInput input,
         CommonAuthorization authorization,

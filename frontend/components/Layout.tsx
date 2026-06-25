@@ -49,7 +49,7 @@ export type LayoutProps = {
 const cookieConsentName = "consent";
 const cookieConsentValue = "yes";
 
-export default function Layout({ children }: LayoutProps) {
+export default function Layout({ pageTitles = [], children }: LayoutProps) {
   const appTitle = "Hygro DB - C3RRO Product Data Server";
 
   const [cookies, setCookie] = useCookies([cookieConsentName]);
